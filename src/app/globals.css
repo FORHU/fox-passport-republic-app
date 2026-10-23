@@ -964,38 +964,20 @@ body {
   --color-neutral-400: oklch(43.9% 0 0);
 }
 
-.landing-chart-background {
+/* The landing's floor-plan section sits on drafting paper: a fine grid with
+ * a heavier line every fifth square, in the landing's own chart inks. */
+.landing-plan-grid {
   background-color: var(--canvas);
   background-image:
-    radial-gradient(
-      ellipse 56rem 36rem at 2% 8%,
-      transparent 63%,
-      var(--landing-chart-line) 63.15%,
-      transparent 63.3%
-    ),
-    radial-gradient(
-      ellipse 52rem 34rem at 98% 68%,
-      transparent 61%,
-      var(--landing-chart-line) 61.15%,
-      transparent 61.3%
-    ),
-    radial-gradient(
-      ellipse 38rem 25rem at 100% 0%,
-      transparent 70%,
-      var(--landing-chart-route) 70.15%,
-      transparent 70.3%
-    ),
-    radial-gradient(var(--landing-chart-dot) 0.7px, transparent 0.9px);
+    linear-gradient(var(--landing-chart-dot) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-chart-dot) 1px, transparent 1px),
+    linear-gradient(var(--landing-chart-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-chart-line) 1px, transparent 1px);
   background-size:
-    100% 100%,
-    100% 100%,
-    100% 100%,
-    32px 32px;
-  background-position:
-    center,
-    center,
-    center,
-    0 0;
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
 }
 
 /* The lime accent stays bright as a fill — with real black text on it — but

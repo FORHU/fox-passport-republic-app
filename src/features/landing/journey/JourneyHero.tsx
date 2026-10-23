@@ -2349,7 +2349,7 @@ function TourHero() {
 
         <motion.div
           style={{ opacity: intro, visibility: introVisibility }}
-          className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end px-6 pb-28 sm:justify-center sm:px-14 sm:pb-0"
+          className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end px-6 pb-28 sm:justify-center-safe sm:px-14 sm:pb-8 sm:pt-28"
         >
           <div ref={heroContentRef} className="w-fit max-w-full">
             <Kicker>
@@ -2357,7 +2357,7 @@ function TourHero() {
                 ? `Welcome back, ${first}`
                 : "FoxPassport · Book any event"}
             </Kicker>
-            <h1 className="font-landing-display mt-4 max-w-2xl text-[3.4rem] leading-[0.9] text-white sm:text-7xl lg:text-[6.2rem]">
+            <h1 className="font-landing-display mt-4 max-w-2xl text-[3.4rem] leading-[0.9] text-white sm:text-7xl lg:text-[min(6.2rem,10.5svh)]">
               <MaskLines
                 lines={[
                   "Book the",

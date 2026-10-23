@@ -3,7 +3,6 @@
 import React from "react";
 import { useUserDashboard } from "@/features/user/hooks/useUserDashboard";
 import { UserHeader } from "@/features/user/components/citizen/UserHeader";
-import { UserIdentityCard } from "@/features/user/components/citizen/UserIdentityCard";
 import { UserWelcome } from "@/features/user/components/citizen/UserWelcome";
 import { UserNextUp } from "@/features/user/components/citizen/UserNextUp";
 import { UserForYou } from "@/features/user/components/citizen/UserForYou";
@@ -24,12 +23,12 @@ const CITIZEN_TOUR_KEY = "citizen-dashboard";
 const CITIZEN_TOUR: TourStep[] = [
   {
     title: "Welcome to your dashboard",
-    body: "This is home base: your passport, your upcoming events and what's worth booking next. Here's a quick look around.",
+    body: "This is home base: your upcoming events, your calendar and what's worth booking next. Here's a quick look around.",
   },
   {
     target: "user-identity",
-    title: "Your FoxPassport",
-    body: "Your level, stamps and citizen number. Every event you attend adds to it.",
+    title: "You, at a glance",
+    body: "Your roles and what's coming up. Find an event to book, or open your passport to see your level and stamps.",
   },
   {
     target: "user-next-up",
@@ -43,17 +42,17 @@ const CITIZEN_TOUR: TourStep[] = [
   },
   {
     target: "user-for-you",
-    title: "Picked for you",
-    body: "Events and Foxers that fit what you like and where you are.",
+    title: "Venues to explore",
+    body: "Live venue listings, filtered by category. Foxer roles unlock this section.",
   },
   {
     target: "user-wallet",
-    title: "Wallet and saved vibes",
-    body: "Your balance and recent payments, plus the event styles you've saved to come back to.",
+    title: "Saved and wallet",
+    body: "What you've saved to come back to, plus your Fox Wallet balance.",
   },
   {
     title: "That's it",
-    body: "You can replay this tour any time with the Take the tour button at the top of the page.",
+    body: "You can replay this tour any time with Take the tour, next to My passport at the top of the page.",
   },
 ];
 
@@ -95,25 +94,21 @@ function UserDashboardContent({
         userName={displayUserName}
       />
 
-      <main className="grow pt-28 sm:pt-36 px-4 pb-28 sm:pb-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex justify-end mb-2">
-            <TourReplayButton tourKey={CITIZEN_TOUR_KEY} />
-          </div>
+      <main className="grow pt-24 sm:pt-32 px-4 pb-16">
+        <div className="mx-auto max-w-7xl flex flex-col gap-8 lg:gap-10">
           <div data-tour="user-identity">
-            <UserIdentityCard />
+            <UserWelcome
+              userName={displayUserName}
+              upcomingEventsCount={displayDashboardData.upcomingEvents}
+              extra={<TourReplayButton tourKey={CITIZEN_TOUR_KEY} />}
+            />
           </div>
 
-          <UserWelcome
-            upcomingEventsCount={displayDashboardData.upcomingEvents}
-            recommendationsCount={displayDashboardData.recommendations}
-          />
-
-          {/* Row 1: Next Up & Journey */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+          {/* Row 1: what's booked */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
             <div
               data-tour="user-next-up"
-              className="lg:col-span-8 flex flex-col"
+              className="md:col-span-7 lg:col-span-8 flex flex-col"
             >
               <UserNextUp
                 bookings={upcomingEvents}
@@ -123,26 +118,26 @@ function UserDashboardContent({
             </div>
             <div
               data-tour="user-calendar"
-              className="lg:col-span-4 flex flex-col"
+              className="md:col-span-5 lg:col-span-4 flex flex-col"
             >
               <UserCalendarWidget className="flex-1" />
             </div>
           </div>
 
-          {/* Row 2: For You & Wallet/Saved Vibes */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div data-tour="user-for-you" className="lg:col-span-8">
+          {/* Row 2: what to book next, and what's kept */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            <div data-tour="user-for-you" className="lg:col-span-8 min-w-0">
               <UserForYou canSeeVenues={canSeeVenues} venues={venues} />
             </div>
             <div
               data-tour="user-wallet"
-              className="lg:col-span-4 flex flex-col gap-6 h-full"
+              className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 content-start"
             >
+              <UserSavedVibes savedVibes={savedVibes} />
               <UserWallet
                 walletBalance={walletBalance}
                 recentTransactions={recentTransactions}
               />
-              <UserSavedVibes savedVibes={savedVibes} className="flex-1" />
             </div>
           </div>
         </div>

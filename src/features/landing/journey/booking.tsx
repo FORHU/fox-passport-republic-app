@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
+import { Arrow } from "./Arrow";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
 import {
@@ -13,7 +13,7 @@ import {
   type LandingEvent,
   type LandingEventLocation,
 } from "./data";
-import { Kicker, Reveal } from "./motion";
+
 
 /** The five kinds of event the platform has, in the words people use. */
 export const EVENT_TYPES = [
@@ -389,22 +389,87 @@ export function HeroSearch({
 }
 
 // ---------------------------------------------------------------------------
-// Events to book
+// Events to book, drawn as plan sheets
 // ---------------------------------------------------------------------------
 
-function EventCard({ event, index }: { event: LandingEvent; index: number }) {
-  const reduce = useReducedMotion();
-  const photo = event.images?.[0]?.url;
+const CELL = "border-white/15 px-4 py-2.5";
+const DATA =
+  "font-landing-mono text-xs font-bold uppercase tracking-[0.12em] text-white/75";
+
+/**
+ * A sheet's title block: what kind of event, where, its name, its price and
+ * the way on. The photo above it is the drawing.
+ */
+function TitleBlock({
+  sheet,
+  kind,
+  place,
+  name,
+  price,
+  action,
+  lead = false,
+}: {
+  /** The sheet number the kind index points back to, e.g. E-01. */
+  sheet?: string;
+  kind: React.ReactNode;
+  place?: React.ReactNode;
+  name: React.ReactNode;
+  price: React.ReactNode;
+  action?: React.ReactNode;
+  lead?: boolean;
+}) {
   return (
-    <motion.div
-      initial={reduce ? false : { opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-      transition={{ delay: (index % 3) * 0.08, duration: 0.6 }}
+    <div className="grid grid-cols-2 border-t border-white/15">
+      <span
+        className={`${CELL} ${DATA} truncate ${place ? "border-r" : "col-span-2"}`}
+      >
+        {sheet && (
+          <span className="mr-2 text-(--accent-text)">{sheet}</span>
+        )}
+        {kind}
+      </span>
+      {place && <span className={`${CELL} ${DATA} truncate`}>{place}</span>}
+      <h3
+        className={`col-span-2 border-t ${CELL} font-landing-display py-3 leading-[0.95] text-white ${
+          lead ? "text-3xl sm:text-4xl" : "text-2xl"
+        }`}
+      >
+        {name}
+      </h3>
+      <span
+        className={`border-t ${CELL} ${DATA} tabular-nums ${action ? "border-r" : "col-span-2"}`}
+      >
+        {price}
+      </span>
+      {action}
+    </div>
+  );
+}
+
+function EventSheet({
+  event,
+  sheet,
+  lead = false,
+}: {
+  event: LandingEvent;
+  sheet: string;
+  lead?: boolean;
+}) {
+  const photo = event.images?.find((image) => image.url)?.url;
+  const place = [event.targetCity, event.targetCountry]
+    .filter(Boolean)
+    .join(", ");
+  return (
+    <Link
+      href={`/event/${event.id}`}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/15 bg-surface transition-colors hover:border-(--accent-text) ${
+        lead ? "sm:col-span-2 lg:row-span-2" : ""
+      }`}
     >
-      <Link
-        href={`/event/${event.id}`}
-        className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 bg-surface"
+      <div
+        className={`relative overflow-hidden bg-canvas ${
+          lead ? "aspect-4/3 lg:aspect-auto lg:min-h-80 lg:flex-1" : "aspect-4/3"
+        }`}
       >
         {photo && (
           <img
@@ -412,40 +477,79 @@ function EventCard({ event, index }: { event: LandingEvent; index: number }) {
             alt=""
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
         )}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-[#000]/85 via-[#000]/15 to-transparent"
+      </div>
+      <TitleBlock
+        lead={lead}
+        sheet={sheet}
+        kind={typeLabel(event.category)}
+        place={place || undefined}
+        name={event.name}
+        price={
+          event.estimatedTotal ? (
+            <>
+              From <Money amount={event.estimatedTotal} />
+            </>
+          ) : (
+            <span className="text-white/55">Price on request</span>
+          )
+        }
+        action={
+          <span className="flex items-center justify-between gap-2 border-t border-white/15 bg-accent px-4 py-2.5 text-sm font-extrabold text-black">
+            Book
+            <Arrow />
+          </span>
+        }
+      />
+    </Link>
+  );
+}
+
+/**
+ * An example in the same frame as `EventSheet`, but plainly not one: dashed
+ * border, faded photo, "Example" in its title block, and no link, so it can't
+ * be selected or booked.
+ */
+function ExampleSheet({
+  type,
+  lead = false,
+}: {
+  type: (typeof EVENT_TYPES)[number];
+  lead?: boolean;
+}) {
+  return (
+    <article
+      aria-label={`Example ${type.label} event, not bookable`}
+      className={`flex flex-col overflow-hidden rounded-2xl border border-dashed border-white/30 bg-surface ${
+        lead ? "sm:col-span-2 lg:row-span-2" : ""
+      }`}
+    >
+      <div
+        className={`relative overflow-hidden bg-canvas ${
+          lead ? "aspect-4/3 lg:aspect-auto lg:min-h-80 lg:flex-1" : "aspect-4/3"
+        }`}
+      >
+        <img
+          src={assetUrl(`features/${EXAMPLE_PHOTOS[type.value]}.jpg`)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+          className="absolute inset-0 h-full w-full object-cover opacity-60 grayscale-[35%]"
         />
-        <span className="font-landing-mono absolute left-3 top-3 rounded-full bg-[#000]/60 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#fff] backdrop-blur">
-          {typeLabel(event.category)}
-        </span>
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          <p className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#fff]/85">
-            {event.targetCity ?? ""}
-          </p>
-          <h3 className="font-landing-display mt-1 text-2xl leading-[0.95] text-[#fff] sm:text-3xl">
-            {event.name}
-          </h3>
-          <div className="mt-3 flex items-center justify-between">
-            <span className="font-landing-mono text-xs font-bold text-[#fff]/80">
-              {event.estimatedTotal ? (
-                <>
-                  From <Money amount={event.estimatedTotal} />
-                </>
-              ) : (
-                "Get a quote"
-              )}
-            </span>
-            <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-extrabold text-black transition-transform group-hover:translate-x-0.5">
-              Book →
-            </span>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
+      </div>
+      <TitleBlock
+        lead={lead}
+        kind={type.label}
+        place={<span className="text-(--accent-text)">Example</span>}
+        name={type.line}
+        price="Not bookable yet"
+      />
+    </article>
   );
 }
 
@@ -461,61 +565,6 @@ const EXAMPLE_PHOTOS: Record<(typeof EVENT_TYPES)[number]["value"], string> = {
   social: "performers",
   other: "gear",
 };
-
-/**
- * An example in the same frame as `EventCard`, but plainly not one: dashed
- * border, faded photo, an "Example" badge, and no link, so it can't be
- * selected or booked.
- */
-function ExampleEventCard({
-  type,
-  index,
-}: {
-  type: (typeof EVENT_TYPES)[number];
-  index: number;
-}) {
-  const reduce = useReducedMotion();
-  return (
-    <motion.div
-      initial={reduce ? false : { opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-      transition={{ delay: (index % 3) * 0.08, duration: 0.6 }}
-    >
-      <div
-        role="img"
-        aria-label={`Example ${type.label} event, not bookable`}
-        className="relative block aspect-[4/5] overflow-hidden rounded-2xl border border-dashed border-white/25 bg-surface"
-      >
-        <img
-          src={assetUrl(`features/${EXAMPLE_PHOTOS[type.value]}.jpg`)}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover opacity-70"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-[#000]/85 via-[#000]/25 to-transparent"
-        />
-        <span className="font-landing-mono absolute left-3 top-3 rounded-full border border-dashed border-white/40 bg-[#000]/60 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#fff] backdrop-blur">
-          Example
-        </span>
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          <p className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#fff]/70">
-            {type.label}
-          </p>
-          <h3 className="font-landing-display mt-1 text-2xl leading-[0.95] text-[#fff]/90 sm:text-3xl">
-            {type.line}
-          </h3>
-          <p className="font-landing-mono mt-3 text-xs font-bold text-[#fff]/60">
-            Example · not bookable yet
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
 /**
  * One event for each kind, so the grid shows variety rather than the same
@@ -590,7 +639,30 @@ export function destinationEventCards(
   }).slice(0, max);
 }
 
-/** Events open to book, large, straight under the hero. */
+/** Sheet numbers for the events grid, shared with the kind index. */
+const sheetNo = (i: number) => `E-${String(i + 1).padStart(2, "0")}`;
+
+/** A section's title: the heading, and a line beside it on wide screens. */
+function SheetHead({
+  title,
+  line,
+}: {
+  title: React.ReactNode;
+  line: React.ReactNode;
+}) {
+  return (
+    <div className="mb-8 grid gap-4 border-b-2 border-white pb-6 lg:grid-cols-[1fr_22rem] lg:items-end">
+      <h2 className="font-landing-display text-4xl leading-[0.92] text-white sm:text-6xl">
+        {title}
+      </h2>
+      <p className="max-w-md text-sm leading-relaxed text-white/75 sm:text-base">
+        {line}
+      </p>
+    </div>
+  );
+}
+
+/** Events open to book, straight under the hero: one lead sheet, then the rest. */
 export function EventGrid() {
   const { data, isPending, isError } = useEventsQuery(40);
   const shown = useMemo(() => oneOfEachKind(data ?? [], 5), [data]);
@@ -601,35 +673,39 @@ export function EventGrid() {
   return (
     <section
       id="events"
-      className="scroll-mt-4 bg-transparent px-5 pb-12 pt-14 sm:px-10 sm:pb-16 sm:pt-20"
+      className="scroll-mt-4 px-5 pb-16 pt-16 sm:px-10 sm:pb-24 sm:pt-24"
     >
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-white/15 pb-5">
-          <Reveal>
-            <Kicker>Open for booking</Kicker>
-            <h2 className="font-landing-display mt-2 text-4xl leading-[0.92] text-white sm:text-6xl">
-              Pick an event.
+        <SheetHead
+          title={
+            <>
+              Pick a night.
               <br />
               Book it today.
-            </h2>
-          </Reveal>
-        </div>
+            </>
+          }
+          line={
+            examples
+              ? "Nothing is open to book yet. These are examples of what you'll find here."
+              : "Ready-made events with the venue, the gear and the crew already in. Book the whole thing in one go."
+          }
+        />
         {isPending && (
           <div
-            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
             aria-busy="true"
             aria-label="Loading events"
           >
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="aspect-[4/5] animate-pulse rounded-2xl border border-white/10 bg-surface"
+                className="aspect-4/5 animate-pulse rounded-2xl border border-white/10 bg-surface"
               />
             ))}
           </div>
         )}
         {!isPending && isError && shown.length === 0 && (
-          <div className="rounded-2xl border border-white/10 bg-surface p-8 text-center">
+          <div className="rounded-2xl border border-white/15 bg-surface p-8">
             <p className="font-landing-display text-2xl text-white">
               We couldn&apos;t load the events.
             </p>
@@ -638,45 +714,42 @@ export function EventGrid() {
             </p>
             <Link
               href="/search"
-              className="mt-5 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
+              className="group mt-5 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black hover:bg-accent-hover"
             >
               Find Foxers
+              <Arrow />
             </Link>
           </div>
         )}
-        {examples && (
-          <p className="-mt-3 mb-6 text-sm text-white/70">
-            Nothing is open to book yet. These are examples of what you&apos;ll
-            find here.
-          </p>
-        )}
         <div
-          className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 ${
+          className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 ${
             shown.length === 0 && !examples ? "hidden" : ""
           }`}
         >
           {examples
             ? EVENT_TYPES.map((t, i) => (
-                <ExampleEventCard key={t.value} type={t} index={i} />
+                <ExampleSheet key={t.value} type={t} lead={i === 0} />
               ))
             : shown.map((e, i) => (
-                <EventCard key={e.id} event={e} index={i} />
+                <EventSheet
+                  key={e.id}
+                  event={e}
+                  sheet={sheetNo(i)}
+                  lead={i === 0}
+                />
               ))}
           {/* No events means no packages either, so the way on is the Foxers. */}
           <Link
             href={examples ? "/search" : "/packages"}
-            className="group flex min-h-48 flex-col justify-between rounded-2xl border border-accent/40 bg-accent/10 p-6 transition-colors hover:bg-accent/20 sm:aspect-[4/5]"
+            className="group flex min-h-48 flex-col justify-end rounded-2xl bg-accent p-6 text-black transition-colors hover:bg-accent-hover"
           >
-            <span className="font-landing-mono text-xs font-bold uppercase tracking-[0.2em] text-[color:var(--accent-text)]">
-              {examples ? "Plan your own" : "More to book"}
-            </span>
-            <span className="font-landing-display text-4xl leading-[0.95] text-white sm:text-5xl">
-              {examples ? "Plan it with" : "See all"}
-              <br />
-              {examples ? "a Foxer" : "events"}{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1">
-                →
+            <span className="flex items-end justify-between gap-3 font-landing-display text-4xl leading-[0.95]">
+              <span>
+                {examples ? "Plan it with" : "See all"}
+                <br />
+                {examples ? "a Foxer" : "events"}
               </span>
+              <Arrow className="text-4xl" />
             </span>
           </Link>
         </div>
@@ -686,119 +759,56 @@ export function EventGrid() {
 }
 
 // ---------------------------------------------------------------------------
-// Browse by kind of event
+// Browse by kind of event: the sheet index
 // ---------------------------------------------------------------------------
 
 /**
- * The five kinds of event. No counts: they came from a 40-event sample and
- * mostly read "0 events".
+ * The five kinds of event, as the index of a drawing set. Each row opens that
+ * kind's results; a real event of that kind, when there is one, is only its
+ * preview. No counts: they came from a 40-event sample and mostly read
+ * "0 events".
  */
 export function EventTypes() {
   const events = useEvents(40);
-  const reduce = useReducedMotion();
+  // The same pick as the events grid above, so a kind can point at its sheet.
+  const sheets = useMemo(() => oneOfEachKind(events, 5), [events]);
 
   return (
-    <section className="bg-transparent px-5 pb-14 sm:px-10 sm:pb-20">
+    <section className="px-5 pb-16 sm:px-10 sm:pb-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 border-b border-white/15 pb-5">
-          <Reveal>
-            <Kicker>Browse by event</Kicker>
-            <h2 className="font-landing-display mt-2 text-4xl leading-[0.92] text-white sm:text-5xl">
-              What are you planning?
-            </h2>
-          </Reveal>
-        </div>
-        {/* A row you swipe on a phone, five across on a desktop. */}
-        <div className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 md:grid-cols-3 xl:grid-cols-5">
-          {EVENT_TYPES.map((t, i) => {
-            const featured = featuredEventForKind(events, t.value);
-            const photo = featured?.images?.find((image) => image.url)?.url;
-            const href = featured
-              ? `/event/${featured.id}`
-              : `/packages?category=${t.value}`;
+        <SheetHead
+          title="What are you planning?"
+          line="Five kinds of event, each with its own packages."
+        />
+        <ul className="border-t border-white/15">
+          {EVENT_TYPES.map((t) => {
+            const at = sheets.findIndex((e) => e.category === t.value);
             return (
-              <motion.div
-                key={t.value}
-                initial={reduce ? false : { opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-                transition={{ delay: i * 0.06, duration: 0.5 }}
-                className="min-w-[200px] shrink-0 snap-start sm:min-w-0"
-              >
+              <li key={t.value}>
                 <Link
-                  href={href}
-                  className="group relative flex h-full min-h-[280px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-surface transition-colors hover:border-accent/50"
+                  href={`/packages?category=${t.value}`}
+                  className="group grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 border-b border-white/15 py-5 transition-colors hover:bg-white/3 sm:grid-cols-[minmax(0,21rem)_1fr_auto] sm:gap-x-8"
                 >
-                  {photo && (
-                    <img
-                      src={photo}
-                      alt={featured ? `${featured.name} event` : ""}
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  )}
-                  <div
-                    aria-hidden
-                    className={`absolute inset-0 ${
-                      photo
-                        ? "bg-gradient-to-t from-[#000]/90 via-[#000]/35 to-[#000]/10"
-                        : "bg-gradient-to-br from-white/[0.06] to-transparent"
-                    }`}
-                  />
-                  <div className="relative flex items-start p-4">
-                    <span className="font-landing-mono rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur">
-                      {t.label}
-                    </span>
-                  </div>
-                  <div className="relative mt-auto p-4">
-                    {featured ? (
-                      <>
-                        {(featured.targetCity || featured.targetCountry) && (
-                          <p className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.16em] text-white/75">
-                            {[featured.targetCity, featured.targetCountry]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </p>
-                        )}
-                        <h3 className="font-landing-display mt-1 text-2xl leading-[0.95] text-white">
-                          {featured.name}
-                        </h3>
-                        {featured.description && (
-                          <p className="mt-2 line-clamp-2 text-sm leading-snug text-white/75">
-                            {featured.description}
-                          </p>
-                        )}
-                        <p className="font-landing-mono mt-3 text-xs font-bold text-white/85">
-                          {featured.estimatedTotal ? (
-                            <>
-                              From <Money amount={featured.estimatedTotal} />
-                            </>
-                          ) : (
-                            "Get a quote"
-                          )}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="font-landing-display text-2xl leading-none text-white">
-                          {t.label}
-                        </h3>
-                        <p className="mt-2 text-sm text-white/70">{t.line}</p>
-                      </>
-                    )}
-                    <p className="font-landing-mono mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[color:var(--accent-text)]">
-                      {featured ? "View event" : "Browse events"}
-                      <span className="ml-1 inline-block transition-transform group-hover:translate-x-1">
-                        →
+                  <span className="font-landing-display text-3xl leading-none text-white transition-colors group-hover:text-(--accent-text) sm:text-4xl lg:text-5xl">
+                    {t.label}
+                  </span>
+                  <span className="col-start-1 row-start-2 text-sm text-white/70 sm:col-start-2 sm:row-start-1">
+                    {t.line}
+                    {at >= 0 && (
+                      <span className="mt-1 block font-landing-mono text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                        Open now, see sheet{" "}
+                        <span className="text-(--accent-text)">
+                          {sheetNo(at)}
+                        </span>
                       </span>
-                    </p>
-                  </div>
+                    )}
+                  </span>
+                  <Arrow className="col-start-2 row-span-2 row-start-1 text-2xl text-white/70 sm:col-start-3 sm:row-span-1" />
                 </Link>
-              </motion.div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
     </section>
   );

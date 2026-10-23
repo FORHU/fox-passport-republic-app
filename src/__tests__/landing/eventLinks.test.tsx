@@ -82,6 +82,22 @@ describe("landing event links", () => {
     );
   });
 
+  // A featured event is the card's preview only; the card still browses the kind.
+  it("opens the kind's results even when a featured event is shown", () => {
+    events.current = EVENT_TYPES.map((t) => ({
+      id: t.value,
+      name: `${t.label} night`,
+      category: t.value,
+    }));
+    render(<EventTypes />);
+    const hrefs = screen
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(
+      EVENT_TYPES.map((t) => `/packages?category=${t.value}`),
+    );
+  });
+
   it("shows the event types without counts", () => {
     events.current = EVENT_TYPES.map((t) => ({
       id: t.value,
