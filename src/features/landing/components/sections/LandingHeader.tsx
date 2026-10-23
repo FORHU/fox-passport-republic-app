@@ -105,7 +105,7 @@ export default function LandingHeader({
                       href={tab.href}
                       className={
                         active
-                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
                           : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
                       }
                     >
@@ -156,7 +156,7 @@ export default function LandingHeader({
               {!isAuthenticated && (
                 <button
                   onClick={handleSignIn}
-                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative cursor-pointer"
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black transition-all duration-300 group overflow-hidden relative cursor-pointer"
                 >
                   <span className="relative z-10">Sign In</span>
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>

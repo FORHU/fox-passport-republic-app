@@ -42,8 +42,8 @@ export function RoleBadges({
             className="px-1.5 py-px rounded-full text-[9px] font-bold uppercase tracking-wide border leading-tight whitespace-nowrap"
             style={{
               color: roleTextColor(color),
-              borderColor: `${color}40`,
-              background: `${color}1a`,
+              borderColor: `color-mix(in srgb, ${color} 25%, transparent)`,
+              background: `color-mix(in srgb, ${color} 10%, transparent)`,
             }}
           >
             {label}

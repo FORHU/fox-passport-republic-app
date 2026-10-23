@@ -19,9 +19,9 @@ const FILTER_TABS = [
 
 // The API's VenueStatus values.
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  available: { bg: "rgba(16,185,129,0.15)", color: "#10b981" },
-  pending: { bg: "rgba(245,158,11,0.15)", color: "#f59e0b" },
-  rejected: { bg: "rgba(239,68,68,0.15)", color: "#ef4444" },
+  available: { bg: "rgba(173,209,63,0.15)", color: "var(--accent-text)" },
+  pending: { bg: "rgba(217,154,38,0.15)", color: "var(--warning)" },
+  rejected: { bg: "rgba(207,61,52,0.15)", color: "var(--error)" },
   archived: {
     bg: "color-mix(in srgb, var(--color-white) 7%, transparent)",
     color: "color-mix(in srgb, var(--color-white) 35%, transparent)",

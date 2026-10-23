@@ -207,7 +207,7 @@ export default function MobileWishlistView() {
                     top: 10,
                     right: 10,
                     fontSize: 20,
-                    color: "#f472b6",
+                    color: "var(--periwinkle)",
                     fontVariationSettings: "'FILL' 1",
                   }}
                 >

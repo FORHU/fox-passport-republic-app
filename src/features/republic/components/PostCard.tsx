@@ -275,7 +275,7 @@ export function PostCard({
     <article
       className={`relative w-full rounded-2xl transition-all duration-300 ${
         isPartnerPost
-          ? "bg-gradient-to-b from-amber-950/20 via-zinc-900/90 to-zinc-900 border-2 border-amber-500/40 shadow-[0_4px_30px_rgba(245,158,11,0.15)]"
+          ? "bg-gradient-to-b from-amber-950/20 via-zinc-900/90 to-zinc-900 border-2 border-amber-500/40 shadow-[0_4px_30px_rgba(217,154,38,0.15)]"
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
       } p-4 sm:p-5`}
     >
@@ -726,7 +726,7 @@ export function PostCard({
                 post.id,
               )
             }
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 transition-all"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={2} />
             Contact Partner

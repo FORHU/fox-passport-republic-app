@@ -29,13 +29,13 @@ export function applyTheme(theme: Theme) {
 export function stripeAppearanceColors(theme: Theme = currentTheme()) {
   return theme === "light"
     ? {
-        colorPrimary: "#4d7c0f",
+        colorPrimary: "#4A6B10",
         colorBackground: "#ffffff",
-        colorText: "#0e1018",
+        colorText: "#15171C",
       }
     : {
-        colorPrimary: "#ccff00",
-        colorBackground: "#02040a",
+        colorPrimary: "#C4E85A",
+        colorBackground: "#0B0C0F",
         colorText: "#ffffff",
       };
 }

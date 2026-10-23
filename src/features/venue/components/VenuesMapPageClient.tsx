@@ -118,7 +118,7 @@ function VenueListCard({
       onClick={onSelect}
       className={`group cursor-pointer rounded-2xl border transition-all overflow-hidden bg-white/5 hover:bg-white/10 ${
         selected
-          ? "border-accent ring-1 ring-accent bg-white/10 shadow-[0_0_20px_rgba(204,255,0,0.15)]"
+          ? "border-accent ring-1 ring-accent bg-white/10"
           : "border-white/10 hover:border-white/20"
       }`}
     >
@@ -141,9 +141,9 @@ function VenueListCard({
               <span
                 className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0"
                 style={{
-                  backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#ccff00"}20`,
-                  color: CATEGORY_COLORS[venue.category] ?? "#ccff00",
-                  border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#ccff00"}40`,
+                  backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}20`,
+                  color: CATEGORY_COLORS[venue.category] ?? "#C4E85A",
+                  border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}40`,
                 }}
               >
                 {CATEGORY_LABELS[venue.category] ?? venue.category}
@@ -213,7 +213,7 @@ function VenueDetailCard({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 20, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
-      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden"
+      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl overflow-hidden"
     >
       <div className="relative h-40 w-full bg-white/5">
         <Image
@@ -234,9 +234,9 @@ function VenueDetailCard({
           <span
             className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md shadow"
             style={{
-              backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#ccff00"}30`,
-              color: CATEGORY_COLORS[venue.category] ?? "#ccff00",
-              border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#ccff00"}50`,
+              backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}30`,
+              color: CATEGORY_COLORS[venue.category] ?? "#C4E85A",
+              border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}50`,
             }}
           >
             {CATEGORY_LABELS[venue.category] ?? venue.category}

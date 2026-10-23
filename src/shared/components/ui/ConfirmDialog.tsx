@@ -109,7 +109,7 @@ export function ConfirmDialog({
                 "flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all disabled:opacity-50",
                 danger
                   ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-accent text-black hover:shadow-[0_0_20px_rgba(204,255,0,0.3)]",
+                  : "bg-accent text-black",
               )}
             >
               {pending && (

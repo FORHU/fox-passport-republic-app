@@ -11,11 +11,11 @@ import type { CalendarRole } from "@/shared/api/calendar";
 type View = "month" | "week" | "day" | "agenda";
 
 const ROLE_META: Record<CalendarRole, { label: string; color: string }> = {
-  guest: { label: "My bookings", color: "#f59e0b" },
+  guest: { label: "My bookings", color: "var(--warning)" },
   host: { label: "Events I host", color: "var(--accent-text)" },
-  organizer: { label: "Organizing", color: "#e879f9" },
-  venue: { label: "At my venues", color: "#ec4899" },
-  supplier: { label: "Supplying", color: "#38bdf8" },
+  organizer: { label: "Organizing", color: "var(--periwinkle)" },
+  venue: { label: "At my venues", color: "var(--periwinkle)" },
+  supplier: { label: "Supplying", color: "var(--periwinkle)" },
 };
 const ROLES = Object.keys(ROLE_META) as CalendarRole[];
 
@@ -259,7 +259,7 @@ export function CalendarView() {
                 aria-pressed={!off}
                 onClick={() => toggleRole(role)}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-opacity cursor-pointer ${off ? "opacity-40" : ""}`}
-                style={{ borderColor: `${meta.color}55`, color: meta.color }}
+                style={{ borderColor: `color-mix(in srgb, ${meta.color} 33%, transparent)`, color: meta.color }}
               >
                 <span
                   className="h-2 w-2 rounded-full"
@@ -332,7 +332,7 @@ function Chip({
       }}
       className="w-full truncate text-left text-[11px] font-semibold rounded px-1.5 py-0.5 hover:brightness-125 transition cursor-pointer"
       style={{
-        backgroundColor: `${color}26`,
+        backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)`,
         color,
         borderLeft: `3px solid ${color}`,
       }}
@@ -558,7 +558,7 @@ function TimeGrid({
                         height,
                         left: `calc(${(lane / lanes) * 100}% + 2px)`,
                         width: `calc(${100 / lanes}% - 4px)`,
-                        backgroundColor: `${color}33`,
+                        backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
                         borderLeft: `3px solid ${color}`,
                         color,
                       }}

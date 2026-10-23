@@ -89,7 +89,7 @@ export function PartnerEquipmentDepotCard({
 
         <Link
           href="/foxer/create-investment"
-          className="min-w-0 px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
+          className="min-w-0 px-3 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
         >
           <span className="material-symbols-outlined text-[16px] shrink-0">
             add_circle

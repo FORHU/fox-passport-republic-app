@@ -2,25 +2,37 @@
 name: FoxPassport Landing
 description: The drawings for one night. A dark night canvas, Archivo display, Space Mono title blocks and one lime signal, extended below the hero into an event floor plan.
 colors:
-  accent: "#ccff00"
-  accent-hover: "#b8e600"
-  accent-text: "#ccff00"
-  accent-text-light: "#4d7c0f"
+  accent: "#C4E85A"
+  accent-hover: "#ADD13F"
+  accent-text: "#C4E85A"
+  accent-text-light: "#4A6B10"
   on-accent: "#000000"
-  canvas: "#02040a"
-  canvas-light: "#f4f5f9"
-  surface: "#0f111a"
+  periwinkle: "#A3A8F5"
+  periwinkle-light: "#3F45B0"
+  periwinkle-solid: "#5C62D6"
+  error: "#F2766E"
+  error-light: "#B42318"
+  warning: "#E8B54D"
+  warning-light: "#8A5A00"
+  canvas: "#0B0C0F"
+  canvas-light: "#FAFAF9"
+  surface: "#14161B"
   surface-light: "#ffffff"
+  surface-raised: "#1C1F26"
+  surface-raised-light: "#F2F3F1"
   ink: "#ffffff"
-  ink-light: "#0e1018"
-  stamp-red: "#ff6b5e"
-  stamp-red-light: "#b3261e"
-  stamp-blue: "#86a8ff"
-  stamp-blue-light: "#1f3a8a"
-  chart-line: "rgb(145 174 204 / 0.065)"
-  chart-line-light: "rgb(53 78 101 / 0.07)"
-  chart-dot: "rgb(145 174 204 / 0.11)"
-  chart-dot-light: "rgb(53 78 101 / 0.12)"
+  ink-light: "#15171C"
+  ink-secondary: "#A9AFBB"
+  ink-secondary-light: "#545B67"
+  control-border: "#6B7280"
+  stamp-red: "#F2766E"
+  stamp-red-light: "#B42318"
+  stamp-blue: "#A3A8F5"
+  stamp-blue-light: "#3F45B0"
+  chart-line: "rgb(169 175 187 / 0.065)"
+  chart-line-light: "rgb(84 91 103 / 0.07)"
+  chart-dot: "rgb(169 175 187 / 0.11)"
+  chart-dot-light: "rgb(84 91 103 / 0.12)"
 typography:
   display:
     fontFamily: "Archivo, var(--font-display), system-ui, sans-serif"
@@ -108,7 +120,7 @@ components:
 
 # Design System: FoxPassport Landing
 
-Scope: the public landing at `/` (`src/features/landing/journey/`) and the signed-in bookings list at `/booking` (`src/features/booking/components/BookingListClient.tsx` and `bookings/`). The hero (`JourneyHero.tsx`) is the incumbent world; the sections under it extend that world as a set of production drawings, and `/booking` extends it again as the visitor's own schedule: a month strip over an agenda. The rest of the app shares the theme tokens but has its own legacy palette in `tailwind.config.ts` and is not described here.
+Scope: the public landing at `/` (`src/features/landing/journey/`) and the signed-in bookings list at `/booking` (`src/features/booking/components/BookingListClient.tsx` and `bookings/`). The hero (`JourneyHero.tsx`) is the incumbent world; the sections under it extend that world as a set of production drawings, and `/booking` extends it again as the visitor's own schedule: a month strip over an agenda. The whole app now shares one colour system, described in **Colors** below; its tokens live in `tailwind.config.ts` and `src/app/globals.css`.
 
 ## Overview
 
@@ -121,7 +133,7 @@ Density is architectural rather than decorative. Structure comes from linework: 
 The world is theme-agnostic by construction. Light mode swaps Tailwind's white and black (ink becomes `#0e1018`, paper becomes `#ffffff`), so every `text-white` and `border-white/15` on the landing turns into dark-on-light drafting paper without per-component overrides. The stamp inks and the lime text colour carry their own light values.
 
 **Key Characteristics:**
-- Ink on a near-black canvas; one lime signal; two drafting inks (stamp blue, stamp red) on the plan only.
+- Ink on a near-black canvas; one lime signal; one periwinkle accent; red and amber only for errors and warnings.
 - Archivo 900 uppercase for every drawing title, Space Mono bold uppercase for every annotation.
 - Linework, not elevation: hairlines, heavy rules, walls and dashed zones.
 - Sheets, title blocks, sheet numbers and cross-references link sections into one set.
@@ -129,31 +141,44 @@ The world is theme-agnostic by construction. Light mode swaps Tailwind's white a
 
 ## Colors
 
-A near-monochrome night palette with one acid-lime signal and two drafting inks.
+One premium lime system for the whole site: four roles, plus two status inks. Approved 2026-10-23 (preview: the "FoxPassport Lime Palette" artifact). Every pairing listed here meets WCAG 2.2 AA.
+
+| Role | Dark | Light | Job |
+|---|---|---|---|
+| Primary: Lime | `#C4E85A` (hover `#ADD13F`) | fill `#C4E85A` with a `#6E9419` edge; text `#4A6B10` | Primary actions, active nav, selected, focus, the one key word or number |
+| Accent: Periwinkle | `#A3A8F5` (solid `#5C62D6`) | `#3F45B0` | Sparingly: info, completed, a chart's second series. Never a button |
+| Neutral: cool grey | text `#F3F4F6`, secondary `#A9AFBB`, hint `#868D9A`, control `#6B7280`, rule `#3A3F49` | ink `#15171C`, secondary `#545B67`, control `#6B7280`, rule `#E4E6E9` | Text, borders, dividers |
+| Background | page `#0B0C0F`, card `#14161B`, raised `#1C1F26` | page `#FAFAF9`, card `#FFFFFF`, raised `#F2F3F1` | Flat layers; depth from lightness steps and 1px lines |
+| Status (functional) | error `#F2766E`, warning `#E8B54D` | error `#B42318`, warning `#8A5A00` | Messages and destructive actions only, always with a word or icon |
+
+Tailwind's built-in hue scales are folded into these roles in `globals.css` (`@theme`): red and rose to error; orange, amber and yellow to warning; lime, green and emerald to lime (success); every blue, purple, pink and teal to periwinkle; every grey to the cool neutral. Light mode remaps the text shades (200 to 500) to the readable dark value of each family. The old purple `primary` and pink `secondary` tokens now point at periwinkle; lime is `accent`.
 
 ### Primary
-- **Signal Lime** (`accent`): the single action colour. Fills every primary action on the landing (the pill CTA, each sheet's Book bar, the "See all events" sheet, the "Book the whole plan" panel, the zone markers) and the text selection. Always carries black text (`on-accent`); in light mode a rule in `globals.css` pins black text on lime fills so the theme swap cannot turn it white.
+- **Signal Lime** (`accent`): the single action colour. Fills every primary action (the pill CTA, each sheet's Book bar, the "See all events" sheet, the "Book the whole plan" panel, the zone markers, the shared Button's default variant) and the text selection. Always carries black text (`on-accent`); in light mode a rule in `globals.css` pins black text on lime fills so the theme swap cannot turn it white, and gives the fill a thin dark edge.
 - **Pressed Lime** (`accent-hover`): the hover and pressed shade of every lime fill. Same value in both themes.
-- **Lime Text** (`accent-text`, `accent-text-light`): lime used as type, for the one highlighted word in each display heading ("bookable", "whole night", "first event", hero "night"), sheet numbers, the "Example" tag, general-notes markers, the Foxer count and focus outlines. In light mode it darkens to a legible olive, because bright lime on white fails contrast.
+- **Lime Text** (`accent-text`, `accent-text-light`): lime used as type, for the one highlighted word in each display heading ("bookable", "whole night", "first event", hero "night"), sheet numbers, the "Example" tag, general-notes markers, the Foxer count, success states and focus outlines. In light mode it darkens to a legible olive, because bright lime on white fails contrast.
 
 ### Secondary
-- **Stamp Blue** (`stamp-blue`, `stamp-blue-light`): drafting ink for supplier zones on the floor plan (Bar & kitchen, Sound & lights): their dashed outlines and their trade label in the legend.
+- **Periwinkle** (`periwinkle`, `--periwinkle`; also `stamp-blue` on the landing): the one supporting accent. On the floor plan it draws the supplier zones (Bar & kitchen, Sound & lights): their dashed outlines and their trade label in the legend. Elsewhere it marks info notes and completed states. Its brightness is close to the error red, so it is never the only signal: a word or an icon always goes with it.
 
 ### Tertiary
-- **Stamp Red** (`stamp-red`, `stamp-red-light`): drafting ink for the stage, the one hatched zone on the plan. Red marks the performance area only.
+- **Error Red** (`error`; also `stamp-red` on the landing): errors, destructive actions and closed bookings. On the floor plan it draws the stage, the one hatched zone.
+- **Warning Amber** (`warning`): warnings and anything that needs a person (a disputed booking, one whose date passed unpaid).
 
 ### Neutral
-- **Night Canvas** (`canvas`, `canvas-light`): the page. Also used to cut the doorway out of the plan's wall and as the empty photo well of a sheet.
-- **Sheet Surface** (`surface`, `surface-light`): event and example sheets, and the hero's floating pickers.
+- **Night Canvas** (`canvas`, `canvas-light`): the page. Also used to cut the doorway out of the plan's wall and as the empty photo well of a sheet. Pages paint it through `var(--canvas)`, never as a literal, so light mode works (a test enforces this).
+- **Sheet Surface** (`surface`, `surface-light`) and **Raised** (`surface-raised`): cards and sheets, then modals, popovers and menus. In light mode the page is near-white, so cards keep their 1px border to separate.
 - **Ink** (`ink`, `ink-light`): all type and linework, applied at fixed opacities: 100% for titles and heavy rules, 75% for body copy and title-block data, 70% for secondary lines and arrows, 60% for column heads, 55% for the plan's room outline and chairs and for "Price on request", 15% for hairlines, 6% and 3% for row hover and active fills.
-- **Drafting Grid** (`chart-line`, `chart-dot`, and their `-light` pair): the two inks of the floor-plan paper. Both are slate-blue at a few percent opacity, so the grid reads as paper texture and never as content.
+- **Drafting Grid** (`chart-line`, `chart-dot`, and their `-light` pair): the two inks of the floor-plan paper, cool grey at a few percent opacity, so the grid reads as paper texture and never as content.
 
 ### Named Rules
 **The One Signal Rule.** Lime means bookable or next. It fills actions and marks the single most important word or number in a block; it is never a background wash, a border colour at rest or a decorative tint. The one exception is a sheet's border, which turns lime on hover to show the whole sheet is the link.
 
-**The Drafting Ink Rule.** Stamp blue and stamp red are drawing inks, used only for plan linework and the trade labels that key to it. They never fill a button, colour body text or appear outside a drawing.
+**The No Glow Rule.** No glows, neon shadows, gradient text, or purple and pink background washes, anywhere. Surfaces are flat; the only gradient is a dark scrim that keeps text legible over a photo. Role badges are neutral pills, told apart by their label.
 
-**The Booking Ink Extension.** On `/booking` the same two inks mark status: stamp blue writes a completed booking's status and its marks on the month strip, and stamp red writes the status of a closed booking (Cancelled, Refunded, Refund Failed) and its Cancel action. Amber (`amber-700`, `amber-400` in dark) is the single warning ink, for a disputed booking or one whose date passed unpaid. Still never a button fill or body copy.
+**The Drafting Ink Rule.** On the landing, periwinkle and error red are the plan's drawing inks: plan linework and the trade labels that key to it. Elsewhere they keep their site-wide jobs (accent, errors). Neither fills a primary button or colours body text.
+
+**The Booking Ink Extension.** On `/booking` periwinkle writes a completed booking's status and its marks on the month strip, error red writes the status of a closed booking (Cancelled, Refunded, Refund Failed) and its Cancel action, and amber is the warning ink for a disputed booking or one whose date passed unpaid. Still never a button fill or body copy.
 
 ## Typography
 
@@ -230,7 +255,7 @@ Lists in this world are drawing indexes, not card rows.
 ### Floor Plan (signature component)
 How a night is assembled, drawn as one plan on drafting paper.
 - **Walls:** a 3px full-ink border with a canvas-coloured cut for the doorway on the right wall. On first reveal the walls draw in from the top-left corner with a clip-path over 1.2s on `cubic-bezier(0.16, 1, 0.3, 1)`, once; under reduced motion they appear already drawn.
-- **Zones:** five rooms placed in percentages, each with a 1.5px dashed outline in its ink (room at 55% ink, bar and sound in stamp blue, stage in stamp red with hatching, door in Lime Text), a display-face label at bottom left and, from lg, the supplying trade in mono beneath it.
+- **Zones:** five rooms placed in percentages, each with a 1.5px dashed outline in its ink (room at 55% ink, bar and sound in periwinkle, stage in error red with hatching, door in Lime Text), a display-face label at bottom left and, from lg, the supplying trade in mono beneath it.
 - **Markers:** a lime circle with the zone number in black Space Mono bold, 20px on phones and 28px from md on the plan, 28px in the legend.
 - **Linked highlight:** hovering or focusing a legend row, or hovering a zone, makes that zone solid with a 16% wash of its ink and dims the other zones to 35% opacity over 300ms; the legend row gets a 6% ink wash. The plan itself is `aria-hidden`; the legend carries the same links for keyboard and assistive tech.
 - **General notes:** a numbered mono list under a hairline, markers in bold Lime Text, each note led by its title in full ink.
@@ -245,7 +270,7 @@ How a night is assembled, drawn as one plan on drafting paper.
 - **Signature interaction:** choosing a booked day scrolls the agenda to that day's first booking, moves focus to it, and washes its rows at 6% ink for about 1.6s; reduced motion jumps instead of scrolling. The page's only motion.
 - **Agenda:** three sections (Needs attention, Coming up soonest first, Past most recent first), each under a drawing-title head with its count. Rows sit between hairlines: weekday, the day as a large mono numeral (amber when past-due unpaid) and month; the booking name bold as its link; a line of kind, city and guests; then the status tag and the total. Past-due rows add one plain sentence saying it will be cancelled automatically.
 - **One main action per row:** a lime "Leave a review" pill when a review is owed, otherwise an outlined "View booking" pill; "View booking" drops to a text link beside the review pill. "Cancel booking" is a stamp-red text button, apart from both.
-- **Status tag:** a dot in the status ink and the word in sentence case. One ink per meaning: Lime Text for confirmed or active, ink at 70% for pending, amber for disputed or past-due unpaid, stamp red for cancelled or refunded, stamp blue for completed. The month strip's dots use the same inks.
+- **Status tag:** a dot in the status ink and the word in sentence case. One ink per meaning: Lime Text for confirmed or active, ink at 70% for pending, amber for disputed or past-due unpaid, error red for cancelled or refunded, periwinkle for completed. The month strip's dots use the same inks.
 - **Paging:** "Page 1 of 3" at left and mono page numbers at right under a 2px rule, the current number in Lime Text underlined.
 
 ## Do's and Don'ts
@@ -262,7 +287,8 @@ How a night is assembled, drawn as one plan on drafting paper.
 
 ### Don't:
 - **Don't** add shadows, glows or gradients to anything below the hero; the drawings are flat.
-- **Don't** use stamp blue or stamp red outside the floor plan's linework, the trade labels keyed to it, and the Booking Ink Extension on `/booking`.
+- **Don't** use periwinkle or red for primary actions or body text, and never let either be the only signal; pair it with a word or an icon.
+- **Don't** add glows, neon shadows, gradient text or coloured background washes.
 - **Don't** use lime as a background wash, a resting border or a decorative tint.
 - **Don't** repeat a heading-plus-row-of-equal-cards block per section; each section takes the drawing form that fits it (sheet grid, index, plan, schedule, title block).
 - **Don't** hard-code white or black on landing surfaces outside photo overlays; use ink opacities so the theme swap keeps working.

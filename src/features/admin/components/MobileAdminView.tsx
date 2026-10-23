@@ -72,25 +72,25 @@ export default function MobileAdminView({
       label: "Revenue",
       value: <Money amount={stats?.totalRevenue ?? 0} compact />,
       icon: "payments",
-      valueColor: "#ccff00",
-      iconColor: "#ccff00",
-      iconBg: "rgba(204,255,0,0.12)",
+      valueColor: "#C4E85A",
+      iconColor: "#C4E85A",
+      iconBg: "rgba(196,232,90,0.12)",
     },
     {
       label: "Bookings",
       value: (stats?.totalBookings ?? 0).toLocaleString(),
       icon: "event_available",
-      valueColor: "#3b82f6",
-      iconColor: "#3b82f6",
-      iconBg: "rgba(59,130,246,0.15)",
+      valueColor: "#5C62D6",
+      iconColor: "#5C62D6",
+      iconBg: "rgba(92,98,214,0.15)",
     },
     {
       label: "Citizens",
       value: (stats?.totalUsers ?? 0).toLocaleString(),
       icon: "people",
-      valueColor: "#22c55e",
-      iconColor: "#22c55e",
-      iconBg: "rgba(34,197,94,0.15)",
+      valueColor: "#ADD13F",
+      iconColor: "#ADD13F",
+      iconBg: "rgba(173,209,63,0.15)",
     },
   ];
 
@@ -213,7 +213,7 @@ export default function MobileAdminView({
             width: 36,
             height: 36,
             borderRadius: "50%",
-            background: "#7c3aed",
+            background: "#5C62D6",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -334,14 +334,14 @@ export default function MobileAdminView({
                   width: 38,
                   height: 38,
                   borderRadius: "50%",
-                  background: "rgba(124,58,237,0.2)",
-                  border: "1px solid rgba(124,58,237,0.3)",
+                  background: "rgba(92,98,214,0.2)",
+                  border: "1px solid rgba(92,98,214,0.3)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "#c4b5fd",
+                  color: "#C6C9FA",
                   flexShrink: 0,
                 }}
               >
@@ -391,8 +391,8 @@ export default function MobileAdminView({
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: "rgba(34,197,94,0.15)",
-                    border: "1px solid rgba(34,197,94,0.25)",
+                    background: "rgba(173,209,63,0.15)",
+                    border: "1px solid rgba(173,209,63,0.25)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -402,7 +402,7 @@ export default function MobileAdminView({
                 >
                   <span
                     className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: "#22c55e" }}
+                    style={{ fontSize: 16, color: "var(--accent-text)" }}
                   >
                     check
                   </span>
@@ -418,8 +418,8 @@ export default function MobileAdminView({
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: "rgba(239,68,68,0.15)",
-                    border: "1px solid rgba(239,68,68,0.25)",
+                    background: "rgba(207,61,52,0.15)",
+                    border: "1px solid rgba(207,61,52,0.25)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -429,7 +429,7 @@ export default function MobileAdminView({
                 >
                   <span
                     className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: "#ef4444" }}
+                    style={{ fontSize: 16, color: "var(--error)" }}
                   >
                     close
                   </span>
@@ -478,8 +478,8 @@ export default function MobileAdminView({
                       width: 32,
                       height: 32,
                       borderRadius: "50%",
-                      background: "rgba(239,68,68,0.2)",
-                      border: "1px solid rgba(239,68,68,0.3)",
+                      background: "rgba(207,61,52,0.2)",
+                      border: "1px solid rgba(207,61,52,0.3)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -489,7 +489,7 @@ export default function MobileAdminView({
                   >
                     <span
                       className="material-symbols-outlined"
-                      style={{ fontSize: 16, color: "#ef4444" }}
+                      style={{ fontSize: 16, color: "var(--error)" }}
                     >
                       send
                     </span>

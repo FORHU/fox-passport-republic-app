@@ -42,7 +42,7 @@ export function ResourcePalette({
             onClick={() => onCategoryChange(cat.id)}
             className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all ${
               activeCategory === cat.id
-                ? "bg-accent text-black font-bold shadow-[0_0_15px_rgba(204,255,0,0.4)] scale-105"
+                ? "bg-accent text-black font-bold scale-105"
                 : "text-text-muted hover:text-white hover:bg-white/5"
             }`}
           >

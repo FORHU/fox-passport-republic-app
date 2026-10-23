@@ -823,7 +823,7 @@ export default function ServiceBookingClient({
                     <button
                       disabled={isSubmitting}
                       onClick={handleProceed}
-                      className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
                         <>
@@ -849,7 +849,7 @@ export default function ServiceBookingClient({
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-orange-400/20 bg-linear-to-b from-orange-400/5 to-black/20 overflow-hidden">
+                <div className="rounded-3xl border border-orange-400/20 bg-white/3 overflow-hidden">
                   <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-orange-400/10">
                     <span className="material-symbols-outlined text-orange-400 text-2xl">
                       verified_user

@@ -35,7 +35,7 @@ export function BookingWidget({
   return (
     <div className="relative lg:top-8 w-full max-w-lg mx-auto lg:max-w-none">
       <div className="absolute inset-0 bg-purple-500/10 blur-[50px] rounded-3xl pointer-events-none transform scale-105" />
-      <div className="glass-card rounded-3xl border border-white/10 p-5 sm:p-7 shadow-[0_0_40px_rgba(128,90,213,0.15)] relative overflow-hidden">
+      <div className="glass-card rounded-3xl border border-white/10 p-5 sm:p-7 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-accent/10 rounded-full blur-[50px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-[50px] pointer-events-none" />
 
@@ -74,7 +74,7 @@ export function BookingWidget({
         {/* Book Now CTA */}
         <button
           onClick={() => router.push(`/booking/venue/${venueId}`)}
-          className="w-full rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-3 relative z-10"
+          className="w-full rounded-xl bg-accent py-3.5 text-black font-bold text-lg transition-all active:scale-95 mb-3 relative z-10"
         >
           Book Now
         </button>

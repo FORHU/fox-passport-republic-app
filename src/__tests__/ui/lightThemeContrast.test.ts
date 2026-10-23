@@ -22,19 +22,19 @@ function tsxFiles(dir: string): string[] {
 describe("light theme contrast", () => {
   it("paints page backgrounds with var(--canvas), not the dark literal", () => {
     const offenders = tsxFiles(SRC)
-      .filter((file) => /#02040a/i.test(readFileSync(file, "utf8")))
+      .filter((file) => /#0B0C0F/i.test(readFileSync(file, "utf8")))
       .map((file) => relative(SRC, file));
     expect(offenders).toEqual([]);
   });
 
   it("gives Stripe light colours in light mode", () => {
     expect(stripeAppearanceColors("light").colorBackground).toBe("#ffffff");
-    expect(stripeAppearanceColors("dark").colorBackground).toBe("#02040a");
+    expect(stripeAppearanceColors("dark").colorBackground).toBe("#0B0C0F");
   });
 
   it("mixes ink into role colours only through the theme variable", () => {
-    expect(roleTextColor("#34d399")).toBe(
-      "color-mix(in srgb, #34d399, #0e1018 var(--hue-ink-mix, 0%))",
+    expect(roleTextColor("#C4E85A")).toBe(
+      "color-mix(in srgb, #C4E85A, #15171C var(--hue-ink-mix, 0%))",
     );
   });
 });

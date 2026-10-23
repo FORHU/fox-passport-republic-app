@@ -166,7 +166,7 @@ export default function VenueDetailClient({
           <button
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
             className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm"
-            style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
+            style={{ boxShadow: "0 4px 16px rgba(196,232,90,0.35)" }}
           >
             Book Now
           </button>
@@ -520,7 +520,7 @@ export default function VenueDetailClient({
           <button
             type="button"
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
-            className="px-6 py-3 rounded-xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all active:scale-95"
+            className="px-6 py-3 rounded-xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 transition-all active:scale-95"
           >
             Book Now
           </button>

@@ -39,7 +39,7 @@ export default function PublicCitizenProfileClient() {
             contextId={targetId}
             contextLabel={targetName}
             label="Message Citizen"
-            className="h-9 px-5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
+            className="h-9 px-5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
           />
         )}
       />

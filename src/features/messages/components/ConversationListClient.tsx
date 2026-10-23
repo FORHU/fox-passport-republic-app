@@ -295,7 +295,7 @@ export default function ConversationListClient({
                           </>
                         )}
                         {c.isInbox && c.viewerRole === "team" && c.inbox && (
-                          <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#e879f9]/10 text-[#e879f9] border border-[#e879f9]/20 truncate max-w-[45%]">
+                          <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#A3A8F5]/10 text-[#A3A8F5] border border-[#A3A8F5]/20 truncate max-w-[45%]">
                             {c.inbox.with === "supplier" ? "Supplier" : "Inbox"}{" "}
                             · {c.inbox.name}
                           </span>
@@ -318,7 +318,7 @@ export default function ConversationListClient({
                       </span>
                     ) : (
                       c.unreadCount > 0 && (
-                        <span className="h-5 min-w-5 px-1.5 rounded-full bg-[#ff00aa] text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                        <span className="h-5 min-w-5 px-1.5 rounded-full bg-[#5C62D6] text-white text-[10px] font-black flex items-center justify-center shrink-0">
                           {c.unreadCount}
                         </span>
                       )

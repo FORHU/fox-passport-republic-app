@@ -108,8 +108,8 @@ export function CitizenProfileSidebarCard() {
                 className="inline-flex w-fit shrink-0 items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
                 style={{
                   color: roleTextColor(meta.color),
-                  borderColor: `${meta.color}40`,
-                  background: `${meta.color}1a`,
+                  borderColor: `color-mix(in srgb, ${meta.color} 25%, transparent)`,
+                  background: `color-mix(in srgb, ${meta.color} 10%, transparent)`,
                 }}
               >
                 {meta.label}
