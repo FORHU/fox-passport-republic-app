@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Arrow } from "./Arrow";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
+import { Reveal } from "./motion";
 import {
   useEvents,
   useEventsQuery,
@@ -532,13 +533,11 @@ function ExampleSheet({
         }`}
       >
         <img
-          src={assetUrl(`features/${EXAMPLE_PHOTOS[type.value]}.jpg`)}
+          src={kindPhoto(type.value)}
           alt=""
           loading="lazy"
           decoding="async"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
+          onError={hideImage}
           className="absolute inset-0 h-full w-full object-cover opacity-60 grayscale-[35%]"
         />
       </div>
@@ -558,12 +557,31 @@ function ExampleSheet({
  * named by the kind itself (no made-up events), with local photos so it never
  * depends on the API.
  */
-const EXAMPLE_PHOTOS: Record<(typeof EVENT_TYPES)[number]["value"], string> = {
+type Kind = (typeof EVENT_TYPES)[number]["value"];
+
+const EXAMPLE_PHOTOS: Record<Kind, string> = {
   wedding: "one-booking",
   birthday: "every-kind-of-event",
   corporate: "talent",
   social: "performers",
   other: "gear",
+};
+
+/** Where each photo's subject sits, so a tall or wide crop keeps it in frame. */
+const KIND_PHOTO_POSITION: Record<Kind, string> = {
+  wedding: "50% 40%",
+  birthday: "55% 45%",
+  corporate: "50% 55%",
+  social: "60% 50%",
+  other: "50% 65%",
+};
+
+const kindPhoto = (kind: Kind) =>
+  assetUrl(`features/${EXAMPLE_PHOTOS[kind]}.jpg`);
+
+/** A photo that can't load shows its frame's background, not a broken icon. */
+const hideImage = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.style.display = "none";
 };
 
 /**
@@ -762,53 +780,140 @@ export function EventGrid() {
 // Browse by kind of event: the sheet index
 // ---------------------------------------------------------------------------
 
+/** "01" … "05": a kind's place in the index. */
+const indexNo = (i: number) => String(i + 1).padStart(2, "0");
+
 /**
- * The five kinds of event, as the index of a drawing set. Each row opens that
- * kind's results; a real event of that kind, when there is one, is only its
- * preview. No counts: they came from a 40-event sample and mostly read
- * "0 events".
+ * The five kinds of event, as the index of a drawing set, with a view of each.
+ * Each row opens that kind's results; a real event of that kind, when there is
+ * one, is only its preview. No counts: they came from a 40-event sample and
+ * mostly read "0 events".
+ *
+ * Below `lg` each row is its own photo band (there is no hover to drive a
+ * preview). From `lg` the rows are a plain index and one framed photo beside
+ * them shows the row last pointed at or focused. Every row is one link at
+ * every size, so the labels and links exist once.
  */
 export function EventTypes() {
   const events = useEvents(40);
   // The same pick as the events grid above, so a kind can point at its sheet.
   const sheets = useMemo(() => oneOfEachKind(events, 5), [events]);
+  // Stays on the last row shown rather than resetting, so the photo never
+  // flickers as the pointer crosses the gaps between rows.
+  const [active, setActive] = useState(0);
 
   return (
-    <section className="px-5 pb-16 sm:px-10 sm:pb-24">
+    <section className="px-5 pb-24 sm:px-10 sm:pb-32">
       <div className="mx-auto max-w-6xl">
-        <SheetHead
-          title="What are you planning?"
-          line="Five kinds of event, each with its own packages."
-        />
-        <ul className="border-t border-white/15">
-          {EVENT_TYPES.map((t) => {
-            const at = sheets.findIndex((e) => e.category === t.value);
-            return (
-              <li key={t.value}>
-                <Link
-                  href={`/packages?category=${t.value}`}
-                  className="group grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 border-b border-white/15 py-5 transition-colors hover:bg-white/3 sm:grid-cols-[minmax(0,21rem)_1fr_auto] sm:gap-x-8"
-                >
-                  <span className="font-landing-display text-3xl leading-none text-white transition-colors group-hover:text-(--accent-text) sm:text-4xl lg:text-5xl">
-                    {t.label}
-                  </span>
-                  <span className="col-start-1 row-start-2 text-sm text-white/70 sm:col-start-2 sm:row-start-1">
-                    {t.line}
-                    {at >= 0 && (
-                      <span className="mt-1 block font-landing-mono text-xs font-bold uppercase tracking-[0.12em] text-white/60">
-                        Open now, see sheet{" "}
-                        <span className="text-(--accent-text)">
-                          {sheetNo(at)}
-                        </span>
+        <Reveal>
+          <SheetHead
+            title="What are you planning?"
+            line="Choose one to see its ready-made packages, with the venue, gear and crew already in."
+          />
+        </Reveal>
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start lg:gap-16">
+          <ul className="grid gap-3 lg:gap-0 lg:border-t lg:border-white/15">
+            {EVENT_TYPES.map((t, i) => {
+              const at = sheets.findIndex((e) => e.category === t.value);
+              const on = i === active;
+              return (
+                <li key={t.value}>
+                  <Reveal delay={i * 0.06} y={16}>
+                    <Link
+                      href={`/packages?category=${t.value}`}
+                      onPointerEnter={() => setActive(i)}
+                      onFocus={() => setActive(i)}
+                      // A fixed dark band under the photo, so the white type
+                      // stays readable in light mode if the photo can't load.
+                      className="group relative isolate grid h-44 grid-cols-[1fr_auto] content-end gap-x-4 overflow-hidden rounded-2xl bg-[#14161f] p-5 text-[#fff] transition-transform duration-200 active:scale-[0.99] sm:h-52 sm:p-7 lg:h-auto lg:grid-cols-[2.5rem_minmax(0,1fr)_auto] lg:content-center lg:gap-x-6 lg:rounded-none lg:border-b lg:border-white/15 lg:bg-transparent lg:px-0 lg:py-6 lg:text-white lg:active:scale-100"
+                    >
+                      <img
+                        src={kindPhoto(t.value)}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        onError={hideImage}
+                        style={{ objectPosition: KIND_PHOTO_POSITION[t.value] }}
+                        className="absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.03] lg:hidden"
+                      />
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 -z-10 bg-linear-to-r from-[#000]/80 via-[#000]/45 to-[#000]/5 lg:hidden"
+                      />
+                      <span
+                        aria-hidden
+                        className={`col-start-1 row-start-1 font-landing-mono text-xs font-bold tracking-[0.16em] text-[#fff]/75 transition-colors lg:self-center ${
+                          on ? "lg:text-(--accent-text)" : "lg:text-white/45"
+                        }`}
+                      >
+                        {indexNo(i)}
                       </span>
-                    )}
-                  </span>
-                  <Arrow className="col-start-2 row-span-2 row-start-1 text-2xl text-white/70 sm:col-start-3 sm:row-span-1" />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                      <span
+                        className={`col-start-1 row-start-2 mt-2 font-landing-display text-4xl leading-none transition-colors sm:text-5xl lg:col-start-2 lg:row-start-1 lg:mt-0 ${
+                          on
+                            ? "lg:text-(--accent-text)"
+                            : "lg:group-hover:text-(--accent-text)"
+                        }`}
+                      >
+                        {t.label}
+                      </span>
+                      <span className="col-start-1 row-start-3 mt-2 max-w-xs text-sm text-balance text-[#fff]/85 lg:col-start-2 lg:row-start-2 lg:max-w-md lg:text-white/70">
+                        {t.line}
+                        {at >= 0 && (
+                          <span className="mt-1 block font-landing-mono text-xs font-bold uppercase tracking-[0.12em] text-[#fff]/75 lg:text-white/60">
+                            Open now, see sheet{" "}
+                            <span className="text-accent lg:text-(--accent-text)">
+                              {sheetNo(at)}
+                            </span>
+                          </span>
+                        )}
+                      </span>
+                      <Arrow
+                        className={`col-start-2 row-start-3 self-end text-2xl lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:self-center ${
+                          on
+                            ? "lg:translate-x-1 lg:text-(--accent-text)"
+                            : "lg:text-white/60"
+                        }`}
+                      />
+                    </Link>
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* The view: the active kind's photo. Decorative, since its label is
+              right beside it; crossfades so the eye follows the swap. */}
+          <aside
+            aria-hidden
+            data-kind={EVENT_TYPES[active].value}
+            className="sticky top-24 hidden lg:block"
+          >
+            <div className="relative aspect-4/5 overflow-hidden rounded-2xl bg-surface">
+              {EVENT_TYPES.map((t, i) => (
+                <img
+                  key={t.value}
+                  src={kindPhoto(t.value)}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  onError={hideImage}
+                  style={{ objectPosition: KIND_PHOTO_POSITION[t.value] }}
+                  className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+                    i === active
+                      ? "scale-100 opacity-100"
+                      : "opacity-0 motion-safe:scale-[1.04]"
+                  }`}
+                />
+              ))}
+              <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-[#000]/70 to-transparent px-5 pb-4 pt-16">
+                <p className="font-landing-mono text-xs font-bold tracking-[0.16em] text-[#fff]/85">
+                  {indexNo(active)} / {indexNo(EVENT_TYPES.length - 1)}
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </section>
   );

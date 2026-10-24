@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 // jsdom has no IntersectionObserver; the sections' scroll-reveal needs one.
 vi.stubGlobal(
@@ -107,6 +107,15 @@ describe("landing event links", () => {
     render(<EventTypes />);
     expect(screen.queryByText(/\d+ events?$/)).toBeNull();
     for (const t of EVENT_TYPES) expect(screen.getByText(t.label)).toBeTruthy();
+  });
+
+  // The photo beside the index follows the keyboard, not only the pointer.
+  it("previews the kind whose row has focus", () => {
+    const { container } = render(<EventTypes />);
+    const preview = container.querySelector("[data-kind]");
+    expect(preview?.getAttribute("data-kind")).toBe("wedding");
+    fireEvent.focus(screen.getByRole("link", { name: /Birthday/ }));
+    expect(preview?.getAttribute("data-kind")).toBe("birthday");
   });
 
   it("labels the footer links by where they go", () => {
