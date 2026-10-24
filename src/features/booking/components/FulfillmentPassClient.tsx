@@ -367,7 +367,7 @@ export default function FulfillmentPassClient({
                     <div
                       className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
                         done[i]
-                          ? "bg-accent border-accent shadow-[0_0_8px_rgba(204,255,0,0.4)]"
+                          ? "bg-accent border-accent"
                           : "bg-background border-white/20"
                       }`}
                     >
@@ -459,7 +459,7 @@ export default function FulfillmentPassClient({
                   <button
                     onClick={handleConfirmArrival}
                     disabled={actionLoading}
-                    className="w-full py-3.5 rounded-2xl bg-white text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] active:scale-95 transition-all disabled:opacity-60"
+                    className="w-full py-3.5 rounded-2xl bg-white text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent active:scale-95 transition-all disabled:opacity-60"
                   >
                     {actionLoading ? (
                       <span className="animate-spin material-symbols-outlined text-[18px]">

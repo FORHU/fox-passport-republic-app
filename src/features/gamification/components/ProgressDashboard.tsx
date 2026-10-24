@@ -70,7 +70,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </Link>
 
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-              <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></span>
+              <span className="w-2 h-2 rounded-full bg-green-500"></span>
               <span className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
                 Online • Main Server
               </span>
@@ -105,7 +105,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
               <div
-                className="bg-linear-to-r from-accent to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
+                className="bg-accent h-full rounded-full"
                 style={{
                   width: `${Math.min((totalXP / maxTotalXP) * 100, 100)}%`,
                 }}

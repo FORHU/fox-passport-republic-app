@@ -214,7 +214,7 @@ export default function NotificationListClient() {
               </p>
               <Link
                 href="/"
-                className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+                className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold transition-all"
               >
                 Browse Events
               </Link>

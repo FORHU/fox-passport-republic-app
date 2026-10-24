@@ -184,14 +184,14 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
 
           {requests.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#e879f9] mb-2">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#A3A8F5] mb-2">
                 Requests to join
               </p>
-              <ul className="divide-y divide-white/5 rounded-2xl border border-[#e879f9]/20 overflow-hidden">
+              <ul className="divide-y divide-white/5 rounded-2xl border border-[#A3A8F5]/20 overflow-hidden">
                 {requests.map((m) => (
                   <li
                     key={m.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-[#e879f9]/[0.04]"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-[#A3A8F5]/[0.04]"
                   >
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-white truncate">
@@ -503,7 +503,7 @@ function OrganizerResults({
             className="flex items-center justify-between gap-3 p-3 bg-white/[0.02]"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 shrink-0 rounded-full bg-[#e879f9]/10 border border-[#e879f9]/20 flex items-center justify-center text-[#e879f9] text-xs font-bold overflow-hidden">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-[#A3A8F5]/10 border border-[#A3A8F5]/20 flex items-center justify-center text-[#A3A8F5] text-xs font-bold overflow-hidden">
                 {card.imgId ? (
                   <img
                     src={card.imgId}
@@ -517,7 +517,7 @@ function OrganizerResults({
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-white truncate">
                   {card.name}
-                  <span className="ml-2 text-[10px] font-bold text-[#e879f9]">
+                  <span className="ml-2 text-[10px] font-bold text-[#A3A8F5]">
                     Lv {card.level}
                   </span>
                 </div>

@@ -258,7 +258,7 @@ export function ProductTour({
             width: rect.width + PAD * 2,
             height: rect.height + PAD * 2,
             boxShadow:
-              "0 0 0 9999px rgba(0, 0, 0, 0.62), 0 0 0 2px var(--color-accent, #ccff00)",
+              "0 0 0 9999px rgba(0, 0, 0, 0.62), 0 0 0 2px var(--color-accent, #C4E85A)",
           }}
         />
       ) : (

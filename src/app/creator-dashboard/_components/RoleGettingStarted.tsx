@@ -318,7 +318,7 @@ export function RoleGettingStarted({
                         color: "#000",
                       }
                     : {
-                        borderColor: `${b.color}55`,
+                        borderColor: `color-mix(in srgb, ${b.color} 33%, transparent)`,
                         color: roleTextColor(b.color),
                       }
                 }

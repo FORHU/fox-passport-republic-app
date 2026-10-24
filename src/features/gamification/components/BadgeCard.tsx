@@ -16,37 +16,37 @@ const RARITY_CONFIG: Record<
   uncommon: {
     bg: "bg-green-950/40",
     border: "border-green-500/30",
-    glow: "#22c55e",
+    glow: "#ADD13F",
     label: "text-green-400",
   },
   rare: {
     bg: "bg-blue-950/40",
     border: "border-blue-500/30",
-    glow: "#3b82f6",
+    glow: "#5C62D6",
     label: "text-blue-400",
   },
   epic: {
     bg: "bg-purple-950/40",
     border: "border-purple-500/30",
-    glow: "#a855f7",
+    glow: "#A3A8F5",
     label: "text-purple-400",
   },
   legendary: {
     bg: "bg-amber-950/40",
     border: "border-amber-500/30",
-    glow: "#f59e0b",
+    glow: "#D99A26",
     label: "text-amber-400",
   },
 };
 
 const PATH_CONFIG: Record<string, { color: string; label: string }> = {
-  user: { color: "#22c55e", label: "Citizen" },
-  gearFoxer: { color: "#f97316", label: "Gear Foxer" },
-  serviceFoxer: { color: "#f97316", label: "Talent Foxer" },
-  performerFoxer: { color: "#f59e0b", label: "Performer Foxer" },
-  eventFoxer: { color: "#3b82f6", label: "Event Foxer" },
+  user: { color: "var(--accent-text)", label: "Citizen" },
+  gearFoxer: { color: "var(--warning)", label: "Gear Foxer" },
+  serviceFoxer: { color: "var(--warning)", label: "Talent Foxer" },
+  performerFoxer: { color: "var(--warning)", label: "Performer Foxer" },
+  eventFoxer: { color: "var(--periwinkle)", label: "Event Foxer" },
   venueFoxer: { color: "var(--accent-text)", label: "Venue Foxer" },
-  organizer: { color: "#e879f9", label: "Organizer" },
+  organizer: { color: "var(--periwinkle)", label: "Organizer" },
 };
 
 interface BadgeCardProps {
@@ -138,8 +138,8 @@ export default function BadgeCard({
             style={{
               background: locked
                 ? "rgba(255,255,255,0.04)"
-                : `${pathCfg.color}12`,
-              border: `1px solid ${locked ? "color-mix(in srgb, var(--color-white) 8%, transparent)" : pathCfg.color + "35"}`,
+                : `color-mix(in srgb, ${pathCfg.color} 7%, transparent)`,
+              border: `1px solid ${locked ? "color-mix(in srgb, var(--color-white) 8%, transparent)" : `color-mix(in srgb, ${pathCfg.color} 21%, transparent)`}`,
             }}
           >
             <span

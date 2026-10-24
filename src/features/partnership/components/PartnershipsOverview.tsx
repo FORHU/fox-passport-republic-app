@@ -56,7 +56,7 @@ export function PartnershipsOverview({
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#10b981]">
+            <span className="material-symbols-outlined text-[#ADD13F]">
               handshake
             </span>
             Partnerships
@@ -69,7 +69,7 @@ export function PartnershipsOverview({
         </div>
         <Link
           href="/creator-dashboard/partnerships"
-          className="text-xs font-bold text-[#10b981] hover:underline"
+          className="text-xs font-bold text-[#ADD13F] hover:underline"
         >
           View all
         </Link>
@@ -124,7 +124,7 @@ export function PartnershipsOverview({
         <div className="flex flex-wrap gap-2 mt-6">
           <Link
             href="/foxer/create-investment"
-            className="px-4 py-2 rounded-full bg-[#10b981] text-black text-xs font-bold hover:opacity-90 transition-opacity"
+            className="px-4 py-2 rounded-full bg-[#ADD13F] text-black text-xs font-bold hover:opacity-90 transition-opacity"
           >
             Register inventory or capital
           </Link>

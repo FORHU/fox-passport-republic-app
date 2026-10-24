@@ -61,8 +61,8 @@ export function UserRoleBadges({ user }: { user: IdentityUser }) {
             className="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide border"
             style={{
               color: roleTextColor(meta.color),
-              borderColor: `${meta.color}40`,
-              background: `${meta.color}1a`,
+              borderColor: `color-mix(in srgb, ${meta.color} 25%, transparent)`,
+              background: `color-mix(in srgb, ${meta.color} 10%, transparent)`,
             }}
           >
             {meta.label}

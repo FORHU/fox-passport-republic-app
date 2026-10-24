@@ -122,7 +122,7 @@ export function CustomExperienceBuilderModal({
     return (
       <div className="fixed inset-0 z-60 bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
         <div className="w-full max-w-md text-center">
-          <div className="h-32 w-32 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8 mx-auto shadow-[0_0_60px_rgba(204,255,0,0.2)]">
+          <div className="h-32 w-32 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8 mx-auto">
             <span className="material-symbols-outlined text-6xl animate-bounce">
               rocket_launch
             </span>

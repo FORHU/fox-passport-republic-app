@@ -26,10 +26,10 @@ const REQUEST_STATUS: Record<
   MyRoleRequest["status"],
   { label: string; color: string }
 > = {
-  pending: { label: "Under review", color: "#f59e0b" },
-  approved: { label: "Approved", color: "#22c55e" },
-  rejected: { label: "Not approved", color: "#ef4444" },
-  revision_requested: { label: "Needs a fix", color: "#f97316" },
+  pending: { label: "Under review", color: "var(--warning)" },
+  approved: { label: "Approved", color: "var(--accent-text)" },
+  rejected: { label: "Not approved", color: "var(--error)" },
+  revision_requested: { label: "Needs a fix", color: "var(--warning)" },
 };
 
 /**
@@ -120,14 +120,14 @@ export function VerificationClient() {
                 style={
                   emailVerified
                     ? {
-                        color: roleTextColor("#22c55e"),
-                        borderColor: "#22c55e55",
-                        background: "#22c55e1a",
+                        color: roleTextColor("#ADD13F"),
+                        borderColor: "#ADD13F55",
+                        background: "#ADD13F1a",
                       }
                     : {
-                        color: roleTextColor("#f97316"),
-                        borderColor: "#f9731655",
-                        background: "#f973161a",
+                        color: roleTextColor("#D99A26"),
+                        borderColor: "#D99A2655",
+                        background: "#D99A261a",
                       }
                 }
               >

@@ -60,7 +60,7 @@ export default function SpecializationPicker({
               style={
                 selected
                   ? {
-                      backgroundColor: accentColor + "22",
+                      backgroundColor: `color-mix(in srgb, ${accentColor} 13%, transparent)`,
                       borderColor: accentColor,
                       color: accentColor,
                     }

@@ -168,7 +168,7 @@ export default function BookingConfigurationClient() {
               </Link>
               <Link
                 href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
               >
                 Bookings
               </Link>
@@ -435,12 +435,7 @@ export default function BookingConfigurationClient() {
                             "restaurant",
                             "camera",
                           ];
-                          const gradients = [
-                            "from-purple-500 to-indigo-600",
-                            "from-orange-400 to-red-500",
-                            "from-emerald-400 to-teal-500",
-                            "from-blue-400 to-cyan-500",
-                          ];
+                          const gradients = ["from-white/10 to-white/10"];
                           return (
                             <div
                               key={ts.id ?? i}
@@ -781,7 +776,7 @@ export default function BookingConfigurationClient() {
                               router.push("/checkout");
                             }
                           }}
-                          className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <span className="relative z-10 flex items-center justify-center gap-2">
                             {isCreatingBooking ? (
@@ -817,7 +812,7 @@ export default function BookingConfigurationClient() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-accent/20 bg-linear-to-b from-accent/5 to-black/20 overflow-hidden">
+                <div className="rounded-3xl border border-accent/20 bg-white/3 overflow-hidden">
                   <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-accent/10">
                     <span className="material-symbols-outlined text-accent text-2xl">
                       verified_user

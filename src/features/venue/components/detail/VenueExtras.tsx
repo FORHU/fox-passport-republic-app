@@ -123,7 +123,7 @@ export function VenueCalendar({
                 <span
                   className={`relative z-10 w-9 h-9 mx-auto flex items-center justify-center rounded-full transition-all ${
                     isSelected
-                      ? "bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]"
+                      ? "bg-accent text-black font-bold"
                       : "text-white hover:bg-white/10 cursor-pointer"
                   }`}
                 >
@@ -341,7 +341,7 @@ export function VenueReviews({
             </span>
             <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full bg-accent rounded-full shadow-[0_0_8px_rgba(204,255,0,0.5)]"
+                className="h-full bg-accent rounded-full"
                 style={{ width: row.count }}
               />
             </div>
@@ -577,7 +577,7 @@ export function VenueMap({
           <div className="absolute inset-0 bg-linear-to-t from-canvas via-transparent to-transparent opacity-50" />
           <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
             <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
-              <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]" />
+              <div className="h-4 w-4 bg-accent rounded-full" />
             </div>
             <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
               Exact location provided after booking

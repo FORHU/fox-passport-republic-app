@@ -62,7 +62,7 @@ export default function RepublicHeader() {
               href={tab.href}
               className={
                 active
-                  ? "px-4 py-1.5 rounded-full text-xs font-black text-black bg-lime-400 shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all"
+                  ? "px-4 py-1.5 rounded-full text-xs font-black text-black bg-lime-400 transition-all"
                   : "px-4 py-1.5 rounded-full text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-all"
               }
             >

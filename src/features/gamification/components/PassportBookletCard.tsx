@@ -22,8 +22,8 @@ export default function PassportBookletCard({
     <div
       style={{
         borderRadius: 22,
-        background: "linear-gradient(135deg, #161616 0%, var(--canvas) 100%)",
-        border: "1px solid rgba(204,255,0,0.25)",
+        background: "linear-gradient(135deg, #14161B 0%, var(--canvas) 100%)",
+        border: "1px solid rgba(196,232,90,0.25)",
         padding: 22,
         boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
         position: "relative",
@@ -39,7 +39,7 @@ export default function PassportBookletCard({
           width: 120,
           height: 120,
           borderRadius: "50%",
-          background: "rgba(204,255,0,0.07)",
+          background: "rgba(196,232,90,0.07)",
           filter: "blur(30px)",
           pointerEvents: "none",
         }}
@@ -82,7 +82,7 @@ export default function PassportBookletCard({
             width: 44,
             height: 44,
             borderRadius: "50%",
-            background: "#7c3aed",
+            background: "#5C62D6",
             border: "2px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             display: "flex",
             alignItems: "center",

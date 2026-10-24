@@ -32,7 +32,7 @@ export function PaymentProtectionTimeline({
   steps = DEFAULT_STEPS,
 }: PaymentProtectionTimelineProps) {
   return (
-    <div className="rounded-3xl border border-accent/20 bg-linear-to-b from-accent/5 to-black/20 overflow-hidden">
+    <div className="rounded-3xl border border-accent/20 bg-white/3 overflow-hidden">
       <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-accent/10">
         <span className="material-symbols-outlined text-accent text-2xl">
           verified_user

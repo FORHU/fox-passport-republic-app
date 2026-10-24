@@ -94,7 +94,7 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
             className={`absolute bottom-0 left-0 h-1 ${kpi.barColor}`}
             style={{
               width: kpi.barWidth,
-              boxShadow: `0 0 15px ${kpi.glowColor}`,
+              boxShadow: "none",
             }}
           />
         </div>

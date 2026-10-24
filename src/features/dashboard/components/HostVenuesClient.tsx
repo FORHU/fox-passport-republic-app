@@ -76,7 +76,7 @@ export default function HostVenuesClient({
         className="bg-canvas text-white min-h-screen font-body antialiased"
         style={{
           background:
-            "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), var(--canvas)",
+            "radial-gradient(circle at 15% 50%, rgba(92,98,214,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(92,98,214,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(196,232,90,0.05) 0%, transparent 50%), var(--canvas)",
           backgroundAttachment: "fixed",
         }}
       >
@@ -101,7 +101,7 @@ export default function HostVenuesClient({
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                 <Link
                   href="/venue-foxer/create-venue"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-accent hover:bg-accent-hover text-black font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all cursor-pointer shrink-0"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-accent hover:bg-accent-hover text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
                 >
                   <span className="material-symbols-outlined text-[18px]">
                     polyline
