@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePartnershipProposals } from "../hooks/usePartnerships";
 import { ProposalStatusBadge } from "./ProposalStatusBadge";
 import { Money } from "@/shared/components/ui/Money";
-import type { PartnershipProposal } from "../types/partnership.types";
+import {
+  partnershipTypeLabel,
+  type PartnershipProposal,
+} from "../types/partnership.types";
 
 interface PartnershipsOverviewProps {
   /** An Investor sends proposals and registers inventory or capital; an
@@ -101,8 +104,8 @@ export function PartnershipsOverview({
                 <p className="text-sm font-semibold text-white truncate">
                   {p.title}
                 </p>
-                <p className="text-[11px] text-white/40 capitalize">
-                  {p.partnershipType}
+                <p className="text-[11px] text-white/40">
+                  {partnershipTypeLabel(p.partnershipType)}
                   {p.proposedAmount != null && (
                     <>
                       {" · "}
