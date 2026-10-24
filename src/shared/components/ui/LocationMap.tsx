@@ -5,7 +5,7 @@ import { MapBoxView, MapMarkerItem } from "@/shared/components/ui/MapBoxView";
 import { createPinElement } from "@/shared/components/ui/VenuesMap";
 
 const BOUNDARY_SOURCE_ID = "location-map-boundary";
-const ACCENT_COLOR = "#ccff00";
+const ACCENT_COLOR = "#C4E85A";
 
 interface LocationMapProps {
   lat: number;
@@ -70,7 +70,7 @@ export function LocationMap({
           type: "line",
           source: BOUNDARY_SOURCE_ID,
           paint: {
-            "line-color": "#0b0d14",
+            "line-color": "#111317",
             "line-width": 5,
             "line-opacity": 0.6,
           },

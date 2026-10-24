@@ -277,7 +277,7 @@ export default function PartnerInventoryMap({
         pin.className = "group relative cursor-pointer";
         pin.innerHTML = `
           <div class="relative flex items-center justify-center">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 border-2 border-white shadow-[0_0_20px_rgba(245,158,11,0.6)] flex items-center justify-center text-black font-bold transition-transform group-hover:scale-110">
+            <div class="w-10 h-10 rounded-full bg-accent border-2 border-white flex items-center justify-center text-black font-bold transition-transform group-hover:scale-110">
               <span class="material-symbols-outlined text-[20px]">${iconName}</span>
             </div>
             ${
@@ -583,7 +583,7 @@ export default function PartnerInventoryMap({
 
         {/* Selected Hub Details Card (Bottom Overlay) */}
         {selectedPin && (
-          <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-md z-30 rounded-3xl bg-zinc-950/95 border border-amber-500/40 p-5 shadow-[0_0_40px_rgba(0,0,0,0.8)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4">
+          <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-md z-30 rounded-3xl bg-zinc-950/95 border border-amber-500/40 p-5 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4">
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-400/30 text-amber-300 text-[10px] font-black uppercase tracking-wider">
@@ -643,7 +643,7 @@ export default function PartnerInventoryMap({
                     contextLabel: selectedPin.title,
                     label: "Request Tool Dispatch",
                     className:
-                      "flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer",
+                      "flex-1 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer",
                   })
                 ) : (
                   <button
@@ -655,7 +655,7 @@ export default function PartnerInventoryMap({
                         );
                       }
                     }}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
                   >
                     Request Tool Dispatch
                   </button>

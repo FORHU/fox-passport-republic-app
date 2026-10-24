@@ -1,9 +1,69 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  persist,
+  createJSONStorage,
+  type StateStorage,
+} from "zustand/middleware";
 import {
   ResourceItem,
   GalleryItem,
 } from "@/features/event/data/eventBuilderData";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+
+const STORAGE_NAME = "fp-event-builder";
+
+/**
+ * Drafts are kept per account: `fp-event-builder:<userId>`. They used to sit
+ * under one key for the whole browser, so after a sign-out the next person to
+ * sign in on the same browser opened Event Studio on the previous account's
+ * draft (and its autosave would then save that draft as theirs).
+ *
+ * With no signed-in user (or no usable id) nothing is read or written.
+ */
+function draftKey(name: string): string | null {
+  if (typeof window === "undefined") return null;
+  const id = useAuthStore.getState().user?.id;
+  return typeof id === "string" && id.trim() ? `${name}:${id}` : null;
+}
+
+// Paused while the store is cleared for an account change, so clearing the
+// screen doesn't overwrite the incoming account's saved draft.
+let writesPaused = false;
+
+const draftStorage: StateStorage = {
+  getItem: (name) => {
+    const key = draftKey(name);
+    if (!key) return null;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return null;
+      JSON.parse(raw);
+      return raw;
+    } catch {
+      // Unreadable or corrupt: start this account on a blank draft.
+      try {
+        localStorage.removeItem(key);
+      } catch {}
+      return null;
+    }
+  },
+  setItem: (name, value) => {
+    const key = draftKey(name);
+    if (!key || writesPaused) return;
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Full or blocked storage: the draft just isn't kept locally.
+    }
+  },
+  removeItem: (name) => {
+    const key = draftKey(name);
+    if (!key) return;
+    try {
+      localStorage.removeItem(key);
+    } catch {}
+  },
+};
 
 interface EventBuilderState {
   // Event Details
@@ -177,16 +237,16 @@ export const useEventBuilderStore = create<EventBuilderState>()(
       setDraftId: (id) => set({ draftId: id }),
       setSaveStatus: (status) => set({ saveStatus: status }),
 
-      // Reset — clears localStorage so published events don't bleed into new ones
+      // Reset — clears this account's saved draft so published events don't
+      // bleed into new ones
       reset: () => {
-        if (typeof window !== "undefined")
-          localStorage.removeItem("fp-event-builder");
+        draftStorage.removeItem(STORAGE_NAME);
         set(initialState);
       },
     }),
     {
-      name: "fp-event-builder",
-      storage: createJSONStorage(() => localStorage),
+      name: STORAGE_NAME,
+      storage: createJSONStorage(() => draftStorage),
       // Only persist serializable state — File objects and transient UI state are excluded
       partialize: (state) => ({
         eventTitle: state.eventTitle,
@@ -216,6 +276,35 @@ export const useEventBuilderStore = create<EventBuilderState>()(
     },
   ),
 );
+
+/**
+ * When the signed-in account changes (sign-out, sign-in, or straight from one
+ * account to another), drop whatever is on screen and load the new account's
+ * own draft, if it has one. The outgoing account's draft stays saved under its
+ * own key for when it signs back in.
+ */
+export function switchDraftAccount() {
+  writesPaused = true;
+  try {
+    useEventBuilderStore.setState(initialState);
+  } finally {
+    writesPaused = false;
+  }
+  void useEventBuilderStore.persist.rehydrate();
+}
+
+if (typeof window !== "undefined") {
+  // Before this fix every account shared one unscoped key. Whose draft that
+  // is can't be known, so it isn't handed to anyone: it is removed. A draft
+  // that was saved to the server (it has a draftId) is still there.
+  try {
+    localStorage.removeItem(STORAGE_NAME);
+  } catch {}
+
+  useAuthStore.subscribe((state, prev) => {
+    if (state.user?.id !== prev.user?.id) switchDraftAccount();
+  });
+}
 
 // Selectors
 export const useEventData = () =>

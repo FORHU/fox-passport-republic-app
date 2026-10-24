@@ -116,7 +116,7 @@ export default function MobileSettingsView({ user }: Props) {
               width: 80,
               height: 80,
               borderRadius: "50%",
-              background: "#7c3aed",
+              background: "#5C62D6",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -181,7 +181,7 @@ export default function MobileSettingsView({ user }: Props) {
                 style={{
                   fontSize: 20,
                   color: isLogout(row.icon)
-                    ? "rgba(239,68,68,0.8)"
+                    ? "rgba(207,61,52,0.8)"
                     : "rgba(255,255,255,0.55)",
                   flexShrink: 0,
                 }}
@@ -193,7 +193,7 @@ export default function MobileSettingsView({ user }: Props) {
                   flex: 1,
                   fontSize: 14,
                   fontWeight: 500,
-                  color: isLogout(row.icon) ? "#ef4444" : "#fff",
+                  color: isLogout(row.icon) ? "#CF3D34" : "#fff",
                 }}
               >
                 {row.label}

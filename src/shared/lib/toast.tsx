@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
 // On-brand alternative to sonner's richColors variants, styled with the
-// app's accent (#ccff00) and glass-card surface instead of red/blue/green.
+// app's accent (#C4E85A) and glass-card surface instead of red/blue/green.
 export function toastRequireLogin(message: string) {
   toast(message, {
     icon: (
@@ -11,7 +11,7 @@ export function toastRequireLogin(message: string) {
     ),
     style: {
       background: "var(--surface)",
-      border: "1px solid rgba(204, 255, 0, 0.35)",
+      border: "1px solid rgba(196, 232, 90, 0.35)",
       color: "var(--color-white)",
     },
   });

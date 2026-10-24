@@ -32,7 +32,7 @@ export function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
 
             <div
               className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
-              style={{ backgroundColor: `${role.color}20` }}
+              style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
             >
               <span
                 className="material-symbols-outlined text-[24px]"

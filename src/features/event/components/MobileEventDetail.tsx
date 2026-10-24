@@ -15,14 +15,14 @@ interface MobileEventDetailProps {
 }
 
 const CATEGORY_PILL: Record<string, { bg: string; color: string }> = {
-  Wedding: { bg: "rgba(219,39,119,0.15)", color: "color-mix(in srgb, #db2777 55%, var(--color-white))" },
-  Corporate: { bg: "rgba(59,130,246,0.15)", color: "color-mix(in srgb, #3b82f6 55%, var(--color-white))" },
-  Birthday: { bg: "rgba(249,115,22,0.15)", color: "color-mix(in srgb, #f97316 55%, var(--color-white))" },
-  Social: { bg: "rgba(34,197,94,0.15)", color: "color-mix(in srgb, #22c55e 55%, var(--color-white))" },
-  Other: { bg: "rgba(168,85,247,0.15)", color: "color-mix(in srgb, #a855f7 55%, var(--color-white))" },
+  Wedding: { bg: "rgba(92,98,214,0.15)", color: "color-mix(in srgb, #5C62D6 55%, var(--color-white))" },
+  Corporate: { bg: "rgba(92,98,214,0.15)", color: "color-mix(in srgb, #5C62D6 55%, var(--color-white))" },
+  Birthday: { bg: "rgba(217,154,38,0.15)", color: "color-mix(in srgb, #D99A26 55%, var(--color-white))" },
+  Social: { bg: "rgba(173,209,63,0.15)", color: "color-mix(in srgb, #ADD13F 55%, var(--color-white))" },
+  Other: { bg: "rgba(163,168,245,0.15)", color: "color-mix(in srgb, #A3A8F5 55%, var(--color-white))" },
 };
 
-const AVATAR_COLORS = ["#7c3aed", "#db2777", "#f97316", "#3b82f6"];
+const AVATAR_COLORS = ["#5C62D6", "#5C62D6", "#D99A26", "#5C62D6"];
 
 export default function MobileEventDetail({
   event,
@@ -64,7 +64,7 @@ export default function MobileEventDetail({
           right: 0,
           height: 420,
           background:
-            "linear-gradient(180deg, rgba(219,39,119,0.2) 0%, color-mix(in srgb, var(--canvas) 30%, transparent) 70%, var(--canvas) 100%)",
+            "linear-gradient(180deg, rgba(92,98,214,0.2) 0%, color-mix(in srgb, var(--canvas) 30%, transparent) 70%, var(--canvas) 100%)",
           pointerEvents: "none",
         }}
       />
@@ -337,7 +337,7 @@ export default function MobileEventDetail({
                 });
             }}
             style={{
-              background: isPreview ? "rgba(204,255,0,0.3)" : "#ccff00",
+              background: isPreview ? "rgba(196,232,90,0.3)" : "#C4E85A",
               color: "#000",
               fontWeight: 800,
               fontSize: 13,
@@ -345,7 +345,7 @@ export default function MobileEventDetail({
               padding: "14px 28px",
               border: "none",
               cursor: isPreview ? "not-allowed" : "pointer",
-              boxShadow: isPreview ? "none" : "0 4px 16px rgba(204,255,0,0.35)",
+              boxShadow: isPreview ? "none" : "0 4px 16px rgba(196,232,90,0.35)",
               whiteSpace: "nowrap",
             }}
           >

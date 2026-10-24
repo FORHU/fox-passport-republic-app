@@ -3,14 +3,16 @@
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import JourneyHero from "./JourneyHero";
 import JourneyFooter from "./JourneyFooter";
-import { ClosingCta, EarnBlock, Itinerary } from "./sections";
+import { ClosingCta, EarnBlock } from "./sections";
 import { EventGrid, EventTypes } from "./booking";
+import { FloorPlan } from "./FloorPlan";
 
 /**
  * The public landing page (signed-in visitors are redirected into the app
- * from "/", see shared/lib/server/home-redirect.ts). It leads with finding an
- * event (search, then events to book and the kinds of event), then how booking
- * works, and last the people who supply events.
+ * from "/", see shared/lib/server/home-redirect.ts). Under the hero it reads as
+ * the drawings for one night: events to book as plan sheets, the kinds of event
+ * as the sheet index, the floor plan of how a night is put together, and the
+ * schedule of trades for the people who supply it.
  */
 export default function JourneyLanding() {
   return (
@@ -18,11 +20,9 @@ export default function JourneyLanding() {
       <LandingHeader />
       <main>
         <JourneyHero />
-        <div className="landing-chart-background">
-          <EventGrid />
-          <EventTypes />
-        </div>
-        <Itinerary />
+        <EventGrid />
+        <EventTypes />
+        <FloorPlan />
         <EarnBlock />
         <ClosingCta />
       </main>

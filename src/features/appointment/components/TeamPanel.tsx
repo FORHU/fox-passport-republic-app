@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useDeferredValue, useState } from "react";
+import React, { useDeferredValue, useId, useState } from "react";
+import { z } from "zod";
 import {
   AlertCircle,
   ChevronDown,
@@ -18,6 +19,12 @@ import type {
   OrganizerCard,
   TeamMember,
 } from "../api/appointments";
+import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+
+const emailSchema = z.email();
+const EMAIL_HINT = "Enter a full email address, like name@example.com.";
+const ORGANIZER_HINT =
+  "Pick an Organizer from the results below, or enter their full email address.";
 
 interface TeamPanelProps {
   /** Null while there is nothing to appoint to yet — e.g. an Event not yet scheduled. */
@@ -78,6 +85,8 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
     useTeam(target);
   const [kind, setKind] = useState<AppointmentKind>("organizer");
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const emailErrorId = useId();
   const [showPast, setShowPast] = useState(false);
   // For an Organizer the box also searches by name or city; an email still
   // invites directly. A Check-in Helper is anyone, so it stays email only.
@@ -99,11 +108,19 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = email.trim();
-    if (!trimmed || !trimmed.includes("@")) return;
-    add.mutate(
-      { kind, email: trimmed },
-      { onSuccess: () => setEmail("") },
-    );
+    if (!trimmed) return;
+    // Say why instead of just greying the button out: a name typed into the
+    // Organizer box is a search, and "bob@" is not an address.
+    if (!emailSchema.safeParse(trimmed).success) {
+      setEmailError(
+        kind === "organizer" && !trimmed.includes("@")
+          ? ORGANIZER_HINT
+          : EMAIL_HINT,
+      );
+      return;
+    }
+    setEmailError(null);
+    add.mutate({ kind, email: trimmed }, { onSuccess: () => setEmail("") });
   };
 
   const inviteFound = (card: OrganizerCard) =>
@@ -167,14 +184,14 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
 
           {requests.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#e879f9] mb-2">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#A3A8F5] mb-2">
                 Requests to join
               </p>
-              <ul className="divide-y divide-white/5 rounded-2xl border border-[#e879f9]/20 overflow-hidden">
+              <ul className="divide-y divide-white/5 rounded-2xl border border-[#A3A8F5]/20 overflow-hidden">
                 {requests.map((m) => (
                   <li
                     key={m.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-[#e879f9]/[0.04]"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-[#A3A8F5]/[0.04]"
                   >
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-white truncate">
@@ -220,7 +237,9 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          {/* noValidate: the message below explains a bad address, not the
+              browser's bubble. */}
+          <form onSubmit={handleSubmit} noValidate className="space-y-3">
             <div
               role="radiogroup"
               aria-label="What they'll do"
@@ -232,7 +251,10 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
                   type="button"
                   role="radio"
                   aria-checked={kind === k}
-                  onClick={() => setKind(k)}
+                  onClick={() => {
+                    setKind(k);
+                    setEmailError(null);
+                  }}
                   className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
                     kind === k
                       ? "bg-accent text-black"
@@ -247,27 +269,34 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
               {KIND_COPY[kind].hint}
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type={kind === "organizer" ? "text" : "email"}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={
-                  kind === "organizer"
-                    ? "Search Organizers by name or city, or type an email"
-                    : "Their email address"
-                }
-                aria-label={
-                  kind === "organizer"
-                    ? "Search Organizers or enter an email"
-                    : "Email address"
-                }
-                disabled={busy}
-                className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
-              />
+              <FieldControl invalid={!!emailError} className="flex-1 min-w-0">
+                <input
+                  type={kind === "organizer" ? "text" : "email"}
+                  required
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError(null);
+                  }}
+                  aria-invalid={!!emailError}
+                  aria-describedby={emailError ? emailErrorId : undefined}
+                  placeholder={
+                    kind === "organizer"
+                      ? "Search Organizers by name or city, or type an email"
+                      : "Their email address"
+                  }
+                  aria-label={
+                    kind === "organizer"
+                      ? "Search Organizers or enter an email"
+                      : "Email address"
+                  }
+                  disabled={busy}
+                  className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors ${emailError ? "field-invalid pr-10" : ""}`}
+                />
+              </FieldControl>
               <button
                 type="submit"
-                disabled={busy || !isEmail}
+                disabled={busy || !email.trim()}
                 className="px-4 py-2.5 rounded-xl bg-accent text-black text-xs font-bold hover:bg-accent/90 disabled:opacity-50 disabled:pointer-events-none transition-colors flex items-center justify-center gap-1.5"
               >
                 {add.isPending ? (
@@ -278,6 +307,7 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
                 <span>{KIND_COPY[kind].button}</span>
               </button>
             </div>
+            <FieldError id={emailErrorId} message={emailError} />
             {kind === "organizer" && !isEmail && email.trim().length >= 2 && (
               <OrganizerResults
                 loading={search.isFetching}
@@ -342,11 +372,7 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
               </button>
               {showPast && (
                 <div className="mt-3">
-                  <MemberList
-                    members={past}
-                    note={pastLabel}
-                    muted
-                  />
+                  <MemberList members={past} note={pastLabel} muted />
                 </div>
               )}
             </div>
@@ -402,7 +428,9 @@ function MemberList({
                   </div>
                   <div className="text-xs text-text-muted truncate">
                     {m.user.email}
-                    {detail && <span className="text-white/30"> · {detail}</span>}
+                    {detail && (
+                      <span className="text-white/30"> · {detail}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -475,9 +503,13 @@ function OrganizerResults({
             className="flex items-center justify-between gap-3 p-3 bg-white/[0.02]"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 shrink-0 rounded-full bg-[#e879f9]/10 border border-[#e879f9]/20 flex items-center justify-center text-[#e879f9] text-xs font-bold overflow-hidden">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-[#A3A8F5]/10 border border-[#A3A8F5]/20 flex items-center justify-center text-[#A3A8F5] text-xs font-bold overflow-hidden">
                 {card.imgId ? (
-                  <img src={card.imgId} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={card.imgId}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   card.name[0]?.toUpperCase()
                 )}
@@ -485,7 +517,7 @@ function OrganizerResults({
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-white truncate">
                   {card.name}
-                  <span className="ml-2 text-[10px] font-bold text-[#e879f9]">
+                  <span className="ml-2 text-[10px] font-bold text-[#A3A8F5]">
                     Lv {card.level}
                   </span>
                 </div>

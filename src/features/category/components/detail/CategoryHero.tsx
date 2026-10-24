@@ -28,7 +28,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
           <span>Categories</span>
           <span className="text-gray-700">&gt;</span>
           <span
-            className={`inline-block text-transparent bg-clip-text bg-linear-to-r ${gradientColors}`}
+            className="inline-block text-accent"
           >
             {category.name.toUpperCase()}
           </span>
@@ -37,7 +37,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
         <h1 className="text-3xl sm:text-5xl md:text-8xl font-black font-display text-white mb-6 sm:mb-8 leading-tight tracking-tight">
           Explore <br />
           <span
-            className={`inline-block text-transparent bg-clip-text bg-linear-to-r ${gradientColors}`}
+            className="inline-block text-accent"
           >
             {category.name}
           </span>

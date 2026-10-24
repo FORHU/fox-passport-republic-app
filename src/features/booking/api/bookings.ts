@@ -425,6 +425,16 @@ export async function fetchUserBookings(
   };
 }
 
+/**
+ * Every booking of yours still ahead (not cancelled or completed, starting
+ * from now), soonest first, with its event. Unpaged: the server sorts it, so
+ * the list can show what's coming up without depending on which page is open.
+ */
+export async function fetchUpcomingBookings(): Promise<any[]> {
+  const resp = await api.get("/bookings/upcoming");
+  return resp.data?.data ?? [];
+}
+
 // Bookings other citizens made on events *you* organize — the counterpart to
 // fetchUserBookings, which only ever returns bookings you made yourself.
 export async function fetchReceivedBookings(

@@ -64,8 +64,8 @@ export default function MobileBottomNav() {
             width: 20,
             height: 3,
             borderRadius: 999,
-            background: "#ccff00",
-            boxShadow: "0 0 8px rgba(204,255,0,0.8)",
+            background: "#C4E85A",
+            boxShadow: "none",
           }}
         />
       )}
@@ -79,9 +79,9 @@ export default function MobileBottomNav() {
             borderRadius: "50%",
             overflow: "hidden",
             border: active
-              ? "2px solid #ccff00"
+              ? "2px solid #C4E85A"
               : "2px solid rgba(255,255,255,0.2)",
-            boxShadow: active ? "0 0 8px rgba(204,255,0,0.5)" : "none",
+            boxShadow: active ? "none" : "none",
             background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
             display: "flex",
             alignItems: "center",
@@ -107,7 +107,7 @@ export default function MobileBottomNav() {
           className="material-symbols-outlined"
           style={{
             fontSize: 22,
-            color: active ? "#ccff00" : "rgba(255,255,255,0.4)",
+            color: active ? "#C4E85A" : "rgba(255,255,255,0.4)",
             fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0",
             transition: "color 0.2s",
           }}
@@ -121,7 +121,7 @@ export default function MobileBottomNav() {
           fontSize: 9,
           fontWeight: 700,
           letterSpacing: "0.04em",
-          color: active ? "#ccff00" : "rgba(255,255,255,0.3)",
+          color: active ? "#C4E85A" : "rgba(255,255,255,0.3)",
           transition: "color 0.2s",
           lineHeight: 1,
         }}
@@ -173,15 +173,15 @@ export default function MobileBottomNav() {
             height: 56,
             borderRadius: 999,
             background: isActive("/republic")
-              ? "linear-gradient(135deg, #d4ff33 0%, #aaee00 100%)"
-              : "linear-gradient(135deg, #272732 0%, #171720 100%)",
+              ? "linear-gradient(135deg, #CBEB6E 0%, #ADD13F 100%)"
+              : "linear-gradient(135deg, #1C1F26 0%, #14161B 100%)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             transform: "translateY(-14px)",
             boxShadow: isActive("/republic")
-              ? "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(204,255,0,0.3), 0 8px 24px rgba(204,255,0,0.5)"
+              ? "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(196,232,90,0.3)"
               : "0 0 0 4px rgba(14,14,20,0.92), 0 4px 16px rgba(0,0,0,0.5)",
             border: isActive("/republic")
               ? "none"
@@ -193,7 +193,7 @@ export default function MobileBottomNav() {
           <span
             className="material-symbols-outlined"
             style={{
-              color: isActive("/republic") ? "#0a0a0f" : "#ccff00",
+              color: isActive("/republic") ? "#111317" : "#C4E85A",
               fontSize: 24,
               fontVariationSettings: "'FILL' 1, 'wght' 700",
             }}
@@ -205,7 +205,7 @@ export default function MobileBottomNav() {
               fontSize: 8,
               fontWeight: 800,
               letterSpacing: "0.02em",
-              color: isActive("/republic") ? "#0a0a0f" : "#ccff00",
+              color: isActive("/republic") ? "#111317" : "#C4E85A",
               lineHeight: 1,
               marginTop: 1,
             }}

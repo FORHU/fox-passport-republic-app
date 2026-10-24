@@ -200,7 +200,7 @@ export default function RequestBookingEditModal({
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex-1 py-3 rounded-2xl bg-accent text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] active:scale-95 transition-all disabled:opacity-60"
+            className="flex-1 py-3 rounded-2xl bg-accent text-black font-bold text-sm active:scale-95 transition-all disabled:opacity-60"
           >
             {submitting ? "Submitting..." : "Send Request"}
           </button>

@@ -617,7 +617,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                     <button
                       disabled={isSubmitting}
                       onClick={handleProceed}
-                      className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
                         <>

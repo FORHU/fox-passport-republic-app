@@ -67,7 +67,7 @@ export function CustomExperienceBuilder({
     return (
       <div className="fixed inset-0 z-60 bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
         <div className="w-full max-w-md text-center">
-          <div className="h-32 w-32 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8 mx-auto shadow-[0_0_60px_rgba(204,255,0,0.2)]">
+          <div className="h-32 w-32 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8 mx-auto">
             <span className="material-symbols-outlined text-6xl animate-bounce">
               rocket_launch
             </span>
@@ -95,7 +95,7 @@ export function CustomExperienceBuilder({
       {/* Header */}
       <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-surface/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 bg-accent rounded-lg flex items-center justify-center text-black shadow-[0_0_15px_rgba(204,255,0,0.4)]">
+          <div className="h-10 w-10 bg-accent rounded-lg flex items-center justify-center text-black">
             <span className="material-symbols-outlined">design_services</span>
           </div>
           <div>
@@ -125,7 +125,7 @@ export function CustomExperienceBuilder({
                 onClick={() => setActiveCategory(cat.id)}
                 className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-300 group ${
                   activeCategory === cat.id
-                    ? "bg-accent text-black font-bold shadow-[0_0_20px_rgba(204,255,0,0.2)]"
+                    ? "bg-accent text-black font-bold"
                     : "hover:bg-white/5 text-text-muted hover:text-white"
                 }`}
               >
@@ -220,7 +220,7 @@ export function CustomExperienceBuilder({
                       onClick={() => setSelectedFoxer(foxer.id)}
                       className={`relative group rounded-[2rem] p-6 border cursor-grab active:cursor-grabbing transition-all duration-300 hover:-translate-y-1 ${
                         selectedFoxer === foxer.id
-                          ? "bg-surface-highlight border-accent shadow-[0_0_30px_rgba(204,255,0,0.15)]"
+                          ? "bg-surface-highlight border-accent"
                           : "bg-white/5 border-white/5 hover:border-white/20"
                       }`}
                     >
@@ -348,7 +348,7 @@ export function CustomExperienceBuilder({
         <aside
           className={`w-80 shrink-0 bg-surface border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
             isDragOver
-              ? "bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]"
+              ? "bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(196,232,90,0.1)]"
               : ""
           }`}
           onDragOver={handleDragOver}
@@ -604,7 +604,7 @@ export function CustomExperienceBuilder({
                     handleSubmit();
                   }}
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 transition-all flex items-center justify-center gap-2 active:scale-98 shadow-[0_0_20px_rgba(204,255,0,0.3)]"
+                  className="w-full py-3.5 rounded-2xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 transition-all flex items-center justify-center gap-2 active:scale-98"
                 >
                   Confirm & Request Booking
                 </button>

@@ -69,10 +69,10 @@ const ORGANIZER_CATEGORY_OPTIONS = [
 type ProviderType = "asset" | "service" | "performer" | "organizer";
 
 const PROVIDER_TABS: { type: ProviderType; label: string; color: string }[] = [
-  { type: "service", label: "Talent Foxer", color: "#00d2ff" },
-  { type: "performer", label: "Performer", color: "#f59e0b" },
-  { type: "asset", label: "Gear Provider", color: "#a78bfa" },
-  { type: "organizer", label: "Organizer", color: "#e879f9" },
+  { type: "service", label: "Talent Foxer", color: "var(--periwinkle)" },
+  { type: "performer", label: "Performer", color: "var(--warning)" },
+  { type: "asset", label: "Gear Provider", color: "var(--periwinkle)" },
+  { type: "organizer", label: "Organizer", color: "var(--periwinkle)" },
 ];
 
 const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
@@ -103,7 +103,7 @@ function IconField({
         <input
           {...input}
           className={`${INPUT_BASE} pl-12 pr-4`}
-          onFocus={(e) => (e.currentTarget.style.borderColor = `${accent}80`)}
+          onFocus={(e) => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${accent} 50%, transparent)`)}
           onBlur={(e) => (e.currentTarget.style.borderColor = "")}
         />
       </div>
@@ -325,7 +325,7 @@ export default function FoxerApplicationClient({
   };
 
   const accent =
-    PROVIDER_TABS.find((t) => t.type === providerType)?.color ?? "#00d2ff";
+    PROVIDER_TABS.find((t) => t.type === providerType)?.color ?? "#A3A8F5";
 
   const countUploaded = (
     docs: { field: string }[],

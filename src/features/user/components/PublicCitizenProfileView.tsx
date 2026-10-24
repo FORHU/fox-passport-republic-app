@@ -50,12 +50,12 @@ const RARITY_COLORS: Record<
   legendary: {
     badge: "bg-gradient-to-r from-amber-500/20 to-yellow-500/20",
     text: "text-amber-300",
-    border: "border-amber-400/50 shadow-[0_0_15px_rgba(245,158,11,0.25)]",
+    border: "border-amber-400/50",
   },
   epic: {
     badge: "bg-purple-500/20",
     text: "text-purple-300",
-    border: "border-purple-400/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]",
+    border: "border-purple-400/50",
   },
   rare: {
     badge: "bg-sky-500/20",
@@ -187,7 +187,7 @@ export default function PublicCitizenProfileView({
         <div
           className={`relative overflow-hidden rounded-3xl p-6 sm:p-8 border backdrop-blur-xl ${
             isPartner
-              ? "bg-gradient-to-br from-amber-950/20 via-zinc-950 to-zinc-900/80 border-amber-500/30 shadow-[0_0_40px_rgba(245,158,11,0.08)]"
+              ? "bg-gradient-to-br from-amber-950/20 via-zinc-950 to-zinc-900/80 border-amber-500/30"
               : "bg-zinc-950/80 border-zinc-800/80 shadow-2xl"
           }`}
         >
@@ -200,8 +200,8 @@ export default function PublicCitizenProfileView({
               <div
                 className={`w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden p-1 ${
                   isPartner
-                    ? "bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700 shadow-[0_0_25px_rgba(245,158,11,0.3)]"
-                    : "bg-gradient-to-b from-lime-400 to-emerald-600 shadow-[0_0_20px_rgba(163,230,53,0.2)]"
+                    ? "bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700"
+                    : "bg-gradient-to-b from-lime-400 to-emerald-600"
                 }`}
               >
                 <img
@@ -523,7 +523,7 @@ export default function PublicCitizenProfileView({
                     return (
                       <div
                         key={stamp.id}
-                        className="group relative rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-amber-500/50 p-4 transition-all hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] flex flex-col"
+                        className="group relative rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-amber-500/50 p-4 transition-all flex flex-col"
                       >
                         <div className="flex items-center gap-3 mb-3">
                           {/* Circular Stamp Seal */}

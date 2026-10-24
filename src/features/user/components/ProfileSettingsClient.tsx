@@ -482,7 +482,7 @@ export default function ProfileSettingsClient({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSaving ? (
                     <span className="material-symbols-outlined text-[18px] animate-spin">
@@ -550,7 +550,7 @@ export default function ProfileSettingsClient({
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {isSaving ? (
                   <span className="material-symbols-outlined text-[18px] animate-spin">
@@ -655,7 +655,7 @@ export default function ProfileSettingsClient({
           transition: border-color 0.2s;
         }
         .input-field:focus {
-          border-color: rgba(204, 255, 0, 0.4);
+          border-color: rgba(196, 232, 90, 0.4);
         }
         .input-field::placeholder {
           color: rgba(255, 255, 255, 0.2);

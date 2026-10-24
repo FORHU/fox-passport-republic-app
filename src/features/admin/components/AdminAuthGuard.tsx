@@ -66,8 +66,8 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center p-4">
         {/* ... login prompt UI ... */}
         <div className="glass-card rounded-[2rem] p-10 max-w-md w-full text-center border border-white/10 relative overflow-hidden">
-          <div className="relative z-10 w-24 h-24 bg-accent/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-accent shadow-[0_0_60px_#ccff00,0_0_100px_rgba(204,255,0,0.5)]">
-            <span className="material-symbols-outlined text-[48px] text-black drop-shadow-[0_0_15px_#ccff00]">
+          <div className="relative z-10 w-24 h-24 bg-accent/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-accent">
+            <span className="material-symbols-outlined text-[48px] text-black">
               lock
             </span>
           </div>
@@ -79,7 +79,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           </p>
           <button
             onClick={openLogin}
-            className="relative z-10 w-full btn-neon bg-accent hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] text-black font-bold py-4 px-8 rounded-full transition-all hover:scale-[1.02]"
+            className="relative z-10 w-full btn-neon bg-accent text-black font-bold py-4 px-8 rounded-full transition-all hover:scale-[1.02]"
           >
             Log In to Continue
           </button>
@@ -95,7 +95,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
     return (
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center p-4">
         <div className="glass-card rounded-[2rem] p-10 max-w-md w-full text-center border border-white/10 relative overflow-hidden">
-          <div className="relative z-10 w-24 h-24 bg-red-500/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-red-500 shadow-[0_0_60px_rgba(239,68,68,0.3)]">
+          <div className="relative z-10 w-24 h-24 bg-red-500/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-red-500">
             <span className="material-symbols-outlined text-[48px] text-white">
               block
             </span>

@@ -243,7 +243,7 @@ export function ListingSidebar({
                 <div
                   className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
                     status === s
-                      ? "border-[#00bfff] bg-[#00bfff]"
+                      ? "border-[#A3A8F5] bg-[#A3A8F5]"
                       : "border-white/30 bg-transparent"
                   }`}
                 >

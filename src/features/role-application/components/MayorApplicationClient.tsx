@@ -18,7 +18,7 @@ const VENUE_CATEGORY_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const ACCENT = "#ccff00";
+const ACCENT = "#C4E85A";
 
 const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
 const INPUT =

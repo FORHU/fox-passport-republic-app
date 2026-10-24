@@ -1,5 +1,8 @@
 import React from "react";
-import { PartnershipProposal } from "../types/partnership.types";
+import {
+  partnershipTypeLabel,
+  PartnershipProposal,
+} from "../types/partnership.types";
 import { ProposalStatusBadge } from "./ProposalStatusBadge";
 import { ProposalActions } from "./ProposalActions";
 import { Money } from "@/shared/components/ui/Money";
@@ -17,7 +20,7 @@ export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/60">
             <p>
               <span className="font-medium text-white/40">Type:</span>{" "}
-              <span className="capitalize">{proposal.partnershipType}</span>
+              <span>{partnershipTypeLabel(proposal.partnershipType)}</span>
             </p>
             {proposal.proposedAmount != null && (
               <p>
@@ -37,17 +40,16 @@ export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
             {proposal.description}
           </div>
 
-          {proposal.proposedBenefits &&
-            (proposal.proposedBenefits as any).text && (
-              <div className="mt-2 bg-white/5 rounded-lg p-3">
-                <p className="text-xs font-medium text-white/40 mb-1">
-                  Proposed Benefits
-                </p>
-                <p className="text-white/80 text-sm">
-                  {(proposal.proposedBenefits as any).text}
-                </p>
-              </div>
-            )}
+          {proposal.proposedBenefits?.trim() && (
+            <div className="mt-2 bg-white/5 rounded-lg p-3">
+              <p className="text-xs font-medium text-white/40 mb-1">
+                Proposed Benefits
+              </p>
+              <p className="text-white/80 text-sm whitespace-pre-line">
+                {proposal.proposedBenefits}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex shrink-0">

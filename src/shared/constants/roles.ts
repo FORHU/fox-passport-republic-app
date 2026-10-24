@@ -62,15 +62,26 @@ export function isFoxer(
 /**
  * Display label + accent color for each role badge, shared by every place
  * that renders a citizen's roles (profile card, passport page, sidebar) so
- * "Event Foxer" reads as the same purple pill everywhere rather than
- * drifting into a one-off color per component.
+ * "Event Foxer" reads as the same pill everywhere. Every role is the same
+ * neutral grey: roles are told apart by their label, not by colour (the
+ * colour system keeps lime for actions and periwinkle as its one accent).
  */
 export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
-  venueFoxer: { label: "Venue Foxer", color: "#ec4899" },
-  eventFoxer: { label: "Event Foxer", color: "#a78bfa" },
-  gearFoxer: { label: "Gear Foxer", color: "#38bdf8" },
-  serviceFoxer: { label: "Talent Foxer", color: "#34d399" },
-  performerFoxer: { label: "Performer Foxer", color: "#f59e0b" },
-  investor: { label: "Partner Foxer", color: "#10b981" },
-  organizer: { label: "Organizer", color: "#e879f9" },
+  venueFoxer: { label: "Venue Foxer", color: "#A9AFBB" },
+  eventFoxer: { label: "Event Foxer", color: "#A9AFBB" },
+  gearFoxer: { label: "Gear Foxer", color: "#A9AFBB" },
+  serviceFoxer: { label: "Talent Foxer", color: "#A9AFBB" },
+  performerFoxer: { label: "Performer Foxer", color: "#A9AFBB" },
+  investor: { label: "Partner Foxer", color: "#A9AFBB" },
+  organizer: { label: "Organizer", color: "#A9AFBB" },
 };
+
+/**
+ * A role (or status) colour for use as text. The hues are bright enough on dark but too
+ * pale on white (#C4E85A is about 2:1), so light mode mixes in ink
+ * (`--hue-ink-mix` in globals.css) to reach AA; dark mode gets the hue as is.
+ * Fills and borders keep the plain colour.
+ */
+export function roleTextColor(color: string): string {
+  return `color-mix(in srgb, ${color}, #15171C var(--hue-ink-mix, 0%))`;
+}

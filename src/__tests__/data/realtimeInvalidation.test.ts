@@ -35,7 +35,6 @@ const POLLING_HOOKS = [
   "src/features/admin/hooks/useAdminData.ts",
   "src/features/admin/components/AdminDisputesPanel.tsx",
   "src/features/booking/components/BookingListClient.tsx",
-  "src/features/booking/components/MobileBookingsView.tsx",
   "src/features/dashboard/hooks/useHostData.ts",
   "src/features/user/hooks/useUserDashboard.ts",
   "src/features/booking/hooks/useWaitlist.ts",

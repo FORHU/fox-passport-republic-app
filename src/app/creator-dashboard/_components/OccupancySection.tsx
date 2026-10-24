@@ -34,7 +34,7 @@ export function PendingRequests() {
           >
             Pending
             {totalPending > 0 && (
-              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#ff00aa] text-white text-[9px] font-black">
+              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#5C62D6] text-white text-[9px] font-black">
                 {totalPending}
               </span>
             )}
@@ -145,7 +145,7 @@ export function PendingRequests() {
                     Awaiting Payment
                   </span>
                 ) : (
-                  <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-[#22c55e] bg-[#22c55e]/10 border border-[#22c55e]/30 shrink-0">
+                  <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-[#ADD13F] bg-[#ADD13F]/10 border border-[#ADD13F]/30 shrink-0">
                     Approved
                   </span>
                 )}

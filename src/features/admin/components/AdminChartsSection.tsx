@@ -10,9 +10,9 @@ interface Props {
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const CATEGORY_COLORS = [
-  { bar: "bg-secondary", glow: "rgba(219,39,119,0.8)" },
-  { bar: "bg-accent", glow: "rgba(204,255,0,0.8)" },
-  { bar: "bg-primary", glow: "rgba(124,58,237,0.8)" },
+  { bar: "bg-secondary", glow: "rgba(92,98,214,0.8)" },
+  { bar: "bg-accent", glow: "rgba(196,232,90,0.8)" },
+  { bar: "bg-primary", glow: "rgba(92,98,214,0.8)" },
   { bar: "bg-blue-400", glow: "rgba(96,165,250,0.8)" },
   { bar: "bg-orange-400", glow: "rgba(251,146,60,0.8)" },
 ];
@@ -81,7 +81,7 @@ export const AdminChartsSection: React.FC<Props> = ({
                     style={{ height: `${pct}%` }}
                   >
                     <div
-                      className={`absolute inset-0 bg-linear-to-t ${isToday ? "from-accent/50 to-accent/80 opacity-80" : "from-primary/50 to-primary/80 opacity-60"} group-hover:opacity-100 transition-opacity ${isToday ? "shadow-[0_0_20px_rgba(204,255,0,0.2)]" : ""}`}
+                      className={`absolute inset-0 bg-linear-to-t ${isToday ? "from-accent/60 to-accent/60 opacity-90" : "from-white/20 to-white/20 opacity-60"} group-hover:opacity-100 transition-opacity ${isToday ? "" : ""}`}
                     />
                     {count > 0 && (
                       <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white/50 group-hover:text-white transition-colors opacity-0 group-hover:opacity-100">
@@ -127,7 +127,6 @@ export const AdminChartsSection: React.FC<Props> = ({
                     <span className="font-medium text-white flex items-center gap-2 text-sm">
                       <span
                         className={`w-2 h-2 rounded-full ${color.bar} shrink-0`}
-                        style={{ boxShadow: `0 0 8px ${color.glow}` }}
                       />
                       {fmtCategory(cat.category)}
                     </span>
@@ -143,7 +142,7 @@ export const AdminChartsSection: React.FC<Props> = ({
                       className={`h-full ${color.bar} rounded-full transition-all duration-700`}
                       style={{
                         width: `${pct}%`,
-                        boxShadow: `0 0 10px ${color.glow.replace("0.8", "0.4")}`,
+                        boxShadow: "none",
                       }}
                     />
                   </div>

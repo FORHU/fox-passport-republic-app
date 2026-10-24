@@ -297,7 +297,7 @@ export default function InvestmentLocationPicker({
       // Custom draggable gold pin for partner depot
       const pinEl = document.createElement("div");
       pinEl.className =
-        "w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 border-2 border-white shadow-[0_0_20px_rgba(245,158,11,0.6)] flex items-center justify-center text-black cursor-grab active:cursor-grabbing";
+        "w-8 h-8 rounded-full bg-accent border-2 border-white flex items-center justify-center text-black cursor-grab active:cursor-grabbing";
       pinEl.innerHTML = `<span class="material-symbols-outlined text-[18px]">inventory_2</span>`;
 
       const marker = new mapboxgl.Marker({

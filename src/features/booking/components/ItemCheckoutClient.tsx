@@ -99,8 +99,8 @@ export default function ItemCheckoutClient() {
         appearance: {
           theme: "night" as const,
           variables: {
-            colorPrimary: "#ccff00",
-            colorBackground: "#0d0f1a",
+            colorPrimary: "#C4E85A",
+            colorBackground: "#14161B",
             colorText: "#ffffff",
           },
         },
@@ -232,7 +232,7 @@ export default function ItemCheckoutClient() {
                 </div>
                 <div className="w-8 h-px bg-white/10" />
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold shadow-[0_0_10px_#ccff00]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold">
                     2
                   </span>
                   <span className="text-sm font-bold text-white">Pay</span>
