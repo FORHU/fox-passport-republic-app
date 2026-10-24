@@ -40,7 +40,7 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
               Explore
             </Link>
             <div className="h-4 w-px bg-white/10"></div>
-            <span className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent shadow-[0_0_15px_rgba(204,255,0,0.3)] flex items-center gap-2">
+            <span className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent flex items-center gap-2">
               <DynamicIcon
                 name={category.icon || "Grid3X3"}
                 className="w-4 h-4"

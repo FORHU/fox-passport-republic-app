@@ -36,8 +36,8 @@ const SNAP_RADIUS_PX = 10;
 const DOUBLE_CLICK_WINDOW_MS = 250;
 const MIN_VERTICES = 3;
 const MAX_HISTORY = 100;
-const VALID_COLOR = "#ccff00";
-const INVALID_COLOR = "#ff5d5d";
+const VALID_COLOR = "#C4E85A";
+const INVALID_COLOR = "#F2766E";
 
 interface VenuePolygonMapPickerProps {
   boundary: LngLat[] | null;
@@ -109,7 +109,7 @@ function createVertexElement(
     cursor: grab;
     box-sizing: border-box;
     border: 2px solid ${isStart ? VALID_COLOR : "#ffffff"};
-    background: ${isStart ? "#0b0d14" : VALID_COLOR};
+    background: ${isStart ? "#111317" : VALID_COLOR};
     box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.5);
     opacity: ${restingHidden ? 0 : 1};
     transition: transform 120ms ease, opacity 120ms ease;
@@ -352,7 +352,7 @@ export function VenuePolygonMapPicker({
             type: "line",
             source: OUTLINE_SOURCE_ID,
             paint: {
-              "line-color": "#0b0d14",
+              "line-color": "#111317",
               "line-width": 5,
               "line-opacity": 0.6,
             },
@@ -737,7 +737,7 @@ export function VenuePolygonMapPicker({
             </p>
           )}
           {warning && (
-            <p className="text-[11px] text-[#ff5d5d] font-semibold">
+            <p className="text-[11px] text-[#F2766E] font-semibold">
               {warning}
             </p>
           )}

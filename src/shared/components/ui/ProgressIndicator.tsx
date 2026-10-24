@@ -34,7 +34,7 @@ export function ProgressIndicator({
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all ${
                   isCurrent
-                    ? "bg-accent text-black shadow-[0_0_10px_#ccff00]"
+                    ? "bg-accent text-black"
                     : isCompleted
                       ? "bg-accent text-black"
                       : "bg-white/10 text-white"

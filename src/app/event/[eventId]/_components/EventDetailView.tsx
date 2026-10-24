@@ -15,6 +15,7 @@ import { EventShareModal } from "./EventShareModal";
 import { EventPaymentPanel } from "@/features/event/components/EventPaymentPanel";
 import { EventLineItemsPanel } from "@/features/event/components/EventLineItemsPanel";
 import ProposePartnershipModal from "@/features/partnership/components/ProposePartnershipModal";
+import { packageProposalTarget } from "@/features/partnership/utils/packageProposalTarget";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -84,6 +85,8 @@ export function EventDetailView({
     enabled: !!eventId && !!user,
   });
   const isRealEvent = lineItems?.isEvent === true;
+  // This page only serves public packages (page.tsx 404s otherwise).
+  const proposalTarget = packageProposalTarget(template);
 
   const templateImages: string[] = (template?.images ?? [])
     .map((img: any) => img.url)
@@ -133,10 +136,11 @@ export function EventDetailView({
           onClose={() => setIsCustomBookingOpen(false)}
           venuePrice={price}
         />
-        {isPartnershipOpen && (
+        {isPartnershipOpen && proposalTarget && (
           <ProposePartnershipModal
-            targetEventId={eventId}
-            targetName={template.name || "Untitled Event"}
+            targetVenueId={proposalTarget.venueId}
+            targetName={proposalTarget.name}
+            targetNote={`This package is held at ${proposalTarget.name}. Your proposal goes to the venue's owner.`}
             onClose={() => setIsPartnershipOpen(false)}
           />
         )}
@@ -189,7 +193,7 @@ export function EventDetailView({
               </h2>
             </Link>
             <div className="flex items-center gap-4">
-              {!isPreview && (
+              {!isPreview && proposalTarget && (
                 <button
                   onClick={handleProposePartnership}
                   className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-accent/10 hover:border-accent/30 text-sm font-medium text-white hover:text-accent transition-colors cursor-pointer"
@@ -437,7 +441,8 @@ export function EventDetailView({
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                © {new Date().getFullYear()} FoxPassport Republic. All rights reserved.
+                © {new Date().getFullYear()} FoxPassport Republic. All rights
+                reserved.
               </p>
               <div className="flex gap-6">
                 <a

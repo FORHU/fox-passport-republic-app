@@ -124,6 +124,41 @@ describe("TeamPanel", () => {
     );
   });
 
+  it("explains an invalid helper email instead of sending it", async () => {
+    api.fetchTeam.mockResolvedValue([]);
+    renderWithQuery(createElement(TeamPanel, { target: venue }));
+
+    fireEvent.click(screen.getByRole("radio", { name: "Check-in Helper" }));
+    const input = screen.getByPlaceholderText("Their email address");
+    fireEvent.change(input, { target: { value: "bob@" } });
+    fireEvent.click(screen.getByRole("button", { name: /add helper/i }));
+
+    expect(screen.getByRole("alert").textContent).toMatch(
+      /full email address/i,
+    );
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(api.appoint).not.toHaveBeenCalled();
+
+    // Typing again clears it.
+    fireEvent.change(input, { target: { value: "bob@example.com" } });
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("tells an owner to pick a search result when they invite a name", async () => {
+    api.fetchTeam.mockResolvedValue([]);
+    renderWithQuery(createElement(TeamPanel, { target: venue }));
+
+    fireEvent.change(screen.getByPlaceholderText(/search organizers/i), {
+      target: { value: "Manila" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /send invitation/i }));
+
+    expect(screen.getByRole("alert").textContent).toMatch(
+      /pick an organizer from the results/i,
+    );
+    expect(api.appoint).not.toHaveBeenCalled();
+  });
+
   it("separates the team from invitations still waiting for an answer", async () => {
     api.fetchTeam.mockResolvedValue([
       member({ id: "a1", user: person("Ben") }),
@@ -155,7 +190,12 @@ describe("TeamPanel", () => {
 
   it("keeps past members out of the way until asked for", async () => {
     api.fetchTeam.mockResolvedValue([
-      member({ id: "a3", state: "ended", endReason: "left", user: person("Old") }),
+      member({
+        id: "a3",
+        state: "ended",
+        endReason: "left",
+        user: person("Old"),
+      }),
     ]);
     renderWithQuery(createElement(TeamPanel, { target: venue }));
 
@@ -168,7 +208,11 @@ describe("TeamPanel", () => {
 
 describe("OrganizingSection", () => {
   const invitation = {
-    ...member({ id: "inv1", state: "invited", expiresAt: "2026-10-08T00:00:00Z" }),
+    ...member({
+      id: "inv1",
+      state: "invited",
+      expiresAt: "2026-10-08T00:00:00Z",
+    }),
     event: {
       id: "ev1",
       name: "Jazz Night",
@@ -286,13 +330,17 @@ describe("Organizer requests — the owner's side", () => {
 
   it("turns requests from Organizers on", async () => {
     api.fetchTeam.mockResolvedValue([]);
-    api.updateTeamSettings.mockResolvedValue({ acceptsOrganizerRequests: true });
+    api.updateTeamSettings.mockResolvedValue({
+      acceptsOrganizerRequests: true,
+    });
     renderWithQuery(createElement(TeamPanel, { target: venue }));
 
     const toggle = await screen.findByRole("switch", {
       name: "Accept requests from Organizers",
     });
-    await waitFor(() => expect(toggle.getAttribute("aria-checked")).toBe("false"));
+    await waitFor(() =>
+      expect(toggle.getAttribute("aria-checked")).toBe("false"),
+    );
     fireEvent.click(toggle);
     await waitFor(() =>
       expect(api.updateTeamSettings).toHaveBeenCalledWith(venue, {
@@ -303,7 +351,12 @@ describe("Organizer requests — the owner's side", () => {
 
   it("lists requests to join, with Accept and Decline", async () => {
     api.fetchTeam.mockResolvedValue([
-      member({ id: "r1", state: "requested", user: person("Rita"), expiresAt: "2026-10-08T00:00:00Z" }),
+      member({
+        id: "r1",
+        state: "requested",
+        user: person("Rita"),
+        expiresAt: "2026-10-08T00:00:00Z",
+      }),
     ]);
     api.approveRequest.mockResolvedValue(undefined);
     renderWithQuery(createElement(TeamPanel, { target: venue }));
@@ -331,10 +384,9 @@ describe("Organizer requests — the owner's side", () => {
     api.appoint.mockResolvedValue(member({}));
     renderWithQuery(createElement(TeamPanel, { target: venue }));
 
-    fireEvent.change(
-      await screen.findByPlaceholderText(/search organizers/i),
-      { target: { value: "ben" } },
-    );
+    fireEvent.change(await screen.findByPlaceholderText(/search organizers/i), {
+      target: { value: "ben" },
+    });
     expect(await screen.findByText("Ben Organizer")).toBeTruthy();
     expect(screen.getByText(/Davao · Wedding/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Invite" }));
@@ -352,10 +404,9 @@ describe("Organizer requests — the owner's side", () => {
     api.appoint.mockResolvedValue(member({}));
     renderWithQuery(createElement(TeamPanel, { target: venue }));
 
-    fireEvent.change(
-      await screen.findByPlaceholderText(/search organizers/i),
-      { target: { value: "ben@example.com" } },
-    );
+    fireEvent.change(await screen.findByPlaceholderText(/search organizers/i), {
+      target: { value: "ben@example.com" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /send invitation/i }));
     await waitFor(() =>
       expect(api.appoint).toHaveBeenCalledWith(venue, {
@@ -372,7 +423,11 @@ describe("Organizer requests — the Organizer's side", () => {
   it("shows a request that is waiting, and lets them withdraw it", async () => {
     api.fetchMyAppointments.mockResolvedValue([
       {
-        ...member({ id: "r1", state: "requested", expiresAt: "2026-10-08T00:00:00Z" }),
+        ...member({
+          id: "r1",
+          state: "requested",
+          expiresAt: "2026-10-08T00:00:00Z",
+        }),
         event: null,
         venue: { id: "v1", name: "Sky Hall", city: "Cebu" },
         appointedBy: person("Maria"),

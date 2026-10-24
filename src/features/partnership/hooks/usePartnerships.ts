@@ -8,6 +8,10 @@ import {
   withdrawPartnershipProposal,
 } from "@/features/partnership/api/partnerships";
 import { toast } from "sonner";
+import {
+  CREATE_PROPOSAL_FALLBACK,
+  proposalErrorMessage,
+} from "@/features/partnership/utils/proposalErrorMessage";
 
 export const usePartnershipProposals = (
   roleType?: string,
@@ -33,12 +37,12 @@ export const useCreatePartnershipProposal = () => {
     mutationFn: createPartnershipProposal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partnershipProposals"] });
-      toast.success("Partnership proposal submitted successfully!");
+      toast.success("Proposal sent", {
+        description: "The owner will see it under Partnerships.",
+      });
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Failed to submit proposal.",
-      );
+    onError: (error: unknown) => {
+      toast.error(proposalErrorMessage(error, CREATE_PROPOSAL_FALLBACK));
     },
   });
 };
@@ -51,9 +55,9 @@ export const useAcceptPartnershipProposal = () => {
       queryClient.invalidateQueries({ queryKey: ["partnershipProposals"] });
       toast.success("Partnership proposal accepted!");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error(
-        error?.response?.data?.message || "Failed to accept proposal.",
+        proposalErrorMessage(error, "Couldn't accept the proposal. Try again."),
       );
     },
   });
@@ -67,9 +71,9 @@ export const useRejectPartnershipProposal = () => {
       queryClient.invalidateQueries({ queryKey: ["partnershipProposals"] });
       toast.success("Partnership proposal rejected.");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error(
-        error?.response?.data?.message || "Failed to reject proposal.",
+        proposalErrorMessage(error, "Couldn't reject the proposal. Try again."),
       );
     },
   });
@@ -83,9 +87,12 @@ export const useWithdrawPartnershipProposal = () => {
       queryClient.invalidateQueries({ queryKey: ["partnershipProposals"] });
       toast.success("Partnership proposal withdrawn.");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error(
-        error?.response?.data?.message || "Failed to withdraw proposal.",
+        proposalErrorMessage(
+          error,
+          "Couldn't withdraw the proposal. Try again.",
+        ),
       );
     },
   });

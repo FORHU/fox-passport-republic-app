@@ -2,11 +2,14 @@ import React from "react";
 
 export const UserFooter: React.FC = () => {
   return (
-    <footer className="bg-black pt-20 pb-10 border-t border-white/10">
+    <footer className="bg-black pt-10 pb-28 lg:pb-10 border-t border-white/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-white">
+            <span
+              className="material-symbols-outlined text-white"
+              aria-hidden="true"
+            >
               explore
             </span>
             <span className="text-xl font-display font-bold text-white">

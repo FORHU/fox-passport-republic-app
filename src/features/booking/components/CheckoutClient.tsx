@@ -112,8 +112,8 @@ export default function CheckoutClient() {
         appearance: {
           theme: "night" as const,
           variables: {
-            colorPrimary: "#ccff00",
-            colorBackground: "#0d0f1a",
+            colorPrimary: "#C4E85A",
+            colorBackground: "#14161B",
             colorText: "#ffffff",
           },
         },
@@ -152,7 +152,7 @@ export default function CheckoutClient() {
               </Link>
               <Link
                 href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
               >
                 Bookings
               </Link>
@@ -252,7 +252,7 @@ export default function CheckoutClient() {
                 </Link>
                 <div className="w-8 h-px bg-white/10"></div>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold shadow-[0_0_10px_#ccff00]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold">
                     2
                   </span>
                   <span className="text-sm font-bold text-white">Pay</span>

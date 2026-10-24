@@ -39,7 +39,7 @@ export default function RepublicInvestmentsMapPage() {
 
           <Link
             href="/foxer/create-investment"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">
               add_circle

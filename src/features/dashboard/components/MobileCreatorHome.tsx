@@ -43,19 +43,19 @@ export default function MobileCreatorHome({
     canManageVenues && {
       icon: "apartment",
       label: "Add Venue",
-      color: "#c4b5fd",
+      color: "#C6C9FA",
       href: "/venue-foxer/create-venue",
     },
     canManageInventory && {
       icon: "inventory_2",
       label: "Add Gear",
-      color: "#93c5fd",
+      color: "#C6C9FA",
       href: "/foxer/create-listing?type=inventory",
     },
     canManageServices && {
       icon: "design_services",
       label: "Add Service",
-      color: "#fcd34d",
+      color: "var(--warning)",
       href: "/foxer/create-listing?type=service",
     },
   ].filter((a) => a !== false);
@@ -67,14 +67,14 @@ export default function MobileCreatorHome({
       label: "REVENUE",
       value: statsLoading ? "…" : formatCurrency(stats?.totalRevenue ?? 0),
       icon: "payments",
-      iconColor: "#ccff00",
-      iconBg: "rgba(204,255,0,0.12)",
+      iconColor: "#C4E85A",
+      iconBg: "rgba(196,232,90,0.12)",
     },
     {
       label: "BOOKINGS",
       value: statsLoading ? "…" : String(stats?.totalBookings ?? 0),
       icon: "calendar_month",
-      iconColor: "#f472b6",
+      iconColor: "#B4B8F8",
       iconBg: "rgba(244,114,182,0.12)",
     },
   ];

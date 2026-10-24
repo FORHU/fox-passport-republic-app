@@ -135,7 +135,7 @@ export default function RouteProgressBar() {
       aria-busy="true"
       className="pointer-events-none fixed inset-x-0 top-0 z-[9999] h-0.5 overflow-hidden bg-accent/15"
     >
-      <div className="route-progress-indicator h-full w-1/3 bg-accent shadow-[0_0_8px_var(--color-accent)]" />
+      <div className="route-progress-indicator h-full w-1/3 bg-accent" />
     </div>
   );
 }

@@ -28,24 +28,28 @@ module.exports = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // Premium lime system (see DESIGN.md): four roles. Theme-aware values
+        // come from the CSS variables in globals.css (:root dark, .light).
         background: {
-          DEFAULT: "#02040a", // Deep navy/black
-          light: "#fdf2f8",
-          dark: "#1f1016",
+          DEFAULT: "var(--canvas)", // Page
+          light: "#FAFAF9",
+          dark: "#14161B",
         },
         foreground: "hsl(var(--foreground))",
         surface: {
-          DEFAULT: "#0f111a", // Dark blue-gray
-          highlight: "#1e2130", // Slightly lighter surface
+          DEFAULT: "var(--surface)", // Card
+          highlight: "var(--surface-raised)", // Modal, popover, menu
         },
+        // The old purple/pink "primary" and "secondary" now point at the one
+        // supporting accent, periwinkle. Lime is the brand: `accent` below.
         primary: {
-          DEFAULT: "#7c3aed", // Purple
-          glow: "#8b5cf6", // Lighter purple
+          DEFAULT: "#5C62D6", // Periwinkle solid (white text 5.0:1)
+          glow: "var(--periwinkle)", // Periwinkle as text/icon
           foreground: "#ffffff",
-          dark: "#be185d",
+          dark: "#3F45B0",
         },
         secondary: {
-          DEFAULT: "#db2777", // Hot pink
+          DEFAULT: "var(--periwinkle)",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -57,8 +61,12 @@ module.exports = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#ccff00", // Neon lime green - Primary CTA color
-          foreground: "#000000",
+          DEFAULT: "#C4E85A", // Brand lime: primary actions, active, selected
+          foreground: "#0B0C0F",
+        },
+        periwinkle: {
+          DEFAULT: "var(--periwinkle)", // Supporting accent, used sparingly
+          solid: "#5C62D6",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -67,26 +75,27 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
-          light: "#ffffff",
-          dark: "#29151d",
+          light: "#FFFFFF",
+          dark: "#14161B",
         },
         text: {
           main: {
-            DEFAULT: "#ffffff", // White
-            light: "#1f1719",
-            dark: "#fce7f3",
+            DEFAULT: "var(--color-white)", // Ink: white on dark, #15171C in light
+            light: "#15171C",
+            dark: "#F3F4F6",
           },
           muted: {
-            DEFAULT: "#94a3b8", // Light gray
+            DEFAULT: "#A9AFBB", // Secondary text
             alpha: "rgba(255, 255, 255, 0.6)",
           },
           sub: {
-            light: "#836a75",
-            dark: "#ccb0bd",
+            light: "#545B67",
+            dark: "#A9AFBB",
           },
         },
-        success: "#22c55e", // Green
-        warning: "#eab308", // Yellow
+        success: "var(--accent-text)", // Success reads as lime
+        warning: "var(--warning)",
+        error: "var(--error)",
         // Gamification colors
         "surface-highlight": "rgba(255, 255, 255, 0.08)",
       },
@@ -137,8 +146,10 @@ module.exports = {
         },
       },
       boxShadow: {
-        glow: "0 0 40px -10px rgba(124, 58, 237, 0.5)",
-        "glow-accent": "0 0 30px -5px rgba(204, 255, 0, 0.3)",
+        // Glows are retired: flat surfaces, depth from layers. Kept as names
+        // so existing classes resolve to nothing instead of breaking.
+        glow: "none",
+        "glow-accent": "none",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -304,7 +304,7 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
                     </p>
 
                     <div className="bg-black/40 rounded-2xl p-4 mb-6 border border-white/5 flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                      <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-glow">
                         <span className="material-symbols-outlined text-[18px]">
                           handshake
                         </span>

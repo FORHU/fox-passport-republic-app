@@ -83,7 +83,7 @@ export default async function CategoryDetailPage({
     ...category,
     title: category.name,
     tagline: category.tagline || "Explore experiences",
-    color: category.color || "#ccff00",
+    color: category.color || "#C4E85A",
     spots: category.spotLabel || "Explore",
     gradient:
       CATEGORY_GRADIENTS[category.name?.toLowerCase()] ||
