@@ -5,6 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useStartConversation } from "../hooks/useMessages";
 import { useChatWindowsStore } from "../store/useChatWindowsStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface MessageButtonProps {
   otherUserId: string;
@@ -35,8 +36,16 @@ export default function MessageButton({
   const setConversationId = useChatWindowsStore((s) => s.setConversationId);
   const closeChat = useChatWindowsStore((s) => s.closeChat);
   const startConversation = useStartConversation();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const openLogin = useAuthStore((s) => s.openLogin);
 
   const handleOpen = () => {
+    // Signed out, the conversation call can only fail, after a chat window
+    // has already opened empty. Sign in first instead.
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     openChat({ otherUserId, otherUserName, otherUserImgId, contextLabel });
     startConversation.mutate(
       { otherUserId, contextType, contextId, contextLabel },

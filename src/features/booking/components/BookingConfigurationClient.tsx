@@ -16,6 +16,7 @@ import DateRangePicker from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
+import MessageButton from "@/features/messages/components/MessageButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
@@ -78,6 +79,12 @@ export default function BookingConfigurationClient() {
   const currentAttendees = template?.currentAttendees ?? 0;
   const isFull =
     template?.maxAttendees != null && currentAttendees >= template.maxAttendees;
+  // Full is the Event Foxer's number, not the venue's: they can raise it in
+  // Event Studio, so a full event offers a chat with them next to the waitlist.
+  const eventFoxer =
+    template?.owner?.id && template.owner.id !== user?.id
+      ? template.owner
+      : null;
 
   // Collect all optional items from the template
   const optionalAssets: any[] = (template?.templateAssets ?? []).filter(
@@ -267,7 +274,10 @@ export default function BookingConfigurationClient() {
                     </h3>
                     <p className="text-text-muted max-w-md">
                       All spots are currently filled. Join the waitlist to be
-                      notified when a spot opens up.
+                      notified when a spot opens up
+                      {eventFoxer
+                        ? ", or ask the Event Foxer whether they can make room."
+                        : "."}
                     </p>
                   </div>
                 </div>
@@ -693,6 +703,18 @@ export default function BookingConfigurationClient() {
                           </p>
                         </div>
                         <WaitlistButton templateId={template.id} />
+                        {eventFoxer && (
+                          <MessageButton
+                            otherUserId={eventFoxer.id}
+                            otherUserName={eventFoxer.name ?? "Event Foxer"}
+                            otherUserImgId={eventFoxer.imgId}
+                            contextType="event"
+                            contextId={template.id}
+                            contextLabel={template.name || "Event"}
+                            label="Ask the Event Foxer"
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
+                          />
+                        )}
                       </div>
                     ) : (
                       <>
