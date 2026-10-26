@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Book Venue | Fox Passport Republic",
+  title: "Book Venue",
   description: "Select dates and customize your venue booking.",
 };
 

@@ -3,7 +3,7 @@ import { CheckoutCancelRouter } from "@/features/booking/components/CheckoutCanc
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Checkout Cancelled | FoxPassport",
+  title: "Checkout Cancelled",
   description: "Your checkout session was cancelled.",
 };
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./admin.css";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard | FoxPassport",
+  title: "Admin Dashboard",
   description:
     "FoxPassport Admin Dashboard - Manage experiences, bookings, and users",
   robots: {

@@ -57,7 +57,39 @@ const PROTECTED_ROUTES = [
   "/venue-foxer",
 ];
 
+// dev.foxpassport.com (staging), Vercel previews and localhost answer
+// `noindex`, so search engines never list their seed data or treat them as
+// duplicates of foxpassport.com. A deny-list, not an allow-list: behind a
+// reverse proxy that rewrites Host, an allow-list would noindex production.
+// robots.txt must stay crawlable there: a crawler has to fetch a page to see
+// this header.
+function isNonProductionHost(request: NextRequest): boolean {
+  const host = (
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
+    ""
+  )
+    .split(",")[0]
+    .trim()
+    .split(":")[0]
+    .toLowerCase();
+  return (
+    host === "dev.foxpassport.com" ||
+    host.endsWith(".vercel.app") ||
+    host === "localhost" ||
+    host === "127.0.0.1"
+  );
+}
+
 export default async function proxy(request: NextRequest) {
+  const response = await guard(request);
+  if (isNonProductionHost(request)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
+async function guard(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>

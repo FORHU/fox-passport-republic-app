@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { Loader2 } from "lucide-react";
 import { useSessionManager } from "@/shared/auth/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
 import { endSession } from "@/shared/auth/endSession";
@@ -66,17 +65,14 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, [initialize]);
 
-  if (isLoading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-surface">
-        <Loader2 className="animate-spin text-accent" size={40} />
-      </div>
-    );
-  }
-
+  // Children render while the session loads. This used to return a full-screen
+  // spinner instead, and since `isLoading` is always true on the server, every
+  // page's HTML was that spinner: no headings, text or JSON-LD for crawlers or
+  // link previews. Pages that need a user wait on their own (RequireAuth,
+  // AdminAuthGuard and the server-side requireAuth all check loading).
   return (
     <>
-      <SessionManager />
+      {!isLoading && <SessionManager />}
       {children}
     </>
   );

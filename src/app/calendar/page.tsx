@@ -3,7 +3,7 @@ import LandingHeader from "@/features/landing/components/sections/LandingHeader"
 import { CalendarView } from "@/shared/components/calendar/CalendarView";
 
 export const metadata: Metadata = {
-  title: "Calendar | Fox Passport Republic",
+  title: "Calendar",
   description:
     "Everything you've booked, host, organize or supply, in one calendar.",
 };
