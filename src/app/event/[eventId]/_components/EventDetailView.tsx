@@ -109,10 +109,13 @@ export function EventDetailView({
     router.replace(`/event/${eventId}`, { scroll: false });
   }, [searchParams, user, eventId, router]);
 
+  // Signed out, sign in and come back here: an investor then gets the modal,
+  // anyone else the Partner Foxer application.
   const handleProposePartnership = () => {
-    // Basic redirect for non-partners, although backend may supply a clearer flag in V2
-    if (!user?.roleType?.includes("investor")) {
-      router.push("/onboarding/partner");
+    if (!user) {
+      signInThen(`/event/${eventId}`);
+    } else if (!user.roleType?.includes("investor")) {
+      router.push("/foxer/apply-investor");
     } else {
       setIsPartnershipOpen(true);
     }
