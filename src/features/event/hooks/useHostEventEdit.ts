@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
@@ -173,6 +174,7 @@ function eventServiceToResourceItem(s: any) {
 
 export function useHostEventEdit(eventId: string) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
@@ -271,6 +273,10 @@ export function useHostEventEdit(eventId: string) {
         await submitEventTemplate(eventId);
       }
 
+      // The save is on the package's History now; show it without a reload.
+      queryClient.invalidateQueries({
+        queryKey: ["package-history", eventId],
+      });
       toast.success(
         targetStatus === "draft"
           ? "Draft saved!"
