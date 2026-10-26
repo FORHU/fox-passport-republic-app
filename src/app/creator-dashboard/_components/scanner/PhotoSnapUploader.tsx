@@ -27,7 +27,7 @@ export function PhotoSnapUploader({
         />
         <label
           htmlFor="phone-camera-capture"
-          className="w-full py-3.5 px-4 rounded-2xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] cursor-pointer transition-all"
+          className="w-full py-3.5 px-4 rounded-2xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
         >
           <span className="material-symbols-outlined text-[20px]">
             photo_camera

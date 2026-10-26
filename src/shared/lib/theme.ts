@@ -21,6 +21,25 @@ export function applyTheme(theme: Theme) {
   root.style.colorScheme = theme;
 }
 
+/**
+ * Stripe's embedded components take literal colours, not CSS variables, so
+ * they get the theme's values from here (globals.css: --canvas/--surface,
+ * ink, and the readable dark lime used for accent text on light).
+ */
+export function stripeAppearanceColors(theme: Theme = currentTheme()) {
+  return theme === "light"
+    ? {
+        colorPrimary: "#4A6B10",
+        colorBackground: "#ffffff",
+        colorText: "#15171C",
+      }
+    : {
+        colorPrimary: "#C4E85A",
+        colorBackground: "#0B0C0F",
+        colorText: "#ffffff",
+      };
+}
+
 /** The theme the page is showing right now. */
 export function currentTheme(): Theme {
   if (typeof document === "undefined") return DEFAULT_THEME;

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { Badge } from "@/shared/components/ui/badge";
-import { ROLE_BADGE } from "@/shared/constants/roles";
+import { ROLE_BADGE, roleTextColor } from "@/shared/constants/roles";
 
 export function CitizenProfileSidebarCard() {
   const { user, openLogin } = useAuthStore();
@@ -107,9 +107,9 @@ export function CitizenProfileSidebarCard() {
                 key={role}
                 className="inline-flex w-fit shrink-0 items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
                 style={{
-                  color: meta.color,
-                  borderColor: `${meta.color}40`,
-                  background: `${meta.color}1a`,
+                  color: roleTextColor(meta.color),
+                  borderColor: `color-mix(in srgb, ${meta.color} 25%, transparent)`,
+                  background: `color-mix(in srgb, ${meta.color} 10%, transparent)`,
                 }}
               >
                 {meta.label}

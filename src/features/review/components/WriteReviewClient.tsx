@@ -175,7 +175,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
             <button
               type="submit"
               disabled={!isValid || submitReview.isPending}
-              className="w-full md:w-auto px-10 py-4 rounded-xl bg-accent text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-10 py-4 rounded-xl bg-accent text-black font-bold text-sm disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center justify-center gap-2"
             >
               {submitReview.isPending ? (
                 <>

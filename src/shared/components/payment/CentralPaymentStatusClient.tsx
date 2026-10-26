@@ -53,7 +53,7 @@ export function CentralPaymentStatusClient({
     if (invoice?.status === "paid" || invoice?.paymentStatus === "paid") {
       return (
         <div className="text-center">
-          <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
+          <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-accent text-black font-bold mb-6">
             <span className="material-symbols-outlined text-4xl">
               check_circle
             </span>

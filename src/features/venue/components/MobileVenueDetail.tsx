@@ -53,7 +53,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, transparent 50%, #050608 100%)",
+              "linear-gradient(to bottom, transparent 50%, var(--canvas) 100%)",
           }}
         />
 
@@ -195,7 +195,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           <span
             style={{
               display: "inline-block",
-              background: "rgba(204,255,0,0.12)",
+              background: "rgba(196,232,90,0.12)",
               color: "var(--accent-text)",
               fontSize: 10,
               fontWeight: 700,
@@ -234,7 +234,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           >
             <span
               className="material-symbols-outlined"
-              style={{ fontSize: 14, color: "#facc15" }}
+              style={{ fontSize: 14, color: "var(--warning)" }}
             >
               star
             </span>
@@ -324,7 +324,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           </div>
           <button
             style={{
-              background: "#ccff00",
+              background: "#C4E85A",
               color: "#000",
               fontWeight: 800,
               fontSize: 13,
@@ -332,7 +332,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
               padding: "14px 28px",
               border: "none",
               cursor: "pointer",
-              boxShadow: "0 4px 16px rgba(204,255,0,0.35)",
+              boxShadow: "0 4px 16px rgba(196,232,90,0.35)",
               whiteSpace: "nowrap",
             }}
           >

@@ -3,6 +3,7 @@
 import React from "react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/shared/lib/currency";
+import { SectionHeader } from "./SectionHeader";
 
 interface Transaction {
   type: "purchase" | "topup";
@@ -16,100 +17,108 @@ interface UserWalletProps {
   recentTransactions: Transaction[];
 }
 
+function SoonTag() {
+  return (
+    <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/60">
+      Soon
+    </span>
+  );
+}
+
 export const UserWallet: React.FC<UserWalletProps> = ({
   walletBalance,
   recentTransactions,
 }) => {
   return (
-    <section className="reveal-on-scroll" style={{ transitionDelay: "100ms" }}>
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-indigo-400">
-            account_balance_wallet
-          </span>
-          Fox Wallet
-        </h3>
-        <span className="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30">
-          Active
-        </span>
-      </div>
+    <section aria-labelledby="wallet-title" className="reveal-on-scroll">
+      <SectionHeader
+        id="wallet-title"
+        title="Fox Wallet"
+        icon="account_balance_wallet"
+      />
 
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-indigo-900 to-purple-900 border border-white/10 p-6 shadow-glow hover:scale-[1.02] transition-transform duration-300">
-        <div className="absolute top-0 right-0 p-32 bg-accent opacity-10 blur-[80px] rounded-full"></div>
-        <div className="relative z-10">
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              {/* Internal title removed */}
-              <h3 className="text-4xl font-display font-bold text-white tracking-tight">
-                {formatCurrency(walletBalance)}
-                <span className="text-lg text-indigo-300"></span>
-              </h3>
-            </div>
-            <div className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-white">
-                account_balance_wallet
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button
-              onClick={() =>
-                toast.info("Top Up coming soon!", {
-                  description:
-                    "Wallet funding will be available in the next release.",
-                })
-              }
-              className="bg-accent text-black py-3 rounded-xl font-bold hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(204,255,0,0.3)]"
+      <div className="glass-panel rounded-3xl p-5">
+        <p className="text-xs text-text-muted">Balance</p>
+        <p className="mt-1 text-3xl font-display font-bold text-white tracking-tight tabular-nums">
+          {formatCurrency(walletBalance)}
+        </p>
+
+        <div className="grid grid-cols-2 gap-3 mt-5">
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("Top Up coming soon!", {
+                description:
+                  "Wallet funding will be available in the next release.",
+              })
+            }
+            className="bg-white/10 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-white/15 transition-colors flex items-center justify-center gap-2"
+          >
+            <span
+              className="material-symbols-outlined text-[18px]"
+              aria-hidden="true"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>{" "}
-              Top Up
-            </button>
-            <button
-              onClick={() =>
-                toast.info("Send coming soon!", {
-                  description:
-                    "Peer-to-peer transfers will be available in the next release.",
-                })
-              }
-              className="bg-white/10 text-white py-3 rounded-xl font-bold hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+              add
+            </span>
+            Top Up
+            <SoonTag />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("Send coming soon!", {
+                description:
+                  "Peer-to-peer transfers will be available in the next release.",
+              })
+            }
+            className="bg-white/10 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-white/15 transition-colors flex items-center justify-center gap-2"
+          >
+            <span
+              className="material-symbols-outlined text-[18px]"
+              aria-hidden="true"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                send
-              </span>{" "}
-              Send
-            </button>
-          </div>
-          <div className="space-y-3">
-            <p className="text-xs text-indigo-300 font-bold uppercase tracking-wider">
-              Recent Activity
-            </p>
-            {recentTransactions.map((tx, i) => (
-              <div
-                key={i}
-                className="flex justify-between items-center py-2 border-b border-white/5"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`h-8 w-8 rounded-full ${tx.type === "purchase" ? "bg-secondary/20" : "bg-accent/20"} flex items-center justify-center`}
-                  >
-                    <span
-                      className={`material-symbols-outlined ${tx.type === "purchase" ? "text-secondary" : "text-accent"} text-xs`}
-                    >
-                      {tx.type === "purchase" ? "local_activity" : "add"}
-                    </span>
-                  </div>
-                  <div className="text-sm text-white">{tx.label}</div>
-                </div>
-                <span
-                  className={`text-sm font-bold ${tx.amount > 0 ? "text-accent" : "text-white"}`}
-                >
-                  {tx.amount > 0 ? "+" : ""}
-                  {formatCurrency(Math.abs(tx.amount))}
-                </span>
-              </div>
-            ))}
-          </div>
+              send
+            </span>
+            Send
+            <SoonTag />
+          </button>
         </div>
+
+        {recentTransactions.length > 0 && (
+          <div className="mt-5 pt-4 border-t border-white/10">
+            <h3 className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">
+              Recent activity
+            </h3>
+            <ul>
+              {recentTransactions.map((tx, i) => (
+                <li
+                  key={i}
+                  className="flex justify-between items-center py-2 border-b border-white/5 last:border-b-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`h-8 w-8 rounded-full ${tx.type === "purchase" ? "bg-secondary/20" : "bg-accent/20"} flex items-center justify-center`}
+                    >
+                      <span
+                        className={`material-symbols-outlined ${tx.type === "purchase" ? "text-secondary" : "text-accent"} text-xs`}
+                        aria-hidden="true"
+                      >
+                        {tx.type === "purchase" ? "local_activity" : "add"}
+                      </span>
+                    </div>
+                    <div className="text-sm text-white">{tx.label}</div>
+                  </div>
+                  <span
+                    className={`text-sm font-bold tabular-nums ${tx.amount > 0 ? "text-accent" : "text-white"}`}
+                  >
+                    {tx.amount > 0 ? "+" : ""}
+                    {formatCurrency(Math.abs(tx.amount))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   );

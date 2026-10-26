@@ -10,20 +10,20 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow hover:shadow-glow",
+          "bg-accent text-black font-bold hover:bg-accent-hover",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border border-white/10 bg-white/5 text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300",
-        secondary: "bg-secondary text-white hover:bg-secondary/80",
+          "border border-white/10 bg-white/5 text-white hover:bg-white hover:text-black transition-all duration-300",
+        secondary: "border border-white/20 bg-transparent text-white hover:bg-white/10",
         ghost:
-          "hover:bg-white/10 hover:text-white transition-all hover:scale-105",
-        link: "text-primary underline-offset-4 hover:underline",
-        neon: "btn-neon bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.6),0_0_40px_rgba(204,255,0,0.3)] rounded-3xl",
+          "hover:bg-white/10 hover:text-white transition-colors",
+        link: "text-accent underline-offset-4 hover:underline",
+        neon: "btn-neon bg-accent text-black font-bold rounded-3xl",
         glass:
           "glass-panel text-white hover:bg-black/40 transition-colors duration-500",
         accent:
-          "bg-accent text-black font-bold hover:bg-accent/90 hover:shadow-glow-accent transition-all",
+          "bg-accent text-black font-bold hover:bg-accent-hover transition-colors",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

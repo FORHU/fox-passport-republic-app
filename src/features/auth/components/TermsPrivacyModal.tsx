@@ -178,7 +178,7 @@ export function TermsPrivacyModal({
               }}
               className={`flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
                 bothRead
-                  ? "bg-accent text-black shadow-[0_8px_24px_-8px_rgba(204,255,0,0.45)]"
+                  ? "bg-accent text-black shadow-[0_8px_24px_-8px_rgba(196,232,90,0.45)]"
                   : "cursor-not-allowed bg-white/[0.08] text-white/30"
               }`}
             >

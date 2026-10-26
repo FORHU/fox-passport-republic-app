@@ -151,23 +151,23 @@ export const PATH_LABELS = {
 
 // Badge colors by rarity
 export const BADGE_COLORS: Record<BadgeRarity, string> = {
-  Common: "#94a3b8", // Slate
-  Uncommon: "#22c55e", // Green
-  Rare: "#3b82f6", // Blue
-  Epic: "#a855f7", // Purple
-  Legendary: "#f59e0b", // Amber
+  Common: "#A9AFBB", // Slate
+  Uncommon: "#ADD13F", // Green
+  Rare: "#5C62D6", // Blue
+  Epic: "#A3A8F5", // Purple
+  Legendary: "#D99A26", // Amber
 };
 
 // Path colors
 export const PATH_COLORS: Record<UserPath, string> = {
-  user: "#22c55e", // Green
-  gearFoxer: "#f97316", // Orange
-  serviceFoxer: "#f97316", // Orange
-  performerFoxer: "#f59e0b", // Amber
-  eventFoxer: "#3b82f6", // Blue
-  venueFoxer: "#a855f7", // Purple
-  investor: "#eab308", // Yellow
-  organizer: "#e879f9", // Fuchsia
+  user: "#ADD13F", // Green
+  gearFoxer: "#D99A26", // Orange
+  serviceFoxer: "#D99A26", // Orange
+  performerFoxer: "#D99A26", // Amber
+  eventFoxer: "#5C62D6", // Blue
+  venueFoxer: "#A3A8F5", // Purple
+  investor: "#E8B54D", // Yellow
+  organizer: "#A3A8F5", // Fuchsia
 };
 
 // XP rewards for different actions

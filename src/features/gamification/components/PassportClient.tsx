@@ -127,7 +127,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
       <div
         className="fixed inset-0 opacity-[0.03] pointer-events-none"
         style={{
-          backgroundImage: "radial-gradient(#ccff00 0.5px, transparent 0.5px)",
+          backgroundImage: "radial-gradient(#C4E85A 0.5px, transparent 0.5px)",
           backgroundSize: "24px 24px",
         }}
       ></div>

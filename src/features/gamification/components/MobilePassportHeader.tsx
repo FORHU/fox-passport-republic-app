@@ -35,7 +35,7 @@ export default function MobilePassportHeader({
           right: 0,
           height: 300,
           background:
-            "radial-gradient(circle at 30% 0%, rgba(204,255,0,0.10), transparent 70%)",
+            "radial-gradient(circle at 30% 0%, rgba(196,232,90,0.10), transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -122,10 +122,10 @@ export default function MobilePassportHeader({
               height: 78,
               borderRadius: "50%",
               border: stamp.collected
-                ? "2px dashed #ccff00"
+                ? "2px dashed #C4E85A"
                 : "2px dashed rgba(255,255,255,0.15)",
               background: stamp.collected
-                ? "rgba(204,255,0,0.08)"
+                ? "rgba(196,232,90,0.08)"
                 : "rgba(255,255,255,0.03)",
               display: "flex",
               flexDirection: "column" as const,
@@ -138,7 +138,7 @@ export default function MobilePassportHeader({
               className="material-symbols-outlined"
               style={{
                 fontSize: 24,
-                color: stamp.collected ? "#ccff00" : "rgba(255,255,255,0.2)",
+                color: stamp.collected ? "#C4E85A" : "rgba(255,255,255,0.2)",
               }}
             >
               {stamp.icon}
@@ -147,7 +147,7 @@ export default function MobilePassportHeader({
               style={{
                 fontSize: 9,
                 color: stamp.collected
-                  ? "rgba(204,255,0,0.7)"
+                  ? "rgba(196,232,90,0.7)"
                   : "rgba(255,255,255,0.2)",
                 textTransform: "uppercase" as const,
                 letterSpacing: "0.05em",
@@ -229,7 +229,7 @@ export default function MobilePassportHeader({
                 height: "100%",
                 width: "60%",
                 borderRadius: 99,
-                background: "#ccff00",
+                background: "#C4E85A",
               }}
             />
           </div>

@@ -43,10 +43,10 @@ export interface PassportMatchesTabProps {
 }
 
 const statusColor = (s: string) => {
-  if (s === "accepted" || s === "approved") return "#22c55e";
-  if (s === "declined" || s === "rejected") return "#ef4444";
-  if (s === "secured") return "#ccff00";
-  return "#f97316";
+  if (s === "accepted" || s === "approved") return "#ADD13F";
+  if (s === "declined" || s === "rejected") return "#CF3D34";
+  if (s === "secured") return "#C4E85A";
+  return "#D99A26";
 };
 
 const statusLabel = (s: string) => {
@@ -101,7 +101,7 @@ export function PassportMatchesTab({
             >
               Client Inbox
               {(clientInboxPage?.total ?? 0) > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#ff00aa] text-white text-[9px] font-black">
+                <span className="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#5C62D6] text-white text-[9px] font-black">
                   {clientInboxPage!.total}
                 </span>
               )}
@@ -173,7 +173,7 @@ export function PassportMatchesTab({
                   req.requestStatus === "approved" &&
                   req.bookingStatus === "pending";
                 const sc = awaitingPayment
-                  ? "#f97316"
+                  ? "#D99A26"
                   : statusColor(req.requestStatus);
                 return (
                   <div
@@ -525,7 +525,7 @@ export function PassportMatchesTab({
                             })
                           }
                           disabled={respondMutation.isPending}
-                          className="px-3 py-1.5 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/30 text-[#22c55e] text-[10px] font-black hover:bg-[#22c55e]/20 transition-all disabled:opacity-50 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-[#ADD13F]/10 border border-[#ADD13F]/30 text-[#ADD13F] text-[10px] font-black hover:bg-[#ADD13F]/20 transition-all disabled:opacity-50 cursor-pointer"
                         >
                           Accept
                         </button>
@@ -593,21 +593,21 @@ export function PassportMatchesTab({
                       const isTop3 = entry.rank <= 3;
                       const rankColor =
                         rankColors[entry.rank] ??
-                        (isYou ? "#ccff00" : "rgba(255,255,255,0.3)");
+                        (isYou ? "#C4E85A" : "rgba(255,255,255,0.3)");
                       return (
                         <div
                           key={entry.userId}
                           className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all"
                           style={{
                             background: isYou
-                              ? "rgba(204,255,0,0.06)"
+                              ? "rgba(196,232,90,0.06)"
                               : isTop3
-                                ? `${rankColors[entry.rank]}08`
+                                ? `color-mix(in srgb, ${rankColors[entry.rank]} 3%, transparent)`
                                 : "rgba(255,255,255,0.02)",
                             borderColor: isYou
-                              ? "rgba(204,255,0,0.2)"
+                              ? "rgba(196,232,90,0.2)"
                               : isTop3
-                                ? `${rankColors[entry.rank]}20`
+                                ? `color-mix(in srgb, ${rankColors[entry.rank]} 13%, transparent)`
                                 : "rgba(255,255,255,0.05)",
                           }}
                         >
@@ -699,7 +699,7 @@ export function PassportMatchesTab({
                               width: leaderboardPage === i ? 20 : 8,
                               backgroundColor:
                                 leaderboardPage === i
-                                  ? "#ccff00"
+                                  ? "#C4E85A"
                                   : "rgba(255,255,255,0.15)",
                             }}
                           />

@@ -68,17 +68,17 @@ export type AvailabilityCalendarProps =
 
 const ACCENT_CLASSES = {
   orange: {
-    sel: "bg-orange-400 text-black shadow-[0_0_12px_rgba(251,146,60,0.4)]",
+    sel: "bg-orange-400 text-black",
     ring: "ring-orange-400/40",
     dot: "bg-orange-400",
   },
   purple: {
-    sel: "bg-purple-400 text-black shadow-[0_0_12px_rgba(192,132,252,0.4)]",
+    sel: "bg-purple-400 text-black",
     ring: "ring-purple-400/40",
     dot: "bg-purple-400",
   },
   lime: {
-    sel: "bg-accent text-black shadow-[0_0_12px_rgba(204,255,0,0.4)]",
+    sel: "bg-accent text-black",
     ring: "ring-accent/40",
     dot: "bg-accent",
   },

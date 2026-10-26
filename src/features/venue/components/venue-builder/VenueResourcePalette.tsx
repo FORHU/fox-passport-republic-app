@@ -79,7 +79,7 @@ export function VenueResourcePalette({
             onClick={() => onCategoryChange(cat.id)}
             className={`flex flex-col items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl transition-all ${
               activeCategory === cat.id
-                ? "bg-accent text-black font-bold shadow-[0_0_15px_rgba(204,255,0,0.4)] scale-105"
+                ? "bg-accent text-black font-bold scale-105"
                 : "text-text-muted hover:text-white hover:bg-white/5"
             }`}
           >
@@ -199,7 +199,7 @@ export function VenueResourcePalette({
               <button
                 onClick={onAddCustomItem}
                 disabled={!newItem.name}
-                className="w-full bg-accent text-black font-bold text-xs py-2.5 rounded-lg disabled:opacity-30 disabled:grayscale transition-all active:scale-[0.98] mt-2 shadow-[0_4px_15px_rgba(204,255,0,0.2)]"
+                className="w-full bg-accent text-black font-bold text-xs py-2.5 rounded-lg disabled:opacity-30 disabled:grayscale transition-all active:scale-[0.98] mt-2 shadow-[0_4px_15px_rgba(196,232,90,0.2)]"
               >
                 Add to List
               </button>

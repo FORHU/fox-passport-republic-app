@@ -83,7 +83,7 @@ export function FollowButton({
           ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500"
           : relation === "pending"
             ? "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-zinc-700"
-            : "bg-lime-400 text-black hover:bg-lime-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:shadow-[0_0_20px_rgba(204,255,0,0.3)]"
+            : "bg-lime-400 text-black hover:bg-lime-300"
       } ${className}`}
     >
       {isLoading ? (

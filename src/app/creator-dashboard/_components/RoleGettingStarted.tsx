@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
-import { ROLE_BADGE, type RoleType } from "@/shared/constants/roles";
+import {
+  ROLE_BADGE,
+  roleTextColor,
+  type RoleType,
+} from "@/shared/constants/roles";
 import { useStripeConnect } from "@/features/dashboard/hooks/useStripeConnect";
 import { fetchMyAffiliations } from "@/features/venue-affiliation/api/venueAffiliations";
 import { useMyAppointments } from "@/features/appointment/hooks/useAppointments";
@@ -222,8 +226,7 @@ export function RoleGettingStarted({
     visible.find((c) => c.role === activeRole) ?? visible[0] ?? null;
 
   const hiddenCount = shown.filter(
-    (c) =>
-      dismissed.includes(c.role) && !c.steps.every((s) => s.done === true),
+    (c) => dismissed.includes(c.role) && !c.steps.every((s) => s.done === true),
   ).length;
 
   const restore = () => {
@@ -314,7 +317,10 @@ export function RoleGettingStarted({
                         borderColor: b.color,
                         color: "#000",
                       }
-                    : { borderColor: `${b.color}55`, color: b.color }
+                    : {
+                        borderColor: `color-mix(in srgb, ${b.color} 33%, transparent)`,
+                        color: roleTextColor(b.color),
+                      }
                 }
               >
                 {b.label}
@@ -344,7 +350,9 @@ export function RoleGettingStarted({
               <span
                 className="material-symbols-outlined text-[22px] shrink-0"
                 style={{
-                  color: step.done ? badge.color : "color-mix(in srgb, var(--color-white) 25%, transparent)",
+                  color: step.done
+                    ? roleTextColor(badge.color)
+                    : "color-mix(in srgb, var(--color-white) 25%, transparent)",
                 }}
                 aria-hidden="true"
               >

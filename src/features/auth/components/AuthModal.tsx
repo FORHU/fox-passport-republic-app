@@ -72,8 +72,10 @@ export default function AuthModal() {
   if (!isOpen) return null;
 
   return (
+    // Safe centring: a card taller than the screen (sign-up on a short laptop)
+    // aligns to the top and scrolls, instead of overflowing out of reach above.
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center px-4 overflow-y-auto"
+      className="fixed inset-0 z-100 flex items-center-safe justify-center px-4 py-6 overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
@@ -84,7 +86,7 @@ export default function AuthModal() {
 
       <div
         className={`relative w-full transform transition-all ${
-          bookingSummary ? "my-8 max-w-4xl" : "max-w-xl"
+          bookingSummary ? "max-w-4xl" : "max-w-xl"
         }`}
       >
         {/* Background Blobs */}

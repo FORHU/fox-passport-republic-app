@@ -1,7 +1,7 @@
 import PageLoader from "@/shared/components/ui/PageLoader";
 import React, { Suspense } from "react";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import BookingListClient from "@/features/booking/components/BookingListClient";
-import MobileBookingsView from "@/features/booking/components/MobileBookingsView";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "View your venue, service, and asset booking history.",
 };
 
+// One responsive page for every width: the shared app header (with its mobile
+// menu and bottom nav) over the bookings list.
 export default async function BookingPage({
   searchParams,
 }: {
@@ -18,24 +20,13 @@ export default async function BookingPage({
 }) {
   const { tab } = await searchParams;
   return (
-    <>
-      {/* Mobile */}
-      <div className="lg:hidden">
-        <MobileBookingsView />
-      </div>
-
-      {/* Desktop */}
-      <div className="hidden lg:block min-h-screen bg-background bg-gradient-dark text-text-main font-body selection:bg-accent selection:text-black">
-        <Suspense
-          fallback={
-            <PageLoader />
-          }
-        >
-          <BookingListClient
-            initialTab={tab === "received" ? "received" : "mine"}
-          />
-        </Suspense>
-      </div>
-    </>
+    <div className="min-h-screen bg-canvas font-body">
+      <LandingHeader />
+      <Suspense fallback={<PageLoader />}>
+        <BookingListClient
+          initialTab={tab === "received" ? "received" : "mine"}
+        />
+      </Suspense>
+    </div>
   );
 }
