@@ -119,6 +119,10 @@ describe("every protected route tree guards itself", () => {
 
   const GUARDS = /requireAuth|requireAdmin|requireHost|RequireAuth/;
 
+  // Pages inside a protected tree that are public by decision, each matched
+  // by an exception in proxy.ts (and pinned by proxyPublicProfiles.test.ts).
+  const PUBLIC_PAGES = [join("user", "[id]", "page.tsx")];
+
   it("reads the route list out of the middleware", () => {
     expect(routes.length).toBeGreaterThan(0);
   });
@@ -147,9 +151,12 @@ describe("every protected route tree guards itself", () => {
     }
     if (treeGuarded) return;
 
-    // No tree-level guard, so every page has to carry its own.
+    // No tree-level guard, so every page has to carry its own - except the
+    // ones public on purpose, which proxy.ts lets through as well.
     const unguarded = pages.filter(
-      (file) => !GUARDS.test(stripComments(readFileSync(file, "utf-8"))),
+      (file) =>
+        !PUBLIC_PAGES.some((page) => file.endsWith(page)) &&
+        !GUARDS.test(stripComments(readFileSync(file, "utf-8"))),
     );
     expect(
       unguarded,

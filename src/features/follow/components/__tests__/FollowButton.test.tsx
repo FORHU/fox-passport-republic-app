@@ -14,10 +14,12 @@ import { FollowButton } from "@/features/follow/components/FollowButton";
 
 const authState = vi.hoisted(() => ({
   user: { id: "me-1" } as { id: string } | null,
+  isAuthenticated: true,
   openLogin: vi.fn(),
 }));
 vi.mock("@/shared/auth/useAuthStore", () => ({
-  useAuthStore: () => authState,
+  useAuthStore: (select?: (s: typeof authState) => unknown) =>
+    select ? select(authState) : authState,
 }));
 
 vi.mock("@/features/block/api/useBlock", () => ({
