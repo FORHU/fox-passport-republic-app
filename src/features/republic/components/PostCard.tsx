@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Award,
   Handshake,
@@ -27,6 +26,7 @@ import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
 import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { Badge } from "@/shared/components/ui/badge";
 import { Money } from "@/shared/components/ui/Money";
 
@@ -141,8 +141,11 @@ export function PostCard({
   onMessageFoxerClick,
   renderShareModal,
 }: PostCardProps) {
-  const router = useRouter();
   const { user } = useAuthStore();
+  // Signed out, sign in and come back to wherever this card is shown
+  // (the feed, saved posts, a post modal).
+  const signInHere = () =>
+    signInThen(window.location.pathname + window.location.search);
   const [myReaction, setMyReaction] = useState<ReactionType | null>(
     post.myReaction ?? (post.isLikedByMe ? "like" : null),
   );
@@ -163,7 +166,7 @@ export function PostCard({
 
   const handleReact = async (type: ReactionType | null) => {
     if (!user) {
-      router.push("/auth/login");
+      signInHere();
       return;
     }
     const prevReaction = myReaction;
@@ -218,7 +221,7 @@ export function PostCard({
 
   const handleSendClick = () => {
     if (!user) {
-      router.push("/auth/login");
+      signInHere();
       return;
     }
     setShowShareModal(true);
@@ -233,7 +236,7 @@ export function PostCard({
     contextId: string,
   ) => {
     if (!user) {
-      router.push("/auth/login");
+      signInHere();
       return;
     }
     onMessageFoxerClick?.({
@@ -788,7 +791,7 @@ export function PostCard({
             <button
               onClick={() => {
                 if (!user) {
-                  router.push("/auth/login");
+                  signInHere();
                   return;
                 }
                 setShowRepostModal(true);
