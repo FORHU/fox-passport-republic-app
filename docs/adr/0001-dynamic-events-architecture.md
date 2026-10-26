@@ -127,20 +127,30 @@ and `§16`) didn't have to be hunted down and fixed everywhere they're quoted �
 the section numbers after `§8` are unchanged, only the "Phase N" label text in
 each heading moved.
 
+## Decided 26 Oct — capacity stands alone; legacy categories fold into groups
+
+**`CAPACITY → REGISTRATION` is dropped.** The graph said capacity needs
+registration, but `EventTemplate.maxAttendees` already caps private bookings
+with no registration at all: the Event Foxer sets Max Attendees in Event
+Studio and edits it any time, and `BookingSvc.bookFromTemplate` refuses a
+booking past it (409 `AT_CAPACITY`, with the waitlist). Of the two options,
+dropping the edge matches what ships; redefining `REGISTRATION` to mean "a
+booking or a public registration" would have made one capability mean two
+things. So `CAPACITY` is independent: it caps whatever fills the event,
+bookings today and public registrations once Phase 1 adds them. The graph is
+now `TICKETING → REGISTRATION` and `CHECK_IN → REGISTRATION` only.
+
+**The 5 legacy `EventCategory` values fold into broader groups** rather than
+mapping one-to-one, decided 26 Oct. The groups themselves are still to be
+named (see below), and the taxonomy migration stays additive: the enum is
+kept until every row is backfilled.
+
 ## Still open — carried forward, unresolved in every source that mentions it
 
-- **`CAPACITY → REGISTRATION` capability dependency contradicts current
-  behavior.** Flagged identically in `DYNAMIC-EVENTS-PLAN.md`,
-  `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §16, `DYNAMIC-EVENTS-PROJECT-MASTER.md`
-  §11, and `PRIORITIES.md` P2 — `EventTemplate.maxAttendees` already caps
-  private-booking events with no registration capability at all today. Two
-  options on the table, neither chosen: drop the `CAPACITY → REGISTRATION`
-  edge, or redefine `REGISTRATION` in the dependency graph to mean "some
-  attendee-tracking mechanism" (booking OR public) rather than specifically
-  the new public flow.
-- **Map the 5 legacy `EventCategory` enum values** (`corporate`, `birthday`,
-  `wedding`, `social`, `other`) into whatever taxonomy Phase 1/2 lands on,
-  before that migration runs — flagged in every source, not yet done.
+- **Name the groups the 5 legacy `EventCategory` values fold into**
+  (`corporate`, `birthday`, `wedding`, `social`, `other`), before the
+  taxonomy migration runs. Folding changes `/packages?category=` links and
+  filters, so the mapping is needed for those as well as for the data.
 
 ## New since the three original documents — not yet assessed
 

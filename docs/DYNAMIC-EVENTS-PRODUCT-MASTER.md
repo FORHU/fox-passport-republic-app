@@ -135,12 +135,11 @@ Modular. Initial: `REGISTRATION`, `CAPACITY`, `CHECK_IN`, `TICKETING`, `SESSIONS
 ```
 TICKETING → REGISTRATION
 CHECK_IN  → REGISTRATION
-CAPACITY  → REGISTRATION
 ```
 
 Backend must enforce these rules; frontend only represents the available configuration.
 
-> **Open reconciliation item:** `CAPACITY → REGISTRATION` conflicts with current behavior — `maxAttendees` on `EventTemplate` already caps private-booking events that have no registration capability at all. See the same item tracked in `DYNAMIC-EVENTS-PROJECT-MASTER.md` §11.
+> **Decided 26 Oct:** `CAPACITY` has no dependency. `maxAttendees` on `EventTemplate` already caps private bookings with no registration, so the former `CAPACITY → REGISTRATION` edge was dropped. See `docs/adr/0001-dynamic-events-architecture.md`.
 
 ## 17. Public Registration
 
