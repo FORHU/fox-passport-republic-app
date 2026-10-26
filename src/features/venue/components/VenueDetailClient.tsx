@@ -92,9 +92,10 @@ export default function VenueDetailClient({
   // Messages go to the venue's Shared Inbox, answered by its Mayor and
   // Organizers together (CONTEXT.md) rather than to the Mayor in person.
   // Composed at the app layer: this feature doesn't import `messages`.
+  // Signed out, sign in and come back to this venue.
   const handleContactOwner = useCallback(() => {
     if (!user) {
-      router.push("/auth/login");
+      signInThen(`/venues/${venue.id}`);
       return;
     }
     if (!onContactVenue) {
@@ -102,15 +103,15 @@ export default function VenueDetailClient({
       return;
     }
     onContactVenue();
-  }, [user, onContactVenue, router]);
+  }, [user, onContactVenue, venue.id]);
 
   const handleReportListing = useCallback(() => {
     if (!user) {
-      router.push("/auth/login");
+      signInThen(`/venues/${venue.id}`);
       return;
     }
     setIsReportOpen(true);
-  }, [user, router]);
+  }, [user, venue.id]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">

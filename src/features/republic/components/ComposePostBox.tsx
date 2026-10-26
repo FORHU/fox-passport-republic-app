@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +27,7 @@ import {
   type PendingMediaTag,
 } from "@/features/republic/components/PhotoTagEditor";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { hasPermission } from "@/shared/lib/permissions";
 import api from "@/shared/lib/axios";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
@@ -73,7 +73,6 @@ export function ComposePostBox({
   fetchServices,
   fetchEvents,
 }: ComposePostBoxProps) {
-  const router = useRouter();
   const { user } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -186,7 +185,9 @@ export function ComposePostBox({
           </div>
         </div>
         <button
-          onClick={() => router.push("/auth/login")}
+          onClick={() =>
+            signInThen(window.location.pathname + window.location.search)
+          }
           className="px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 text-black font-extrabold text-xs transition-all shadow-md shrink-0"
         >
           Sign In to Post
