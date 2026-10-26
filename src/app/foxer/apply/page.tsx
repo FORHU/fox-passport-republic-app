@@ -3,7 +3,7 @@ import FoxerApplicationClient from "@/features/role-application/components/Foxer
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Apply to be a Foxer | FoxPassport",
+  title: "Apply to be a Foxer",
   description:
     "Apply to become an authorized Service or Equipment Provider on FoxPassport.",
 };

@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "My Waitlist | Fox Passport Republic",
+  title: "My Waitlist",
   description: "View and manage your waitlist entries.",
 };
 

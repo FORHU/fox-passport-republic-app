@@ -3,7 +3,7 @@ import VenueRequestPendingClient from "@/features/booking/components/VenueReques
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Request Sent | FoxPassport",
+  title: "Request Sent",
   description: "Your over-capacity venue request is awaiting Venue Foxer approval.",
 };
 

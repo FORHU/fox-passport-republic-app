@@ -3,7 +3,7 @@ import CheckoutClient from "@/features/booking/components/CheckoutClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Secure Checkout | Fox Passport Republic",
+  title: "Secure Checkout",
   description: "Complete your premium venue reservation securely.",
 };
 

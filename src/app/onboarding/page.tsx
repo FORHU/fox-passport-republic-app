@@ -4,7 +4,7 @@ import { requireAuth } from "@/shared/lib/server/auth";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Onboarding | FoxPassport",
+  title: "Onboarding",
   description:
     "Begin your journey and choose your identity in the FoxPassport ecosystem.",
 };

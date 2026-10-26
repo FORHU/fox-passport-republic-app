@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { VerificationClient } from "./_components/VerificationClient";
 
 export const metadata: Metadata = {
-  title: "Verification | Fox Passport Republic",
+  title: "Verification",
   description:
     "Verify your email to book, verify your ID for a Verified badge, and track the documents on your role applications.",
 };
