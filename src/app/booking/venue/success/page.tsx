@@ -3,7 +3,7 @@ import VenueBookingSuccessClient from "@/features/booking/components/VenueBookin
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Venue Booking Confirmed | FoxPassport",
+  title: "Venue Booking Confirmed",
   description: "Your venue booking has been confirmed.",
 };
 

@@ -1,14 +1,32 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { assetUrl } from "@/shared/lib/assets";
+
+// openGraph and twitter replace the layout's whole objects rather than merging
+// into them, so the image and url are repeated here.
+const SHARE_IMAGE = assetUrl("foxonlylogo.png");
 
 export const metadata: Metadata = {
   title: { absolute: "FoxPassport — Book any event, anywhere" },
   description:
     "Book the venue, the gear and the crew for any event: concerts, weddings, festivals and private parties. Search by event type, city and date.",
+  // "/" also for `/?q=…` searches, so they aren't indexed as separate pages.
+  alternates: { canonical: "/" },
   openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "FoxPassport",
     title: "FoxPassport — Book any event, anywhere",
     description:
       "Book the venue, the gear and the crew for any event, in one booking.",
+    images: [{ url: SHARE_IMAGE, width: 1200, height: 630, alt: "FoxPassport" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FoxPassport — Book any event, anywhere",
+    description:
+      "Book the venue, the gear and the crew for any event, in one booking.",
+    images: [SHARE_IMAGE],
   },
 };
 

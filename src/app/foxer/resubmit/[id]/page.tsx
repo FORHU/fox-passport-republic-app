@@ -3,7 +3,7 @@ import ResubmitDocumentsClient from "@/features/role-application/components/Resu
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Fix Application Documents | FoxPassport",
+  title: "Fix Application Documents",
   description: "Resubmit the documents flagged on your role application.",
 };
 

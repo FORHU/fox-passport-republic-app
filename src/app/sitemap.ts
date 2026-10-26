@@ -5,6 +5,7 @@ import {
   getPublicEventTemplates,
   getPublicFoxers,
 } from "@/shared/lib/server/data";
+import { ROLES } from "@/shared/data/roleCatalog";
 
 // Hourly ISR revalidation for sitemap (3600 seconds)
 export const revalidate = 3600;
@@ -18,6 +19,8 @@ interface SitemapVenue {
 interface SitemapCategory {
   id?: string;
   slug?: string;
+  /** What GET /categories actually returns, e.g. "birthday". */
+  name?: string;
   updatedAt?: string | Date;
 }
 
@@ -76,6 +79,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/packages`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    // Public docs page per supplier role, linked from the landing page.
+    ...ROLES.map((role) => ({
+      url: `${baseUrl}/earn/${role.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    {
+      url: `${baseUrl}/privacy`,
+      changeFrequency: "yearly",
+      priority: 0.2,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      changeFrequency: "yearly",
+      priority: 0.2,
+    },
   ];
 
   const [venues, categories, eventTemplates, foxers] = await Promise.all([
@@ -102,9 +127,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categoryRoutes: MetadataRoute.Sitemap = (
     categories as SitemapCategory[]
   )
-    .filter((category) => category?.slug || category?.id)
+    .filter((category) => category?.slug || category?.id || category?.name)
     .map((category) => ({
-      url: `${baseUrl}/categories/${category.slug || category.id}`,
+      url: `${baseUrl}/categories/${encodeURIComponent(
+        (category.slug || category.id || category.name) as string,
+      )}`,
       lastModified: category.updatedAt
         ? new Date(category.updatedAt)
         : new Date(),

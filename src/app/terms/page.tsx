@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | FoxPassport",
+  title: "Terms of Service",
   description:
     "Terms of Service and The Republic Charter governing your use of FoxPassport, bookings, venue reservations, and community conduct.",
   openGraph: {
