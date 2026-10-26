@@ -211,11 +211,10 @@ The backend must enforce:
 
 - `TICKETING` requires `REGISTRATION`
 - `CHECK_IN` requires `REGISTRATION`
-- `CAPACITY` requires `REGISTRATION`
 
 The frontend may disable invalid combinations, but the backend remains authoritative.
 
-> **Open reconciliation item (carried from `DYNAMIC-EVENTS-PLAN.md`):** this is now confirmed, in two separate documents, as an intentional dependency — not a typo. It still needs reconciling against current behavior, where `maxAttendees` on `EventTemplate` already caps private-booking events with no registration capability at all. Decide: drop the `CAPACITY → REGISTRATION` edge, or redefine `REGISTRATION` in this graph to mean "some attendee-tracking mechanism" (booking OR public) rather than specifically the new public flow.
+> **Decided 26 Oct:** `CAPACITY` requires nothing. The former `CAPACITY → REGISTRATION` edge was dropped, because `maxAttendees` on `EventTemplate` already caps private bookings with no registration. See `docs/adr/0001-dynamic-events-architecture.md`.
 
 ## 12. Dynamic Events — Phase 4: Format and Visibility
 
