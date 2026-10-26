@@ -89,6 +89,15 @@ export default async function proxy(request: NextRequest) {
   return response;
 }
 
+// `/user/<id>` is a citizen's public profile, inside the otherwise signed-in
+// `/user` tree. Only that one segment: `/user` itself, its fixed pages and
+// `/user/<id>/connections` stay signed-in.
+const USER_PAGES = new Set(["passport", "settings"]);
+function isPublicCitizenProfile(pathname: string): boolean {
+  const match = /^\/user\/([^/]+)\/?$/.exec(pathname);
+  return !!match && !USER_PAGES.has(match[1]);
+}
+
 async function guard(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -96,7 +105,9 @@ async function guard(request: NextRequest) {
     pathname.startsWith(route),
   );
 
-  if (!isProtectedRoute) return NextResponse.next();
+  if (!isProtectedRoute || isPublicCitizenProfile(pathname)) {
+    return NextResponse.next();
+  }
 
   // Presence only. The contents are not read, decoded, or trusted - an expired
   // or forged cookie gets past this line by design, and is refused by the API
