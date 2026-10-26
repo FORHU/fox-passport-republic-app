@@ -20,6 +20,7 @@ import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore"
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
 
@@ -61,9 +62,13 @@ export default function VenueDetailClient({
   const venuePrice = Number((venue as any).price || 0);
 
   const { user } = useAuthStore();
+  // Signed out, sign in and come back here: an investor then gets the modal,
+  // anyone else the Partner Foxer application.
   const handleProposePartnership = () => {
-    if (!user?.roleType?.includes("investor")) {
-      router.push("/onboarding/partner");
+    if (!user) {
+      signInThen(`/venues/${venue.id}`);
+    } else if (!user.roleType?.includes("investor")) {
+      router.push("/foxer/apply-investor");
     } else {
       onProposePartnership?.();
     }
