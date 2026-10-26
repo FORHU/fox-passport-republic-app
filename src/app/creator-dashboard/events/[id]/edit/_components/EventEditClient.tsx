@@ -14,6 +14,7 @@ import {
   EventBlueprint,
 } from "@/features/event/components/event-builder";
 import { TeamPanel } from "@/features/appointment/components/TeamPanel";
+import PackageHistoryPanel from "@/features/event/components/PackageHistoryPanel";
 import { useHostEventEdit } from "@/features/event/hooks/useHostEventEdit";
 
 interface Props {
@@ -188,6 +189,7 @@ function EventEditContent({ id }: Props) {
                   }
                   unavailableMessage="You can add organizers and helpers once this event is booked and scheduled."
                 />
+                <PackageHistoryPanel templateId={id} />
               </div>
             </main>
             <EventBlueprint
