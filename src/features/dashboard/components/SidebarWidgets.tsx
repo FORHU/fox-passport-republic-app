@@ -70,7 +70,7 @@ export function CalendarWidget() {
               key={day}
               className={`rounded-lg h-9 flex flex-col items-center justify-center relative ${
                 isToday
-                  ? "bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]"
+                  ? "bg-accent text-black font-bold"
                   : evs.length
                     ? "text-white font-bold"
                     : "text-white/40"
@@ -98,7 +98,7 @@ export function CalendarWidget() {
 export function CreatorProfile() {
   return (
     <div className="bg-surface border border-white/5 rounded-[2rem] p-6 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent" />
+      <div className="absolute inset-0 bg-white/3" />
       <h3 className="relative z-10 font-display font-bold mb-6">
         Creator Profile
       </h3>

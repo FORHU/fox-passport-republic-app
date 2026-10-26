@@ -10,8 +10,8 @@ interface UserJourneyProps {
 }
 
 const MILESTONES = [
-  { label: "Traveler", level: 1, color: "#10b981", pct: 0 },
-  { label: "Citizen", level: 10, color: "#bef264", pct: 50 },
+  { label: "Traveler", level: 1, color: "var(--accent-text)", pct: 0 },
+  { label: "Citizen", level: 10, color: "var(--accent-text)", pct: 50 },
   { label: "Diplomat", level: 20, color: "var(--color-white)", pct: 100 },
 ];
 
@@ -47,7 +47,7 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
     <section className={`reveal-on-scroll flex flex-col ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#10b981]">
+          <span className="material-symbols-outlined text-[#ADD13F]">
             flight_takeoff
           </span>
           My Journey
@@ -64,11 +64,11 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
       </div>
 
       <div
-        className="relative overflow-hidden rounded-[2.5rem] bg-[#0f392b] border border-[#10b981]/20 p-6 shadow-glow hover:scale-[1.02] transition-transform duration-300 cursor-pointer group flex-1 h-full"
+        className="relative overflow-hidden rounded-[2.5rem] bg-[#14161B] border border-[#ADD13F]/20 p-6 shadow-glow hover:scale-[1.02] transition-transform duration-300 cursor-pointer group flex-1 h-full"
         onClick={handleViewPassport}
       >
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
-        <div className="absolute top-0 right-0 p-24 bg-[#10b981] opacity-20 blur-[80px] rounded-full group-hover:opacity-30 transition-opacity"></div>
+        <div className="absolute top-0 right-0 p-24 bg-[#ADD13F] opacity-20 blur-[80px] rounded-full group-hover:opacity-30 transition-opacity"></div>
 
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-6">
@@ -81,17 +81,17 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
               ) : (
                 <p className="text-white/60 text-sm">
                   Level {level} •{" "}
-                  <span className="text-[#bef264] font-bold">
+                  <span className="text-[#CBEB6E] font-bold">
                     {currentMilestone.label}
                   </span>
                 </p>
               )}
             </div>
-            <div className="h-12 w-12 bg-white/10 rounded-full flex items-center justify-center border border-white/10 group-hover:bg-[#10b981] group-hover:text-[#022c22] transition-colors relative">
-              <span className="material-symbols-outlined text-white group-hover:text-[#022c22] z-10">
+            <div className="h-12 w-12 bg-white/10 rounded-full flex items-center justify-center border border-white/10 group-hover:bg-[#ADD13F] group-hover:text-[#14161B] transition-colors relative">
+              <span className="material-symbols-outlined text-white group-hover:text-[#14161B] z-10">
                 verified
               </span>
-              <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#10b981]/50 animate-spin-slow"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#ADD13F]/50 animate-spin-slow"></div>
             </div>
           </div>
 
@@ -102,7 +102,7 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
 
               {/* Progress fill */}
               <div
-                className="absolute top-[14px] left-0 h-1 bg-linear-to-r from-[#10b981] to-[#bef264] -translate-y-1/2 rounded-full shadow-[0_0_10px_#10b981] transition-all duration-1000"
+                className="absolute top-[14px] left-0 h-1 bg-accent -translate-y-1/2 rounded-full transition-all duration-1000"
                 style={{ width: `${progressPct}%` }}
               ></div>
 
@@ -117,12 +117,12 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
                     style={{ animation: "fly 3s ease-in-out infinite" }}
                   >
                     <div className="absolute -translate-x-1/2 -translate-y-1/2">
-                      <span className="material-symbols-outlined text-[#bef264] text-3xl drop-shadow-[0_0_10px_rgba(190,242,100,0.8)] rotate-90">
+                      <span className="material-symbols-outlined text-[#CBEB6E] text-3xl rotate-90">
                         flight
                       </span>
                     </div>
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                      <span className="text-[10px] font-bold text-[#bef264] bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#bef264]/30">
+                      <span className="text-[10px] font-bold text-[#CBEB6E] bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#CBEB6E]/30">
                         You (Lvl {level})
                       </span>
                     </div>
@@ -163,7 +163,7 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
                           className="text-[10px] font-normal"
                           style={{
                             color: reached
-                              ? `${m.color}99`
+                              ? `color-mix(in srgb, ${m.color} 60%, transparent)`
                               : "rgba(255,255,255,0.2)",
                           }}
                         >
@@ -181,13 +181,13 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
                 <span className="text-xs text-white/30">Loading XP…</span>
               ) : nextMilestone ? (
                 <div className="text-xs text-white/70">
-                  <span className="text-[#bef264] font-bold">
+                  <span className="text-[#CBEB6E] font-bold">
                     {xpToNext.toLocaleString()} XP
                   </span>{" "}
                   to Level {level + 1}
                 </div>
               ) : (
-                <div className="text-xs text-[#bef264] font-bold">
+                <div className="text-xs text-[#CBEB6E] font-bold">
                   Max Level Reached
                 </div>
               )}

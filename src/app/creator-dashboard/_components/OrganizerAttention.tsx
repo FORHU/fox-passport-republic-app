@@ -62,7 +62,7 @@ export function OrganizerAttention() {
     >
       {invitations > 0 && (
         <span
-          className={`${chip} border-[#e879f9]/30 bg-[#e879f9]/10 text-[#e879f9]`}
+          className={`${chip} border-[#A3A8F5]/30 bg-[#A3A8F5]/10 text-[#A3A8F5]`}
         >
           {invitations} invitation{invitations === 1 ? "" : "s"} to answer
         </span>

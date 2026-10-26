@@ -113,7 +113,7 @@ export default function StripeConnectSection() {
           {!isComplete ? (
             <Link
               href="/creator-dashboard/stripe-onboard"
-              className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5b53f5] text-white text-sm font-semibold py-2.5 rounded-full transition"
+              className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5C62D6] text-white text-sm font-semibold py-2.5 rounded-full transition"
             >
               <ExternalLink size={14} />
               {status?.hasStripeAccount

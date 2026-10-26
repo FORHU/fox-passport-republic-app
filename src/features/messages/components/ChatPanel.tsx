@@ -1060,7 +1060,7 @@ export default function ChatPanel({
           )}
         </button>
         {bubbleUnread > 0 && (
-          <span className="pointer-events-none absolute -top-1 -left-1 h-5 min-w-5 px-1 rounded-full bg-[#ff00aa] border-2 border-canvas text-white text-[10px] font-black flex items-center justify-center">
+          <span className="pointer-events-none absolute -top-1 -left-1 h-5 min-w-5 px-1 rounded-full bg-[#5C62D6] border-2 border-canvas text-white text-[10px] font-black flex items-center justify-center">
             {bubbleUnread > 9 ? "9+" : bubbleUnread}
           </span>
         )}

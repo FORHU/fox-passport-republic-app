@@ -15,15 +15,15 @@ const NO_TOTALS = { paid: 0, pending: 0 };
 
 const DONE = {
   icon: "check_circle",
-  iconColor: "#22c55e",
-  iconBg: "rgba(34,197,94,0.15)",
-  statusColor: "#22c55e",
+  iconColor: "#ADD13F",
+  iconBg: "rgba(173,209,63,0.15)",
+  statusColor: "#ADD13F",
 };
 const WAITING = {
   icon: "hourglass_top",
-  iconColor: "#f59e0b",
-  iconBg: "rgba(245,158,11,0.15)",
-  statusColor: "#f59e0b",
+  iconColor: "#D99A26",
+  iconBg: "rgba(217,154,38,0.15)",
+  statusColor: "#D99A26",
 };
 const TODO = {
   icon: "account_balance",
@@ -124,8 +124,8 @@ export default function MobileEarningsView() {
         {/* Pending Payouts card */}
         <div
           style={{
-            background: "linear-gradient(135deg,#161616,var(--canvas))",
-            border: "1px solid rgba(204,255,0,0.2)",
+            background: "linear-gradient(135deg,#14161B,var(--canvas))",
+            border: "1px solid rgba(196,232,90,0.2)",
             borderRadius: 22,
             padding: 20,
             marginBottom: 20,
@@ -173,7 +173,7 @@ export default function MobileEarningsView() {
                 textAlign: "center",
                 textDecoration: "none",
                 width: "100%",
-                background: "#ccff00",
+                background: "#C4E85A",
                 color: "#000",
                 fontWeight: 800,
                 fontSize: 13,
@@ -340,7 +340,7 @@ export default function MobileEarningsView() {
                   style={{
                     fontSize: 13,
                     fontWeight: 700,
-                    color: payout.status === "failed" ? "#f87171" : "#22c55e",
+                    color: payout.status === "failed" ? "#F2766E" : "#ADD13F",
                   }}
                 >
                   {formatCurrency(payout.payoutAmount)}

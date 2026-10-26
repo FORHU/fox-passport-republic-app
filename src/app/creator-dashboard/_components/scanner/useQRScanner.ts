@@ -96,7 +96,21 @@ export function useQRScanner() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // So picking the same file again still fires a change.
+    e.target.value = "";
     if (!file) return;
+
+    // A PDF or EXE would only fail later as "no QR code in this image",
+    // which doesn't say what was wrong with it.
+    if (!file.type.startsWith("image/")) {
+      setScanState("error");
+      setLastResult({
+        ticketCode: file.name,
+        message:
+          "That file isn't an image. Upload a PNG, JPG or WebP screenshot of the QR code.",
+      });
+      return;
+    }
 
     setIsProcessingFile(true);
     try {

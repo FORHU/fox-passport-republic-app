@@ -21,29 +21,29 @@ const POLYGON_SOURCE_ID = "venues-map-polygons";
 const HOME_SOURCE_ID = "venues-map-home-radius";
 const HOME_RADIUS_KM = 20;
 const DEFAULT_CENTER: [number, number] = [120.9842, 14.5995]; // Manila
-const ACCENT_COLOR = "#ccff00";
+const ACCENT_COLOR = "#C4E85A";
 const SELECTED_COLOR = "#ffffff";
 // The "you are here" radius is drawn in the accent color while the current
 // viewport actually contains the foxer's real location, and switches to this
 // amber the moment they search/pan somewhere else — a visual reminder that
 // what's on screen isn't where they actually are.
 const HOME_COLOR = ACCENT_COLOR;
-const AWAY_COLOR = "#f59e0b";
+const AWAY_COLOR = "#D99A26";
 
 // One color per venue type, shared by every map in the app — admin, the
 // public browse map, and the foxer's reference layer while drawing a new
 // venue — so "what kind of place is this" reads the same regardless of
 // which surface you're looking at it from.
 export const CATEGORY_COLORS: Record<string, string> = {
-  indoor: "#ccff00",
-  outdoor: "#4ade80",
-  hotel: "#60a5fa",
-  beach_resort: "#22d3ee",
-  garden: "#a3e635",
-  mix: "#c084fc",
-  other: "#94a3b8",
+  indoor: "#C4E85A",
+  outdoor: "#C4E85A",
+  hotel: "#A3A8F5",
+  beach_resort: "#A3A8F5",
+  garden: "#C4E85A",
+  mix: "#B4B8F8",
+  other: "#A9AFBB",
 };
-const DEFAULT_CATEGORY_COLOR = "#94a3b8";
+const DEFAULT_CATEGORY_COLOR = "#A9AFBB";
 
 export const CATEGORY_LABELS: Record<string, string> = {
   indoor: "Indoor",
@@ -121,7 +121,7 @@ export function createBuildingClusterPinElement(
   selected = false,
 ): HTMLDivElement {
   const glow = selected
-    ? `drop-shadow(0 0 12px rgba(204,255,0,0.85))`
+    ? `drop-shadow(0 0 6px rgba(0,0,0,0.75))`
     : `drop-shadow(0 0 6px rgba(0,0,0,0.75))`;
   const el = document.createElement("div");
   // Mapbox updates this element's transform on every camera frame. A CSS
@@ -129,12 +129,12 @@ export function createBuildingClusterPinElement(
   el.style.cssText = `cursor: pointer; filter: ${glow};`;
 
   el.innerHTML = `
-    <div style="display:inline-flex;align-items:center;background:#09090e;border:2px solid ${selected ? "#ccff00" : "#f59e0b"};border-radius:999px;padding:3px 8px 3px 6px;box-shadow:0 6px 18px rgba(0,0,0,0.85);gap:5px;transform:translateY(-10px);">
-      <div style="width:20px;height:20px;border-radius:50%;background:${selected ? "#ccff00" : "rgba(245,158,11,0.25)"};color:${selected ? "#000" : "#f59e0b"};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;">
+    <div style="display:inline-flex;align-items:center;background:#111317;border:2px solid ${selected ? "#C4E85A" : "#D99A26"};border-radius:999px;padding:3px 8px 3px 6px;box-shadow:0 6px 18px rgba(0,0,0,0.85);gap:5px;transform:translateY(-10px);">
+      <div style="width:20px;height:20px;border-radius:50%;background:${selected ? "#C4E85A" : "rgba(217,154,38,0.25)"};color:${selected ? "#000" : "#D99A26"};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;">
         🏢
       </div>
       <span style="font-size:11px;font-weight:800;color:#fff;letter-spacing:0.02em;white-space:nowrap;">
-        ${count} <span style="font-size:9px;color:${selected ? "#ccff00" : "#f59e0b"};text-transform:uppercase;font-weight:900;">spaces/events</span>
+        ${count} <span style="font-size:9px;color:${selected ? "#C4E85A" : "#D99A26"};text-transform:uppercase;font-weight:900;">spaces/events</span>
       </span>
     </div>
   `;
@@ -145,7 +145,7 @@ export function createBuildingClusterPinElement(
 // instead of a drawn shape. Solid-fill in the venue's category color (not
 // the dark-with-outline look of a generic map pin), with the same soft neon
 // glow used on button hovers elsewhere
-// (`shadow-[0_0_20px_rgba(204,255,0,0.5)]`), and — when the foxer uploaded
+// (``), and — when the foxer uploaded
 // one — the venue's own photo cropped into the circle instead of a plain
 // dot, so a pin actually shows what's there rather than just where.
 // Selected pins are drawn bigger with a white ring rather than recoloring
@@ -158,8 +158,8 @@ export function createPinElement(
 ): HTMLDivElement {
   const w = selected ? 38 : 28;
   const h = selected ? 48 : 36;
-  const glow = `drop-shadow(0 0 6px ${hexToRgba(selected ? SELECTED_COLOR : color, 0.55)})`;
-  const ringColor = selected ? SELECTED_COLOR : "#0b0d14";
+  const glow = `drop-shadow(0 0 6px rgba(0,0,0,0.6))`;
+  const ringColor = selected ? SELECTED_COLOR : "#111317";
   const ringWidth = selected ? 2.5 : 1.5;
   const clipId = `pin-clip-${++pinIdCounter}`;
   const el = document.createElement("div");
@@ -179,8 +179,8 @@ export function createPinElement(
     ? `<clipPath id="${clipId}"><circle cx="14" cy="13.5" r="8"/></clipPath>
        <image href="${escapeHtml(safeUrl)}" x="6" y="5.5" width="16" height="16"
          preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})"/>
-       <circle cx="14" cy="13.5" r="8" fill="none" stroke="#0b0d14" stroke-width="1"/>`
-    : `<circle cx="14" cy="13.5" r="5" fill="#0b0d14"/>`;
+       <circle cx="14" cy="13.5" r="8" fill="none" stroke="#111317" stroke-width="1"/>`
+    : `<circle cx="14" cy="13.5" r="5" fill="#111317"/>`;
 
   el.innerHTML = `
     <svg width="${w}" height="${h}" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -191,22 +191,6 @@ export function createPinElement(
     </svg>
   `;
   return el;
-}
-
-function hexToRgba(hex: string, alpha: number): string {
-  const clean = hex.replace("#", "");
-  const full =
-    clean.length === 3
-      ? clean
-          .split("")
-          .map((c) => c + c)
-          .join("")
-      : clean;
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
-  if ([r, g, b].some(Number.isNaN)) return `rgba(204,255,0,${alpha})`;
-  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 // Mapbox "match" expression: picks a fill/line color off each feature's
@@ -331,7 +315,7 @@ export function VenuesMap({
           .setLngLat(lngLat)
           .setHTML(
             `<div style="font-family:inherit;padding:2px 4px;">
-              <div style="color:#0b0d14;font-weight:700;font-size:13px;">${escapeHtml(venue.name)}</div>
+              <div style="color:#111317;font-weight:700;font-size:13px;">${escapeHtml(venue.name)}</div>
               ${venue.subtitle ? `<div style="color:#555;font-size:11px;margin-top:2px;">${escapeHtml(venue.subtitle)}</div>` : ""}
             </div>`,
           )
@@ -353,9 +337,9 @@ export function VenuesMap({
           <div class="building-popup-item" data-id="${escapeHtml(v.id)}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;margin-bottom:4px;transition:background 0.15s;">
             <div style="min-width:0;flex:1;">
               <div style="font-weight:800;font-size:12px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(v.name)}</div>
-              ${v.subtitle ? `<div style="font-size:10px;color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(v.subtitle)}</div>` : ""}
+              ${v.subtitle ? `<div style="font-size:10px;color:#A9AFBB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(v.subtitle)}</div>` : ""}
             </div>
-            <span style="font-size:10px;font-weight:800;color:#ccff00;background:rgba(204,255,0,0.12);padding:2px 7px;border-radius:6px;border:1px solid rgba(204,255,0,0.3);white-space:nowrap;">View</span>
+            <span style="font-size:10px;font-weight:800;color:#C4E85A;background:rgba(196,232,90,0.12);padding:2px 7px;border-radius:6px;border:1px solid rgba(196,232,90,0.3);white-space:nowrap;">View</span>
           </div>`,
           )
           .join("");
@@ -364,9 +348,9 @@ export function VenuesMap({
           <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span style="font-size:14px;">🏢</span>
-              <span style="font-size:11px;font-weight:900;text-transform:uppercase;color:#ccff00;">Building Complex</span>
+              <span style="font-size:11px;font-weight:900;text-transform:uppercase;color:#C4E85A;">Building Complex</span>
             </div>
-            <span style="font-size:10px;font-weight:800;background:#27272a;color:#f59e0b;padding:1px 6px;border-radius:99px;">${cluster.venues.length} spaces/events</span>
+            <span style="font-size:10px;font-weight:800;background:#262A31;color:#D99A26;padding:1px 6px;border-radius:99px;">${cluster.venues.length} spaces/events</span>
           </div>
           <div style="max-height:180px;overflow-y:auto;padding-right:2px;">
             ${itemsHtml}
@@ -463,7 +447,7 @@ export function VenuesMap({
             type: "line",
             source: POLYGON_SOURCE_ID,
             paint: {
-              "line-color": "#0b0d14",
+              "line-color": "#111317",
               "line-width": 5,
               "line-opacity": 0.6,
             },
@@ -725,7 +709,7 @@ export function VenuesMap({
         map.setPaintProperty(`${HOME_SOURCE_ID}-line`, "line-color", color);
         if (homeMarkerElRef.current) {
           homeMarkerElRef.current.style.background = color;
-          homeMarkerElRef.current.style.boxShadow = `0 0 0 3px rgba(0,0,0,0.35), 0 0 10px ${color}`;
+          homeMarkerElRef.current.style.boxShadow = `0 0 0 3px rgba(0,0,0,0.35)`;
         }
       };
 
@@ -760,7 +744,7 @@ export function VenuesMap({
           const el = document.createElement("div");
           el.title = "Your detected location";
           el.style.cssText =
-            "width:14px;height:14px;border-radius:50%;border:2px solid #0b0d14;cursor:default;";
+            "width:14px;height:14px;border-radius:50%;border:2px solid #111317;cursor:default;";
           homeMarkerRef.current = new mapboxgl.Marker({
             element: el,
             anchor: "center",
@@ -850,8 +834,8 @@ export function VenuesMap({
               paint: {
                 "fill-extrusion-color":
                   useMapThemeStore.getState().theme === "light"
-                    ? "#d4d4d8"
-                    : "#2a2d3a",
+                    ? "#CDD1D8"
+                    : "#262A31",
                 "fill-extrusion-height": ["get", "height"],
                 "fill-extrusion-base": ["get", "min_height"],
                 "fill-extrusion-opacity": 0.85,

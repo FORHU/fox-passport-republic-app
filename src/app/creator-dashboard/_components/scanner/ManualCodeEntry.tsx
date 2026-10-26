@@ -57,7 +57,7 @@ export function ManualCodeEntry({
       <button
         type="submit"
         disabled={!manualCode.trim() || isProcessing}
-        className="w-full py-3.5 rounded-2xl bg-accent hover:bg-accent-hover text-black font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full py-3.5 rounded-2xl bg-accent hover:bg-accent-hover text-black font-black text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       >
         <span className="material-symbols-outlined text-[18px]">
           how_to_reg

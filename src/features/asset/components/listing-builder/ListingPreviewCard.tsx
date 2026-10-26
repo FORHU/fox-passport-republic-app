@@ -126,7 +126,7 @@ export function ListingPreviewCard({
         {/* Preview Card */}
         <div className="relative group w-[320px] mx-auto perspective-1000">
           {image && (
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-[2.2rem] blur opacity-25 group-hover:opacity-50 transition duration-500" />
+            <div className="absolute -inset-1 bg-transparent rounded-[2.2rem] blur opacity-25 group-hover:opacity-50 transition duration-500" />
           )}
           <div className="relative bg-surface-raised rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
             {/* Image Area */}
@@ -198,7 +198,7 @@ export function ListingPreviewCard({
                 <div
                   className={`h-6 w-6 rounded-full flex items-center justify-center ${
                     activeType === "inventory"
-                      ? "bg-primary/20 text-primary"
+                      ? "bg-primary/20 text-primary-glow"
                       : "bg-warning/20 text-warning"
                   }`}
                 >

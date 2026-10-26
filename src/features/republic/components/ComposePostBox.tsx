@@ -703,7 +703,7 @@ export function ComposePostBox({
           border-radius: 20px;
         }
         .post-type-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(163, 230, 53, 0.4);
+          background: rgba(196, 232, 90, 0.4);
         }
         .post-type-scrollbar {
           scrollbar-width: thin;

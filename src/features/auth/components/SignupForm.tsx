@@ -319,7 +319,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={signupMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
         >
           {signupMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />

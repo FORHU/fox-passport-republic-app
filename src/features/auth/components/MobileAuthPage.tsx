@@ -42,14 +42,14 @@ const FIELD: React.CSSProperties = {
 
 const FIELD_ERR: React.CSSProperties = {
   ...FIELD,
-  border: "1px solid rgba(239,68,68,0.6)",
+  border: "1px solid rgba(207,61,52,0.6)",
 };
 
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return (
     <span
-      style={{ fontSize: 10, color: "#ef4444", marginTop: 3, display: "block" }}
+      style={{ fontSize: 10, color: "var(--error)", marginTop: 3, display: "block" }}
     >
       {msg}
     </span>
@@ -268,7 +268,7 @@ function LoginView({
           type="submit"
           disabled={loginMutation.isPending}
           style={{
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontSize: 14,
             fontWeight: 800,
@@ -277,7 +277,7 @@ function LoginView({
             border: "none",
             cursor: loginMutation.isPending ? "not-allowed" : "pointer",
             opacity: loginMutation.isPending ? 0.7 : 1,
-            boxShadow: "0 4px 20px rgba(204,255,0,0.3)",
+            boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
             marginTop: 4,
           }}
         >
@@ -553,7 +553,7 @@ function SignupView({
               setAgreedToTerms(e.target.checked);
             }}
             style={{
-              accentColor: "#ccff00",
+              accentColor: "#C4E85A",
               width: 16,
               height: 16,
               flexShrink: 0,
@@ -622,7 +622,7 @@ function SignupView({
           type="submit"
           disabled={signupMutation.isPending}
           style={{
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontSize: 14,
             fontWeight: 800,
@@ -631,7 +631,7 @@ function SignupView({
             border: "none",
             cursor: signupMutation.isPending ? "not-allowed" : "pointer",
             opacity: signupMutation.isPending ? 0.7 : 1,
-            boxShadow: "0 4px 20px rgba(204,255,0,0.3)",
+            boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
             marginTop: 4,
           }}
         >
@@ -745,8 +745,8 @@ function ForgotView({ onBack }: { onBack: () => void }) {
       {sent ? (
         <div
           style={{
-            background: "rgba(204,255,0,0.08)",
-            border: "1px solid rgba(204,255,0,0.25)",
+            background: "rgba(196,232,90,0.08)",
+            border: "1px solid rgba(196,232,90,0.25)",
             borderRadius: 16,
             padding: "20px 18px",
             textAlign: "center",
@@ -802,7 +802,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
             type="submit"
             disabled={forgotMutation.isPending || !email.trim()}
             style={{
-              background: "#ccff00",
+              background: "#C4E85A",
               color: "#000",
               fontSize: 14,
               fontWeight: 800,
@@ -814,7 +814,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
                   ? "not-allowed"
                   : "pointer",
               opacity: forgotMutation.isPending || !email.trim() ? 0.7 : 1,
-              boxShadow: "0 4px 20px rgba(204,255,0,0.3)",
+              boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
             }}
           >
             {forgotMutation.isPending ? "Sending…" : "Send Reset Code"}
@@ -918,7 +918,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
           type="submit"
           disabled={verifyMutation.isPending || otp.length < 6}
           style={{
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontSize: 14,
             fontWeight: 800,
@@ -930,7 +930,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
                 ? "not-allowed"
                 : "pointer",
             opacity: verifyMutation.isPending || otp.length < 6 ? 0.7 : 1,
-            boxShadow: "0 4px 20px rgba(204,255,0,0.3)",
+            boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
           }}
         >
           {verifyMutation.isPending ? "Verifying…" : "Verify Email"}
@@ -982,7 +982,7 @@ export default function MobileAuthPage() {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(204,255,0,0.08) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(196,232,90,0.08) 0%, transparent 70%)",
           pointerEvents: "none",
           zIndex: 0,
         }}

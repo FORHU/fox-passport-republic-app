@@ -64,7 +64,7 @@ export function EventBookingSidebar({
           </div>
           <button
             onClick={handleReserve}
-            className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm cursor-pointer shadow-[0_4px_16px_rgba(204,255,0,0.35)]"
+            className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm cursor-pointer shadow-[0_4px_16px_rgba(196,232,90,0.35)]"
           >
             Reserve
           </button>
@@ -99,7 +99,7 @@ export function EventBookingSidebar({
               <>
                 <button
                   onClick={handleReserve}
-                  className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-4 relative z-10 cursor-pointer"
+                  className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg transition-all active:scale-95 mb-4 relative z-10 cursor-pointer"
                 >
                   Reserve
                 </button>

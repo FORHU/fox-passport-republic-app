@@ -19,13 +19,12 @@ export default async function HostVenuesPage() {
 
   return (
     <>
+      {/* Each view places the guide below its own fixed nav. */}
       <div className="lg:hidden">
-        <div className="px-5 pt-4">{guide}</div>
-        <MobileMyListingsView venues={venues} />
+        <MobileMyListingsView venues={venues} guide={guide} />
       </div>
       <div className="hidden lg:block">
-        <div className="mx-auto max-w-7xl px-6 pt-6">{guide}</div>
-        <HostVenuesClient initialVenues={venues} />
+        <HostVenuesClient initialVenues={venues} guide={guide} />
       </div>
     </>
   );

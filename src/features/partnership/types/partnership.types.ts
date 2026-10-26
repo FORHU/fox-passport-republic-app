@@ -1,5 +1,21 @@
+// The API's `PartnershipType` enum, value for value. It once said "resource"
+// and "business", which the database rejected.
 export type PartnershipType =
-  "investment" | "sponsorship" | "resource" | "business";
+  | "investment"
+  | "sponsorship"
+  | "resource_contribution"
+  | "business_partnership";
+
+export const PARTNERSHIP_TYPE_LABEL: Record<PartnershipType, string> = {
+  investment: "Investment",
+  sponsorship: "Sponsorship",
+  resource_contribution: "Resource Contribution",
+  business_partnership: "Business Partnership",
+};
+
+/** A type's label, or the raw value for one this build doesn't know yet. */
+export const partnershipTypeLabel = (type: string) =>
+  PARTNERSHIP_TYPE_LABEL[type as PartnershipType] ?? type;
 export type PartnershipProposalStatus =
   "pending" | "accepted" | "rejected" | "withdrawn";
 
@@ -12,8 +28,9 @@ export interface PartnershipProposal {
   title: string;
   description: string;
   proposedAmount?: number | null;
-  proposedBenefits?: Record<string, any> | null;
-  proposedContribution?: Record<string, any> | null;
+  // Free text, like the `String?` columns they're stored in.
+  proposedBenefits?: string | null;
+  proposedContribution?: string | null;
   status: PartnershipProposalStatus;
   createdAt: string;
   updatedAt: string;
@@ -43,6 +60,6 @@ export interface CreatePartnershipProposalDto {
   title: string;
   description: string;
   proposedAmount?: number;
-  proposedBenefits?: Record<string, any>;
-  proposedContribution?: Record<string, any>;
+  proposedBenefits?: string;
+  proposedContribution?: string;
 }

@@ -1,41 +1,41 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 import {
   fetchUserBookings,
   fetchReceivedBookings,
+  fetchUpcomingBookings,
 } from "@/features/booking/api/bookings";
 import CancelBookingModal from "@/features/booking/components/CancelBookingModal";
 import { toast } from "sonner";
-import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { pollWhileVisible } from "@/shared/lib/realtime";
-import { formatCurrency } from "@/shared/lib/currency";
-import { LOGO_SRC } from "@/shared/lib/assets";
+import {
+  groupBookings,
+  mergeUpcoming,
+} from "@/features/booking/components/bookings/statusInk";
+import { AgendaRow } from "@/features/booking/components/bookings/AgendaRow";
+import { MonthStrip } from "@/features/booking/components/bookings/MonthStrip";
+import { SheetPager } from "@/features/booking/components/bookings/SheetPager";
+import {
+  Arrow,
+  SectionHead,
+} from "@/features/booking/components/bookings/sheet";
 
-const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
-  confirmed: { label: "Confirmed", color: "text-blue-400 bg-blue-500/10" },
-  active: { label: "Active", color: "text-green-400 bg-green-500/10" },
-  completed: { label: "Completed", color: "text-white/50 bg-white/5" },
-  cancelled: { label: "Cancelled", color: "text-red-400 bg-red-500/10" },
-  disputed: { label: "Disputed", color: "text-orange-400 bg-orange-500/10" },
-  refunded: { label: "Refunded", color: "text-purple-400 bg-purple-500/10" },
-  refund_failed: {
-    label: "Refund Failed",
-    color: "text-orange-400 bg-orange-500/10",
-  },
-};
+const FOCUS =
+  "[&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-[color:var(--accent-text)] [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-[color:var(--accent-text)]";
 
-/** Mirrors the backend sweep's own idea of "overdue unpaid" (BookingReminderService.cancelOverdueUnpaid) — kept in sync as a client-side fallback for the window before that job catches up. */
-function isPastDueUnpaid(booking: any) {
-  return booking.status === "pending" && new Date(booking.startAt) < new Date();
-}
+/** Enough bookings per page for the month strip to be worth reading. */
+const PAGE_SIZE = 12;
 
 export default function BookingListClient({
   initialTab = "mine",
@@ -43,7 +43,6 @@ export default function BookingListClient({
   /** `?tab=received` opens straight onto bookings for events you run. */
   initialTab?: "mine" | "received";
 } = {}) {
-  const router = useRouter();
   const { user } = useAuthStore();
   const { canManageEvents } = useRoleAccess();
   // Organizers run events too (ADR 0005 in the API); the received list
@@ -55,7 +54,7 @@ export default function BookingListClient({
   );
   const [page, setPage] = useState(1);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
-  const limit = 4;
+  const limit = PAGE_SIZE;
   const userId = user?.id || user?.userId;
 
   /**
@@ -67,7 +66,7 @@ export default function BookingListClient({
    *
    * The key is prefixed `user-bookings`, which is what `TOPIC_QUERY_KEYS` maps
    * `bookings` onto; React Query matches by prefix, so one emit refreshes
-   * whichever page is open here and the mobile view besides.
+   * whichever page is open here.
    *
    * "received" is a second, independent list: bookings other citizens made on
    * events *this* user organizes, rather than bookings they made themselves.
@@ -81,91 +80,136 @@ export default function BookingListClient({
         : fetchReceivedBookings(userId as string, page, limit),
     enabled: Boolean(userId),
     // Paging replaced the whole list with a spinner before; this keeps the
-    // previous page on screen under the overlay while the next one loads.
+    // previous page on screen while the next one loads.
     placeholderData: keepPreviousData,
     refetchInterval: pollWhileVisible,
   });
 
   const bookings = useMemo(() => data?.bookings ?? [], [data?.bookings]);
   const totalPages = data?.pagination.totalPages || 1;
+  const total = data?.pagination.total;
+  const viewerIsHost = tab === "received";
 
-  const { attentionBookings, otherBookings } = useMemo(() => {
-    const attention = bookings.filter(isPastDueUnpaid);
-    const others = bookings.filter((b) => !isPastDueUnpaid(b));
-    return { attentionBookings: attention, otherBookings: others };
-  }, [bookings]);
+  /**
+   * The list above is paged by when bookings were made, so one page can't say
+   * what's coming up. Your own Coming up comes from the server's sorted
+   * upcoming list instead, across every page. Same `user-bookings` prefix, so
+   * the same server-sent events refresh it. Received has no such endpoint and
+   * stays page-based.
+   */
+  const upcomingQuery = useQuery({
+    queryKey: ["user-bookings", "upcoming", userId],
+    queryFn: fetchUpcomingBookings,
+    enabled: Boolean(userId) && !viewerIsHost,
+    refetchInterval: pollWhileVisible,
+  });
+  const upcomingLoading = !viewerIsHost && upcomingQuery.isPending;
+  const upcomingFailed = !viewerIsHost && upcomingQuery.isError;
+
+  const groups = useMemo(
+    () =>
+      viewerIsHost || !upcomingQuery.data
+        ? groupBookings(bookings)
+        : mergeUpcoming(upcomingQuery.data, bookings),
+    [viewerIsHost, upcomingQuery.data, bookings],
+  );
+  const stripBookings = useMemo(
+    () => [...groups.attention, ...groups.upcoming, ...groups.past],
+    [groups],
+  );
+  const pageNote =
+    totalPages <= 1
+      ? undefined
+      : viewerIsHost
+        ? `Showing bookings from page ${page} of ${totalPages}.`
+        : `Past bookings shown are from page ${page} of ${totalPages}.`;
+
+  // The strip opens on the month of the next booking, else today's.
+  const anchor = useMemo(() => {
+    const next = groups.upcoming[0] ?? groups.attention[0];
+    return next?.startAt ? new Date(next.startAt) : new Date();
+  }, [groups]);
+
+  // Choosing a day on the strip jumps the agenda to that day's bookings and
+  // washes them briefly, so the eye lands on the right rows.
+  const [highlighted, setHighlighted] = useState<string[]>([]);
+  const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pickDay = useCallback((ids: string[]) => {
+    const first = document.getElementById(`booking-${ids[0]}`);
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    first?.scrollIntoView({
+      behavior: reduce ? "auto" : "smooth",
+      block: "start",
+    });
+    first?.querySelector<HTMLElement>("a")?.focus({ preventScroll: true });
+    setHighlighted(ids);
+    if (clearTimer.current) clearTimeout(clearTimer.current);
+    clearTimer.current = setTimeout(() => setHighlighted([]), 1600);
+  }, []);
+  useEffect(
+    () => () => {
+      if (clearTimer.current) clearTimeout(clearTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (isError) toast.error("Could not load bookings.");
   }, [isError]);
 
-  // No user id means the query never runs, which is the same dead-end the
-  // effect version reached - the layout's `requireAuth` is what turns those
-  // people away.
-  if (isPending || !userId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
-      </div>
-    );
-  }
+  const switchTab = (next: "mine" | "received") => {
+    setTab(next);
+    setPage(1);
+  };
+
+  // No user id means the query never runs - the layout's `requireAuth` is
+  // what turns those people away, so this only shows while the store hydrates.
+  const loading = isPending || !userId;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="fixed top-6 left-0 right-0 z-50">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                <Image
-                  src={LOGO_SRC}
-                  alt="FoxPassport Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                FoxPassport
-              </h2>
-            </Link>
-            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link
-                href="/"
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
-              >
-                Explore
-              </Link>
-              <Link
-                href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all"
-              >
-                Bookings
-              </Link>
-            </nav>
+    <div
+      className={`min-h-screen bg-canvas text-white antialiased selection:bg-accent selection:text-black ${FOCUS}`}
+    >
+      <main className="mx-auto max-w-6xl px-5 pt-24 pb-32 sm:px-10 sm:pt-36 lg:pb-24">
+        <header className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-end">
+          <h1 className="font-landing-display text-5xl leading-[0.9] text-white sm:text-6xl lg:text-7xl">
+            {viewerIsHost ? (
+              <>
+                Bookings <span className="text-(--accent-text)">received</span>
+              </>
+            ) : (
+              <>
+                My <span className="text-(--accent-text)">bookings</span>
+              </>
+            )}
+          </h1>
+
+          <div className="flex flex-col gap-4">
             {runsEvents && (
-              <div className="hidden md:flex items-center gap-1 bg-black/20 p-1.5 rounded-full border border-white/5">
+              <div
+                role="group"
+                aria-label="Which bookings"
+                className="grid grid-cols-2 overflow-hidden rounded-2xl border border-white/15"
+              >
                 {(
                   [
-                    { key: "mine", label: "Booked by Me" },
-                    { key: "received", label: "Received" },
+                    { key: "mine", label: "My bookings" },
+                    { key: "received", label: "For my events" },
                   ] as const
-                ).map((t) => (
+                ).map((t, i) => (
                   <button
                     key={t.key}
                     type="button"
-                    onClick={() => {
-                      setTab(t.key);
-                      setPage(1);
-                    }}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    aria-pressed={tab === t.key}
+                    onClick={() => switchTab(t.key)}
+                    className={`px-4 py-2.5 text-sm font-bold transition-colors ${
+                      i === 1 ? "border-l border-white/15" : ""
+                    } ${
                       tab === t.key
-                        ? "bg-accent text-black"
-                        : "text-white/50 hover:text-white"
+                        ? "bg-white/6 text-(--accent-text)"
+                        : "text-white/60 hover:bg-white/3 hover:text-white"
                     }`}
                   >
                     {t.label}
@@ -173,153 +217,190 @@ export default function BookingListClient({
                 ))}
               </div>
             )}
-            <div
-              className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath(user))}
-            >
-              {user?.imgId ? (
-                <img
-                  alt="User"
-                  className="h-full w-full object-cover"
-                  src={user.imgId}
-                />
-              ) : (
-                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="grow pt-28 sm:pt-32 pb-28 sm:pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10">
-            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-white/70">
+                {total !== undefined ? (
+                  <>
+                    <span className="font-bold tabular-nums text-white">
+                      {total}
+                    </span>{" "}
+                    {total === 1 ? "booking" : "bookings"}
+                    {viewerIsHost ? " for your events" : " in total"}
+                  </>
+                ) : (
+                  " "
+                )}
+              </p>
+              <Link
+                href="/packages"
+                className="group inline-flex items-center gap-2 rounded-full bg-accent py-3 pr-5 pl-6 text-sm font-extrabold text-black transition-colors hover:bg-accent-hover"
+              >
+                Find an event
+                <Arrow className="group-hover:translate-x-0.5" />
               </Link>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-accent font-semibold">My Bookings</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
-              {tab === "mine" ? "My Bookings" : "Bookings Received"}
-            </h1>
           </div>
+        </header>
 
-          <div className="relative min-h-130">
-            {bookings.length === 0 ? (
-              <div className="text-center py-20">
-                <span className="material-symbols-outlined text-white/20 text-6xl mb-4">
-                  book_online
-                </span>
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {tab === "mine"
-                    ? "No bookings yet"
-                    : "No bookings received yet"}
-                </h3>
-                <p className="text-text-muted mb-6">
-                  {tab === "mine"
-                    ? "Start by exploring venues and booking your next event."
-                    : "Once a citizen books one of your events, it'll show up here."}
-                </p>
-                {tab === "mine" && (
-                  <Link
-                    href="/"
-                    className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-                  >
-                    Browse Venues
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <>
-                {attentionBookings.length > 0 && (
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="material-symbols-outlined text-orange-400 text-xl">
-                        error
-                      </span>
-                      <h2 className="text-lg font-bold text-white">
-                        Needs Attention
-                      </h2>
-                    </div>
-                    <p className="text-text-muted text-sm mb-4">
-                      These bookings&apos; dates have passed without payment.
-                      They&apos;ll be cancelled automatically.
-                    </p>
-                    <div className="grid gap-4">
-                      {attentionBookings.map((booking) => (
-                        <BookingCard
-                          key={booking.id}
-                          booking={booking}
-                          onCancel={setCancelTargetId}
-                          pastDueUnpaid
-                          viewerIsHost={tab === "received"}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="grid gap-4">
-                  {otherBookings.map((booking) => (
-                    <BookingCard
-                      key={booking.id}
-                      booking={booking}
-                      onCancel={setCancelTargetId}
-                      viewerIsHost={tab === "received"}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {isFetching && !isPending && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-2xl">
-                <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
-              </div>
-            )}
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  chevron_left
-                </span>
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`h-10 w-10 rounded-xl font-bold text-sm transition-all ${
-                    p === page
-                      ? "bg-accent text-black shadow-[0_0_15px_rgba(204,255,0,0.3)]"
-                      : "bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-                className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  chevron_right
-                </span>
-              </button>
-            </div>
+        {/* The set's heavy rule, with a lime line along it while a refresh runs. */}
+        <div className="relative mt-6 h-0.5 bg-white">
+          {isFetching && !loading && (
+            <span
+              className="absolute inset-0 animate-pulse bg-accent motion-reduce:animate-none"
+              aria-hidden
+            />
           )}
         </div>
+        <p className="sr-only" aria-live="polite">
+          {isFetching && !loading ? "Updating bookings" : ""}
+        </p>
+
+        {loading ? (
+          <SkeletonPages />
+        ) : isError && bookings.length === 0 ? (
+          <Notice
+            title="Couldn't load your bookings"
+            body="Check your connection, then try again."
+            action={
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-white/6"
+              >
+                Try again
+              </button>
+            }
+          />
+        ) : bookings.length === 0 ? (
+          viewerIsHost ? (
+            <Notice
+              title="No bookings received yet"
+              body="Once a citizen books one of your events, it'll show up here."
+            />
+          ) : (
+            <Notice
+              title="No bookings yet"
+              body="Start by exploring events and booking your next one."
+              action={
+                <Link
+                  href="/packages"
+                  className="group inline-flex items-center gap-2 rounded-full bg-accent py-3 pr-5 pl-6 text-sm font-extrabold text-black transition-colors hover:bg-accent-hover"
+                >
+                  Find an event
+                  <Arrow className="group-hover:translate-x-0.5" />
+                </Link>
+              }
+            />
+          )
+        ) : (
+          <>
+            <MonthStrip
+              key={`${tab}-${page}`}
+              bookings={stripBookings}
+              anchor={anchor}
+              note={pageNote}
+              onPick={pickDay}
+            />
+
+            <div className="mt-14 flex flex-col gap-14">
+              {groups.attention.length > 0 && (
+                <section aria-labelledby="attention-title">
+                  <SectionHead
+                    id="attention-title"
+                    title="Needs attention"
+                    count={groups.attention.length}
+                    note="The date passed before these were paid. They'll be cancelled automatically."
+                  />
+                  <ul>
+                    {groups.attention.map((b) => (
+                      <AgendaRow
+                        key={b.id}
+                        booking={b}
+                        viewerIsHost={viewerIsHost}
+                        highlighted={highlighted.includes(b.id)}
+                        onCancel={setCancelTargetId}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              <section aria-labelledby="upcoming-title">
+                <SectionHead
+                  id="upcoming-title"
+                  title="Coming up"
+                  count={upcomingLoading ? undefined : groups.upcoming.length}
+                  note={
+                    upcomingFailed
+                      ? "Couldn't load all upcoming bookings; showing this page's."
+                      : groups.upcoming.length === 0
+                        ? undefined
+                        : viewerIsHost
+                          ? "Soonest first, from this page."
+                          : "Soonest first."
+                  }
+                />
+                {upcomingLoading ? (
+                  <div aria-busy="true" aria-label="Loading upcoming bookings">
+                    {[0, 1].map((i) => (
+                      <div
+                        key={i}
+                        className="grid grid-cols-[3.5rem_1fr] gap-4 border-b border-white/15 py-5 sm:grid-cols-[4.5rem_1fr]"
+                      >
+                        <div className="h-12 animate-pulse rounded bg-white/6 motion-reduce:animate-none" />
+                        <div className="h-12 animate-pulse rounded bg-white/6 motion-reduce:animate-none" />
+                      </div>
+                    ))}
+                  </div>
+                ) : groups.upcoming.length > 0 ? (
+                  <ul>
+                    {groups.upcoming.map((b) => (
+                      <AgendaRow
+                        key={b.id}
+                        booking={b}
+                        viewerIsHost={viewerIsHost}
+                        highlighted={highlighted.includes(b.id)}
+                        onCancel={setCancelTargetId}
+                      />
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="border-b border-white/15 py-5 text-sm text-white/60">
+                    {viewerIsHost
+                      ? "No upcoming bookings on this page."
+                      : "Nothing coming up."}
+                  </p>
+                )}
+              </section>
+
+              {groups.past.length > 0 && (
+                <section aria-labelledby="past-title">
+                  <SectionHead
+                    id="past-title"
+                    title="Past"
+                    count={groups.past.length}
+                    note="Completed and cancelled bookings, most recent first."
+                  />
+                  <ul>
+                    {groups.past.map((b) => (
+                      <AgendaRow
+                        key={b.id}
+                        booking={b}
+                        viewerIsHost={viewerIsHost}
+                        highlighted={highlighted.includes(b.id)}
+                        onCancel={setCancelTargetId}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
+          </>
+        )}
+
+        {!loading && totalPages > 1 && (
+          <SheetPager page={page} totalPages={totalPages} onPage={setPage} />
+        )}
       </main>
 
       {cancelTargetId && (
@@ -332,6 +413,7 @@ export default function BookingListClient({
               "Booking cancelled. Refund (if any) will appear in 5–10 business days.",
             );
             refetch();
+            if (!viewerIsHost) upcomingQuery.refetch();
           }}
         />
       )}
@@ -339,129 +421,45 @@ export default function BookingListClient({
   );
 }
 
-function BookingCard({
-  booking,
-  onCancel,
-  pastDueUnpaid = false,
-  viewerIsHost = false,
+/** A single sheet for empty and error states. */
+function Notice({
+  title,
+  body,
+  action,
 }: {
-  booking: any;
-  onCancel: (id: string) => void;
-  pastDueUnpaid?: boolean;
-  // The viewer organizes this booking's event rather than having made the
-  // booking themselves — cancelling and reviewing are the booker's calls, not
-  // theirs, so those actions are hidden and the booker's name is shown instead.
-  viewerIsHost?: boolean;
+  title: string;
+  body: string;
+  action?: React.ReactNode;
 }) {
-  const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
-  const eventName = booking.event?.name || "Venue Booking";
-  const startDate = booking.startAt
-    ? new Date(booking.startAt).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "—";
-  const isCompleted = booking.status === "completed";
-  // Cancelling here would just race the auto-cancel sweep — nothing to offer but the notice above.
-  const canCancel =
-    !viewerIsHost &&
-    !pastDueUnpaid &&
-    (booking.status === "pending" || booking.status === "confirmed");
-  const noReview = !booking.hasReview;
-  // booking.totalAmount is the server-computed Event total (items × markup)
-  // and can be 0 for a template with no attached items even though a
-  // platform service fee was actually charged — prefer what was really paid.
-  const totalPaid = (booking.payments || [])
-    .filter((p: any) => p.status === "completed")
-    .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
-  const displayTotal = totalPaid > 0 ? totalPaid : Number(booking.totalAmount) || 0;
-
   return (
-    <div
-      className={`glass-panel rounded-2xl p-6 border transition-all ${
-        pastDueUnpaid
-          ? "border-orange-500/30 hover:border-orange-500/50"
-          : "border-white/5 hover:border-accent/30"
-      }`}
-    >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <Link
-          href={`/booking/${booking.id}`}
-          className="flex items-start gap-4 flex-1 min-w-0 group"
+    <div className="mt-12 max-w-2xl rounded-2xl border border-white/15 bg-surface p-8 sm:p-10">
+      <h2 className="font-landing-display text-3xl leading-[0.95] text-white sm:text-4xl">
+        {title}
+      </h2>
+      <p className="mt-3 max-w-md text-base leading-relaxed text-white/75">
+        {body}
+      </p>
+      {action && <div className="mt-6">{action}</div>}
+    </div>
+  );
+}
+
+/** The strip and the first agenda rows, drawn in outline while the first page loads. */
+function SkeletonPages() {
+  return (
+    <div className="mt-10" aria-busy="true" aria-label="Loading bookings">
+      <div className="mb-3 h-8 w-48 animate-pulse rounded bg-white/6 motion-reduce:animate-none" />
+      <div className="h-20 animate-pulse border-y border-white/15 bg-white/3 motion-reduce:animate-none" />
+      <div className="mt-14 mb-5 h-8 w-56 animate-pulse rounded bg-white/6 motion-reduce:animate-none" />
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="grid grid-cols-[3.5rem_1fr] gap-4 border-b border-white/15 py-5 sm:grid-cols-[5rem_1fr]"
         >
-          <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
-            <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">
-              apartment
-            </span>
-          </div>
-          <div>
-            <h3 className="font-display font-bold text-white text-lg">
-              {eventName}
-            </h3>
-            <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[14px]">
-                calendar_today
-              </span>
-              {startDate}
-              <span className="material-symbols-outlined text-[14px] ml-1">
-                group
-              </span>
-              {booking.guestCount}{" "}
-              {booking.guestCount === 1 ? "guest" : "guests"}
-            </p>
-            {viewerIsHost && (
-              <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[14px]">
-                  person
-                </span>
-                Booked by {booking.user?.name || "a citizen"}
-              </p>
-            )}
-            <p className="text-text-muted text-xs mt-1 font-mono">
-              #{booking.id.slice(0, 12)}
-            </p>
-          </div>
-        </Link>
-        <div className="flex items-center gap-4 md:text-right shrink-0">
-          <span
-            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-              pastDueUnpaid
-                ? "text-orange-400 bg-orange-500/10"
-                : statusInfo.color
-            }`}
-          >
-            {pastDueUnpaid ? "Unpaid & Expired" : statusInfo.label}
-          </span>
-          <span className="text-xl font-display font-bold text-accent">
-            {formatCurrency(displayTotal)}
-          </span>
+          <div className="h-12 animate-pulse rounded bg-white/6 motion-reduce:animate-none" />
+          <div className="h-12 animate-pulse rounded bg-white/6 motion-reduce:animate-none" />
         </div>
-      </div>
-      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
-        <Link
-          href={`/booking/${booking.id}`}
-          className="px-5 py-2.5 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
-        >
-          View Details
-        </Link>
-        {!viewerIsHost && isCompleted && noReview && (
-          <Link
-            href={`/reviews/write/${booking.id}`}
-            className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-          >
-            Leave a Review
-          </Link>
-        )}
-        {canCancel && (
-          <button
-            onClick={() => onCancel(booking.id)}
-            className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+      ))}
     </div>
   );
 }

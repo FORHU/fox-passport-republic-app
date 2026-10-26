@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Money } from "@/shared/components/ui/Money";
+import { SectionHeader } from "./SectionHeader";
 
 /** The fields this carousel reads off a venue from `getVenues()`. */
 interface ForYouVenue {
@@ -69,87 +70,103 @@ export const UserForYou: React.FC<UserForYouProps> = ({
 
   if (!canSeeVenues) {
     return (
-      <section
-        className="reveal-on-scroll"
-        style={{ transitionDelay: "100ms" }}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-          <h3 className="text-xl font-display font-bold text-white">For You</h3>
-        </div>
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 flex flex-col items-center justify-center py-16 px-8 text-center min-h-[300px]">
-          <div className="h-16 w-16 rounded-full bg-surface-highlight flex items-center justify-center mb-4">
-            <span className="material-symbols-outlined text-white/40 text-3xl">
-              storefront
-            </span>
-          </div>
-          <h4 className="font-bold text-white text-lg mb-2">
-            Venues are for Creator Roles
-          </h4>
-          <p className="text-text-muted text-sm max-w-xs">
-            Venue listings are available to Event Foxers, Gear Foxers, and Venue
-            Foxers. Apply for a role to unlock this section.
+      <section aria-labelledby="venues-title" className="reveal-on-scroll">
+        <SectionHeader
+          id="venues-title"
+          title="Venues to explore"
+          icon="storefront"
+        />
+        <div className="glass-panel rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <p className="text-sm text-text-muted flex-1">
+            Venue listings open up when you hold a Foxer role.
           </p>
+          <Link
+            href="/earn/venue"
+            className="inline-flex items-center gap-1 text-sm font-bold text-white hover:text-accent transition-colors shrink-0"
+          >
+            See Foxer roles
+            <span
+              className="material-symbols-outlined text-[16px]"
+              aria-hidden="true"
+            >
+              arrow_forward
+            </span>
+          </Link>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="reveal-on-scroll" style={{ transitionDelay: "100ms" }}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-        <h3 className="text-xl font-display font-bold text-white">For You</h3>
-        <div className="flex items-center gap-3">
-          {categories.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 sm:pb-0">
-              {[ALL, ...categories].map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => setActiveCategory(category)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeCategory === category
-                      ? "bg-accent text-black font-bold shadow-[0_0_15px_rgba(204,255,0,0.3)]"
-                      : "border border-white/10 text-white hover:bg-white/10"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          )}
-          {shown.length > 1 && (
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => scrollByCard(-1)}
-                aria-label="Scroll left"
-                className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+    <section aria-labelledby="venues-title" className="reveal-on-scroll">
+      <SectionHeader
+        id="venues-title"
+        title="Venues to explore"
+        icon="storefront"
+        link={{ href: "/venues/map", label: "See all venues" }}
+      >
+        {shown.length > 1 && (
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => scrollByCard(-1)}
+              aria-label="Scroll left"
+              className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+            >
+              <span
+                className="material-symbols-outlined text-[18px]"
+                aria-hidden="true"
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  chevron_left
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollByCard(1)}
-                aria-label="Scroll right"
-                className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                chevron_left
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCard(1)}
+              aria-label="Scroll right"
+              className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+            >
+              <span
+                className="material-symbols-outlined text-[18px]"
+                aria-hidden="true"
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  chevron_right
-                </span>
-              </button>
-            </div>
-          )}
+                chevron_right
+              </span>
+            </button>
+          </div>
+        )}
+      </SectionHeader>
+
+      {categories.length > 1 && (
+        <div
+          role="group"
+          aria-label="Filter venues by category"
+          className="flex gap-2 overflow-x-auto hide-scrollbar -mt-1 mb-4"
+        >
+          {[ALL, ...categories].map((category) => (
+            <button
+              key={category}
+              type="button"
+              aria-pressed={activeCategory === category}
+              onClick={() => setActiveCategory(category)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                activeCategory === category
+                  ? "bg-accent text-black font-bold"
+                  : "border border-white/10 text-white hover:bg-white/10"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
         </div>
-      </div>
+      )}
 
       {shown.length === 0 ? (
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 flex flex-col items-center justify-center py-16 px-8 text-center min-h-[300px]">
+        <div className="glass-panel rounded-3xl flex flex-col items-center justify-center py-16 px-8 text-center">
           <span className="material-symbols-outlined text-3xl text-white/20 mb-3">
             storefront
           </span>
-          <p className="text-sm font-bold text-white/40">
+          <p className="text-sm font-bold text-white/60">
             No venues listed yet — check back soon.
           </p>
         </div>
@@ -166,7 +183,7 @@ export const UserForYou: React.FC<UserForYouProps> = ({
                 key={venue.id}
                 href={`/venues/${venue.id}`}
                 data-carousel-card
-                className="glass-card group relative flex flex-col rounded-[2rem] overflow-hidden card-hover-effect shrink-0 w-[80vw] max-w-80 sm:w-72 snap-start"
+                className="glass-card group relative flex flex-col rounded-3xl overflow-hidden card-hover-effect shrink-0 w-[80vw] max-w-80 sm:w-72 snap-start"
               >
                 <div className="relative aspect-4/3 overflow-hidden bg-white/5">
                   {venue.img && (
@@ -180,7 +197,7 @@ export const UserForYou: React.FC<UserForYouProps> = ({
                   )}
                   <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
                   {venue.category && (
-                    <span className="absolute top-4 left-4 z-10 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-white">
+                    <span className="absolute top-4 left-4 z-10 px-2.5 py-1 rounded-full bg-black/60 text-[11px] font-bold uppercase tracking-wider text-white">
                       {venue.category}
                     </span>
                   )}
@@ -227,9 +244,9 @@ export const UserForYou: React.FC<UserForYouProps> = ({
 
           <Link
             href="/venues/map"
-            className="group relative flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-white/10 bg-black/20 hover:bg-black/40 hover:border-accent transition-all duration-300 shrink-0 w-[80vw] max-w-80 sm:w-72 min-h-75 snap-start"
+            className="group relative flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-white/10 bg-black/20 hover:bg-black/40 hover:border-accent transition-all duration-300 shrink-0 w-[80vw] max-w-80 sm:w-72 min-h-75 snap-start"
           >
-            <div className="h-16 w-16 rounded-full bg-surface-highlight flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] group-hover:bg-surface">
+            <div className="h-16 w-16 rounded-full bg-surface-highlight flex items-center justify-center mb-4 transition-colors duration-300 group-hover:bg-surface">
               <span className="material-symbols-outlined text-white group-hover:text-accent text-3xl font-bold">
                 arrow_forward
               </span>

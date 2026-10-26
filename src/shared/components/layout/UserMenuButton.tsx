@@ -96,7 +96,7 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
             }
             toggle();
           }}
-          className={`h-10 w-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 backdrop-blur-md group cursor-pointer ${
+          className={`h-10 w-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 backdrop-blur-md group cursor-pointer ${
             isOpen ? "ring-2 ring-accent/50 bg-white/10 text-white" : ""
           }`}
           aria-label="User menu"
@@ -110,7 +110,7 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
         </button>
 
         {isOpen && user && (
-          <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-96 max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface-raised rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-96 max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface-raised rounded-2xl border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
             {/* Identity */}
             <UserMenuProfileHeader user={user} />
 

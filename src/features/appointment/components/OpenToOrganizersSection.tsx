@@ -103,7 +103,7 @@ export function OpenToOrganizersSection() {
                 disabled={offer.isPending}
                 onClick={() => offer.mutate(row.target)}
                 aria-label={`Offer to organize ${row.name}`}
-                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#e879f9] text-black text-xs font-bold hover:brightness-110 disabled:opacity-50"
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#A3A8F5] text-black text-xs font-bold hover:brightness-110 disabled:opacity-50"
               >
                 {sending ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

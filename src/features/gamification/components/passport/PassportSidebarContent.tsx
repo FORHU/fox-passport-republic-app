@@ -144,7 +144,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
           </div>
           <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div
-              className="h-full bg-gradient-to-r from-[#22c55e] to-accent transition-all duration-1000 shadow-[0_0_10px_#ccff0044]"
+              className="h-full bg-accent transition-all duration-1000"
               style={{
                 width: `${Math.min(100, (totalXP / maxTotalXP) * 100)}%`,
               }}
@@ -160,13 +160,13 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                 level,
                 earned: earnedPerkKeys.includes(perk),
                 meta: PERK_META[perk],
-                color: PATH_COLORS[path] ?? "#ccff00",
+                color: PATH_COLORS[path] ?? "#C4E85A",
               }))
               .filter((p) => p.meta);
             return {
               path,
               label: PATH_SHORT[path] ?? path,
-              color: PATH_COLORS[path] ?? "#ccff00",
+              color: PATH_COLORS[path] ?? "#C4E85A",
               unlocked: perks.filter((p) => p.earned),
               locked: perks.filter((p) => !p.earned),
               total: perks.length,
@@ -206,7 +206,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                         >
                           <div
                             className="h-5 w-5 rounded-md flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `${color}18` }}
+                            style={{ backgroundColor: `color-mix(in srgb, ${color} 9%, transparent)` }}
                           >
                             <div
                               className="h-1.5 w-1.5 rounded-full"
@@ -337,7 +337,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("matches");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "matches" ? "bg-accent text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "matches" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
             handshake
@@ -349,7 +349,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("progress");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "progress" ? "bg-accent text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "progress" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
             analytics
@@ -361,7 +361,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("stamps");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "stamps" ? "bg-accent text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "stamps" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
             menu_book

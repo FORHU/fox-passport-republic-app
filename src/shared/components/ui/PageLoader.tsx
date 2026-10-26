@@ -37,7 +37,7 @@ export default function PageLoader({
           aria-hidden
           className="fp-loader-ring2 absolute inset-0 rounded-full border-2 border-accent"
         />
-        <div className="fp-loader-mark relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-surface shadow-[0_0_30px_rgba(204,255,0,0.18)]">
+        <div className="fp-loader-mark relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-surface">
           <Image
             src={LOGO_SRC}
             alt=""
