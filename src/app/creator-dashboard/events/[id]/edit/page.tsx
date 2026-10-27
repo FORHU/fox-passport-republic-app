@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { requirePermission } from "@/shared/lib/server/auth";
+import { studioAccessDenied } from "@/shared/lib/server/studioAccess";
 import EventEditClient from "./_components/EventEditClient";
 
 interface Props {
@@ -8,7 +8,8 @@ interface Props {
 }
 
 export default async function HostEventEditPage({ params }: Props) {
-  await requirePermission("template:manage");
+  const denied = await studioAccessDenied("event");
+  if (denied) return denied;
   const { id } = await params;
   return <EventEditClient id={id} />;
 }

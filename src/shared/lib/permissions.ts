@@ -41,3 +41,11 @@ export function canAccessAdmin(
 ): boolean {
   return hasPermission(user, "admin:access");
 }
+
+/** True if the server granted at least one of these. */
+export function hasAnyPermission(
+  user: PermissionBearer | null | undefined,
+  permissions: readonly Permission[],
+): boolean {
+  return permissions.some((p) => hasPermission(user, p));
+}

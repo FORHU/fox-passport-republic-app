@@ -8,13 +8,16 @@ import {
   PenTool,
   PlusCircle,
 } from "lucide-react";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 /**
  * Quick-access directory links pinned to the Republic left sidebar.
  * Lists the three most common creator actions: viewing the full equipment
  * inventory map, registering a new equipment hub, and drawing/adding a venue.
+ * The last two only for whoever can open those builders.
  */
 export function RepublicShortcutsCard() {
+  const { canManageVenues, canProposePartnerships } = useRoleAccess();
   return (
     <div className="rounded-3xl bg-zinc-950/60 border border-zinc-900 p-4 space-y-2 text-xs">
       <div className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
@@ -46,32 +49,36 @@ export function RepublicShortcutsCard() {
           strokeWidth={2}
         />
       </Link>
-      <Link
-        href="/foxer/create-investment"
-        className="flex items-center justify-between text-zinc-400 hover:text-lime-400 py-1.5 transition-colors group"
-      >
-        <span className="flex items-center gap-2">
-          <PlusCircle className="h-4 w-4 text-lime-400" strokeWidth={2} />
-          Register Equipment Hub
-        </span>
-        <ArrowRight
-          className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
-          strokeWidth={2}
-        />
-      </Link>
-      <Link
-        href="/venue-foxer/create-venue"
-        className="flex items-center justify-between text-zinc-400 hover:text-pink-400 py-1.5 transition-colors group"
-      >
-        <span className="flex items-center gap-2">
-          <PenTool className="h-4 w-4 text-pink-400" strokeWidth={2} />
-          Draw &amp; Add Venue
-        </span>
-        <ArrowRight
-          className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
-          strokeWidth={2}
-        />
-      </Link>
+      {canProposePartnerships && (
+        <Link
+          href="/foxer/create-investment"
+          className="flex items-center justify-between text-zinc-400 hover:text-lime-400 py-1.5 transition-colors group"
+        >
+          <span className="flex items-center gap-2">
+            <PlusCircle className="h-4 w-4 text-lime-400" strokeWidth={2} />
+            Register Equipment Hub
+          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
+        </Link>
+      )}
+      {canManageVenues && (
+        <Link
+          href="/venue-foxer/create-venue"
+          className="flex items-center justify-between text-zinc-400 hover:text-pink-400 py-1.5 transition-colors group"
+        >
+          <span className="flex items-center gap-2">
+            <PenTool className="h-4 w-4 text-pink-400" strokeWidth={2} />
+            Draw &amp; Add Venue
+          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
+        </Link>
+      )}
     </div>
   );
 }
