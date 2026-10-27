@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,14 +16,29 @@ import DateRangePicker from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
-import MessageButton from "@/features/messages/components/MessageButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
 
 const NO_DATES: string[] = [];
 
-export default function BookingConfigurationClient() {
+/** Who "Ask the Event Foxer" talks to, about which package. */
+export interface AskEventFoxerTarget {
+  foxer: { id: string; name?: string | null; imgId?: string | null };
+  templateId: string;
+  templateName: string;
+}
+
+/**
+ * `renderAskEventFoxer` is the chat button for a full event. It is passed in
+ * from the app layer (`app/booking/config/_components`), since this feature
+ * may not import `messages` itself.
+ */
+export default function BookingConfigurationClient({
+  renderAskEventFoxer,
+}: {
+  renderAskEventFoxer?: (target: AskEventFoxerTarget) => ReactNode;
+} = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get("templateId");
@@ -703,18 +718,12 @@ export default function BookingConfigurationClient() {
                           </p>
                         </div>
                         <WaitlistButton templateId={template.id} />
-                        {eventFoxer && (
-                          <MessageButton
-                            otherUserId={eventFoxer.id}
-                            otherUserName={eventFoxer.name ?? "Event Foxer"}
-                            otherUserImgId={eventFoxer.imgId}
-                            contextType="event"
-                            contextId={template.id}
-                            contextLabel={template.name || "Event"}
-                            label="Ask the Event Foxer"
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
-                          />
-                        )}
+                        {eventFoxer &&
+                          renderAskEventFoxer?.({
+                            foxer: eventFoxer,
+                            templateId: template.id,
+                            templateName: template.name || "Event",
+                          })}
                       </div>
                     ) : (
                       <>

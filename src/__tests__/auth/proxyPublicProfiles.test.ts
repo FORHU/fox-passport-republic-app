@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { NextRequest } from "next/server";
-import proxy from "../../proxy";
+import proxy from "@/proxy";
 
 /**
  * A citizen's profile, `/user/<id>`, is public inside the otherwise signed-in
