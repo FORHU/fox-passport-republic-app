@@ -6,6 +6,7 @@ import { Loader2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { fetchVenueById, updateVenue } from "@/features/venue/api/venues";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 /**
  * How a Venue is described and shown — the part of it an Organizer with
@@ -221,7 +222,7 @@ export function VenueListingDetailsForm({ venueId }: { venueId: string }) {
           <FileUploader
             key={uploaderKey}
             label="Add a photo"
-            accept="image/*"
+            accept={UPLOAD_ACCEPT.image}
             onUploadComplete={(id) => {
               setPhotos((prev) => [...prev, { id }]);
               setUploaderKey((k) => k + 1);

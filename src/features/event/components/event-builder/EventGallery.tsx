@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { GalleryItem } from "@/features/event/data/eventBuilderData";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface EventGalleryProps {
   gallery: GalleryItem[];
@@ -34,7 +35,7 @@ export function EventGallery({
         ref={fileInputRef}
         onChange={handleFileChange}
         multiple
-        accept="image/*"
+        accept={UPLOAD_ACCEPT.image}
         className="hidden"
       />
       <div className="flex justify-between items-end mb-3">

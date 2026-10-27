@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface AvatarUploaderProps {
   currentUrl?: string;
@@ -26,12 +27,9 @@ export default function AvatarUploader({
     async (file: File) => {
       setError(null);
 
-      if (!file.type.startsWith("image/")) {
-        setError("Only image files are supported");
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        setError("File must be under 10 MB");
+      const problem = checkUploadFile(file, "image");
+      if (problem) {
+        setError(problem);
         return;
       }
 
@@ -139,7 +137,7 @@ export default function AvatarUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={UPLOAD_ACCEPT.image}
         className="hidden"
         onChange={handleInputChange}
       />

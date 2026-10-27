@@ -17,6 +17,7 @@ import {
 } from "@/shared/api/venues";
 import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 type InvestmentModality = "physical_inventory" | "venue_equity";
 
@@ -165,12 +166,10 @@ export default function CreateInvestmentWizard() {
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload a valid image file (JPEG, PNG, WebP).");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image file is too large. Maximum size is 10MB.");
+    const problem = checkUploadFile(file, "image");
+    if (problem) {
+      toast.error(problem);
+      e.target.value = "";
       return;
     }
 
@@ -1032,7 +1031,7 @@ export default function CreateInvestmentWizard() {
                 <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-800 hover:border-amber-400/60 bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 hover:text-amber-300 cursor-pointer transition-colors">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept={UPLOAD_ACCEPT.image}
                     onChange={handleImageUpload}
                     disabled={uploadingImage}
                     className="hidden"

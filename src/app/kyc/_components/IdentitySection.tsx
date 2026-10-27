@@ -12,9 +12,9 @@ import {
   type IdType,
 } from "@/shared/api/identity";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
-const ACCEPT = "image/*,application/pdf";
-const MAX_BYTES = 15 * 1024 * 1024; // the API's per-file limit
+const ACCEPT = UPLOAD_ACCEPT.document;
 
 function FilePicker({
   id,
@@ -53,8 +53,9 @@ function FilePicker({
         className="sr-only"
         onChange={(e) => {
           const next = e.target.files?.[0] ?? null;
-          if (next && next.size > MAX_BYTES) {
-            toast.error("Files must be 15MB or smaller.");
+          const problem = next && checkUploadFile(next, "document");
+          if (problem) {
+            toast.error(problem);
             e.target.value = "";
             return;
           }

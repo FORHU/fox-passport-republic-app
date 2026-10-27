@@ -31,6 +31,7 @@ import { signInThen } from "@/shared/auth/returnTo";
 import { hasPermission } from "@/shared/lib/permissions";
 import api from "@/shared/lib/axios";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoUrl = (url: string) => {
@@ -271,6 +272,15 @@ export function ComposePostBox({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const problem = Array.from(files)
+      .map((file) => checkUploadFile(file, "media"))
+      .find(Boolean);
+    if (problem) {
+      setError(problem);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setUploading(true);
     setError(null);
 
@@ -287,9 +297,12 @@ export function ComposePostBox({
       const uploaded = await Promise.all(uploadPromises);
       const validUrls = uploaded.filter(Boolean) as string[];
       setMediaUrls((prev) => [...prev, ...validUrls]);
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error("Upload error:", err);
-      setError("Failed to upload media. Please try again.");
+      setError(
+        err?.response?.data?.message ||
+          "Failed to upload media. Please try again.",
+      );
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -629,7 +642,7 @@ export function ComposePostBox({
               ref={fileInputRef}
               onChange={handleFileUpload}
               multiple
-              accept="image/*,video/*"
+              accept={UPLOAD_ACCEPT.media}
               className="hidden"
             />
             <button
