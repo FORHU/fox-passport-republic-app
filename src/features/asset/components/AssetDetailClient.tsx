@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { BackendAsset } from "@/shared/lib/api-types";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { smartBack } from "@/shared/lib/navigation";
 
 function getFeatures(asset: BackendAsset) {
   const features = [];
@@ -88,7 +89,7 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-background/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6">
         <button
-          onClick={() => router.back()}
+          onClick={() => smartBack(router, "/search")}
           className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">

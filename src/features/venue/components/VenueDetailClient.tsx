@@ -22,6 +22,7 @@ import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
+import { smartBack } from "@/shared/lib/navigation";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -51,7 +52,7 @@ export default function VenueDetailClient({
     window.scrollTo(0, 0);
   }, []);
 
-  const handleBack = useCallback(() => router.back(), [router]);
+  const handleBack = useCallback(() => smartBack(router, "/venues/map"), [router]);
 
   // `venue` here is the server-normalized shape from `getVenueById`
   // (`normalizeVenue` in shared/lib/server/data.ts), not the raw API shape

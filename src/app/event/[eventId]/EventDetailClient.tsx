@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useEventDetail } from "./_hooks/useEventDetail";
 import { EventDetailView } from "./_components/EventDetailView";
 import type { EventTemplateDetail } from "@/features/event/api/event-templates";
+import { smartBack } from "@/shared/lib/navigation";
 
 function EventDetailContent({
   initialTemplate,
@@ -37,7 +38,7 @@ function EventDetailContent({
           <span className="text-4xl">⚠️</span>
           <span className="text-sm text-white/60">{loadError}</span>
           <button
-            onClick={() => router.back()}
+            onClick={() => smartBack(router, "/")}
             className="mt-2 px-4 py-2 rounded-full border border-white/10 text-xs font-bold text-white hover:bg-white hover:text-black transition-all cursor-pointer"
           >
             Go back
