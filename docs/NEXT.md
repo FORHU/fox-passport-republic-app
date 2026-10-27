@@ -688,6 +688,19 @@ invisible to admins).
       and a sponsorship end to end, then the success and cancel pages. Carried
       over 27 Oct from the deleted `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, where it
       was never run because no staging existed then.
+- [ ] **"Ask the Event Foxer"** on a *full* event's `/booking/config`: still
+      shows, and opens a chat with the Event Foxer. #187 moved where the button
+      is wired (`app/booking/config/_components/BookingConfigPageClient.tsx`);
+      covered by types and tests, never clicked.
+- [ ] **Needs review** (admin, next to Events): after the 01:00 sweep, an Event
+      that ended with a standing booking and nobody checked in appears; Attended
+      settles a paid booking (payout, Stamp), No-show cancels it with no refund,
+      and the Event leaves the list once its last booking is settled. API #205,
+      app #184, ADR 0006 in the API.
+- [ ] **A public profile, signed out**: `/user/<id>` loads for a visitor
+      (#174) and shows stamps without dates, and nothing sends the visitor
+      home (the follow requests wait for a session, so no 401 trips the
+      sign-out redirect).
 
 ---
 
@@ -762,6 +775,36 @@ invisible to admins).
       won't get one, so a phone browser is the only way to reach admin on a
       phone. And it is only the dashboard tab now (`AdminBody`); every other tab
       already renders the real `AdminContent` at phone width.
+- [ ] **Foxer profiles (`/foxer/<id>`): public, or out of the sitemap?** They
+      are signed-in only by design (`app/foxer/layout.tsx` and `proxy.ts`), yet
+      the sitemap lists them, robots allows them and they carry JSON-LD and a
+      canonical, so a crawler gets a redirect to sign-in. Make them public as
+      `/user/<id>` was (#174), or drop them from the sitemap and robots.
+- [ ] **Organizers and capacity, (a) or (b).** (a) package-level Appointments
+      with their own permission, or (b) Organizers may change a booked Event's
+      guest count. Organizers seeing a package's History waits on this.
+- [ ] **The 5 legacy event categories' groups.** Recorded in ADR 0001
+      (`docs/adr/0001-dynamic-events-architecture.md`, "Still open"): the
+      group names `corporate`, `birthday`, `wedding`, `social` and `other` fold
+      into, needed before the taxonomy migration.
+
+**Needs your access, not a decision** (nothing here can be done from the code):
+
+- [ ] **Duplicate package venues** from the old re-Publish bug (fixed in API
+      #195): on the dev and prod databases, run
+      `SELECT "templateId","venueId",count(*) FROM event_template_venues GROUP BY 1,2 HAVING count(*)>1;`
+      and remove the extra rows it finds.
+- [ ] **Static images on AWS**: upload `static-assets/` to S3 `static/` behind
+      the dev CloudFront, set the `staging` environment's
+      `NEXT_PUBLIC_ASSETS_URL`, and re-run Deploy Dev (`static-assets/README.md`
+      has the mechanism).
+- [ ] **Facebook sign-in** (parked): live sign-in fails with `email_not_found`.
+      The code is fine; Facebook sends no email (unconfirmed email, or the email
+      permission unpublished for a user with no app role). Check with Graph
+      Explorer `me?fields=id,name,email`, and rotate `FACEBOOK_APP_SECRET` once
+      it works.
+- [ ] **Launching `foxpassport.com`** (no date yet): set
+      `NEXT_PUBLIC_APP_URL`, point DNS, and submit the sitemap.
 
 ---
 
