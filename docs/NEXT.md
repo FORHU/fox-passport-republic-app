@@ -490,13 +490,8 @@ has signed off on.
       renders its desktop nav at `hidden lg:flex` (aligned with `MobileBottomNav`'s
       `lg:hidden`), so only one navigation is visible at any screen width.
 
-- [ ] **Navigation is now opt-in per page.** 73 `page.tsx` files; `LandingHeader`
-      is rendered from 7 files, 3 of them under `src/app` (`/`, `/progress`,
-      `/search`). Many of the rest carry their own feature headers
-      (`DashboardHeader`, `AdminHeader`, `VenueHeader` and friends), so this is
-      **not** 70 pages with no navigation — but no single thing guarantees a
-      page has any, which the `(main)` layout used to do for whatever sat under
-      it. Worth an audit of which trees genuinely have no way out.
+- [x] **Navigation is now opt-in per page.** Audited 27 Oct, see the next
+      section's "Is the navbar replacement finished?": no page is a dead end.
 
 ---
 
@@ -693,7 +688,7 @@ invisible to admins).
       `MobileBottomNav` is `lg:hidden`, `SearchClient` sidebar/chips switch at `lg`,
       and `useMobile.ts` sets `MOBILE_BREAKPOINT = 1024`. All navigation elements
       and helpers now agree across the application.
-- [ ] **Is the navbar replacement finished?** `feat/map` deleted the global
+- [x] **Is the navbar replacement finished?** `feat/map` deleted the global
       `Navbar` and the `(main)` layout, and `LandingHeader` took over. That much
       is clearly deliberate — `/progress` was handed `LandingHeader` in the same
       commit, and nothing imports the deleted modules. What is not established
@@ -703,6 +698,22 @@ invisible to admins).
       `src/app`), most of the rest carrying their own feature headers. **Not
       audited page by page** — that audit is the work. **Decided 26 Oct:** opt-in
       per page is the intended end state; the page-by-page audit is next.
+      **Audited 27 Oct: finished.** Every `page.tsx`, with its imports and the
+      layouts above it, reaches a way out (a header, a link home or a back
+      button); the only pages with none redirect or handle a sign-in callback.
+      What the audit found instead were links to routes with no page:
+      `/auth/login` (7 sign-in prompts), `/onboarding/partner` and the booking
+      headers' "Community" `/passport`. Fixed in #176, reconciled with main's
+      own fixes in #179 (sign-in prompts use `signInThen`, which returns to the
+      page). Back buttons on pages reached from shared links (event, venue,
+      asset, `/user/<id>`) left the site from a deep link; #177 moved them to
+      `smartBack` with a fallback. The event and venue pages render both
+      layouts, so each has two `<h1>`: left alone, since the hidden one is
+      `display: none` (not in the accessibility tree) and the alternatives
+      either drop the phone's `<h1>` or need viewport detection on the server.
+      Still open, not dead ends: "Trips" and "Help Center" in the user menu
+      point at pages that don't exist, but both are marked coming soon, and
+      `NAV_MENU` in `shared/lib/constants.ts` is unused and full of dead links.
 - [x] **The 11 widened routes.** Resolved 26 Oct: 8 of the resource-level
       approve/reject twins were already deleted on 5 Sep; the last 3
       (`/event-requests/:id/approve|reject|complete`, no callers) went in API
