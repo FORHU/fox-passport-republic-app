@@ -81,6 +81,9 @@ export interface PackageHistoryEntry {
   /** booking.paid: what the guest paid, in the platform currency. */
   amount?: number;
   refunded?: boolean;
+  /** Settled by an admin's review of an Event nobody was checked in to. */
+  byReview?: boolean;
+  noShow?: boolean;
 }
 
 /** Newest first. Only the package's owner may read it. */
