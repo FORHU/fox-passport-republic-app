@@ -201,8 +201,9 @@ that way — if it goes non-zero again, something regressed.
       venue page's pattern), `event` importing `search`'s `categoryLabel` (now
       `shared/lib/categoryLabel.ts`), and a test importing `../../proxy`
       because vitest's `@` alias pointed at the repo root rather than `src/`
-      as tsconfig does (fixed, so `@/proxy` resolves). It keeps regressing
-      because CI doesn't run `pnpm validate`.
+      as tsconfig does (fixed, so `@/proxy` resolves). It kept regressing
+      because CI didn't run `pnpm validate`; from 27 Oct it does, right after
+      lint.
 
 ### Read first, in this order
 
@@ -750,8 +751,11 @@ invisible to admins).
 - [x] **`requireOwnerOrAdmin`** had zero call sites. Decided: deleted, with
       the other legacy guards, 23 Sep — see §4. Ownership stays checked inside
       each service.
-- [ ] **Does `MobileAdminView` earn its keep?** Two implementations of the same
-      console to keep in step.
+- [x] **Does `MobileAdminView` earn its keep?** Two implementations of the same
+      console to keep in step. **Kept, 27 Oct.** The Flutter app has no admin and
+      won't get one, so a phone browser is the only way to reach admin on a
+      phone. And it is only the dashboard tab now (`AdminBody`); every other tab
+      already renders the real `AdminContent` at phone width.
 
 ---
 
@@ -762,7 +766,7 @@ invisible to admins).
       `/api/v1/admin/stats` and `/api/v1/users/` routes: unauthenticated `401`,
       denied citizen/secretary `403`, and allowed `admin_secretary` `200`
       responses. The broader per-route ownership triads remain a follow-up.
-- [ ] **Close the remaining test suite's blind spot — this is the
+- [x] **Close the remaining test suite's blind spot — this is the
       highest-leverage item
       here.** Twice on 2 Sep a feature was entirely broken while its tests
       passed: the socket had been dead for weeks, and 41 tests pinned the
@@ -782,9 +786,13 @@ invisible to admins).
       `src/__tests__/data/socketProvider.test.tsx`: it drives `SocketProvider`
       as the server does and checks the ticket request, the query refreshes per
       topic and the hand-off to features; breaking either the ticket call or
-      the refresh fails it. Still source-scan only: `middlewareSecrets`,
-      `dashboardFetchers`, `permissions`, `queryDefaults` and
-      `lightThemeContrast` under `src/__tests__/`.
+      the refresh fails it. **Closed 27 Oct.** The other tests that read source
+      were checked one by one, and none is the blind spot: `dashboardFetchers`
+      and `queryDefaults` already exercise the real fetchers and client;
+      `middlewareSecrets` and `permissions` guard an absence (no signing key, no
+      copy of the grant table), which has no behaviour to assert, and the proxy
+      itself is driven by `proxyPublicProfiles.test.ts`; `lightThemeContrast`
+      is a styling convention.
 - [x] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` configuration — completed 23
       Sep.** Google OAuth now rejects partial credentials and invalid callback
       URLs at API startup; the fully unset integration remains optional with a
