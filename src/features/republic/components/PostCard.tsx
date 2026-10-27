@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Award,
   Handshake,
@@ -141,8 +140,7 @@ export function PostCard({
   onMessageFoxerClick,
   renderShareModal,
 }: PostCardProps) {
-  const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, openLogin } = useAuthStore();
   const [myReaction, setMyReaction] = useState<ReactionType | null>(
     post.myReaction ?? (post.isLikedByMe ? "like" : null),
   );
@@ -163,7 +161,7 @@ export function PostCard({
 
   const handleReact = async (type: ReactionType | null) => {
     if (!user) {
-      router.push("/auth/login");
+      openLogin();
       return;
     }
     const prevReaction = myReaction;
@@ -218,7 +216,7 @@ export function PostCard({
 
   const handleSendClick = () => {
     if (!user) {
-      router.push("/auth/login");
+      openLogin();
       return;
     }
     setShowShareModal(true);
@@ -233,7 +231,7 @@ export function PostCard({
     contextId: string,
   ) => {
     if (!user) {
-      router.push("/auth/login");
+      openLogin();
       return;
     }
     onMessageFoxerClick?.({
@@ -788,7 +786,7 @@ export function PostCard({
             <button
               onClick={() => {
                 if (!user) {
-                  router.push("/auth/login");
+                  openLogin();
                   return;
                 }
                 setShowRepostModal(true);

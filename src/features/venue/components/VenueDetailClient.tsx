@@ -60,10 +60,10 @@ export default function VenueDetailClient({
   // typed fields directly silently produced ₱0 and broken <img> tags.
   const venuePrice = Number((venue as any).price || 0);
 
-  const { user } = useAuthStore();
+  const { user, openLogin } = useAuthStore();
   const handleProposePartnership = () => {
     if (!user?.roleType?.includes("investor")) {
-      router.push("/onboarding/partner");
+      router.push("/foxer/apply-investor");
     } else {
       onProposePartnership?.();
     }
@@ -89,7 +89,7 @@ export default function VenueDetailClient({
   // Composed at the app layer: this feature doesn't import `messages`.
   const handleContactOwner = useCallback(() => {
     if (!user) {
-      router.push("/auth/login");
+      openLogin();
       return;
     }
     if (!onContactVenue) {
@@ -97,15 +97,15 @@ export default function VenueDetailClient({
       return;
     }
     onContactVenue();
-  }, [user, onContactVenue, router]);
+  }, [user, onContactVenue, openLogin]);
 
   const handleReportListing = useCallback(() => {
     if (!user) {
-      router.push("/auth/login");
+      openLogin();
       return;
     }
     setIsReportOpen(true);
-  }, [user, router]);
+  }, [user, openLogin]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
