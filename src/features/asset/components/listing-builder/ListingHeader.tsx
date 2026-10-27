@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from "react";
+import Link from "next/link";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
 
 interface ListingHeaderProps {
@@ -11,8 +12,11 @@ interface ListingHeaderProps {
   isNotification?: boolean;
   successMessage?: string;
   onBack: () => void;
-  onSaveDraft: () => void;
+  /** Left out on a live listing's edit page, which mustn't drop back to draft. */
+  onSaveDraft?: () => void;
   onPublish: () => void;
+  /** The owner's list, filtered to drafts. The Studio's only draft link. */
+  myDraftsHref?: string;
 }
 
 export function ListingHeader({
@@ -25,6 +29,7 @@ export function ListingHeader({
   onBack,
   onSaveDraft,
   onPublish,
+  myDraftsHref,
 }: ListingHeaderProps) {
   const defaultSuccessMessage =
     activeType === "inventory"
@@ -62,12 +67,26 @@ export function ListingHeader({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={onSaveDraft}
-            className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5"
-          >
-            Save Draft
-          </button>
+          {myDraftsHref && (
+            <Link
+              href={myDraftsHref}
+              className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                inventory_2
+              </span>
+              My Drafts
+            </Link>
+          )}
+          {onSaveDraft && (
+            <button
+              onClick={onSaveDraft}
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 disabled:opacity-50"
+            >
+              Save Draft
+            </button>
+          )}
           <button
             onClick={onPublish}
             disabled={isSubmitting}

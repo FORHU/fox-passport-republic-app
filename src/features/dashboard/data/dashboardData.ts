@@ -148,4 +148,15 @@ export const STATUS_OPTIONS = {
   service: ["active", "paused", "unavailable"],
 };
 
+/**
+ * What the Gear and Talent lists can be filtered by: the statuses an owner
+ * can set, plus the two a listing passes through before approval. Kept apart
+ * from STATUS_OPTIONS, which is also StatusBadge's "change status" menu and
+ * must not offer these.
+ */
+export const FILTER_STATUS_OPTIONS = {
+  inventory: ["draft", "pending", ...STATUS_OPTIONS.inventory],
+  service: ["draft", "pending", ...STATUS_OPTIONS.service],
+};
+
 export type StatusType = "event" | "venue" | "inventory" | "service";
