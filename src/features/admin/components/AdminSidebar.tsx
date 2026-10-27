@@ -41,6 +41,13 @@ const NAV_ITEMS = [
     permission: "queue:read",
   },
   {
+    // Ended with nobody checked in; an admin settles each booking.
+    label: "Needs review",
+    icon: "fact_check",
+    id: "needs-review",
+    permission: "queue:read",
+  },
+  {
     label: "Categories",
     icon: "category",
     id: "categories",

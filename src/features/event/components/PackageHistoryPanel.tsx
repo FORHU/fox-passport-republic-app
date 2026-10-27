@@ -69,8 +69,9 @@ function describe(entry: PackageHistoryEntry): string[] {
         `Paid${entry.amount !== undefined ? ` ${formatCurrency(entry.amount)}` : ""}`,
       ];
     case "booking.checkedIn":
-      return ["Checked in a booking"];
+      return [entry.byReview ? "Marked a booking attended" : "Checked in a booking"];
     case "booking.cancelled":
+      if (entry.noShow) return ["Marked a booking as a no-show"];
       return [`Cancelled a booking${entry.refunded ? " (refunded)" : ""}`];
     default:
       return [entry.action];
