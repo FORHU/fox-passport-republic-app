@@ -701,13 +701,13 @@ invisible to admins).
       inherited from a layout, and no single thing guarantees a page has any.
       73 `page.tsx` files, `LandingHeader` rendered from 7 files (3 under
       `src/app`), most of the rest carrying their own feature headers. **Not
-      audited page by page** — that audit is the work, once you say whether the
-      opt-in model is the intended end state or a way-point.
-- [ ] **The 11 widened routes.** The resource-level approve/reject twins moved
-      from `requireAdmin` to `queue:decide`, so `admin_secretary` reaches them
-      now. Their `/admin/*` counterparts already did, so the two paths agree for
-      the first time — but it is a real behaviour change. Keep, or give those 11
-      an admin-only permission for strict parity.
+      audited page by page** — that audit is the work. **Decided 26 Oct:** opt-in
+      per page is the intended end state; the page-by-page audit is next.
+- [x] **The 11 widened routes.** Resolved 26 Oct: 8 of the resource-level
+      approve/reject twins were already deleted on 5 Sep; the last 3
+      (`/event-requests/:id/approve|reject|complete`, no callers) went in API
+      #192. Approving stays on `/admin/*`; completing an Event now follows its
+      bookings.
 - [x] **Seven page trees** sat outside `PROTECTED_ROUTES` and any guard:
       `/kyc`, `/notifications`, `/scanner`, `/wishlists`, `/host` (13 pages),
       `/match`, `/venue-foxer`. All seven are signed-in only — decided and

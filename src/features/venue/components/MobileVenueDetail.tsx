@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { smartBack } from "@/shared/lib/navigation";
 
 interface MobileVenueDetailProps {
   venue?: any;
@@ -109,7 +110,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           style={{ objectFit: "contain" }}
         />
         <button
-          onClick={() => router.back()}
+          onClick={() => smartBack(router, "/venues/map")}
           style={{
             width: 36,
             height: 36,

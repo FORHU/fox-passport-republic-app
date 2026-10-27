@@ -42,6 +42,7 @@ export default function robots(): MetadataRoute.Robots {
           "/host",
           "/venue-foxer",
           "/user/passport",
+          "/user/*/connections",
           "/republic/saved",
           "/foxer/create-",
           "/foxer/apply",

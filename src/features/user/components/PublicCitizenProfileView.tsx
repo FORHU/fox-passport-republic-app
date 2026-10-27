@@ -16,6 +16,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { Money } from "@/shared/components/ui/Money";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { smartBack } from "@/shared/lib/navigation";
 
 export interface PublicCitizenProfileViewProps {
   followCounts?: { followers: number; following: number };
@@ -166,7 +167,7 @@ export default function PublicCitizenProfileView({
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => router.back()}
+            onClick={() => smartBack(router, "/republic")}
             className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">
@@ -530,14 +531,14 @@ export default function PublicCitizenProfileView({
                           <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400/60 p-0.5 bg-zinc-900 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
                             <img
                               src={stampSeal}
-                              alt={stamp.venue?.name ?? stamp.eventName}
+                              alt={stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
                               className="w-full h-full object-cover rounded-full"
                             />
                           </div>
 
                           <div className="min-w-0 flex-1">
                             <h4 className="font-bold text-sm text-white truncate group-hover:text-amber-300 transition-colors">
-                              {stamp.venue?.name ?? stamp.eventName}
+                              {stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
                             </h4>
                             <p className="text-xs text-zinc-400 truncate">
                               {stamp.venue?.city ||
@@ -550,19 +551,25 @@ export default function PublicCitizenProfileView({
                           </div>
                         </div>
 
-                        <div className="mt-auto pt-2 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500">
-                          <span>{stamp.eventName}</span>
-                          <span>
-                            {new Date(stamp.eventDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
+                        {/* The event and its date come only on the person's
+                            own profile (see CitizenStamp). */}
+                        {(stamp.eventName || stamp.eventDate) && (
+                          <div className="mt-auto pt-2 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500">
+                            <span>{stamp.eventName}</span>
+                            {stamp.eventDate && (
+                              <span>
+                                {new Date(stamp.eventDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </span>
                             )}
-                          </span>
-                        </div>
+                          </div>
+                        )}
 
                         {stamp.venueId && (
                           <Link
