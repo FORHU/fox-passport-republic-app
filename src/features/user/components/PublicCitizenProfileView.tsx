@@ -16,6 +16,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { Money } from "@/shared/components/ui/Money";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { smartBack } from "@/shared/lib/navigation";
 
 export interface PublicCitizenProfileViewProps {
   followCounts?: { followers: number; following: number };
@@ -166,7 +167,7 @@ export default function PublicCitizenProfileView({
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => router.back()}
+            onClick={() => smartBack(router, "/republic")}
             className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">

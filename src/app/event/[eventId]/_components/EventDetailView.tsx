@@ -25,6 +25,7 @@ import {
 } from "next/navigation";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { signInThen } from "@/shared/auth/returnTo";
+import { smartBack } from "@/shared/lib/navigation";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -169,7 +170,7 @@ export function EventDetailView({
         >
           <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
             <button
-              onClick={() => router.back()}
+              onClick={() => smartBack(router, "/")}
               className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">
