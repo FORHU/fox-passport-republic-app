@@ -195,11 +195,14 @@ already at zero). `e507f9a` finished the follow/block/messages boundary
 refactor and closed out the remainder. The command now exits zero and stays
 that way — if it goes non-zero again, something regressed.
 
-- [ ] **2 violations as of 20 Oct** (down from 16 on 24 Sep):
-      `features/landing/journey/RoleDocs.tsx` imports `@/features/onboarding/roleCatalog`
-      (Feature Isolation), and `shared/lib/server/data.ts` imports
-      `@/features/landing/journey/landing-shared` (Shared Kernel). Re-run the
-      command for the current list rather than trusting this one.
+- [x] **0 again as of 27 Oct.** The 20 Oct pair had gone; three others had
+      come in: `booking` importing `messages`' `MessageButton` (now passed in
+      from `app/booking/config/_components/BookingConfigPageClient.tsx`, the
+      venue page's pattern), `event` importing `search`'s `categoryLabel` (now
+      `shared/lib/categoryLabel.ts`), and a test importing `../../proxy`
+      because vitest's `@` alias pointed at the repo root rather than `src/`
+      as tsconfig does (fixed, so `@/proxy` resolves). It keeps regressing
+      because CI doesn't run `pnpm validate`.
 
 ### Read first, in this order
 
@@ -439,8 +442,8 @@ Both branches still exist and each still holds one commit that is **not** on
       `prisma/preflight.ts`, `prisma/seed.ts`, `tests/preflight.spec.ts`.
       Confirmed 24 Sep: `05590bd` is in the api's current history and
       `prisma/preflight.ts` is present. The remote branch can be deleted.
-- [ ] **app `fix/secretary-admin-console` — `8bc3586`, this document.** Docs
-      only.
+- [x] **app `fix/secretary-admin-console` — `8bc3586`, this document.** Docs
+      only. Confirmed 27 Oct: `8bc3586` is in `staging`.
 
 ### Migrations, which is the part that bites
 

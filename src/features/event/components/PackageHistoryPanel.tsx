@@ -7,7 +7,7 @@ import {
   fetchPackageHistory,
   type PackageHistoryEntry,
 } from "@/shared/api/event-templates";
-import { categoryLabel } from "@/features/search/helpers/labels";
+import { categoryLabel } from "@/shared/lib/categoryLabel";
 import { formatCurrency } from "@/shared/lib/currency";
 
 /**

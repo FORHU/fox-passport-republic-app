@@ -3,20 +3,9 @@
  * "sound_system" → "Sound system", "one_time" → "one-time".
  */
 
-// Category values that don't read right once de-snaked.
-const CATEGORY_WORDS: Record<string, string> = {
-  furnitures: "Furniture",
-  dj: "DJ",
-  mc: "MC",
-};
+import { categoryLabel } from "@/shared/lib/categoryLabel";
 
-export function categoryLabel(value?: string | null): string {
-  if (!value) return "";
-  const known = CATEGORY_WORDS[value.toLowerCase()];
-  if (known) return known;
-  const words = value.replace(/_/g, " ").trim().toLowerCase();
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
+export { categoryLabel };
 
 const BILLING_WORDS: Record<string, string> = {
   hourly: "per hour",
