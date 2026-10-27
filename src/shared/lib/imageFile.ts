@@ -13,12 +13,3 @@ export async function imageUrlToFile(
     type: blob.type,
   });
 }
-
-/** What the API's presigned upload accepts (`s3.controller.ts`), minus the
- * formats no listing photo should be. */
-export const LISTING_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];

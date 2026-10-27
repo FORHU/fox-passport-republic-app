@@ -16,6 +16,7 @@ import {
 } from "@/shared/lib/geocoding";
 import { fetchBarangays } from "@/shared/api/geo";
 import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface VenueDetailsFormProps {
   venueName: string;
@@ -364,7 +365,7 @@ export function VenueDetailsForm({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept={UPLOAD_ACCEPT.image}
                 multiple
                 className="hidden"
                 onChange={handleFileChange}

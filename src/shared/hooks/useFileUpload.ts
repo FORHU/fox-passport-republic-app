@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios"; // Used for direct S3 upload
 import api from "@/shared/lib/axios"; // Used for backend API calls
 import { toast } from "sonner";
+import { checkUploadFile } from "@/shared/lib/uploadRules";
 
 export interface UploadResult {
   fileId: string;
@@ -13,14 +14,19 @@ export interface UploadResult {
 
 /**
  * useFileUpload Hook - "Best Practice" Direct-to-S3 Flow
- * 1. Request presigned URL from Backend
+ * 1. Request presigned URL from Backend (signed to this file's type and size)
  * 2. Upload directly to S3 from Browser
- * 3. Register metadata in Backend
+ * 3. Register it in Backend by key; the API checks the bytes and builds the URL
  */
 export const useFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
 
   const uploadFile = async (file: File): Promise<UploadResult | null> => {
+    const problem = checkUploadFile(file, "image");
+    if (problem) {
+      toast.error(problem);
+      return null;
+    }
     setIsUploading(true);
 
     try {
@@ -37,7 +43,8 @@ export const useFileUpload = () => {
 
       const { url: uploadUrl, key } = presignedData;
 
-      // STEP 4: Upload directly to S3
+      // STEP 4: Upload directly to S3. The URL is signed to this Content-Type
+      // and size, so both must match what was declared above.
       // We use raw axios to ensure we don't send auth tokens or custom baseURL to S3
       await axios.put(uploadUrl, file, {
         headers: {
@@ -49,16 +56,12 @@ export const useFileUpload = () => {
         `[useFileUpload] S3 Upload successful, registering metadata...`,
       );
 
-      // Get the accessible CloudFront URL for the uploaded file
-      const { data: urlData } = await api.get(`/s3/get-cloudfront-url`, {
-        params: { key },
-      });
-
-      // STEP 5 & 6: Register metadata in Backend
+      // STEP 5: Register in Backend. Only the key: the API reads the object's
+      // first bytes, refuses (and deletes) anything that isn't a real image,
+      // and builds the public URL itself.
       const { data: registerData } = await api.post(`/files/create`, {
-        url: urlData.url,
+        key,
         name: file.name,
-        type: file.type,
       });
 
       return {
@@ -89,6 +92,11 @@ export const useFileUpload = () => {
   const uploadPrivateFile = async (
     file: File,
   ): Promise<{ fileId: string } | null> => {
+    const problem = checkUploadFile(file, "document");
+    if (problem) {
+      toast.error(problem);
+      return null;
+    }
     setIsUploading(true);
     try {
       const form = new FormData();

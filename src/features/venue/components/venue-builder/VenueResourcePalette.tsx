@@ -7,6 +7,7 @@ import {
 } from "@/features/venue/data/venueBuilderData";
 import { Money } from "@/shared/components/ui/Money";
 import { currencySymbol } from "@/shared/lib/currency";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface VenueResourcePaletteProps {
   activeCategory: string;
@@ -116,7 +117,7 @@ export function VenueResourcePalette({
                 type="file"
                 ref={fileInputRef}
                 onChange={handlePhotoChange}
-                accept="image/*"
+                accept={UPLOAD_ACCEPT.image}
                 className="hidden"
               />
 

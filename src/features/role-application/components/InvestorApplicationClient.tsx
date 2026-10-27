@@ -7,6 +7,7 @@ import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
 import { currencySymbol } from "@/shared/lib/currency";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 // Same vocabulary CreateInvestmentWizard uses for its two investment
 // streams — kept identical here so a declared "interest" always matches the
@@ -217,7 +218,7 @@ export default function InvestorApplicationClient() {
 
         <FileUploader
           label="Proof of Funds (optional)"
-          accept="image/*,application/pdf"
+          accept={UPLOAD_ACCEPT.document}
           private
           onUploadComplete={(id) => setProofFileId(id)}
         />
