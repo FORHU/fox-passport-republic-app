@@ -8,7 +8,7 @@ import {
 } from "@/shared/lib/server/data";
 import CategoryDetailClient from "@/features/category/components/CategoryDetailClient";
 import { assetUrl } from "@/shared/lib/assets";
-import { categoryLabel } from "@/features/search/helpers/labels";
+import { categoryLabel } from "@/shared/lib/categoryLabel";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   birthday: "from-lime-300 via-green-400 to-emerald-500",

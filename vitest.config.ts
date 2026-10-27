@@ -13,7 +13,8 @@ export default defineConfig({
       '@/features': resolve(__dirname, './src/features'),
       // Matches tsconfig's "@/app/*": ["./src/app/*"].
       '@/app': resolve(__dirname, './src/app'),
-      '@': resolve(__dirname, '.'),
+      // Matches tsconfig's "@/*": ["./src/*"].
+      '@': resolve(__dirname, './src'),
     },
   },
 })
