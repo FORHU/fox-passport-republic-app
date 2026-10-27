@@ -22,7 +22,6 @@ here.
 | `findings/mobile-ux-consolidation-strategy.md` | Mobile UX Consolidation Strategy & Information Architecture: resolves feature congestion, dual-mode (Citizen vs. Creator Studio) paradigm, 5-tab mobile structure, and delivery roadmap. Added 16 Oct. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
-| `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
 | `SPATIAL-PLAN.md` | The spatial vision and counter-plan: what already exists, and the order to build in. `FoxPassportSpatialIntelligence.md`'s still-valid principles were folded in here 13 Sep; its wrong stack/sequencing assumptions were not. |
 
 ---
@@ -75,10 +74,13 @@ app today, so nothing currently relies on it working.
 
 The api's Central Payment backend (Invoice/Checkout/Payment/Payout/Voucher/
 PricingEngine, plus bidding and partnership) had zero frontend integration as
-of `api-audit.md`'s last pass — see `CENTRAL-PAYMENT-FRONTEND-PLAN.md` for
-the full plan. Both the backend HTTP layer (`fox-passport-republic-api`
-commit `09e893e`) and this app's integration have now landed and been
-reviewed; that plan document carries the full "Built and reviewed" record.
+of `api-audit.md`'s last pass. Both the backend HTTP layer
+(`fox-passport-republic-api` commit `09e893e`) and this app's integration have
+now landed and been reviewed. The plan, `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, was
+deleted 27 Oct once finished; its "Built and reviewed" record is in git
+history. The one piece it left unbuilt, the per-vendor breakdown beside Pay
+Now, shipped later as `EventLineItemsPanel` (17 Sep). Its manual Stripe pass
+moved to the browser checks below.
 
 **The one bug worth knowing about even without opening that doc:** the
 plan's own testing checklist named "pay successfully → browser redirects →
@@ -682,6 +684,10 @@ invisible to admins).
 - [ ] **Password change and reset** revoke all sessions — confirm the user is
       signed out and can sign back in.
 - [ ] **Proxy edge cases**: a multipart upload, and 401 → refresh → replay.
+- [ ] **Central Payment in Stripe test mode, on dev**: pay an Event invoice
+      and a sponsorship end to end, then the success and cancel pages. Carried
+      over 27 Oct from the deleted `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, where it
+      was never run because no staging existed then.
 
 ---
 
