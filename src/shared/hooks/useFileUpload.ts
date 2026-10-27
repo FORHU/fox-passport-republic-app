@@ -20,13 +20,18 @@ export interface UploadResult {
  */
 export const useFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
+  // The last refusal, as toasted, for an uploader to show beside its field.
+  const [error, setError] = useState<string | null>(null);
+  const fail = (message: string) => {
+    toast.error(message);
+    setError(message);
+    return null;
+  };
 
   const uploadFile = async (file: File): Promise<UploadResult | null> => {
     const problem = checkUploadFile(file, "image");
-    if (problem) {
-      toast.error(problem);
-      return null;
-    }
+    if (problem) return fail(problem);
+    setError(null);
     setIsUploading(true);
 
     try {
@@ -74,11 +79,10 @@ export const useFileUpload = () => {
         "[useFileUpload] Direct Upload error:",
         error.response?.data || error.message,
       );
-      const msg =
+      return fail(
         error.response?.data?.message ||
-        "Upload failed. Please check your connection.";
-      toast.error(msg);
-      return null;
+          "Upload failed. Please check your connection.",
+      );
     } finally {
       setIsUploading(false);
     }
@@ -93,10 +97,8 @@ export const useFileUpload = () => {
     file: File,
   ): Promise<{ fileId: string } | null> => {
     const problem = checkUploadFile(file, "document");
-    if (problem) {
-      toast.error(problem);
-      return null;
-    }
+    if (problem) return fail(problem);
+    setError(null);
     setIsUploading(true);
     try {
       const form = new FormData();
@@ -104,15 +106,14 @@ export const useFileUpload = () => {
       const { data } = await api.post("/files/upload-private", form);
       return { fileId: data.fileId };
     } catch (error: any) {
-      toast.error(
+      return fail(
         error.response?.data?.message ||
           "Upload failed. Please check your connection.",
       );
-      return null;
     } finally {
       setIsUploading(false);
     }
   };
 
-  return { uploadFile, uploadPrivateFile, isUploading };
+  return { uploadFile, uploadPrivateFile, isUploading, error };
 };

@@ -15,7 +15,7 @@ export default function AvatarUploader({
   initials,
   onUploaded,
 }: AvatarUploaderProps) {
-  const { uploadFile, isUploading } = useFileUpload();
+  const { uploadFile, isUploading, error: uploadError } = useFileUpload();
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +44,8 @@ export default function AvatarUploader({
         setPreview(result.url);
         onUploaded(result.url);
       } else {
+        // The hook keeps the reason (the API's, when it refused the file).
         setPreview(null);
-        setError("Upload failed — please try again");
       }
     },
     [uploadFile, onUploaded],
@@ -146,7 +146,11 @@ export default function AvatarUploader({
         {isUploading ? "Uploading…" : "Click or drag & drop\nto change photo"}
       </p>
 
-      {error && <p className="text-[10px] text-red-400 text-center">{error}</p>}
+      {(error ?? uploadError) && (
+        <p className="text-[10px] text-red-400 text-center">
+          {error ?? uploadError}
+        </p>
+      )}
     </div>
   );
 }

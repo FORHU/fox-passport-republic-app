@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useFileUpload } from "../useFileUpload";
 import { FILE_EMPTY, FILE_UNSUPPORTED } from "@/shared/lib/uploadRules";
 
@@ -65,7 +65,11 @@ describe("useFileUpload", () => {
       .mockRejectedValueOnce({ response: { data: { message: FILE_UNSUPPORTED.image } } });
     const { result } = renderHook(() => useFileUpload());
 
-    expect(await result.current.uploadFile(file("image/jpeg", 10, "qa.jpg"))).toBeNull();
+    await act(async () => {
+      expect(await result.current.uploadFile(file("image/jpeg", 10, "qa.jpg"))).toBeNull();
+    });
     expect(toast.error).toHaveBeenLastCalledWith(FILE_UNSUPPORTED.image);
+    // …and keeps it, for an uploader to show beside the field.
+    expect(result.current.error).toBe(FILE_UNSUPPORTED.image);
   });
 });
