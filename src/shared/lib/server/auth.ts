@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerApi } from "./data";
 import {
   hasPermission,
+  hasAnyPermission,
   canAccessAdmin,
   type Permission,
 } from "@/shared/lib/permissions";
@@ -67,8 +68,7 @@ export async function requireAnyPermission(
   redirectTo = "/creator-dashboard",
 ) {
   const user = await requireAuth();
-  const allowed = permissions.some((p) => hasPermission(user, p));
-  if (!allowed) {
+  if (!hasAnyPermission(user, permissions)) {
     redirect(redirectTo);
   }
   return user;
