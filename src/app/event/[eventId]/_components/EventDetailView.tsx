@@ -25,7 +25,6 @@ import {
 } from "next/navigation";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { signInThen } from "@/shared/auth/returnTo";
-import { smartBack } from "@/shared/lib/navigation";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -110,9 +109,12 @@ export function EventDetailView({
     router.replace(`/event/${eventId}`, { scroll: false });
   }, [searchParams, user, eventId, router]);
 
+  // Signed out, sign in and come back here: an investor then gets the modal,
+  // anyone else the Partner Foxer application.
   const handleProposePartnership = () => {
-    // Basic redirect for non-partners, although backend may supply a clearer flag in V2
-    if (!user?.roleType?.includes("investor")) {
+    if (!user) {
+      signInThen(`/event/${eventId}`);
+    } else if (!user.roleType?.includes("investor")) {
       router.push("/foxer/apply-investor");
     } else {
       setIsPartnershipOpen(true);
@@ -170,7 +172,7 @@ export function EventDetailView({
         >
           <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
             <button
-              onClick={() => smartBack(router, "/")}
+              onClick={() => router.back()}
               className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">

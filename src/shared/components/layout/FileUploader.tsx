@@ -1,11 +1,13 @@
 ﻿"use client";
 
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
+import { FilePreviewModal } from "@/shared/components/ui/FilePreviewModal";
 import {
   Upload,
   X,
+  Eye,
   FileText,
   CheckCircle2,
   Loader2,
@@ -43,6 +45,20 @@ export default function FileUploader({
     "idle" | "uploading" | "success" | "error"
   >("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // The preview reads the picked file from memory: no request, and it works
+  // for private identity documents, which have no public URL.
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  const openPreview = () => {
+    if (file) setPreviewUrl(URL.createObjectURL(file));
+  };
+  const closePreview = useCallback(() => setPreviewUrl(null), []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,6 +92,7 @@ export default function FileUploader({
     }
 
     setFileName(file.name);
+    setFile(file);
     setStatus("uploading");
     onFileSelected?.(file);
 
@@ -88,12 +105,14 @@ export default function FileUploader({
       onUploadComplete(result.fileId);
     } else {
       setStatus("error");
+      setFile(null);
       onFileCleared?.();
     }
   };
 
   const reset = () => {
     setFileName(null);
+    setFile(null);
     setStatus("idle");
     if (fileInputRef.current) fileInputRef.current.value = "";
     onFileCleared?.();
@@ -153,23 +172,44 @@ export default function FileUploader({
 
         {status === "success" && (
           <>
-            <div className="flex items-center gap-3 w-full">
-              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center shrink-0">
-                {isImage ? (
-                  <ImageIcon className="text-green-500" size={20} />
-                ) : (
-                  <FileText className="text-green-500" size={20} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-white font-bold truncate">
-                  {fileName}
-                </p>
-                <p className="text-[10px] text-green-500 font-bold flex items-center gap-1">
-                  <CheckCircle2 size={12} /> Uploaded Successfully
-                </p>
-              </div>
+            <div className="flex items-center gap-2 w-full">
+              {/* Above the (disabled) file input that covers the whole slot. */}
               <button
+                type="button"
+                onClick={openPreview}
+                disabled={!file}
+                aria-label={`Preview ${fileName}`}
+                className="flex-1 min-w-0 flex items-center gap-3 text-left rounded-xl -m-1 p-1 hover:bg-white/5 transition-colors relative z-20 cursor-pointer disabled:cursor-default"
+              >
+                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center shrink-0">
+                  {isImage ? (
+                    <ImageIcon className="text-green-500" size={20} />
+                  ) : (
+                    <FileText className="text-green-500" size={20} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-white font-bold truncate">
+                    {fileName}
+                  </p>
+                  <p className="text-[10px] text-green-500 font-bold flex items-center gap-1">
+                    <CheckCircle2 size={12} /> Uploaded Successfully
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={openPreview}
+                disabled={!file}
+                aria-label="Preview file"
+                title="Preview"
+                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all relative z-20 shrink-0"
+              >
+                <Eye size={16} />
+              </button>
+              <button
+                type="button"
+                aria-label="Remove file"
                 onClick={(e) => {
                   e.preventDefault();
                   reset();
@@ -197,6 +237,16 @@ export default function FileUploader({
           </>
         )}
       </div>
+
+      {previewUrl && file && (
+        <FilePreviewModal
+          url={previewUrl}
+          name={file.name}
+          type={file.type}
+          label={label}
+          onClose={closePreview}
+        />
+      )}
     </div>
   );
 }

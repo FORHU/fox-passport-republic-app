@@ -47,11 +47,15 @@ function mapConditionToAllowed(value: unknown): string {
   return "good";
 }
 
+/** Statuses that go to admin review on publish, whatever the owner picked. */
+const NEEDS_REVIEW = ["draft", "pending", "rejected"];
+
 function mapStatusToInventory(value: unknown): string {
   const s = normalizeLower(value);
+  // "unavailable" first: it contains "avail".
+  if (s.includes("unavail") || s.includes("archiv")) return "unavailable";
   if (s.includes("avail")) return "available";
   if (s.includes("reserv")) return "reserved";
-  if (s.includes("unavail")) return "unavailable";
   return "available";
 }
 
@@ -108,6 +112,8 @@ export function useHostAssetEdit(assetId: string) {
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const [initialImageUrl, setInitialImageUrl] = useState<string>("");
+  // The status as the API has it, before mapping to the owner's choices.
+  const [listingStatus, setListingStatus] = useState<string>("");
 
   const backHref = "/creator-dashboard/assets";
 
@@ -154,7 +160,14 @@ export function useHostAssetEdit(assetId: string) {
         const mappedUnit = mapBillingRateToUnitLabel(found?.billingRate, "");
         inventory.setUnit(mappedUnit);
 
-        inventory.setStatus(mapStatusToInventory(found?.status));
+        // Only a live listing's status maps onto the owner's choices; one
+        // still on its way to approval keeps the store's "draft" and goes to
+        // review on publish (it used to come back as "available").
+        const rawStatus = String(found?.status ?? "").toLowerCase();
+        setListingStatus(rawStatus);
+        if (!NEEDS_REVIEW.includes(rawStatus)) {
+          inventory.setStatus(mapStatusToInventory(found?.status));
+        }
 
         inventory.setCity((found as any)?.city ?? "");
         inventory.setState((found as any)?.state ?? "");
@@ -166,6 +179,8 @@ export function useHostAssetEdit(assetId: string) {
         const url = firstImg?.url ?? firstImg?.imageUrl ?? "";
         inventory.setImage(url);
         setInitialImageUrl(url);
+        // Save Draft then updates this draft instead of creating another.
+        if (rawStatus === "draft") inventory.adoptDraft(String(found.id), url);
       } catch (err: any) {
         console.error("Prefill asset edit failed:", err);
         if (!cancelled) setPrefillError("Failed to load asset.");
@@ -222,10 +237,15 @@ export function useHostAssetEdit(assetId: string) {
         "Flat Rate": "one_time",
       };
 
-      const shouldIncludeImages =
+      // A changed image is uploaded and sent as a file id; the API replaces
+      // the listing's image with it. (An `images: [{ url }]` body is ignored.)
+      const imageChanged =
         typeof inventory.image === "string" &&
         inventory.image.trim() !== "" &&
         inventory.image !== initialImageUrl;
+      const imgIds = imageChanged
+        ? [await inventory.uploadPickedImage(inventory.image)]
+        : undefined;
 
       const payload = {
         name: inventory.title,
@@ -239,19 +259,15 @@ export function useHostAssetEdit(assetId: string) {
         country: inventory.country || undefined,
         lat: inventory.lat ?? undefined,
         lng: inventory.lng ?? undefined,
-        ...(shouldIncludeImages
-          ? {
-              images: [
-                {
-                  url: inventory.image,
-                  isThumbnail: true,
-                  altText: inventory.title,
-                },
-              ],
-            }
-          : {}),
+        ...(imgIds && { imgIds }),
         cancellationPolicyId: inventory.cancellationPolicyId || undefined,
-        status: inventory.status,
+        // "unavailable" is UI-only; the API's AssetStatus calls it "archived"
+        // (as the create path in useInventoryBuilder maps it).
+        status: NEEDS_REVIEW.includes(listingStatus)
+          ? "pending"
+          : inventory.status === "unavailable"
+            ? "archived"
+            : inventory.status,
       };
 
       await updateAsset(assetId, payload as any);
@@ -274,7 +290,7 @@ export function useHostAssetEdit(assetId: string) {
       );
       inventory.setIsSubmitting(false);
     }
-  }, [assetId, backHref, initialImageUrl, inventory, router]);
+  }, [assetId, backHref, initialImageUrl, inventory, listingStatus, router]);
 
   // Hide the builder’s default “create” back/publish handlers.
   return {
@@ -284,5 +300,8 @@ export function useHostAssetEdit(assetId: string) {
     successMessage,
     handleBack,
     handlePublish,
+    // Save Draft is offered only on a draft: a live listing mustn't drop
+    // back to draft by accident.
+    isDraft: listingStatus === "draft",
   };
 }

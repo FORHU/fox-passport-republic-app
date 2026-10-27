@@ -27,6 +27,7 @@ import {
   type PendingMediaTag,
 } from "@/features/republic/components/PhotoTagEditor";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { hasPermission } from "@/shared/lib/permissions";
 import api from "@/shared/lib/axios";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
@@ -72,7 +73,7 @@ export function ComposePostBox({
   fetchServices,
   fetchEvents,
 }: ComposePostBoxProps) {
-  const { user, openLogin } = useAuthStore();
+  const { user } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [type, setType] = useState<PostType>("citizen_experience");
@@ -184,7 +185,9 @@ export function ComposePostBox({
           </div>
         </div>
         <button
-          onClick={() => openLogin()}
+          onClick={() =>
+            signInThen(window.location.pathname + window.location.search)
+          }
           className="px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 text-black font-extrabold text-xs transition-all shadow-md shrink-0"
         >
           Sign In to Post
