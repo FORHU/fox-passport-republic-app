@@ -13,7 +13,12 @@ import {
   Loader2,
   Image as ImageIcon,
 } from "lucide-react";
-import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
+import {
+  FILE_EMPTY,
+  FILE_PDF_ONLY,
+  FILE_UNSUPPORTED,
+  UPLOAD_ACCEPT,
+} from "@/shared/lib/uploadRules";
 
 interface FileUploaderProps {
   label: string;
@@ -65,6 +70,14 @@ export default function FileUploader({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const pdfOnly = accept === "application/pdf";
+
+    if (file.size === 0) {
+      toast.error(FILE_EMPTY);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     // File type validation
     const acceptedTypes = accept.split(",").map((t) => t.trim());
     const matchesType = acceptedTypes.some((type) => {
@@ -73,7 +86,7 @@ export default function FileUploader({
       return file.type === type;
     });
     if (!matchesType) {
-      toast.error(`Invalid file type. Accepted: ${accept}`);
+      toast.error(pdfOnly ? FILE_PDF_ONLY : FILE_UNSUPPORTED.document);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -155,7 +168,9 @@ export default function FileUploader({
             <p className="text-xs text-white/40 group-hover:text-white/60 text-center font-medium">
               Click or drag to upload <br />
               <span className="text-[10px] opacity-60">
-                {accept === "application/pdf" ? "PDF only" : "PDF, JPG, or PNG"}{" "}
+                {accept === "application/pdf"
+                  ? "PDF only"
+                  : "JPG, PNG, WebP, GIF or PDF"}{" "}
                 (Max {maxSizeMB}MB)
               </span>
             </p>

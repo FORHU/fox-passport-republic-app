@@ -44,6 +44,8 @@ export const FILE_UNSUPPORTED: Record<UploadPurpose, string> = {
   media: "Use a JPG, PNG, WebP or GIF image, or an MP4, MOV or WebM video",
   document: "Use a JPG, PNG, WebP or GIF image, or a PDF",
 };
+/** For a slot that only takes a PDF (the NBI clearance). */
+export const FILE_PDF_ONLY = "Use a PDF";
 
 const kindOf = (type: string): keyof typeof MAX_UPLOAD_SIZE =>
   TYPES.video.includes(type) ? "video" : TYPES.pdf.includes(type) ? "pdf" : "image";
