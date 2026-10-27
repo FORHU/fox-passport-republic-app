@@ -67,13 +67,23 @@ function mapCategoryToService(category: any): {
   };
 }
 
+/** Statuses that go to admin review on publish, whatever the owner picked. */
+const NEEDS_REVIEW = ["draft", "pending", "rejected"];
+
 function mapStatusToService(value: unknown): string {
   const s = normalizeLower(value);
   if (s.includes("act")) return "active";
   if (s.includes("pause")) return "paused";
-  if (s.includes("unavail")) return "unavailable";
+  if (s.includes("unavail") || s.includes("archiv")) return "unavailable";
   return "active";
 }
+
+/** The owner's choices back to the API's ServiceStatus, which has no
+ * "active" or "unavailable". */
+const SERVICE_STATUS_TO_API: Record<string, string> = {
+  active: "available",
+  unavailable: "archived",
+};
 
 function invertBillingRateToUnitLabel(billingRate: unknown): string {
   const br = normalizeLower(billingRate);
@@ -94,6 +104,8 @@ export function useHostServiceEdit(serviceId: string) {
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const [initialImageUrl, setInitialImageUrl] = useState<string>("");
+  // The status as the API has it, before mapping to the owner's choices.
+  const [listingStatus, setListingStatus] = useState<string>("");
 
   const backHref = "/creator-dashboard/services";
 
@@ -131,12 +143,21 @@ export function useHostServiceEdit(serviceId: string) {
         services.setPrice(Number.isFinite(parsedPrice) ? parsedPrice : 0);
 
         services.setUnit(invertBillingRateToUnitLabel(found?.billingRate));
-        services.setStatus(mapStatusToService(found?.status));
+        // Only a live listing's status maps onto the owner's choices; one
+        // still on its way to approval keeps the store's "draft" and goes to
+        // review on publish (it used to come back as "active").
+        const rawStatus = String(found?.status ?? "").toLowerCase();
+        setListingStatus(rawStatus);
+        if (!NEEDS_REVIEW.includes(rawStatus)) {
+          services.setStatus(mapStatusToService(found?.status));
+        }
 
         const firstImg = found?.images?.[0];
         const url = firstImg?.url ?? firstImg?.imageUrl ?? "";
         services.setImage(url);
         setInitialImageUrl(url);
+        // Save Draft then updates this draft instead of creating another.
+        if (rawStatus === "draft") services.adoptDraft(String(found.id), url);
       } catch (err: any) {
         console.error("Prefill service edit failed:", err);
         if (!cancelled) setPrefillError("Failed to load service.");
@@ -183,6 +204,16 @@ export function useHostServiceEdit(serviceId: string) {
         throw new Error("Please enter a valid price before publishing");
       }
 
+      // A changed image is uploaded and sent as a file id; the API replaces
+      // the listing's image with it. (An `images: [{ url }]` body is ignored.)
+      const imageChanged =
+        typeof services.image === "string" &&
+        services.image.trim() !== "" &&
+        services.image !== initialImageUrl;
+      const imgIds = imageChanged
+        ? [await services.uploadPickedImage(services.image)]
+        : undefined;
+
       const payload = {
         name: services.title,
         description: services.description,
@@ -191,21 +222,11 @@ export function useHostServiceEdit(serviceId: string) {
           "hourly",
         category: services.category,
         price: parsedPrice,
-        ...(typeof services.image === "string" &&
-        services.image.trim() !== "" &&
-        services.image !== initialImageUrl
-          ? {
-              images: [
-                {
-                  url: services.image,
-                  isThumbnail: true,
-                  altText: services.title,
-                },
-              ],
-            }
-          : {}),
+        ...(imgIds && { imgIds }),
         cancellationPolicyId: services.cancellationPolicyId || undefined,
-        status: services.status,
+        status: NEEDS_REVIEW.includes(listingStatus)
+          ? "pending"
+          : (SERVICE_STATUS_TO_API[services.status] ?? services.status),
       };
 
       await updateService(serviceId, payload as any);
@@ -231,7 +252,7 @@ export function useHostServiceEdit(serviceId: string) {
     } finally {
       services.setIsSubmitting(false);
     }
-  }, [backHref, initialImageUrl, serviceId, services, router]);
+  }, [backHref, initialImageUrl, listingStatus, serviceId, services, router]);
 
   return {
     ...services,
@@ -240,5 +261,8 @@ export function useHostServiceEdit(serviceId: string) {
     successMessage,
     handleBack,
     handlePublish,
+    // Save Draft is offered only on a draft: a live listing mustn't drop
+    // back to draft by accident.
+    isDraft: listingStatus === "draft",
   };
 }

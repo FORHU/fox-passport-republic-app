@@ -63,6 +63,7 @@ function HostAssetEditPageContent() {
 
     handleBack,
     handleSaveDraft,
+    isDraft,
     handlePublish,
     handleImageUpload,
     handleCategorySelect,
@@ -125,7 +126,7 @@ function HostAssetEditPageContent() {
           isNotification={isNotification}
           successMessage={successMessage}
           onBack={handleBack}
-          onSaveDraft={handleSaveDraft}
+          onSaveDraft={isDraft ? handleSaveDraft : undefined}
           onPublish={handlePublish}
         />
 

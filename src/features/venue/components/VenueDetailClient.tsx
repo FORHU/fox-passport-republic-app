@@ -20,9 +20,9 @@ import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore"
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
-import { smartBack } from "@/shared/lib/navigation";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -52,7 +52,7 @@ export default function VenueDetailClient({
     window.scrollTo(0, 0);
   }, []);
 
-  const handleBack = useCallback(() => smartBack(router, "/venues/map"), [router]);
+  const handleBack = useCallback(() => router.back(), [router]);
 
   // `venue` here is the server-normalized shape from `getVenueById`
   // (`normalizeVenue` in shared/lib/server/data.ts), not the raw API shape
@@ -61,9 +61,13 @@ export default function VenueDetailClient({
   // typed fields directly silently produced ₱0 and broken <img> tags.
   const venuePrice = Number((venue as any).price || 0);
 
-  const { user, openLogin } = useAuthStore();
+  const { user } = useAuthStore();
+  // Signed out, sign in and come back here: an investor then gets the modal,
+  // anyone else the Partner Foxer application.
   const handleProposePartnership = () => {
-    if (!user?.roleType?.includes("investor")) {
+    if (!user) {
+      signInThen(`/venues/${venue.id}`);
+    } else if (!user.roleType?.includes("investor")) {
       router.push("/foxer/apply-investor");
     } else {
       onProposePartnership?.();
@@ -88,9 +92,10 @@ export default function VenueDetailClient({
   // Messages go to the venue's Shared Inbox, answered by its Mayor and
   // Organizers together (CONTEXT.md) rather than to the Mayor in person.
   // Composed at the app layer: this feature doesn't import `messages`.
+  // Signed out, sign in and come back to this venue.
   const handleContactOwner = useCallback(() => {
     if (!user) {
-      openLogin();
+      signInThen(`/venues/${venue.id}`);
       return;
     }
     if (!onContactVenue) {
@@ -98,15 +103,15 @@ export default function VenueDetailClient({
       return;
     }
     onContactVenue();
-  }, [user, onContactVenue, openLogin]);
+  }, [user, onContactVenue, venue.id]);
 
   const handleReportListing = useCallback(() => {
     if (!user) {
-      openLogin();
+      signInThen(`/venues/${venue.id}`);
       return;
     }
     setIsReportOpen(true);
-  }, [user, openLogin]);
+  }, [user, venue.id]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">

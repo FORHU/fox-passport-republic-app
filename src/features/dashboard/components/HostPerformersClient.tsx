@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardHeader,
   PerformersSection,
 } from "@/features/dashboard/components";
 import {
-  STATUS_OPTIONS,
+  FILTER_STATUS_OPTIONS,
   type ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
@@ -38,7 +38,11 @@ export default function HostPerformersClient({
 }: HostPerformersClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [status, setStatus] = useState<"all" | string>("all");
+  // The Studio's "My Drafts" links here with ?status=draft.
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"all" | string>(
+    () => searchParams.get("status") ?? "all",
+  );
   const [services, setServices] = useState<ServiceItem[]>(initialServices);
 
   const filteredServices = useMemo(() => {
@@ -134,7 +138,7 @@ export default function HostPerformersClient({
                   onChange={setStatus}
                   options={[
                     { value: "all", label: "All Status" },
-                    ...STATUS_OPTIONS.service.map((s) => ({
+                    ...FILTER_STATUS_OPTIONS.service.map((s) => ({
                       value: s,
                       label: s,
                     })),
