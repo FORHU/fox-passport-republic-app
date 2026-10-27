@@ -8,6 +8,7 @@ import {
   ReadReceipt,
   StartConversationInput,
 } from "../types";
+import { checkUploadFile, type UploadPurpose } from "@/shared/lib/uploadRules";
 
 export const getConversations = async (): Promise<Conversation[]> => {
   const res = await api.get("/conversations");
@@ -88,7 +89,10 @@ export const sendMessage = async (
 export const uploadMessageAttachment = async (
   file: File,
   signal?: AbortSignal,
+  purpose: UploadPurpose = "media",
 ): Promise<string> => {
+  const problem = checkUploadFile(file, purpose);
+  if (problem) throw new Error(problem);
   const formData = new FormData();
   formData.append("file", file);
   const res = await api.post("/files/upload-direct", formData, {

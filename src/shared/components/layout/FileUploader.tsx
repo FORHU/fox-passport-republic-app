@@ -13,6 +13,7 @@ import {
   Loader2,
   Image as ImageIcon,
 } from "lucide-react";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface FileUploaderProps {
   label: string;
@@ -32,8 +33,8 @@ interface FileUploaderProps {
 export default function FileUploader({
   label,
   onUploadComplete,
-  accept = "image/*,application/pdf",
-  maxSizeMB = 10,
+  accept = UPLOAD_ACCEPT.document,
+  maxSizeMB = 15,
   validateFile,
   onFileSelected,
   onFileCleared,

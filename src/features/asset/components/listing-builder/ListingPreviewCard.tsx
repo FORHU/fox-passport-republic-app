@@ -4,7 +4,7 @@ import React, { useRef } from "react";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
 import { toast } from "sonner";
 import { Money } from "@/shared/components/ui/Money";
-import { LISTING_IMAGE_TYPES } from "@/shared/lib/imageFile";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface ListingPreviewCardProps {
   activeType: ListingType;
@@ -50,13 +50,9 @@ export function ListingPreviewCard({
     if (file) {
       // Caught here, not at Publish: the upload only takes these types, and
       // `image/*` would also let through HEIC/AVIF photos it then refuses.
-      if (!LISTING_IMAGE_TYPES.includes(file.type)) {
-        toast.error("Use a JPG, PNG, WebP or GIF image");
-        return;
-      }
-      // limit to 5MB
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image too large (max 5MB)");
+      const problem = checkUploadFile(file, "image");
+      if (problem) {
+        toast.error(problem);
         return;
       }
       const reader = new FileReader();
@@ -72,7 +68,7 @@ export function ListingPreviewCard({
       <input
         ref={fileInputRef}
         type="file"
-        accept={LISTING_IMAGE_TYPES.join(",")}
+        accept={UPLOAD_ACCEPT.image}
         className="hidden"
         onChange={handleFileChange}
       />
