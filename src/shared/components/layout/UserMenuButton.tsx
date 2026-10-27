@@ -36,9 +36,14 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
   useEffect(() => {
     if (!user || hasSyncedRef.current) return;
     hasSyncedRef.current = true;
+    // A reply that started under the previous account is that account's —
+    // see `sessionEpoch`.
+    const startedIn = useAuthStore.getState().sessionEpoch;
     refreshSession()
       .then((freshUser) => {
-        if (freshUser) setUser(freshUser as any);
+        if (freshUser && useAuthStore.getState().sessionEpoch === startedIn) {
+          setUser(freshUser as any);
+        }
       })
       .catch(() => {});
   }, [user, setUser]);
@@ -55,7 +60,9 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
     setSyncing(true);
     close();
     try {
+      const startedIn = useAuthStore.getState().sessionEpoch;
       const freshUser = await refreshSession();
+      if (useAuthStore.getState().sessionEpoch !== startedIn) return;
       if (freshUser) {
         setUser(freshUser as any);
         toast.success("Account synced — your latest roles are now active");

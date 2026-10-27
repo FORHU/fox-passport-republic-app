@@ -57,8 +57,8 @@ export function VenueEditSwitch({
               </h1>
               <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-white/50">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#A3A8F5]" />
-                You help run this venue. Pricing, payouts and its team stay
-                with the Mayor.
+                You help run this venue. Pricing, payouts and its team stay with
+                the Mayor.
               </p>
             </div>
             <Link
@@ -72,7 +72,9 @@ export function VenueEditSwitch({
           {can("venue:edit-listing") && (
             <VenueListingDetailsForm venueId={venueId} />
           )}
-          {can("venue:calendar") && <VenueAvailabilitySection venueId={venueId} />}
+          {can("venue:calendar") && (
+            <VenueAvailabilitySection venueId={venueId} />
+          )}
           {can("venue:approve-affiliations") && (
             <VenueAffiliatesSection venueId={venueId} asOrganizer />
           )}

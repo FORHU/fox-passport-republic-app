@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { onAccountChange } from "@/shared/auth/useAuthStore";
 
 export type ItemBookingType = "service" | "asset";
 
@@ -91,3 +92,6 @@ export const useItemBookingStore = create<ItemBookingState>()(
     },
   ),
 );
+
+// One account's booking in progress is not the next one's.
+onAccountChange(() => useItemBookingStore.getState().reset());

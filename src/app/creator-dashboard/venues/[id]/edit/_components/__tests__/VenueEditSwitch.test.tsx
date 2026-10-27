@@ -27,7 +27,11 @@ vi.mock(
   "@/features/venue-affiliation/components/VenueAffiliatesSection",
   () => ({
     VenueAffiliatesSection: ({ asOrganizer }: { asOrganizer?: boolean }) =>
-      createElement("div", null, `affiliates:${asOrganizer ? "organizer" : "mayor"}`),
+      createElement(
+        "div",
+        null,
+        `affiliates:${asOrganizer ? "organizer" : "mayor"}`,
+      ),
   }),
 );
 
