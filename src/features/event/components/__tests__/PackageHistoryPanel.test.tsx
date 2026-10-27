@@ -56,6 +56,7 @@ describe("PackageHistoryPanel", () => {
         actor: { id: "guest", name: "Ana" },
         guestCount: 40,
       }),
+      entry({ action: "booking.paid", amount: 1500 }),
       entry({ action: "booking.cancelled", refunded: true }),
       entry({ action: "booking.checkedIn", actor: { id: "x", name: null } }),
     ]);
@@ -67,6 +68,7 @@ describe("PackageHistoryPanel", () => {
     expect(screen.getByText("Removed gear")).toBeTruthy();
     expect(screen.getByText("Booked for 40 guests")).toBeTruthy();
     expect(screen.getByText("Ana")).toBeTruthy();
+    expect(screen.getByText(/^Paid .*1,500/)).toBeTruthy();
     expect(screen.getByText("Cancelled a booking (refunded)")).toBeTruthy();
     expect(screen.getByText("Deleted user")).toBeTruthy();
   });

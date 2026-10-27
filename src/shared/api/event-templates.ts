@@ -67,7 +67,7 @@ export async function fetchTrendingTemplates(
 export interface PackageHistoryEntry {
   id: string;
   at: string;
-  /** package.edit · package.item.add|remove · booking.created|checkedIn|cancelled */
+  /** package.edit · package.item.add|remove · booking.created|paid|checkedIn|cancelled */
   action: string;
   actor: { id: string; name: string | null };
   changes?: Record<string, { from: unknown; to: unknown }>;
@@ -78,6 +78,8 @@ export interface PackageHistoryEntry {
   bookingId?: string;
   guestCount?: number;
   startAt?: string;
+  /** booking.paid: what the guest paid, in the platform currency. */
+  amount?: number;
   refunded?: boolean;
 }
 

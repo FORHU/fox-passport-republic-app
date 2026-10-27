@@ -8,6 +8,7 @@ import {
   type PackageHistoryEntry,
 } from "@/shared/api/event-templates";
 import { categoryLabel } from "@/features/search/helpers/labels";
+import { formatCurrency } from "@/shared/lib/currency";
 
 /**
  * A package's History in Event Studio: its edits, the items added and
@@ -63,6 +64,10 @@ function describe(entry: PackageHistoryEntry): string[] {
         : "";
       return [`Booked${guests}${date}`];
     }
+    case "booking.paid":
+      return [
+        `Paid${entry.amount !== undefined ? ` ${formatCurrency(entry.amount)}` : ""}`,
+      ];
     case "booking.checkedIn":
       return ["Checked in a booking"];
     case "booking.cancelled":
