@@ -1,8 +1,10 @@
 "use client";
 
 import React, { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
-import { useListingBuilder } from "./useListingBuilder";
+import { useInventoryBuilder } from "@/features/asset/hooks/useInventoryBuilder";
+import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 
 import {
   ListingHeader,
@@ -11,7 +13,31 @@ import {
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
 
+type Builder =
+  | ReturnType<typeof useInventoryBuilder>
+  | ReturnType<typeof useServicesBuilder>;
+
+// One builder per page, chosen by `?type=`. Both share one store, so mounting
+// both (as this page used to) let the services builder flip an Assets Studio
+// into service mode, and My Drafts then opened Services.
+function InventoryStudio() {
+  return <ListingBuilderView builder={useInventoryBuilder()} />;
+}
+
+function ServiceStudio() {
+  return <ListingBuilderView builder={useServicesBuilder()} />;
+}
+
 function ListingBuilderContent() {
+  const searchParams = useSearchParams();
+  return searchParams.get("type") === "service" ? (
+    <ServiceStudio />
+  ) : (
+    <InventoryStudio />
+  );
+}
+
+function ListingBuilderView({ builder }: { builder: Builder }) {
   const {
     activeType,
     title,
@@ -52,10 +78,11 @@ function ListingBuilderContent() {
     setShowGuide,
     handleBack,
     handleSaveDraft,
+    myDraftsHref,
     handlePublish,
     handleImageUpload,
     handleCategorySelect,
-  } = useListingBuilder();
+  } = builder;
 
   return (
     <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
@@ -68,6 +95,7 @@ function ListingBuilderContent() {
         onBack={handleBack}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
+        myDraftsHref={myDraftsHref}
       />
 
       <div className="flex-1 flex overflow-hidden">

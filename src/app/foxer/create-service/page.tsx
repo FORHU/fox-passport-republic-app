@@ -40,6 +40,7 @@ function ServiceBuilderContent() {
     setShowGuide,
     handleBack,
     handleSaveDraft,
+    myDraftsHref,
     handlePublish,
     handleImageUpload,
     handleCategorySelect,
@@ -56,6 +57,7 @@ function ServiceBuilderContent() {
         onBack={handleBack}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
+        myDraftsHref={myDraftsHref}
       />
       <div className="flex-1 flex overflow-hidden">
         <ListingSidebar

@@ -50,6 +50,7 @@ function ServiceEditContent({ id }: Props) {
     setShowGuide,
     handleBack,
     handleSaveDraft,
+    isDraft,
     handlePublish,
     handleCategorySelect,
     handleImageUpload,
@@ -109,7 +110,7 @@ function ServiceEditContent({ id }: Props) {
           isNotification={isNotification}
           successMessage={successMessage}
           onBack={handleBack}
-          onSaveDraft={handleSaveDraft}
+          onSaveDraft={isDraft ? handleSaveDraft : undefined}
           onPublish={handlePublish}
         />
         <div className="flex-1 flex overflow-hidden">
