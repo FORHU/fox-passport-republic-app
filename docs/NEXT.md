@@ -776,6 +776,15 @@ invisible to admins).
       than another ten table tests, and any feature whose only coverage is a
       source scan should get one behavioural test that exercises it the way a
       person would.
+      **27 Oct:** the triads exist on the API (`tests/rbac.route-matrix.spec.ts`
+      walks every guarded route: 401 with no token, 403 per refused role, and
+      the allowed roles let through). The socket, the original case, now has
+      `src/__tests__/data/socketProvider.test.tsx`: it drives `SocketProvider`
+      as the server does and checks the ticket request, the query refreshes per
+      topic and the hand-off to features; breaking either the ticket call or
+      the refresh fails it. Still source-scan only: `middlewareSecrets`,
+      `dashboardFetchers`, `permissions`, `queryDefaults` and
+      `lightThemeContrast` under `src/__tests__/`.
 - [x] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` configuration — completed 23
       Sep.** Google OAuth now rejects partial credentials and invalid callback
       URLs at API startup; the fully unset integration remains optional with a
