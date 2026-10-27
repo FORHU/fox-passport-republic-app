@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -73,8 +72,7 @@ export function ComposePostBox({
   fetchServices,
   fetchEvents,
 }: ComposePostBoxProps) {
-  const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, openLogin } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [type, setType] = useState<PostType>("citizen_experience");
@@ -186,7 +184,7 @@ export function ComposePostBox({
           </div>
         </div>
         <button
-          onClick={() => router.push("/auth/login")}
+          onClick={() => openLogin()}
           className="px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 text-black font-extrabold text-xs transition-all shadow-md shrink-0"
         >
           Sign In to Post

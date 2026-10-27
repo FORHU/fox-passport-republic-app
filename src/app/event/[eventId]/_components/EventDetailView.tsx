@@ -112,7 +112,7 @@ export function EventDetailView({
   const handleProposePartnership = () => {
     // Basic redirect for non-partners, although backend may supply a clearer flag in V2
     if (!user?.roleType?.includes("investor")) {
-      router.push("/onboarding/partner");
+      router.push("/foxer/apply-investor");
     } else {
       setIsPartnershipOpen(true);
     }
