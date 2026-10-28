@@ -3,15 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import CreateInvestmentWizard from "../CreateInvestmentWizard";
 import { toast } from "sonner";
+import { createInvestment, updateInvestment } from "@/shared/api/investments";
 
-// Mock Next.js router
+// Mock Next.js router — one stable instance, like the real hook returns.
 const mockPush = vi.fn();
 const mockBack = vi.fn();
+const mockRouter = { push: mockPush, back: mockBack };
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: mockPush,
-    back: mockBack,
-  }),
+  useRouter: () => mockRouter,
 }));
 
 // Mock Sonner toast
@@ -26,6 +25,19 @@ vi.mock("sonner", () => ({
 // Mock API and Venues
 vi.mock("@/shared/api/investments", () => ({
   createInvestment: vi.fn().mockResolvedValue({ id: "inv-123" }),
+  fetchInvestmentById: vi.fn().mockResolvedValue({
+    id: "inv-9",
+    title: "Banquet Chairs",
+    description: "Two hundred padded banquet chairs, stackable.",
+    inventoryCategory: "furniture_seating",
+    quantityTotal: 200,
+    lat: 10.3,
+    lng: 123.9,
+    city: "Cebu",
+    country: "Philippines",
+    mediaUrls: [],
+  }),
+  updateInvestment: vi.fn().mockResolvedValue({ id: "inv-9" }),
 }));
 
 vi.mock("@/shared/api/venues", () => ({
@@ -126,5 +138,30 @@ describe("CreateInvestmentWizard", () => {
       const parsed = JSON.parse(storedRaw!);
       expect(parsed.form.title).toBe("Generators & Lights");
     });
+  });
+
+  it("edit mode prefills the hub, skips drafting, and saves with a PATCH", async () => {
+    render(<CreateInvestmentWizard editId="inv-9" />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Banquet Chairs")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Edit Equipment Hub")).toBeInTheDocument();
+    expect(sessionStorage.getItem("foxpassport_draft_investment_wizard")).toBeNull();
+
+    fireEvent.change(screen.getByDisplayValue("Banquet Chairs"), {
+      target: { value: "Banquet Chairs (Gold)" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /photos & deploy/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => {
+      expect(updateInvestment).toHaveBeenCalledWith(
+        "inv-9",
+        expect.objectContaining({ title: "Banquet Chairs (Gold)", city: "Cebu" }),
+      );
+      expect(mockPush).toHaveBeenCalledWith("/republic/investments");
+    });
+    expect(createInvestment).not.toHaveBeenCalled();
   });
 });
