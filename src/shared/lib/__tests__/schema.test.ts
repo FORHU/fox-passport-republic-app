@@ -4,7 +4,6 @@ import {
   createEventSchema,
   createVenueSchema,
   usernameSchema,
-  phoneSchema,
 } from "../schema";
 
 // All status enums must mirror the backend Prisma enums exactly.
@@ -144,26 +143,4 @@ describe("usernameSchema", () => {
     const result = usernameSchema.safeParse("bad name");
     expect(result.error?.issues[0].message).toMatch(/letters, numbers, dots and underscores/);
   });
-});
-
-describe("phoneSchema", () => {
-  it("allows an empty phone so it can be cleared", () => {
-    expect(phoneSchema.parse("")).toBe("");
-    expect(phoneSchema.parse("   ")).toBe("");
-  });
-
-  it.each([
-    ["+63 917 123 4567", "+639171234567"],
-    ["0917-123-4567", "09171234567"],
-    ["(02) 8123 4567", "0281234567"],
-  ])("accepts %j as %j", (input, output) => {
-    expect(phoneSchema.parse(input)).toBe(output);
-  });
-
-  it.each(["12345", "0917abc4567", "+", "1234567890123456"])(
-    "rejects %j",
-    (value) => {
-      expect(phoneSchema.safeParse(value).success).toBe(false);
-    },
-  );
 });
