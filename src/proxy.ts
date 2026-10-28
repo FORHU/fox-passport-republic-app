@@ -52,7 +52,6 @@ const PROTECTED_ROUTES = [
   "/notifications",
   "/scanner",
   "/wishlists",
-  "/host",
   "/match",
   "/venue-foxer",
 ];
