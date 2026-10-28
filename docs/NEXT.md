@@ -735,8 +735,9 @@ invisible to admins).
       `display: none` (not in the accessibility tree) and the alternatives
       either drop the phone's `<h1>` or need viewport detection on the server.
       Still open, not dead ends: "Trips" and "Help Center" in the user menu
-      point at pages that don't exist, but both are marked coming soon, and
-      `NAV_MENU` in `shared/lib/constants.ts` is unused and full of dead links.
+      point at pages that don't exist, but both are marked coming soon.
+      `NAV_MENU` in `shared/lib/constants.ts`, unused and full of dead links,
+      was removed on 28 Oct along with `shared/config/navMenuData.ts`.
 - [x] **The 11 widened routes.** Resolved 26 Oct: 8 of the resource-level
       approve/reject twins were already deleted on 5 Sep; the last 3
       (`/event-requests/:id/approve|reject|complete`, no callers) went in API
@@ -755,8 +756,9 @@ invisible to admins).
       the layout itself could become a server component calling `requireAuth`.
       **Since then `src/app/host` is gone** (renamed to `/creator-dashboard`,
       which has its own `requireAuth` layout), so `HostShell.tsx` no longer
-      exists and `"/host"` in `proxy.ts`'s `PROTECTED_ROUTES` is a harmless
-      stale entry that can be removed.
+      exists. The stale `"/host"` entry in `proxy.ts`'s `PROTECTED_ROUTES` was
+      removed on 28 Oct: `next.config.mjs` permanently redirects `/host` and its
+      old pages to `/creator-dashboard` before the proxy runs.
 - [x] **Silent Google account linking** — decided 20 Oct: **keep, for Google
       and Facebook both.** An existing email signing in with either joins that
       account (`accountLinking.trustedProviders` in the API's `better-auth.ts`).
