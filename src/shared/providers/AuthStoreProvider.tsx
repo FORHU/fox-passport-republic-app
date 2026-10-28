@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import React, { useEffect, useState } from "react";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { onAccountChange, useAuthStore } from "@/shared/auth/useAuthStore";
 import { useSessionManager } from "@/shared/auth/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
 import { endSession } from "@/shared/auth/endSession";
@@ -41,6 +42,7 @@ function SessionManager() {
 export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
   const initialize = useAuthStore((state) => state.initialize);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     initialize();
@@ -62,8 +64,43 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("fox_token");
       localStorage.removeItem("fox_refresh_token");
+      // The Stripe account id the embedded dashboard used to send; the API
+      // decides whose account it opens now.
+      localStorage.removeItem("fox_stripe_account_id");
     }
   }, [initialize]);
+
+  // The previous account's cached responses go whenever the account changes,
+  // however that was noticed: a sign-in over it, a social callback, a profile
+  // poll finding someone else's session, a sign-out. Switching to someone
+  // refetches what's on screen for them; signing out only drops it, since a
+  // refetch with no session would just 401.
+  useEffect(
+    () =>
+      onAccountChange(() => {
+        if (useAuthStore.getState().user) void queryClient.resetQueries();
+        else queryClient.clear();
+      }),
+    [queryClient],
+  );
+
+  // Another tab signed in as someone else, or out. The session cookie is
+  // shared, so this tab is now that account too: reload, rather than go on
+  // showing the previous one with its data still in memory (BUG-07).
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== "fox_user") return;
+      let next: string | undefined;
+      try {
+        next = e.newValue ? JSON.parse(e.newValue)?.id : undefined;
+      } catch {
+        next = undefined;
+      }
+      if (next !== useAuthStore.getState().user?.id) window.location.reload();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Children render while the session loads. This used to return a full-screen
   // spinner instead, and since `isLoading` is always true on the server, every

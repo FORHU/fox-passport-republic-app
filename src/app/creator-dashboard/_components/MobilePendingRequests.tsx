@@ -67,7 +67,13 @@ export function MobilePendingRequests() {
           Pending Requests
         </p>
         {pending.length > 0 && (
-          <span style={{ fontSize: 11, color: "var(--accent-text)", fontWeight: 600 }}>
+          <span
+            style={{
+              fontSize: 11,
+              color: "var(--accent-text)",
+              fontWeight: 600,
+            }}
+          >
             {pending.length} new
           </span>
         )}
@@ -101,8 +107,10 @@ export function MobilePendingRequests() {
             <div
               key={req.id}
               style={{
-                background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-                border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                background:
+                  "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border:
+                  "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                 borderRadius: 16,
                 padding: "12px 14px",
                 display: "flex",
@@ -118,7 +126,8 @@ export function MobilePendingRequests() {
                   flexShrink: 0,
                   overflow: "hidden",
                   background: STRIPE_BG,
-                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                  border:
+                    "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                 }}
               />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -138,7 +147,8 @@ export function MobilePendingRequests() {
                 <p
                   style={{
                     fontSize: 11,
-                    color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                    color:
+                      "color-mix(in srgb, var(--color-white) 40%, transparent)",
                     margin: 0,
                   }}
                 >
@@ -159,7 +169,8 @@ export function MobilePendingRequests() {
           marginTop: 12,
           padding: "10px 0",
           borderRadius: 12,
-          border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           fontSize: 11,
           fontWeight: 700,
           textTransform: "uppercase",

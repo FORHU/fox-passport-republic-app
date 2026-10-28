@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Message, MessageReactionEntry } from "../types";
+import { onAccountChange } from "@/shared/auth/useAuthStore";
 
 interface MessageState {
   messagesByConversation: Record<string, Message[]>;
@@ -121,3 +122,5 @@ export const useMessageStore = create<MessageState>((set) => ({
       };
     }),
 }));
+
+onAccountChange(() => useMessageStore.setState({ messagesByConversation: {} }));
