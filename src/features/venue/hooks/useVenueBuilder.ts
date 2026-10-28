@@ -155,6 +155,18 @@ export function useVenueBuilder() {
     [store],
   );
 
+  // Tap-to-add, for touch screens where drag and drop does not fire.
+  const addResourceTo = useCallback(
+    (item: ResourceItem, zone: "included" | "addon") => {
+      if (zone === "included") store.addIncludedItem(item);
+      else store.addAddonItem(item);
+      toast.success(
+        `${item.name} added ${zone === "included" ? "as included" : "as an add-on"}`,
+      );
+    },
+    [store],
+  );
+
   // Custom item handlers
   const handleAddCustomItem = useCallback(() => {
     if (!store.newItem.name) return;
@@ -218,6 +230,7 @@ export function useVenueBuilder() {
         address: store.location || undefined,
         city: store.city || undefined,
         state: store.state || undefined,
+        district: store.district || undefined,
         country: store.country || undefined,
         boundary: store.boundary ?? undefined,
         price: store.baseRate || undefined,
@@ -268,6 +281,10 @@ export function useVenueBuilder() {
     if (!store.location) missing.push("Address");
     if (!store.city) missing.push("City");
     if (!store.country) missing.push("Country");
+    if (/^philippines$/i.test(store.country.trim())) {
+      if (!store.state) missing.push("Province");
+      if (!store.district) missing.push("Barangay");
+    }
     if (!store.boundary || store.boundary.length < 3) {
       missing.push("Service Area (draw a shape on the map)");
     }
@@ -313,6 +330,7 @@ export function useVenueBuilder() {
         address: store.location,
         city: store.city,
         state: store.state || undefined,
+        district: store.district || undefined,
         country: store.country,
         boundary: store.boundary ?? undefined,
         price: store.baseRate,
@@ -384,6 +402,7 @@ export function useVenueBuilder() {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceTo,
     handleAddCustomItem,
     handleAddCatalogItem,
     handleRemoveCustomResource: store.removeCustomResource,

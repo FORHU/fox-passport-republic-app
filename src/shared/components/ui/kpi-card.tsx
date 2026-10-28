@@ -81,7 +81,7 @@ const KPICard = React.forwardRef<HTMLDivElement, KPICardProps>(
         {/* Progress Bar */}
         <div
           className={cn(
-            "absolute bottom-0 left-0 h-1 shadow-[0_0_10px_currentColor]",
+            "absolute bottom-0 left-0 h-1",
             progressColor,
           )}
           style={{ width: progressWidth }}

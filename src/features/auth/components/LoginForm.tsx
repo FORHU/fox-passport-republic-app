@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import { loginSchema, LoginFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { config, getBrowserApiUrl } from "@/shared/lib/config";
+import { startSocialSignIn } from "@/shared/auth/session-api";
 
 import { toast } from "sonner";
 
@@ -16,15 +16,11 @@ import { toast } from "sonner";
 const SocialButtons = () => (
   <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
     <a
-      // `config.apiUrl` here is only the no-JS/SSR fallback (kept identical
-      // on server and client so hydration never mismatches this attribute)
-      // — the click handler below overrides it with the host this page
-      // actually loaded from, which is what makes this work on a phone
-      // reaching the app at a LAN IP instead of localhost.
-      href={`${config.apiUrl}/auth/google`}
+      // No-JS fallback: the sign-in page. The click starts Better Auth.
+      href="/auth"
       onClick={(e) => {
         e.preventDefault();
-        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("google");
       }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
@@ -54,10 +50,10 @@ const SocialButtons = () => (
       <span className="font-bold text-sm">Google</span>
     </a>
     <a
-      href={`${config.apiUrl}/auth/facebook`}
+      href="/auth"
       onClick={(e) => {
         e.preventDefault();
-        window.location.href = `${getBrowserApiUrl()}/auth/facebook?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("facebook");
       }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
     >
@@ -114,7 +110,7 @@ export default function LoginForm() {
     <div className="animate-in fade-in slide-in-from-right-8 duration-300">
       {/* Header */}
       <div className="text-center mb-5 sm:mb-8">
-        <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-linear-to-tr from-accent to-green-500 text-black shadow-[0_0_20px_rgba(204,255,0,0.3)] rotate-3 hover:rotate-12 transition-transform duration-500">
+        <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-accent text-black rotate-3 hover:rotate-12 transition-transform duration-500">
           <span className="material-symbols-outlined text-[24px] sm:text-[32px]">
             waving_hand
           </span>
@@ -229,7 +225,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loginMutation.isPending}
-          className="relative w-full overflow-hidden rounded-xl bg-accent py-3 sm:py-4 text-sm font-bold uppercase tracking-wider text-black shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(204,255,0,0.6)] group disabled:opacity-70 disabled:cursor-not-allowed"
+          className="relative w-full overflow-hidden rounded-xl bg-accent py-3 sm:py-4 text-sm font-bold uppercase tracking-wider text-black transition-all hover:scale-[1.02] group disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loginMutation.isPending ? (
             <span className="relative z-10 flex items-center justify-center gap-2">

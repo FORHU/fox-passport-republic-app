@@ -2,12 +2,32 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useProfile } from "@/features/user/hooks/useProfile";
 import { useLogout } from "@/shared/auth/useLogout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import AvatarUploader from "@/features/user/components/AvatarUploader";
+import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+import { FormErrorSummary } from "@/shared/components/ui/FormErrorSummary";
+import { InlineAlert } from "@/shared/components/ui/InlineAlert";
+import { ConfirmDialog } from "@/shared/components/ui/ConfirmDialog";
+import { cn } from "@/shared/lib/utils";
+import { phoneSchema, usernameSchema } from "@/shared/lib/schema";
 
-type Section = "profile" | "privacy" | "security" | "danger";
+export type SettingsSection = "profile" | "privacy" | "security" | "danger";
+
+type ValidatedField = "username" | "phone";
+const FIELD_SCHEMAS = { username: usernameSchema, phone: phoneSchema };
+// How each field is named in the "things to fix" summary.
+const FIELD_FIXES: Record<ValidatedField, string> = {
+  username: "Fix your username",
+  phone: "Fix your phone number",
+};
+
+function fieldError(field: ValidatedField, value: string) {
+  const result = FIELD_SCHEMAS[field].safeParse(value);
+  return result.success ? undefined : result.error.issues[0]?.message;
+}
 
 function SectionButton({
   active,
@@ -25,7 +45,7 @@ function SectionButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+      className={`shrink-0 lg:w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
         active
           ? danger
             ? "bg-red-500/10 text-red-400 border border-red-500/20"
@@ -36,29 +56,6 @@ function SectionButton({
       <span className="material-symbols-outlined text-[20px]">{icon}</span>
       {label}
     </button>
-  );
-}
-
-function StatusBadge({
-  message,
-  type,
-}: {
-  message: string;
-  type: "success" | "error";
-}) {
-  return (
-    <div
-      className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium ${
-        type === "success"
-          ? "bg-green-500/10 border border-green-500/20 text-green-400"
-          : "bg-red-500/10 border border-red-500/20 text-red-400"
-      }`}
-    >
-      <span className="material-symbols-outlined text-[18px]">
-        {type === "success" ? "check_circle" : "error"}
-      </span>
-      {message}
-    </div>
   );
 }
 
@@ -90,20 +87,28 @@ function ToggleSwitch({
 
 export default function ProfileSettingsClient({
   blockedUsersSlot,
+  initialSection = "profile",
 }: {
   blockedUsersSlot?: React.ReactNode;
+  initialSection?: SettingsSection;
 }) {
   const logout = useLogout();
   const storeUser = useAuthStore((state) => state.user);
   const { profile, isLoading, updateProfile, changePassword, deleteAccount } =
     useProfile();
 
-  const [activeSection, setActiveSection] = useState<Section>("profile");
-  const [status, setStatus] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>(initialSection);
+  // A server-side failure about the whole form; field problems go under the
+  // field (fieldErrors) and successes are toasts.
+  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<ValidatedField, string>>
+  >({});
+  // Set by a save that validation blocked; the summary only shows after one.
+  const [saveBlocked, setSaveBlocked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // Profile form
   const [name, setName] = useState("");
@@ -131,28 +136,56 @@ export default function ProfileSettingsClient({
     }
   }, [profile]);
 
-  const flash = (message: string, type: "success" | "error") => {
-    setStatus({ message, type });
-    setTimeout(() => setStatus(null), 4000);
+  const openSection = (section: SettingsSection) => {
+    setActiveSection(section);
+    setFormError(null);
   };
+
+  // Re-check a field that is already showing an error, so the message goes
+  // away as soon as the value is fixed rather than on the next save.
+  const recheck = (field: ValidatedField, value: string) => {
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [field]: fieldError(field, value),
+      }));
+    }
+  };
+  const checkOnBlur = (field: ValidatedField, value: string) =>
+    setFieldErrors((prev) => ({ ...prev, [field]: fieldError(field, value) }));
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    const errors = {
+      username: fieldError("username", username),
+      phone: fieldError("phone", phone),
+    };
+    setFieldErrors(errors);
+    setSaveBlocked(!!(errors.username || errors.phone));
+    if (errors.username || errors.phone) return;
+
     setIsSaving(true);
     try {
       await updateProfile({
         name: name.trim() || undefined,
-        username: username.trim() || undefined,
-        phone: phone.trim() || undefined,
+        username: usernameSchema.parse(username),
+        // "" is sent on purpose: it clears a saved number.
+        phone: phoneSchema.parse(phone),
         profileImage: profileImage.trim() || undefined,
         isPrivate,
       });
-      flash("Profile updated successfully", "success");
+      toast.success("Profile saved", {
+        description: "Your changes are now live.",
+      });
     } catch (err: any) {
-      flash(
-        err?.response?.data?.message ?? "Failed to update profile",
-        "error",
-      );
+      const data = err?.response?.data;
+      const message = data?.message ?? "Failed to update profile";
+      if (data?.field === "username" || data?.field === "phone") {
+        setFieldErrors((prev) => ({ ...prev, [data.field]: message }));
+      } else {
+        setFormError(message);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -160,49 +193,57 @@ export default function ProfileSettingsClient({
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (newPassword !== confirmPassword) {
-      flash("New passwords do not match", "error");
+      setFormError("New passwords do not match");
       return;
     }
     if (newPassword.length < 6) {
-      flash("New password must be at least 6 characters", "error");
+      setFormError("New password must be at least 6 characters");
       return;
     }
     setIsSaving(true);
     try {
       await changePassword({ currentPassword, newPassword, confirmPassword });
-      flash("Password changed successfully", "success");
+      toast.success("Password changed");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      flash(
-        err?.response?.data?.message ?? "Failed to change password",
-        "error",
-      );
+      setFormError(err?.response?.data?.message ?? "Failed to change password");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteAccount = async (e: React.FormEvent) => {
+  // Submitting the form only asks; the dialog's confirm does the deleting.
+  const handleDeleteAccount = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (deleteConfirmation !== "DELETE") {
-      flash("Type DELETE to confirm", "error");
+      setFormError("Type DELETE to confirm");
       return;
     }
+    setConfirmDeleteOpen(true);
+  };
+
+  const deleteAccountConfirmed = async () => {
     setIsSaving(true);
     try {
       await deleteAccount(deletePassword);
       await logout({ promptLogin: false });
     } catch (err: any) {
-      flash(
-        err?.response?.data?.message ?? "Failed to delete account",
-        "error",
-      );
+      // Close the dialog and show why on the form (e.g. a wrong password).
+      setFormError(err?.response?.data?.message ?? "Failed to delete account");
       setIsSaving(false);
     }
   };
+
+  // One error is already obvious from its field; a summary helps from two.
+  const blockingFields = (Object.keys(FIELD_FIXES) as ValidatedField[]).filter(
+    (field) => fieldErrors[field],
+  );
+  const showSummary = saveBlocked && blockingFields.length >= 2;
 
   const displayName = profile?.name || storeUser?.name || "User";
   const initials = displayName.charAt(0).toUpperCase();
@@ -215,25 +256,35 @@ export default function ProfileSettingsClient({
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
         <div className="mx-auto max-w-6xl px-4 h-20 flex items-center gap-4">
+          {/* On a phone this page is reached from the settings menu, so back
+              goes there; on desktop that menu doesn't exist. */}
           <Link
-            href="/user"
-            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
+            href="/user/settings"
+            aria-label="Back to settings"
+            className="lg:hidden h-10 w-10 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
-          <div>
+          <Link
+            href="/user"
+            aria-label="Back to profile"
+            className="hidden lg:flex h-10 w-10 shrink-0 rounded-full bg-white/5 border border-white/10 items-center justify-center hover:bg-white hover:text-black transition-all"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </Link>
+          <div className="min-w-0">
             <h1 className="text-xl font-display font-bold">Account Settings</h1>
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-white/40 truncate">
               {profile?.email || storeUser?.email}
             </p>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 pt-28 pb-20 flex gap-8">
-        {/* Sidebar */}
-        <aside className="w-64 shrink-0">
-          <div className="sticky top-28 space-y-6">
+      <div className="mx-auto max-w-6xl px-4 pt-24 lg:pt-28 pb-20 flex flex-col lg:flex-row gap-6 lg:gap-8">
+        {/* Sidebar — a scrolling tab row on phones */}
+        <aside className="lg:w-64 lg:shrink-0">
+          <div className="lg:sticky lg:top-28 space-y-4 lg:space-y-6">
             {/* Avatar card */}
             <div className="bg-surface border border-white/5 rounded-[2rem] p-6 text-center">
               <div className="flex justify-center mb-4">
@@ -255,30 +306,30 @@ export default function ProfileSettingsClient({
             </div>
 
             {/* Nav */}
-            <nav className="space-y-1">
+            <nav className="flex lg:flex-col gap-1 overflow-x-auto hide-scrollbar">
               <SectionButton
                 active={activeSection === "profile"}
                 icon="person"
                 label="Profile"
-                onClick={() => setActiveSection("profile")}
+                onClick={() => openSection("profile")}
               />
               <SectionButton
                 active={activeSection === "privacy"}
                 icon="shield"
                 label="Privacy"
-                onClick={() => setActiveSection("privacy")}
+                onClick={() => openSection("privacy")}
               />
               <SectionButton
                 active={activeSection === "security"}
                 icon="lock"
                 label="Security"
-                onClick={() => setActiveSection("security")}
+                onClick={() => openSection("security")}
               />
               <SectionButton
                 active={activeSection === "danger"}
                 icon="delete_forever"
                 label="Delete Account"
-                onClick={() => setActiveSection("danger")}
+                onClick={() => openSection("danger")}
                 danger
               />
             </nav>
@@ -287,9 +338,7 @@ export default function ProfileSettingsClient({
 
         {/* Main content */}
         <main className="flex-1 min-w-0 space-y-4">
-          {status && (
-            <StatusBadge message={status.message} type={status.type} />
-          )}
+          {formError && <InlineAlert tone="error">{formError}</InlineAlert>}
 
           {isLoading ? (
             <div className="bg-surface border border-white/5 rounded-[2rem] p-12 text-center text-white/30 text-sm">
@@ -298,7 +347,8 @@ export default function ProfileSettingsClient({
           ) : activeSection === "profile" ? (
             <form
               onSubmit={handleUpdateProfile}
-              className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6"
+              noValidate
+              className="bg-surface border border-white/5 rounded-[2rem] p-5 sm:p-8 space-y-6"
             >
               <div>
                 <h2 className="text-lg font-display font-bold mb-1">
@@ -308,6 +358,16 @@ export default function ProfileSettingsClient({
                   Update your name, username, and contact details.
                 </p>
               </div>
+
+              {showSummary && (
+                <FormErrorSummary
+                  title={`${blockingFields.length} things to fix before you can save`}
+                  items={blockingFields.map((field) => ({
+                    message: FIELD_FIXES[field],
+                    fieldId: field,
+                  }))}
+                />
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Full Name" icon="badge">
@@ -319,14 +379,41 @@ export default function ProfileSettingsClient({
                     className="input-field"
                   />
                 </Field>
-                <Field label="Username" icon="alternate_email">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="your_username"
-                    className="input-field"
-                  />
+                <Field
+                  label="Username"
+                  icon="alternate_email"
+                  htmlFor="username"
+                  hint="Letters, numbers, _ and . only"
+                  error={fieldErrors.username}
+                  errorId="username-error"
+                >
+                  <FieldControl invalid={!!fieldErrors.username}>
+                    <input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => {
+                        // Usernames are stored lowercase; show that as they type.
+                        const next = e.target.value.toLowerCase();
+                        setUsername(next);
+                        recheck("username", next);
+                      }}
+                      onBlur={() => checkOnBlur("username", username)}
+                      placeholder="your_username"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      maxLength={30}
+                      aria-invalid={!!fieldErrors.username}
+                      aria-describedby={
+                        fieldErrors.username ? "username-error" : undefined
+                      }
+                      className={cn(
+                        "input-field",
+                        fieldErrors.username && "field-invalid",
+                      )}
+                    />
+                  </FieldControl>
                 </Field>
                 <Field
                   label="Email address"
@@ -340,20 +427,41 @@ export default function ProfileSettingsClient({
                     className="input-field opacity-40 cursor-not-allowed"
                   />
                 </Field>
-                <Field label="Phone number" icon="phone">
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => {
-                      const cleanValue = e.target.value.replace(/\D/g, "");
-                      if (cleanValue.length <= 11) {
-                        setPhone(cleanValue);
+                <Field
+                  label="Phone number"
+                  icon="phone"
+                  htmlFor="phone"
+                  hint="Optional — leave empty to remove it"
+                  error={fieldErrors.phone}
+                  errorId="phone-error"
+                >
+                  <FieldControl invalid={!!fieldErrors.phone}>
+                    <input
+                      id="phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => {
+                        // Keep what a phone number can contain; the format
+                        // itself is checked on blur and on save.
+                        const next = e.target.value.replace(/[^\d+\s()-]/g, "");
+                        setPhone(next);
+                        recheck("phone", next);
+                      }}
+                      onBlur={() => checkOnBlur("phone", phone)}
+                      placeholder="+63 917 123 4567"
+                      maxLength={22}
+                      aria-invalid={!!fieldErrors.phone}
+                      aria-describedby={
+                        fieldErrors.phone ? "phone-error" : undefined
                       }
-                    }}
-                    placeholder="+63 9XX XXX XXXX"
-                    className="input-field"
-                    maxLength={11}
-                  />
+                      className={cn(
+                        "input-field",
+                        fieldErrors.phone && "field-invalid",
+                      )}
+                    />
+                  </FieldControl>
                 </Field>
               </div>
 
@@ -374,7 +482,7 @@ export default function ProfileSettingsClient({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSaving ? (
                     <span className="material-symbols-outlined text-[18px] animate-spin">
@@ -394,7 +502,7 @@ export default function ProfileSettingsClient({
           ) : activeSection === "security" ? (
             <form
               onSubmit={handleChangePassword}
-              className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6"
+              className="bg-surface border border-white/5 rounded-[2rem] p-5 sm:p-8 space-y-6"
             >
               <div>
                 <h2 className="text-lg font-display font-bold mb-1">
@@ -442,7 +550,7 @@ export default function ProfileSettingsClient({
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {isSaving ? (
                   <span className="material-symbols-outlined text-[18px] animate-spin">
@@ -459,7 +567,7 @@ export default function ProfileSettingsClient({
           ) : (
             <form
               onSubmit={handleDeleteAccount}
-              className="bg-surface border border-red-500/10 rounded-[2rem] p-8 space-y-6"
+              className="bg-surface border border-red-500/10 rounded-[2rem] p-5 sm:p-8 space-y-6"
             >
               <div>
                 <h2 className="text-lg font-display font-bold text-red-400 mb-1">
@@ -524,6 +632,16 @@ export default function ProfileSettingsClient({
         </main>
       </div>
 
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        onConfirm={deleteAccountConfirmed}
+        tone="danger"
+        title="Delete your account?"
+        description="Your bookings, badges, stamps and listings will be erased. This can't be undone."
+        confirmLabel="Delete account"
+      />
+
       <style jsx global>{`
         .input-field {
           width: 100%;
@@ -537,7 +655,7 @@ export default function ProfileSettingsClient({
           transition: border-color 0.2s;
         }
         .input-field:focus {
-          border-color: rgba(204, 255, 0, 0.4);
+          border-color: rgba(196, 232, 90, 0.4);
         }
         .input-field::placeholder {
           color: rgba(255, 255, 255, 0.2);
@@ -550,22 +668,36 @@ export default function ProfileSettingsClient({
 function Field({
   label,
   icon,
+  htmlFor,
   hint,
+  error,
+  errorId,
   children,
 }: {
   label: string;
   icon: string;
+  htmlFor?: string;
   hint?: string;
+  /** Replaces the hint while set. */
+  error?: string;
+  errorId?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="flex items-center gap-1.5 text-xs font-bold text-white/50 uppercase tracking-widest">
+      <label
+        htmlFor={htmlFor}
+        className="flex items-center gap-1.5 text-xs font-bold text-white/50 uppercase tracking-widest"
+      >
         <span className="material-symbols-outlined text-[14px]">{icon}</span>
         {label}
       </label>
       {children}
-      {hint && <p className="text-[11px] text-white/25">{hint}</p>}
+      {error && errorId ? (
+        <FieldError id={errorId} message={error} />
+      ) : (
+        hint && <p className="text-[11px] text-white/25">{hint}</p>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 type Props = {
   foxer?: {
@@ -66,7 +66,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
@@ -162,7 +162,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
                 position: "absolute",
                 top: 14,
                 right: 14,
-                background: "rgba(34,197,94,0.85)",
+                background: "rgba(173,209,63,0.85)",
                 color: "var(--color-white)",
                 fontSize: 10,
                 fontWeight: 800,
@@ -229,7 +229,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             height: 52,
             borderRadius: 999,
             background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
-            border: "1px solid rgba(239,68,68,0.3)",
+            border: "1px solid rgba(207,61,52,0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -238,7 +238,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
         >
           <span
             className="material-symbols-outlined"
-            style={{ color: "#ef4444", fontSize: 24 }}
+            style={{ color: "var(--error)", fontSize: 24 }}
           >
             close
           </span>
@@ -250,19 +250,19 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             width: 60,
             height: 60,
             borderRadius: 999,
-            background: "#ccff00",
+            background: "#C4E85A",
             border: "none",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            boxShadow: "0 6px 20px rgba(204,255,0,0.35)",
+            boxShadow: "0 6px 20px rgba(196,232,90,0.35)",
           }}
         >
           <span
             className="material-symbols-outlined"
             style={{
-              color: "#0a0a0c",
+              color: "#111317",
               fontSize: 28,
               fontVariationSettings: "'FILL' 1",
             }}

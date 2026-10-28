@@ -22,7 +22,8 @@ export default function LandingFooter() {
             </h3>
             <ul className="space-y-2 sm:space-y-4">
               {[
-                { label: "Search", href: "/search" },
+                { label: "Find events", href: "/packages" },
+                { label: "Find Foxers", href: "/search" },
                 { label: "Categories", href: "/categories" },
                 { label: "Republic Foxer", href: "/republic" },
               ].map((item) => (
@@ -46,7 +47,8 @@ export default function LandingFooter() {
             <ul className="space-y-2 sm:space-y-4">
               {[
                 { label: "Sign in", href: "/auth" },
-                { label: "Become a Foxer", href: "/onboarding" },
+                // Public, unlike /onboarding; the role docs' sidebar lists every role.
+                { label: "Become a Foxer", href: "/earn/event" },
               ].map((item) => (
                 <li key={item.label}>
                   <a

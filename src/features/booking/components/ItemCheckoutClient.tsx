@@ -15,7 +15,7 @@ import { smartBack } from "@/shared/lib/navigation";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { formatCurrency } from "@/shared/lib/currency";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -99,8 +99,8 @@ export default function ItemCheckoutClient() {
         appearance: {
           theme: "night" as const,
           variables: {
-            colorPrimary: "#ccff00",
-            colorBackground: "#0d0f1a",
+            colorPrimary: "#C4E85A",
+            colorBackground: "#14161B",
             colorText: "#ffffff",
           },
         },
@@ -136,7 +136,7 @@ export default function ItemCheckoutClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -232,7 +232,7 @@ export default function ItemCheckoutClient() {
                 </div>
                 <div className="w-8 h-px bg-white/10" />
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold shadow-[0_0_10px_#ccff00]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold">
                     2
                   </span>
                   <span className="text-sm font-bold text-white">Pay</span>

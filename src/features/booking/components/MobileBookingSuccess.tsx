@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 type Props = {
   onClose?: () => void;
@@ -43,7 +43,7 @@ export default function MobileBookingSuccess({ onClose }: Props) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(circle at 50% 40%, rgba(204,255,0,0.12), transparent 60%)",
+            "radial-gradient(circle at 50% 40%, rgba(196,232,90,0.12), transparent 60%)",
           pointerEvents: "none",
         }}
       />
@@ -64,7 +64,7 @@ export default function MobileBookingSuccess({ onClose }: Props) {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
@@ -111,8 +111,8 @@ export default function MobileBookingSuccess({ onClose }: Props) {
             width: 88,
             height: 88,
             borderRadius: "50%",
-            background: "rgba(204,255,0,0.12)",
-            border: "2px solid #ccff00",
+            background: "rgba(196,232,90,0.12)",
+            border: "2px solid #C4E85A",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -220,7 +220,7 @@ export default function MobileBookingSuccess({ onClose }: Props) {
           onClick={() => router.push(bookingHref)}
           className="w-full font-bold"
           style={{
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontSize: 14,
             borderRadius: 16,

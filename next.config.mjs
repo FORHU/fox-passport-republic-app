@@ -32,7 +32,7 @@ const nextConfig = {
   turbopack: {},
   ...(isWindows ? {} : { output: "standalone" }),
   reactStrictMode: false,
-  allowedDevOrigins: ["192.168.1.34"],
+  allowedDevOrigins: ["192.168.1.34", "192.168.1.59"],
 
   // Keep a visited dynamic page's server payload in the client router cache
   // for 30s (Next 15+ defaults this to 0, i.e. every revisit re-renders on
@@ -79,6 +79,7 @@ const nextConfig = {
       { source: '/host/stripe-dashboard',     destination: '/creator-dashboard/stripe-dashboard',     permanent: true },
       { source: '/host/stripe-onboard',       destination: '/creator-dashboard/stripe-onboard',       permanent: true },
       { source: '/host/bookings/:id',          destination: '/booking/:id',                            permanent: true },
+      { source: '/mayor',                     destination: '/creator-dashboard/venues',               permanent: true },
       { source: '/mayor/apply',               destination: '/venue-foxer/apply',                      permanent: true },
       { source: '/mayor/create-venue',        destination: '/venue-foxer/create-venue',               permanent: true },
     ];

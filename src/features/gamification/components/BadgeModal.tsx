@@ -36,7 +36,7 @@ export default function BadgeModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-linear-to-br from-emerald-50 to-emerald-100 dark:from-[#0f392b] dark:to-[#04221a] rounded-[3rem] p-8 border border-white/10 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-surface rounded-[3rem] p-8 border border-white/10 shadow-2xl overflow-hidden"
           >
             {/* Close Button */}
             <button
@@ -62,12 +62,12 @@ export default function BadgeModal({
                 <div
                   className="relative h-28 w-28 rounded-full flex items-center justify-center border border-white/20 overflow-hidden"
                   style={{
-                    background: `radial-gradient(circle at 30% 30%, ${badge.color}44 0%, ${badge.color}22 100%)`,
+                    background: `radial-gradient(circle at 30% 30%, color-mix(in srgb, ${badge.color} 27%, transparent) 0%, color-mix(in srgb, ${badge.color} 13%, transparent) 100%)`,
                   }}
                 >
                   <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
                   <span
-                    className="material-symbols-outlined relative z-10 text-[56px] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                    className="material-symbols-outlined relative z-10 text-[56px]"
                     style={{ color: "var(--color-white)" }}
                   >
                     {badge.icon}
@@ -96,7 +96,7 @@ export default function BadgeModal({
               {/* Action/Footer */}
               <button
                 onClick={onClose}
-                className="w-full py-4 rounded-2xl bg-[#bef264] text-[#022c22] font-bold hover:scale-[1.02] transition-transform shadow-glow-accent"
+                className="w-full py-4 rounded-2xl bg-[#CBEB6E] text-[#14161B] font-bold hover:scale-[1.02] transition-transform shadow-glow-accent"
               >
                 Got it
               </button>

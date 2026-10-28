@@ -7,6 +7,7 @@ import {
 } from "@/features/venue/data/venueBuilderData";
 import { Money } from "@/shared/components/ui/Money";
 import { currencySymbol } from "@/shared/lib/currency";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface VenueResourcePaletteProps {
   activeCategory: string;
@@ -34,6 +35,8 @@ interface VenueResourcePaletteProps {
   onAddCatalogItem?: (name: string) => void;
   onRemoveResource: (category: string, id: string) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
+  /** Tap-to-add into a zone — the only way in on touch screens. */
+  onAddTo?: (item: ResourceItem, zone: "included" | "addon") => void;
 }
 
 export function VenueResourcePalette({
@@ -50,6 +53,7 @@ export function VenueResourcePalette({
   onAddCatalogItem,
   onRemoveResource,
   onDragStart,
+  onAddTo,
 }: VenueResourcePaletteProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -76,7 +80,7 @@ export function VenueResourcePalette({
             onClick={() => onCategoryChange(cat.id)}
             className={`flex flex-col items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl transition-all ${
               activeCategory === cat.id
-                ? "bg-accent text-black font-bold shadow-[0_0_15px_rgba(204,255,0,0.4)] scale-105"
+                ? "bg-accent text-black font-bold scale-105"
                 : "text-text-muted hover:text-white hover:bg-white/5"
             }`}
           >
@@ -96,7 +100,9 @@ export function VenueResourcePalette({
           <h3 className="font-display font-bold text-lg text-white mb-1">
             {currentCategoryLabel}
           </h3>
-          <p className="text-xs text-text-muted">Drag features to your venue</p>
+          <p className="text-xs text-text-muted">
+            Drag or tap to add features to your venue
+          </p>
         </div>
 
         <div className="px-6 pb-4 space-y-4 pt-2">
@@ -111,7 +117,7 @@ export function VenueResourcePalette({
                 type="file"
                 ref={fileInputRef}
                 onChange={handlePhotoChange}
-                accept="image/*"
+                accept={UPLOAD_ACCEPT.image}
                 className="hidden"
               />
 
@@ -194,7 +200,7 @@ export function VenueResourcePalette({
               <button
                 onClick={onAddCustomItem}
                 disabled={!newItem.name}
-                className="w-full bg-accent text-black font-bold text-xs py-2.5 rounded-lg disabled:opacity-30 disabled:grayscale transition-all active:scale-[0.98] mt-2 shadow-[0_4px_15px_rgba(204,255,0,0.2)]"
+                className="w-full bg-accent text-black font-bold text-xs py-2.5 rounded-lg disabled:opacity-30 disabled:grayscale transition-all active:scale-[0.98] mt-2 shadow-[0_4px_15px_rgba(196,232,90,0.2)]"
               >
                 Add to List
               </button>
@@ -264,6 +270,26 @@ export function VenueResourcePalette({
                   <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">
                     {item.desc}
                   </p>
+                  {onAddTo && (
+                    <div className="mt-3 flex justify-end gap-1.5">
+                      {(["included", "addon"] as const).map((zone) => (
+                        <button
+                          key={zone}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddTo(item, zone);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            add
+                          </span>
+                          {zone === "included" ? "Included" : "Add-on"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

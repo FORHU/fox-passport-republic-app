@@ -8,23 +8,20 @@ import { Loader2, Check } from "lucide-react";
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { config, getBrowserApiUrl } from "@/shared/lib/config";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 import { toast } from "sonner";
+import { startSocialSignIn } from "@/shared/auth/session-api";
 
 // Social buttons component
 const SocialButtons = () => (
   <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
     <a
-      // `config.apiUrl` is only the no-JS/SSR fallback (identical on server
-      // and client, so hydration never mismatches this attribute) — the
-      // click handler overrides it with the host this page actually
-      // loaded from, same reasoning as LoginForm's identical button.
-      href={`${config.apiUrl}/auth/google`}
+      // No-JS fallback: the sign-in page. The click starts Better Auth.
+      href="/auth"
       onClick={(e) => {
         e.preventDefault();
-        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("google");
       }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
@@ -54,10 +51,10 @@ const SocialButtons = () => (
       <span className="font-bold text-sm">Google</span>
     </a>
     <a
-      href={`${config.apiUrl}/auth/facebook`}
+      href="/auth"
       onClick={(e) => {
         e.preventDefault();
-        window.location.href = `${getBrowserApiUrl()}/auth/facebook?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("facebook");
       }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
     >
@@ -322,7 +319,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={signupMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
         >
           {signupMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />

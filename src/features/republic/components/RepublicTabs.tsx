@@ -112,12 +112,12 @@ export function RepublicTabs({
           onClick={() => onSelect(tab.id)}
           className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition-all text-left cursor-pointer group relative ${
             isActive
-              ? "bg-zinc-800/90 text-white shadow-lg border border-lime-400/50 shadow-[0_0_20px_rgba(204,255,0,0.1)]"
+              ? "bg-zinc-800/90 text-white shadow-lg border border-lime-400/50"
               : "text-zinc-400 hover:text-white hover:bg-zinc-800/40 border border-transparent"
           }`}
         >
           {isActive && (
-            <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-lime-400 rounded-full shadow-[0_0_8px_#ccff00]" />
+            <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-lime-400 rounded-full" />
           )}
           <div
             className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
@@ -226,7 +226,7 @@ export function RepublicTabs({
               }`}
             >
               {isActive && (
-                <span className="hidden sm:block absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-lime-400 rounded-full shadow-[0_0_10px_#ccff00]" />
+                <span className="hidden sm:block absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-lime-400 rounded-full" />
               )}
 
               <tab.icon

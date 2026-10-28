@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 import type { Conversation, SharedInbox } from "../types";
+import { onAccountChange } from "@/shared/auth/useAuthStore";
 
 export interface ChatParticipant {
   id: string;
@@ -304,7 +305,9 @@ export function openConversationWindow(
     store.openInboxChat({
       conversationId: c.id,
       title:
-        c.viewerRole === "guest" ? c.inbox.name : (c.otherUser?.name ?? "Guest"),
+        c.viewerRole === "guest"
+          ? c.inbox.name
+          : (c.otherUser?.name ?? "Guest"),
       imgId: c.viewerRole === "guest" ? null : (c.otherUser?.imgId ?? null),
       inbox: { ...c.inbox, viewerRole: c.viewerRole },
       minimized: opts.minimized,
@@ -333,3 +336,6 @@ export function openConversationWindow(
     minimized: opts.minimized,
   });
 }
+
+// The previous account's chats are closed, not handed to the next one.
+onAccountChange(() => useChatWindowsStore.setState({ windows: [] }));

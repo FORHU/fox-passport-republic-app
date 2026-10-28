@@ -12,9 +12,9 @@ import {
   type IdType,
 } from "@/shared/api/identity";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
-const ACCEPT = "image/*,application/pdf";
-const MAX_BYTES = 15 * 1024 * 1024; // the API's per-file limit
+const ACCEPT = UPLOAD_ACCEPT.document;
 
 function FilePicker({
   id,
@@ -53,8 +53,9 @@ function FilePicker({
         className="sr-only"
         onChange={(e) => {
           const next = e.target.files?.[0] ?? null;
-          if (next && next.size > MAX_BYTES) {
-            toast.error("Files must be 15MB or smaller.");
+          const problem = next && checkUploadFile(next, "document");
+          if (problem) {
+            toast.error(problem);
             e.target.value = "";
             return;
           }
@@ -101,10 +102,10 @@ export function IdentitySection() {
   const rejected = latest?.status === "rejected";
 
   const status = verifiedAt
-    ? { label: "Verified", color: "#38bdf8", icon: "verified" }
+    ? { label: "Verified", color: "var(--periwinkle)", icon: "verified" }
     : pending
-      ? { label: "Under review", color: "#f59e0b", icon: "hourglass_top" }
-      : { label: "Optional", color: "#94a3b8", icon: "badge" };
+      ? { label: "Under review", color: "var(--warning)", icon: "hourglass_top" }
+      : { label: "Optional", color: "#A9AFBB", icon: "badge" };
 
   return (
     <section className="rounded-[1.5rem] border border-white/10 bg-surface p-6">
@@ -124,8 +125,8 @@ export function IdentitySection() {
           className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border"
           style={{
             color: status.color,
-            borderColor: `${status.color}55`,
-            background: `${status.color}1a`,
+            borderColor: `color-mix(in srgb, ${status.color} 33%, transparent)`,
+            background: `color-mix(in srgb, ${status.color} 10%, transparent)`,
           }}
         >
           <span className="material-symbols-outlined text-[14px]">

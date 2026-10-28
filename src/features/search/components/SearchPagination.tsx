@@ -4,6 +4,8 @@ interface SearchPaginationProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  /** Names the list being paged, for screen readers: "Gear pages". */
+  label: string;
 }
 
 const WINDOW_SIZE = 5;
@@ -12,6 +14,7 @@ export default function SearchPagination({
   page,
   totalPages,
   onPageChange,
+  label,
 }: SearchPaginationProps) {
   if (totalPages <= 1) return null;
 
@@ -28,12 +31,16 @@ export default function SearchPagination({
     (_, i) => windowStart + i,
   );
 
+  const step =
+    "h-10 px-4 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors";
+
   return (
-    <div className="flex items-center justify-center gap-2 pt-4">
+    <nav aria-label={label} className="flex items-center justify-center gap-2 pt-6">
       <button
+        type="button"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page <= 1}
-        className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+        className={step}
       >
         Previous
       </button>
@@ -43,24 +50,28 @@ export default function SearchPagination({
         // of the edge buttons unmounting/mounting, which previously caused
         // a visible tick as colors cross-faded during the layout shift.
         <button
+          type="button"
           key={i}
           onClick={() => onPageChange(p)}
-          className={`h-9 w-9 rounded-full text-sm font-bold ${
+          aria-current={p === page ? "page" : undefined}
+          aria-label={`Page ${p}`}
+          className={`h-10 w-10 rounded-full text-sm font-bold transition-colors ${
             p === page
               ? "bg-white text-black"
-              : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+              : "bg-white/5 border border-white/10 text-white/70 hover:bg-white/10"
           }`}
         >
           {p}
         </button>
       ))}
       <button
+        type="button"
         onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         disabled={page >= totalPages}
-        className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+        className={step}
       >
         Next
       </button>
-    </div>
+    </nav>
   );
 }

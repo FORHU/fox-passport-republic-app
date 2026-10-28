@@ -8,7 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   BOOKING_CONFIRMED: {
@@ -116,7 +116,7 @@ export default function NotificationListClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -214,7 +214,7 @@ export default function NotificationListClient() {
               </p>
               <Link
                 href="/"
-                className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+                className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold transition-all"
               >
                 Browse Events
               </Link>

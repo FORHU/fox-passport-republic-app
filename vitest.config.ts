@@ -11,7 +11,10 @@ export default defineConfig({
     alias: {
       '@/shared': resolve(__dirname, './src/shared'),
       '@/features': resolve(__dirname, './src/features'),
-      '@': resolve(__dirname, '.'),
+      // Matches tsconfig's "@/app/*": ["./src/app/*"].
+      '@/app': resolve(__dirname, './src/app'),
+      // Matches tsconfig's "@/*": ["./src/*"].
+      '@': resolve(__dirname, './src'),
     },
   },
 })

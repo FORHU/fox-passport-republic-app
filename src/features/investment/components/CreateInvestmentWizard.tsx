@@ -17,6 +17,7 @@ import {
 } from "@/shared/api/venues";
 import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 type InvestmentModality = "physical_inventory" | "venue_equity";
 
@@ -165,12 +166,10 @@ export default function CreateInvestmentWizard() {
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload a valid image file (JPEG, PNG, WebP).");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image file is too large. Maximum size is 10MB.");
+    const problem = checkUploadFile(file, "image");
+    if (problem) {
+      toast.error(problem);
+      e.target.value = "";
       return;
     }
 
@@ -338,7 +337,7 @@ export default function CreateInvestmentWizard() {
   return (
     <div className="min-h-screen bg-canvas text-white pb-28 selection:bg-amber-400 selection:text-black">
       {/* Sticky flow header — same structure as the Venue Studio header used
-          in /mayor/create-venue (back button, tool name + role badge, draft
+          in /venue-foxer/create-venue (back button, tool name + role badge, draft
           status), so the Mayor and Partner creation flows read as the same
           tool instead of one having a header and the other just blank
           padding at the top. */}
@@ -461,7 +460,7 @@ export default function CreateInvestmentWizard() {
                 onClick={() => setModality("physical_inventory")}
                 className={`relative rounded-3xl p-6 border transition-all flex flex-col justify-between cursor-pointer ${
                   modality === "physical_inventory"
-                    ? "bg-gradient-to-br from-amber-950/40 via-zinc-900 to-zinc-950 border-amber-400/80 shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400"
+                    ? "bg-white/5 border-amber-400/80 ring-1 ring-amber-400"
                     : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 opacity-85 hover:opacity-100"
                 }`}
               >
@@ -501,7 +500,7 @@ export default function CreateInvestmentWizard() {
                 onClick={() => setModality("venue_equity")}
                 className={`relative rounded-3xl p-6 border transition-all flex flex-col justify-between cursor-pointer ${
                   modality === "venue_equity"
-                    ? "bg-gradient-to-br from-amber-950/40 via-zinc-900 to-zinc-950 border-amber-400/80 shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400"
+                    ? "bg-white/5 border-amber-400/80 ring-1 ring-amber-400"
                     : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 opacity-85 hover:opacity-100"
                 }`}
               >
@@ -541,7 +540,7 @@ export default function CreateInvestmentWizard() {
               <button
                 type="button"
                 onClick={() => goToStep(2)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 {modality === "venue_equity"
                   ? "Continue to Revenue Share Terms"
@@ -649,7 +648,7 @@ export default function CreateInvestmentWizard() {
               <button
                 type="button"
                 onClick={() => goToStep(3)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Choose Target Venue
                 <span className="material-symbols-outlined text-[16px]">
@@ -753,7 +752,7 @@ export default function CreateInvestmentWizard() {
                 type="button"
                 onClick={() => goToStep(4)}
                 disabled={!form.targetVenue}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Review & Photos
                 <span className="material-symbols-outlined text-[16px]">
@@ -922,7 +921,7 @@ export default function CreateInvestmentWizard() {
               <button
                 type="button"
                 onClick={() => goToStep(3)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Set Location on Map
                 <span className="material-symbols-outlined text-[16px]">
@@ -968,7 +967,7 @@ export default function CreateInvestmentWizard() {
               <button
                 type="button"
                 onClick={() => goToStep(4)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Review & Photos
                 <span className="material-symbols-outlined text-[16px]">
@@ -1032,7 +1031,7 @@ export default function CreateInvestmentWizard() {
                 <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-800 hover:border-amber-400/60 bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 hover:text-amber-300 cursor-pointer transition-colors">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept={UPLOAD_ACCEPT.image}
                     onChange={handleImageUpload}
                     disabled={uploadingImage}
                     className="hidden"
@@ -1160,7 +1159,7 @@ export default function CreateInvestmentWizard() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-sm flex items-center gap-2 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 cursor-pointer"
+                className="px-8 py-3.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-sm flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting
                   ? "Submitting..."

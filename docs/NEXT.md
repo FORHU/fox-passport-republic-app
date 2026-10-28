@@ -22,50 +22,22 @@ here.
 | `findings/mobile-ux-consolidation-strategy.md` | Mobile UX Consolidation Strategy & Information Architecture: resolves feature congestion, dual-mode (Citizen vs. Creator Studio) paradigm, 5-tab mobile structure, and delivery roadmap. Added 16 Oct. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
-| `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
 | `SPATIAL-PLAN.md` | The spatial vision and counter-plan: what already exists, and the order to build in. `FoxPassportSpatialIntelligence.md`'s still-valid principles were folded in here 13 Sep; its wrong stack/sequencing assumptions were not. |
 
 ---
 
-## 0·0aa. `proxy.ts` (formerly `middleware.ts`) does not run at all — found 12 Sep, upstream bug
+## 0·0aa. `proxy.ts` did not run — fixed 20 Oct: it was in the wrong folder
 
-**Every one of the 16 `PROTECTED_ROUTES` trees serves a plain 200 with real
-page markup to a signed-out `curl` request — no redirect, at the HTTP level,
-at all.** Found running `VERIFY.md` C1. Confirmed not a data leak: each
-tree's own `requireAuth()`/`requireAdmin()` layout guard still fires
-correctly (the `NEXT_REDIRECT;replace;/;307` digest is present in the
-streamed RSC payload), so a real, JS-executing browser still ends up
-redirected to `/` — which is exactly why unit tests and casual clicking
-around never caught this. What's actually gone is the fast pre-render
-redirect, and the only protection a non-JS client (a bot, a crawler, a
-disabled-JS browser) ever had.
-
-**Root cause: Next.js 16.3.4 doesn't wire up `middleware.ts`/`proxy.ts` at
-all**, in dev (webpack or Turbopack) or a real `next build` — reproduced with
-both filenames, at both the project root and `src/`.
-`.next/{dev/,}server/middleware-manifest.json` stays `{ "middleware": {} }`
-regardless. Traced into `next`'s own source: the file is detected (the
-middleware-to-proxy deprecation warning fires correctly) but the variable
-that detects it is never read again to actually register an entry. This
-looks like an upstream bug in the mid-migration state of this exact Next.js
-version, not anything fixable in this repo. Full writeup, including what was
-traced and how, is in `VERIFY.md`'s C1 result — **read that before
-re-investigating, so the same ground doesn't get covered twice.**
-
-**Renamed `middleware.ts` → `proxy.ts` anyway** (also updated
-`src/__tests__/auth/middlewareSecrets.test.ts`, which read it by literal
-path) since it's the correct target regardless of the current bug and
-removes the deprecation warning. `pnpm test` 144/144 green.
-
-- [ ] **Watch for a Next.js patch release** and re-test C1 after any Next.js
-      version bump — this may simply resolve itself.
-- [ ] **Consider filing an upstream issue** if one doesn't already exist
-      (searched briefly, didn't find an exact match for this symptom).
-- [ ] **Not urgent to work around** — the real security boundary
-      (`requireAuth`/`requireAdmin` plus the API's own 401/403) is intact.
-      The only exposure is a bot/crawler/no-JS client seeing an empty page
-      shell (title, layout chrome, no real data) for a protected route
-      instead of being redirected.
+From 12 Sep every protected route answered 200 to a signed-out request. This
+was written up as a Next.js 16.3.4 bug; it was not. Next registers a proxy only
+when it sits at the same level as `app/` (`node_modules/next/dist/docs/01-app/
+01-getting-started/16-proxy.md`), and this app's `app/` is `src/app/`, so a root
+`proxy.ts` is ignored. Moved to `src/proxy.ts` (with Next bumped to 16.4.2 on
+the same branch): the build now lists `ƒ Proxy (Middleware)`, and signed-out
+`/admin`, `/booking`, `/user`, `/checkout`, `/creator-dashboard`,
+`/venue-foxer` all answer 307 → `/?auth=required`. An empty
+`middleware-manifest.json` is not evidence either way — a Node-runtime proxy
+is not listed there.
 
 ---
 
@@ -95,13 +67,6 @@ app today, so nothing currently relies on it working.
       allowed value on the generic `PATCH /:id/status` endpoint — a second,
       equally invisible door onto the same dead state. `fox-passport-republic-api`
       commit `58298fe`.
-- [ ] **Check this stayed deleted.** As of 24 Sep no dispute route is
-      registered in the api's `booking.routes.ts`/`booking.controller.ts`, but
-      a comment in `booking.service.ts` (above `updateStatus`) now speaks of
-      giving the Event-flow `Booking` "the same active/disputed lifecycle" as
-      asset bookings. Either the comment is loose wording, or `disputed` is
-      coming back onto the generic path — in which case this whole finding
-      re-opens, because `GET /admin/disputes` still only reads `Refund` rows.
 
 ---
 
@@ -109,10 +74,13 @@ app today, so nothing currently relies on it working.
 
 The api's Central Payment backend (Invoice/Checkout/Payment/Payout/Voucher/
 PricingEngine, plus bidding and partnership) had zero frontend integration as
-of `api-audit.md`'s last pass — see `CENTRAL-PAYMENT-FRONTEND-PLAN.md` for
-the full plan. Both the backend HTTP layer (`fox-passport-republic-api`
-commit `09e893e`) and this app's integration have now landed and been
-reviewed; that plan document carries the full "Built and reviewed" record.
+of `api-audit.md`'s last pass. Both the backend HTTP layer
+(`fox-passport-republic-api` commit `09e893e`) and this app's integration have
+now landed and been reviewed. The plan, `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, was
+deleted 27 Oct once finished; its "Built and reviewed" record is in git
+history. The one piece it left unbuilt, the per-vendor breakdown beside Pay
+Now, shipped later as `EventLineItemsPanel` (17 Sep). Its manual Stripe pass
+moved to the browser checks below.
 
 **The one bug worth knowing about even without opening that doc:** the
 plan's own testing checklist named "pay successfully → browser redirects →
@@ -229,15 +197,15 @@ already at zero). `e507f9a` finished the follow/block/messages boundary
 refactor and closed out the remainder. The command now exits zero and stays
 that way — if it goes non-zero again, something regressed.
 
-- [ ] **It regressed — 16 violations as of 24 Sep**, all Feature Isolation
-      Boundary, all in committed code (none from the uncommitted checkout
-      work). The clusters: `messages/MessageButton` (and `useMessages`,
-      `useChatWindowsStore`, `SharePostModal`) imported from `booking`,
-      `gamification`, `investment`, `venue` and `republic`;
-      `booking/api/bookings` + `AvailabilityCalendar` imported from `asset`
-      and `service`; `event` → `venue-affiliation`; `venue-affiliation` →
-      `search`; `investment` → `venue/api`. Re-run the command for the
-      current list rather than trusting this one.
+- [x] **0 again as of 27 Oct.** The 20 Oct pair had gone; three others had
+      come in: `booking` importing `messages`' `MessageButton` (now passed in
+      from `app/booking/config/_components/BookingConfigPageClient.tsx`, the
+      venue page's pattern), `event` importing `search`'s `categoryLabel` (now
+      `shared/lib/categoryLabel.ts`), and a test importing `../../proxy`
+      because vitest's `@` alias pointed at the repo root rather than `src/`
+      as tsconfig does (fixed, so `@/proxy` resolves). It kept regressing
+      because CI didn't run `pnpm validate`; from 27 Oct it does, right after
+      lint.
 
 ### Read first, in this order
 
@@ -477,8 +445,8 @@ Both branches still exist and each still holds one commit that is **not** on
       `prisma/preflight.ts`, `prisma/seed.ts`, `tests/preflight.spec.ts`.
       Confirmed 24 Sep: `05590bd` is in the api's current history and
       `prisma/preflight.ts` is present. The remote branch can be deleted.
-- [ ] **app `fix/secretary-admin-console` — `8bc3586`, this document.** Docs
-      only.
+- [x] **app `fix/secretary-admin-console` — `8bc3586`, this document.** Docs
+      only. Confirmed 27 Oct: `8bc3586` is in `staging`.
 
 ### Migrations, which is the part that bites
 
@@ -528,13 +496,8 @@ has signed off on.
       renders its desktop nav at `hidden lg:flex` (aligned with `MobileBottomNav`'s
       `lg:hidden`), so only one navigation is visible at any screen width.
 
-- [ ] **Navigation is now opt-in per page.** 73 `page.tsx` files; `LandingHeader`
-      is rendered from 7 files, 3 of them under `src/app` (`/`, `/progress`,
-      `/search`). Many of the rest carry their own feature headers
-      (`DashboardHeader`, `AdminHeader`, `VenueHeader` and friends), so this is
-      **not** 70 pages with no navigation — but no single thing guarantees a
-      page has any, which the `(main)` layout used to do for whatever sat under
-      it. Worth an audit of which trees genuinely have no way out.
+- [x] **Navigation is now opt-in per page.** Audited 27 Oct, see the next
+      section's "Is the navbar replacement finished?": no page is a dead end.
 
 ---
 
@@ -696,7 +659,7 @@ has signed off on.
 ## 2. Verification — completed 12 Sep for core socket and page guards
 
 `VERIFY.md` was **fully driven 12 Sep** (Playwright + curl + live DB/Redis).
-All 16 checks passed, with two findings recorded in `VERIFY.md` and §0·0aa/ab
+All 16 checks passed, with two findings recorded in `VERIFY.md` and §0·0aa/ab (both since resolved)
 above (`proxy.ts` dead upstream in Next.js 16.3.4; generic booking disputes
 invisible to admins).
 
@@ -721,6 +684,23 @@ invisible to admins).
 - [ ] **Password change and reset** revoke all sessions — confirm the user is
       signed out and can sign back in.
 - [ ] **Proxy edge cases**: a multipart upload, and 401 → refresh → replay.
+- [ ] **Central Payment in Stripe test mode, on dev**: pay an Event invoice
+      and a sponsorship end to end, then the success and cancel pages. Carried
+      over 27 Oct from the deleted `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, where it
+      was never run because no staging existed then.
+- [ ] **"Ask the Event Foxer"** on a *full* event's `/booking/config`: still
+      shows, and opens a chat with the Event Foxer. #187 moved where the button
+      is wired (`app/booking/config/_components/BookingConfigPageClient.tsx`);
+      covered by types and tests, never clicked.
+- [ ] **Needs review** (admin, next to Events): after the 01:00 sweep, an Event
+      that ended with a standing booking and nobody checked in appears; Attended
+      settles a paid booking (payout, Stamp), No-show cancels it with no refund,
+      and the Event leaves the list once its last booking is settled. API #205,
+      app #184, ADR 0006 in the API.
+- [ ] **A public profile, signed out**: `/user/<id>` loads for a visitor
+      (#174) and shows stamps without dates, and nothing sends the visitor
+      home (the follow requests wait for a session, so no 401 trips the
+      sign-out redirect).
 
 ---
 
@@ -731,7 +711,7 @@ invisible to admins).
       `MobileBottomNav` is `lg:hidden`, `SearchClient` sidebar/chips switch at `lg`,
       and `useMobile.ts` sets `MOBILE_BREAKPOINT = 1024`. All navigation elements
       and helpers now agree across the application.
-- [ ] **Is the navbar replacement finished?** `feat/map` deleted the global
+- [x] **Is the navbar replacement finished?** `feat/map` deleted the global
       `Navbar` and the `(main)` layout, and `LandingHeader` took over. That much
       is clearly deliberate — `/progress` was handed `LandingHeader` in the same
       commit, and nothing imports the deleted modules. What is not established
@@ -739,13 +719,29 @@ invisible to admins).
       inherited from a layout, and no single thing guarantees a page has any.
       73 `page.tsx` files, `LandingHeader` rendered from 7 files (3 under
       `src/app`), most of the rest carrying their own feature headers. **Not
-      audited page by page** — that audit is the work, once you say whether the
-      opt-in model is the intended end state or a way-point.
-- [ ] **The 11 widened routes.** The resource-level approve/reject twins moved
-      from `requireAdmin` to `queue:decide`, so `admin_secretary` reaches them
-      now. Their `/admin/*` counterparts already did, so the two paths agree for
-      the first time — but it is a real behaviour change. Keep, or give those 11
-      an admin-only permission for strict parity.
+      audited page by page** — that audit is the work. **Decided 26 Oct:** opt-in
+      per page is the intended end state; the page-by-page audit is next.
+      **Audited 27 Oct: finished.** Every `page.tsx`, with its imports and the
+      layouts above it, reaches a way out (a header, a link home or a back
+      button); the only pages with none redirect or handle a sign-in callback.
+      What the audit found instead were links to routes with no page:
+      `/auth/login` (7 sign-in prompts), `/onboarding/partner` and the booking
+      headers' "Community" `/passport`. Fixed in #176, reconciled with main's
+      own fixes in #179 (sign-in prompts use `signInThen`, which returns to the
+      page). Back buttons on pages reached from shared links (event, venue,
+      asset, `/user/<id>`) left the site from a deep link; #177 moved them to
+      `smartBack` with a fallback. The event and venue pages render both
+      layouts, so each has two `<h1>`: left alone, since the hidden one is
+      `display: none` (not in the accessibility tree) and the alternatives
+      either drop the phone's `<h1>` or need viewport detection on the server.
+      Still open, not dead ends: "Trips" and "Help Center" in the user menu
+      point at pages that don't exist, but both are marked coming soon, and
+      `NAV_MENU` in `shared/lib/constants.ts` is unused and full of dead links.
+- [x] **The 11 widened routes.** Resolved 26 Oct: 8 of the resource-level
+      approve/reject twins were already deleted on 5 Sep; the last 3
+      (`/event-requests/:id/approve|reject|complete`, no callers) went in API
+      #192. Approving stays on `/admin/*`; completing an Event now follows its
+      bookings.
 - [x] **Seven page trees** sat outside `PROTECTED_ROUTES` and any guard:
       `/kyc`, `/notifications`, `/scanner`, `/wishlists`, `/host` (13 pages),
       `/match`, `/venue-foxer`. All seven are signed-in only — decided and
@@ -761,15 +757,54 @@ invisible to admins).
       which has its own `requireAuth` layout), so `HostShell.tsx` no longer
       exists and `"/host"` in `proxy.ts`'s `PROTECTED_ROUTES` is a harmless
       stale entry that can be removed.
-- [ ] **Silent Google account linking** — an existing email signing in with
-      Google is linked without a challenge. Acceptable, or not?
-- [ ] **Single-session across a person's own devices.** Signing in on a phone
-      ends the desktop session. Deliberate, or friction?
+- [x] **Silent Google account linking** — decided 20 Oct: **keep, for Google
+      and Facebook both.** An existing email signing in with either joins that
+      account (`accountLinking.trustedProviders` in the API's `better-auth.ts`).
+      Accepted knowingly: Better Auth treats Facebook emails as unverified, so
+      trusting Facebook trades a small takeover risk for no friction.
+- [x] **Single-session across a person's own devices** — resolved 20 Oct:
+      sign-in runs on Better Auth, which keeps one session per device, so a
+      phone no longer signs out the laptop. Only the legacy custom paths still
+      revoke, and they go in consolidation phase 4 (API
+      `docs/BETTER-AUTH-CONSOLIDATION.md`).
 - [x] **`requireOwnerOrAdmin`** had zero call sites. Decided: deleted, with
       the other legacy guards, 23 Sep — see §4. Ownership stays checked inside
       each service.
-- [ ] **Does `MobileAdminView` earn its keep?** Two implementations of the same
-      console to keep in step.
+- [x] **Does `MobileAdminView` earn its keep?** Two implementations of the same
+      console to keep in step. **Kept, 27 Oct.** The Flutter app has no admin and
+      won't get one, so a phone browser is the only way to reach admin on a
+      phone. And it is only the dashboard tab now (`AdminBody`); every other tab
+      already renders the real `AdminContent` at phone width.
+- [ ] **Foxer profiles (`/foxer/<id>`): public, or out of the sitemap?** They
+      are signed-in only by design (`app/foxer/layout.tsx` and `proxy.ts`), yet
+      the sitemap lists them, robots allows them and they carry JSON-LD and a
+      canonical, so a crawler gets a redirect to sign-in. Make them public as
+      `/user/<id>` was (#174), or drop them from the sitemap and robots.
+- [ ] **Organizers and capacity, (a) or (b).** (a) package-level Appointments
+      with their own permission, or (b) Organizers may change a booked Event's
+      guest count. Organizers seeing a package's History waits on this.
+- [ ] **The 5 legacy event categories' groups.** Recorded in ADR 0001
+      (`docs/adr/0001-dynamic-events-architecture.md`, "Still open"): the
+      group names `corporate`, `birthday`, `wedding`, `social` and `other` fold
+      into, needed before the taxonomy migration.
+
+**Needs your access, not a decision** (nothing here can be done from the code):
+
+- [ ] **Duplicate package venues** from the old re-Publish bug (fixed in API
+      #195): on the dev and prod databases, run
+      `SELECT "templateId","venueId",count(*) FROM event_template_venues GROUP BY 1,2 HAVING count(*)>1;`
+      and remove the extra rows it finds.
+- [ ] **Static images on AWS**: upload `static-assets/` to S3 `static/` behind
+      the dev CloudFront, set the `staging` environment's
+      `NEXT_PUBLIC_ASSETS_URL`, and re-run Deploy Dev (`static-assets/README.md`
+      has the mechanism).
+- [ ] **Facebook sign-in** (parked): live sign-in fails with `email_not_found`.
+      The code is fine; Facebook sends no email (unconfirmed email, or the email
+      permission unpublished for a user with no app role). Check with Graph
+      Explorer `me?fields=id,name,email`, and rotate `FACEBOOK_APP_SECRET` once
+      it works.
+- [ ] **Launching `foxpassport.com`** (no date yet): set
+      `NEXT_PUBLIC_APP_URL`, point DNS, and submit the sitemap.
 
 ---
 
@@ -780,7 +815,7 @@ invisible to admins).
       `/api/v1/admin/stats` and `/api/v1/users/` routes: unauthenticated `401`,
       denied citizen/secretary `403`, and allowed `admin_secretary` `200`
       responses. The broader per-route ownership triads remain a follow-up.
-- [ ] **Close the remaining test suite's blind spot — this is the
+- [x] **Close the remaining test suite's blind spot — this is the
       highest-leverage item
       here.** Twice on 2 Sep a feature was entirely broken while its tests
       passed: the socket had been dead for weeks, and 41 tests pinned the
@@ -794,6 +829,19 @@ invisible to admins).
       than another ten table tests, and any feature whose only coverage is a
       source scan should get one behavioural test that exercises it the way a
       person would.
+      **27 Oct:** the triads exist on the API (`tests/rbac.route-matrix.spec.ts`
+      walks every guarded route: 401 with no token, 403 per refused role, and
+      the allowed roles let through). The socket, the original case, now has
+      `src/__tests__/data/socketProvider.test.tsx`: it drives `SocketProvider`
+      as the server does and checks the ticket request, the query refreshes per
+      topic and the hand-off to features; breaking either the ticket call or
+      the refresh fails it. **Closed 27 Oct.** The other tests that read source
+      were checked one by one, and none is the blind spot: `dashboardFetchers`
+      and `queryDefaults` already exercise the real fetchers and client;
+      `middlewareSecrets` and `permissions` guard an absence (no signing key, no
+      copy of the grant table), which has no behaviour to assert, and the proxy
+      itself is driven by `proxyPublicProfiles.test.ts`; `lightThemeContrast`
+      is a styling convention.
 - [x] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` configuration — completed 23
       Sep.** Google OAuth now rejects partial credentials and invalid callback
       URLs at API startup; the fully unset integration remains optional with a

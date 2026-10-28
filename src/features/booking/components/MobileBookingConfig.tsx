@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const DAYS_IN_MONTH = 31;
 const MONTH_LABEL = "August 2026";
@@ -66,7 +66,7 @@ export default function MobileBookingConfig() {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
@@ -208,7 +208,7 @@ export default function MobileBookingConfig() {
                       isToday && !isSelected
                         ? "1px solid rgba(255,255,255,0.3)"
                         : "none",
-                    background: isSelected ? "#ccff00" : "transparent",
+                    background: isSelected ? "#C4E85A" : "transparent",
                     color: isSelected ? "#000" : "#fff",
                     fontSize: 12,
                     fontWeight: isSelected ? 700 : 400,
@@ -309,7 +309,7 @@ export default function MobileBookingConfig() {
         <button
           style={{
             width: "100%",
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontSize: 14,
             fontWeight: 800,

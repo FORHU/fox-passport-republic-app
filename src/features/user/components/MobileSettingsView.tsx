@@ -5,28 +5,41 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/shared/auth/useLogout";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 
 interface Props {
   user?: any;
 }
 
+// Every href must be a real route: /user/<anything> falls through to the
+// public profile page (/user/[id]) and shows "Citizen Profile Not Found".
+// Payment Methods and Notification Preferences return once their pages exist.
 const ROWS = [
-  { icon: "person", label: "Edit Profile", href: "/user/edit" },
-  { icon: "verified", label: "Roles & Verification", href: "/user/roles" },
-  { icon: "favorite", label: "Wishlists", href: "/wishlists" },
-  { icon: "credit_card", label: "Payment Methods", href: "/user/payments" },
   {
-    icon: "notifications",
-    label: "Notification Preferences",
-    href: "/user/notifications",
+    icon: "person",
+    label: "Edit Profile",
+    href: "/user/settings?section=profile",
   },
+  { icon: "verified", label: "Roles & Verification", href: "/kyc" },
+  { icon: "favorite", label: "Wishlists", href: "/wishlists" },
   { icon: "logout", label: "Log Out", href: null },
 ] as const;
 
 export default function MobileSettingsView({ user }: Props) {
   const router = useRouter();
   const logout = useLogout();
+  const { confirm, dialog } = useConfirm();
+
+  const confirmLogout = async () => {
+    const ok = await confirm({
+      title: "Log out of FoxPassport?",
+      description: "You'll need to sign in again to see your bookings.",
+      confirmLabel: "Log out",
+      tone: "danger",
+    });
+    if (ok) await logout();
+  };
 
   const name: string = user?.name ?? "Juan Dela Cruz";
   const email: string = user?.email ?? "juan@email.com";
@@ -67,7 +80,7 @@ export default function MobileSettingsView({ user }: Props) {
           style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
         >
           <Image
-            src={assetUrl("foxonlylogo.png")}
+            src={LOGO_SRC}
             alt="FoxPassport"
             width={22}
             height={22}
@@ -103,7 +116,7 @@ export default function MobileSettingsView({ user }: Props) {
               width: 80,
               height: 80,
               borderRadius: "50%",
-              background: "#7c3aed",
+              background: "#5C62D6",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -149,7 +162,7 @@ export default function MobileSettingsView({ user }: Props) {
           {ROWS.map((row) => (
             <button
               key={row.label}
-              onClick={() => (row.href ? router.push(row.href) : logout())}
+              onClick={() => (row.href ? router.push(row.href) : confirmLogout())}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -168,7 +181,7 @@ export default function MobileSettingsView({ user }: Props) {
                 style={{
                   fontSize: 20,
                   color: isLogout(row.icon)
-                    ? "rgba(239,68,68,0.8)"
+                    ? "rgba(207,61,52,0.8)"
                     : "rgba(255,255,255,0.55)",
                   flexShrink: 0,
                 }}
@@ -180,7 +193,7 @@ export default function MobileSettingsView({ user }: Props) {
                   flex: 1,
                   fontSize: 14,
                   fontWeight: 500,
-                  color: isLogout(row.icon) ? "#ef4444" : "#fff",
+                  color: isLogout(row.icon) ? "#CF3D34" : "#fff",
                 }}
               >
                 {row.label}
@@ -195,6 +208,7 @@ export default function MobileSettingsView({ user }: Props) {
           ))}
         </div>
       </div>
+      {dialog}
     </div>
   );
 }

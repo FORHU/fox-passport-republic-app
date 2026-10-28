@@ -2,13 +2,18 @@ import api from "@/shared/lib/axios";
 
 export interface CitizenStamp {
   id: string;
-  eventName: string;
-  eventDate: string;
+  /**
+   * The event's name and date, its photo and free-text location, and when the
+   * stamp was issued come only on the person's own profile. Anyone else sees
+   * the venue and XP: these would be a dated record of where someone was.
+   */
+  eventName?: string;
+  eventDate?: string;
   location?: string | null;
   venueId?: string | null;
   xpEarned: number;
   imageUrl?: string | null;
-  createdAt: string;
+  createdAt?: string;
   venue?: {
     id: string;
     name: string;

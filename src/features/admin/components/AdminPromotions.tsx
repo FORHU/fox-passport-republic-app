@@ -20,6 +20,22 @@ import { formatCurrency } from "@/shared/lib/currency";
 import { toast } from "sonner";
 import { X, Plus, Ticket, Copy, Upload } from "lucide-react";
 import { currencySymbol } from "@/shared/lib/currency";
+import AuditHistoryPanel from "./AuditHistoryPanel";
+
+const PROMOTION_HISTORY_FIELDS = {
+  name: "Name",
+  description: "Description",
+  discountType: "Discount type",
+  discountValue: "Discount",
+  minSubtotal: "Minimum subtotal",
+  maxDiscount: "Maximum discount",
+  startDate: "Starts",
+  endDate: "Ends",
+  usageLimit: "Usage limit",
+  perUserLimit: "Per-user limit",
+  autoApply: "Auto-apply",
+  active: "Active",
+};
 
 function Empty() {
   return (
@@ -824,7 +840,14 @@ export default function AdminPromotions() {
               </div>
 
               {expandedId === promo.id && (
-                <VoucherPanel promo={promo} onChanged={load} />
+                <>
+                  <VoucherPanel promo={promo} onChanged={load} />
+                  <AuditHistoryPanel
+                    resource="promotions"
+                    id={promo.id}
+                    fields={PROMOTION_HISTORY_FIELDS}
+                  />
+                </>
               )}
             </div>
           ))}

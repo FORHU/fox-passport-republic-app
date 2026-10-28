@@ -11,6 +11,8 @@ import {
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { stripeAppearanceColors } from "@/shared/lib/theme";
+import api from "@/shared/lib/axios";
 
 export default function StripeOnboardClient() {
   const router = useRouter();
@@ -27,35 +29,16 @@ export default function StripeOnboardClient() {
 
         const instance = loadConnectAndInitialize({
           publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+          // The API opens the signed-in user's own Connect account; the
+          // browser never names one.
           fetchClientSecret: async () => {
-            const storedId = localStorage.getItem("fox_stripe_account_id");
-            const res = await fetch("/api/stripe-connect/session", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ stripeAccountId: storedId || undefined }),
-            });
-            if (!res.ok) {
-              const err = await res
-                .json()
-                .catch(() => ({ error: "Request failed" }));
-              throw new Error(err.error || `HTTP ${res.status}`);
-            }
-            const data = await res.json();
-            if (!data.clientSecret)
-              throw new Error("No client secret returned");
-            if (data.stripeAccountId)
-              localStorage.setItem(
-                "fox_stripe_account_id",
-                data.stripeAccountId,
-              );
-            return data.clientSecret;
+            const { data } = await api.post("/stripe-connect/account-session");
+            return data.data.clientSecret;
           },
           appearance: {
             overlays: "dialog",
             variables: {
-              colorPrimary: "#ccff00",
-              colorBackground: "#02040a",
-              colorText: "#ffffff",
+              ...stripeAppearanceColors(),
               borderRadius: "12px",
               fontFamily: "inherit",
             },
@@ -80,7 +63,7 @@ export default function StripeOnboardClient() {
       className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
-          "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), #02040a",
+          "radial-gradient(circle at 15% 50%, rgba(92,98,214,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(92,98,214,0.1) 0%, transparent 40%), var(--canvas)",
         backgroundAttachment: "fixed",
       }}
     >

@@ -30,10 +30,10 @@ export function JoinRequestButton({
   if (reason === "requested" && appointmentId) {
     return (
       <div
-        className={`flex items-center justify-between gap-3 rounded-2xl border border-[#e879f9]/30 bg-[#e879f9]/[0.06] p-4 ${className}`}
+        className={`flex items-center justify-between gap-3 rounded-2xl border border-[#A3A8F5]/30 bg-[#A3A8F5]/[0.06] p-4 ${className}`}
       >
         <p className="text-sm text-white flex items-center gap-2">
-          <Check className="w-4 h-4 text-[#e879f9]" />
+          <Check className="w-4 h-4 text-[#A3A8F5]" />
           Request sent — waiting for the owner.
         </p>
         <button
@@ -67,7 +67,7 @@ export function JoinRequestButton({
         type="button"
         disabled={request.isPending}
         onClick={() => request.mutate()}
-        className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#e879f9] text-black text-xs font-bold hover:brightness-110 disabled:opacity-50"
+        className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#A3A8F5] text-black text-xs font-bold hover:brightness-110 disabled:opacity-50"
       >
         {request.isPending ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />

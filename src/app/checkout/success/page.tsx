@@ -3,7 +3,7 @@ import { CheckoutSuccessRouter } from "@/features/booking/components/CheckoutSuc
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Booking Confirmed | FoxPassport",
+  title: "Booking Confirmed",
   description: "Your premium venue reservation has been confirmed.",
 };
 

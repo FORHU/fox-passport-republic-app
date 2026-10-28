@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const STUDIO_TABS = [
   "Space Types",
@@ -79,7 +79,7 @@ export default function MobileVenueStudio({}: Props) {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
@@ -165,9 +165,9 @@ export default function MobileVenueStudio({}: Props) {
                 fontSize: 12,
                 fontWeight: 700,
                 whiteSpace: "nowrap",
-                color: active ? "#ccff00" : "rgba(255,255,255,0.4)",
+                color: active ? "#C4E85A" : "rgba(255,255,255,0.4)",
                 borderBottom: active
-                  ? "2px solid #ccff00"
+                  ? "2px solid #C4E85A"
                   : "2px solid transparent",
                 marginLeft: tab === "Space Types" ? 12 : 0,
               }}
@@ -199,9 +199,9 @@ export default function MobileVenueStudio({}: Props) {
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                border: `1.5px solid ${active ? "rgba(204,255,0,0.5)" : "color-mix(in srgb, var(--color-white) 9%, transparent)"}`,
+                border: `1.5px solid ${active ? "rgba(196,232,90,0.5)" : "color-mix(in srgb, var(--color-white) 9%, transparent)"}`,
                 background: active
-                  ? `${STRIPE_BG}, rgba(204,255,0,0.06)`
+                  ? `${STRIPE_BG}, rgba(196,232,90,0.06)`
                   : "rgba(255,255,255,0.03)",
                 borderRadius: 14,
                 padding: 12,
@@ -213,7 +213,7 @@ export default function MobileVenueStudio({}: Props) {
                 className="material-symbols-outlined"
                 style={{
                   fontSize: 18,
-                  color: active ? "#ccff00" : "rgba(255,255,255,0.35)",
+                  color: active ? "#C4E85A" : "rgba(255,255,255,0.35)",
                   flexShrink: 0,
                 }}
               >
@@ -251,7 +251,7 @@ export default function MobileVenueStudio({}: Props) {
         <button
           style={{
             width: "100%",
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontWeight: 800,
             fontSize: 14,

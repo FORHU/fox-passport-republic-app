@@ -5,7 +5,7 @@ import LandingFooter from "@/features/landing/components/sections/LandingFooter"
 import { Trash2, ArrowLeft, ShieldCheck, Mail, RefreshCw } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Data Deletion Instructions | FoxPassport",
+  title: "Data Deletion Instructions",
   description:
     "Step-by-step instructions on how to request the deletion of your account and personal data from FoxPassport, including Meta/Facebook and Google platform data.",
   openGraph: {

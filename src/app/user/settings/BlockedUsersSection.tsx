@@ -2,14 +2,25 @@
 
 import React from "react";
 import { useBlockedUsers, useUnblockUser } from "@/features/block/api/useBlock";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 
 export default function BlockedUsersSection() {
   const { data, isLoading } = useBlockedUsers();
   const unblockUser = useUnblockUser();
   const users = data?.data ?? [];
+  const { confirm, dialog } = useConfirm();
+
+  const confirmUnblock = async (u: (typeof users)[number]) => {
+    const ok = await confirm({
+      title: u.username ? `Unblock @${u.username}?` : "Unblock this citizen?",
+      description: "They'll be able to find you and send you a follow request again.",
+      confirmLabel: "Unblock",
+    });
+    if (ok) unblockUser.mutate(u.id);
+  };
 
   return (
-    <div className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6">
+    <div className="bg-surface border border-white/5 rounded-[2rem] p-5 sm:p-8 space-y-6">
       <div>
         <h2 className="text-lg font-display font-bold mb-1">
           Blocked Citizens
@@ -47,7 +58,7 @@ export default function BlockedUsersSection() {
                 </div>
               </div>
               <button
-                onClick={() => unblockUser.mutate(u.id)}
+                onClick={() => confirmUnblock(u)}
                 disabled={unblockUser.isPending}
                 className="px-4 py-2 rounded-lg bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 hover:text-white transition-all disabled:opacity-50 shrink-0"
               >
@@ -57,6 +68,7 @@ export default function BlockedUsersSection() {
           ))}
         </div>
       )}
+      {dialog}
     </div>
   );
 }

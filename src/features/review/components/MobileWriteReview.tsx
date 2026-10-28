@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface Props {
   venue?: {
@@ -49,7 +49,7 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
@@ -155,7 +155,7 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
                 className="material-symbols-outlined"
                 style={{
                   fontSize: 36,
-                  color: star <= rating ? "#ccff00" : "rgba(255,255,255,0.2)",
+                  color: star <= rating ? "#C4E85A" : "rgba(255,255,255,0.2)",
                   fontVariationSettings:
                     star <= rating ? "'FILL' 1" : "'FILL' 0",
                   transition: "color 0.15s",
@@ -196,7 +196,7 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
           onClick={() => onSubmit?.(rating, text)}
           style={{
             width: "100%",
-            background: "#ccff00",
+            background: "#C4E85A",
             color: "#000",
             fontWeight: 800,
             fontSize: 14,

@@ -39,8 +39,9 @@ export default function SuppliersPageClient({ eventId }: { eventId: string }) {
               Suppliers{eventName ? ` · ${eventName}` : ""}
             </h1>
             <p className="mt-1 text-sm text-white/50">
-              Message the venue, talent and gear behind this event. Conversations
-              go to the event&apos;s shared inbox, so the whole team sees them.
+              Message the venue, talent and gear behind this event.
+              Conversations go to the event&apos;s shared inbox, so the whole
+              team sees them.
             </p>
           </div>
 

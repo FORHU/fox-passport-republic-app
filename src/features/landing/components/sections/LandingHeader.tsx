@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -9,7 +10,15 @@ import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { Badge } from "@/shared/components/ui/badge";
-import { assetUrl } from "@/shared/lib/assets";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetTitle,
+  SheetTrigger,
+} from "@/shared/components/ui/sheet";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface LandingHeaderProps {
   /** Optional — defaults to the auth store's own `openLogin`, so a server
@@ -25,8 +34,15 @@ interface LandingHeaderProps {
   };
 }
 
-const NAV_TABS = [
-  { label: "Explore", href: "/" },
+// Signed-out visitors get the landing page's own nav; signed-in users get the app's.
+// On small screens the same links open from the menu button.
+const LANDING_TABS = [
+  { label: "Find events", href: "/#events" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "List your business", href: "/#earn" },
+];
+
+const APP_TABS = [
   { label: "Foxers", href: "/search" },
   { label: "Map", href: "/venues/map" },
   { label: "Foxer Republic", href: "/republic" },
@@ -36,8 +52,11 @@ export default function LandingHeader({
   onSignIn,
   search,
 }: LandingHeaderProps) {
-  const { isAuthenticated, openLogin } = useAuthStore();
+  const { isAuthenticated, isLoading, openLogin, openSignup } = useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
+  const [menuOpen, setMenuOpen] = useState(false);
+  // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
+  const navTabs = isLoading ? [] : isAuthenticated ? APP_TABS : LANDING_TABS;
   const pathname = usePathname();
   const isTabActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
@@ -60,7 +79,7 @@ export default function LandingHeader({
             >
               <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden shrink-0">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={48}
                   height={48}
@@ -68,16 +87,17 @@ export default function LandingHeader({
                 />
               </div>
               <div className="relative">
-                <h2 className="text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                {/* Not a heading: the page's own h1 comes first in the outline. */}
+                <span className="block text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                   FoxPassport
-                </h2>
+                </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              {NAV_TABS.map((tab) => {
+              {navTabs.map((tab) => {
                 const active = isTabActive(tab.href);
                 return (
                   <div key={tab.href} className="relative">
@@ -85,7 +105,7 @@ export default function LandingHeader({
                       href={tab.href}
                       className={
                         active
-                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
                           : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
                       }
                     >
@@ -136,10 +156,21 @@ export default function LandingHeader({
               {!isAuthenticated && (
                 <button
                   onClick={handleSignIn}
-                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative cursor-pointer"
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black transition-all duration-300 group overflow-hidden relative cursor-pointer"
                 >
                   <span className="relative z-10">Sign In</span>
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                </button>
+              )}
+              {/* New visitors are who this header is for, so sign-up gets the
+                  accent. From sm up; on a phone it is in the menu. */}
+              {!isLoading && !isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={openSignup}
+                  className="hidden sm:flex items-center rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                >
+                  Sign up
                 </button>
               )}
               {isAuthenticated && (
@@ -148,13 +179,75 @@ export default function LandingHeader({
                   <UserMenuButton onSignIn={handleSignIn} />
                 </div>
               )}
+
+              {/* Small screens, signed out: the landing links, which the
+                  desktop nav shows inline. Signed-in users have the bottom nav. */}
+              {!isLoading && !isAuthenticated && (
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open menu"
+                      className="lg:hidden flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 sm:bg-white/5 border border-white/15 text-white hover:bg-white/15 transition-colors cursor-pointer"
+                    >
+                      <span
+                        aria-hidden
+                        className="material-symbols-outlined text-[22px]"
+                      >
+                        menu
+                      </span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    aria-describedby={undefined}
+                    className="bg-canvas border-white/10 text-white"
+                  >
+                    <SheetTitle className="px-6 pt-6 text-lg font-display font-bold text-white">
+                      Menu
+                    </SheetTitle>
+                    <nav className="flex flex-col gap-1 px-3">
+                      {LANDING_TABS.map((tab) => (
+                        <SheetClose asChild key={tab.href}>
+                          <Link
+                            href={tab.href}
+                            className="rounded-xl px-3 py-3 text-base font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            {tab.label}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </nav>
+                    <SheetFooter className="p-6 gap-2">
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={openSignup}
+                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                        >
+                          Sign up
+                        </button>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={handleSignIn}
+                          className="w-full rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          Sign In
+                        </button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              )}
             </div>
           </div>
         </div>
       </motion.header>
 
       {/* Mobile floating capsule bottom nav */}
-      <MobileBottomNav onLoginClick={handleSignIn} />
+      <MobileBottomNav />
     </>
   );
 }

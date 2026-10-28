@@ -20,7 +20,7 @@ import type {
   ItemBookingRefund,
 } from "@/features/booking/types/booking.types";
 import { formatCurrency } from "@/shared/lib/currency";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 type BookingType = "service" | "asset";
 
@@ -213,7 +213,7 @@ export default function FulfillmentPassClient({
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -367,7 +367,7 @@ export default function FulfillmentPassClient({
                     <div
                       className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
                         done[i]
-                          ? "bg-accent border-accent shadow-[0_0_8px_rgba(204,255,0,0.4)]"
+                          ? "bg-accent border-accent"
                           : "bg-background border-white/20"
                       }`}
                     >
@@ -459,7 +459,7 @@ export default function FulfillmentPassClient({
                   <button
                     onClick={handleConfirmArrival}
                     disabled={actionLoading}
-                    className="w-full py-3.5 rounded-2xl bg-white text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] active:scale-95 transition-all disabled:opacity-60"
+                    className="w-full py-3.5 rounded-2xl bg-white text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent active:scale-95 transition-all disabled:opacity-60"
                   >
                     {actionLoading ? (
                       <span className="animate-spin material-symbols-outlined text-[18px]">

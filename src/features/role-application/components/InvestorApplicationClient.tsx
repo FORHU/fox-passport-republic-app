@@ -7,6 +7,7 @@ import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
 import { currencySymbol } from "@/shared/lib/currency";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 // Same vocabulary CreateInvestmentWizard uses for its two investment
 // streams — kept identical here so a declared "interest" always matches the
@@ -27,11 +28,11 @@ const INTEREST_OPTIONS = [
   },
 ];
 
-const ACCENT = "#10b981"; // matches ROLE_BADGE.investor ("Partner Foxer")
+const ACCENT = "#ADD13F"; // matches ROLE_BADGE.investor ("Partner Foxer")
 
 const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
 const INPUT =
-  "w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#10b981]/50 focus:bg-white/10 transition-colors";
+  "w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ADD13F]/50 focus:bg-white/10 transition-colors";
 const ICON =
   "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40";
 
@@ -217,7 +218,7 @@ export default function InvestorApplicationClient() {
 
         <FileUploader
           label="Proof of Funds (optional)"
-          accept="image/*,application/pdf"
+          accept={UPLOAD_ACCEPT.document}
           private
           onUploadComplete={(id) => setProofFileId(id)}
         />

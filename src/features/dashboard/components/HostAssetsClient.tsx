@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import {
   DashboardHeader,
   InventorySection,
 } from "@/features/dashboard/components";
 import {
-  STATUS_OPTIONS,
+  FILTER_STATUS_OPTIONS,
   type InventoryItem,
 } from "@/features/dashboard/data/dashboardData";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
@@ -36,7 +36,11 @@ export default function HostAssetsClient({
 }: HostAssetsClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [status, setStatus] = useState<"all" | string>("all");
+  // The Studio's "My Drafts" links here with ?status=draft.
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"all" | string>(
+    () => searchParams.get("status") ?? "all",
+  );
   const [inventory, setInventory] = useState(initialInventory);
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export default function HostAssetsClient({
         className="bg-canvas text-white min-h-screen font-body antialiased"
         style={{
           background:
-            "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
+            "radial-gradient(circle at 15% 50%, rgba(92,98,214,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(92,98,214,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(196,232,90,0.05) 0%, transparent 50%), var(--canvas)",
           backgroundAttachment: "fixed",
         }}
       >
@@ -126,7 +130,7 @@ export default function HostAssetsClient({
                     onChange={setStatus}
                     options={[
                       { value: "all", label: "All Status" },
-                      ...STATUS_OPTIONS.inventory.map((s) => ({
+                      ...FILTER_STATUS_OPTIONS.inventory.map((s) => ({
                         value: s,
                         label: s,
                       })),

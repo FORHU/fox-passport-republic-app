@@ -21,7 +21,7 @@ import DateRangePicker, {
 } from "@/shared/components/ui/DateRangePicker";
 import { smartBack } from "@/shared/lib/navigation";
 import { Money } from "@/shared/components/ui/Money";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface Foxer {
   id: string;
@@ -352,7 +352,7 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

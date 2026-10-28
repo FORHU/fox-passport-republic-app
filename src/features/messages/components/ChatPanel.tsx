@@ -74,6 +74,7 @@ import {
 } from "../constants";
 import { RoleBadges } from "@/shared/components/ui/RoleBadges";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 // Hover-revealed "..." trigger on a message row, opening a tiny menu of
 // Reply/Forward/Delete — one component instead of separate always-visible
@@ -880,7 +881,11 @@ export default function ChatPanel({
             error?.code !== "ERR_CANCELED" &&
             error?.name !== "CanceledError"
           ) {
-            toast.error("Failed to upload attachment.");
+            toast.error(
+              error?.response?.data?.message ||
+                error?.message ||
+                "Failed to upload attachment.",
+            );
           }
         })
         .finally(() => {
@@ -907,7 +912,7 @@ export default function ChatPanel({
     if (groupPhotoInputRef.current) groupPhotoInputRef.current.value = "";
     if (!file || !conversationId) return;
     try {
-      const url = await uploadMessageAttachment(file);
+      const url = await uploadMessageAttachment(file, undefined, "image");
       setGroupPhoto.mutate(
         { conversationId, imgId: url },
         {
@@ -915,8 +920,12 @@ export default function ChatPanel({
           onError: () => toast.error("Could not update the group photo."),
         },
       );
-    } catch {
-      toast.error("Failed to upload the photo.");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to upload the photo.",
+      );
     }
   };
 
@@ -1060,7 +1069,7 @@ export default function ChatPanel({
           )}
         </button>
         {bubbleUnread > 0 && (
-          <span className="pointer-events-none absolute -top-1 -left-1 h-5 min-w-5 px-1 rounded-full bg-[#ff00aa] border-2 border-canvas text-white text-[10px] font-black flex items-center justify-center">
+          <span className="pointer-events-none absolute -top-1 -left-1 h-5 min-w-5 px-1 rounded-full bg-[#5C62D6] border-2 border-canvas text-white text-[10px] font-black flex items-center justify-center">
             {bubbleUnread > 9 ? "9+" : bubbleUnread}
           </span>
         )}
@@ -1253,7 +1262,7 @@ export default function ChatPanel({
                 <input
                   ref={groupPhotoInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={UPLOAD_ACCEPT.image}
                   hidden
                   onChange={handleGroupPhotoSelected}
                 />
@@ -2061,7 +2070,7 @@ export default function ChatPanel({
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*,video/*"
+                      accept={UPLOAD_ACCEPT.media}
                       multiple
                       hidden
                       onChange={handleFilesSelected}

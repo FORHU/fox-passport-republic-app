@@ -16,7 +16,7 @@ export {
   type LandingEventLocation,
   type LandingFoxer,
   type LandingVenue,
-} from "./landing-shared";
+} from "@/shared/data/landingJourney";
 import {
   filterLandingVenues,
   loadLandingEvents,
@@ -24,7 +24,7 @@ import {
   type LandingEventLocation,
   type LandingFoxer,
   type LandingVenue,
-} from "./landing-shared";
+} from "@/shared/data/landingJourney";
 
 const TEN_MINUTES = 1000 * 60 * 10;
 
@@ -280,11 +280,23 @@ export function eventLocationCollection(locations: LandingEventLocation[]) {
 // Destinations
 // ---------------------------------------------------------------------------
 
-/** A photo of an event, and who took it, for the credit the licence asks for. */
+/** A photo that illustrates a feature, and who took it, for the credit line. */
 export interface Photo {
   src: string;
-  subject?: "city";
+  /** What the photo shows, for screen readers. */
+  alt?: string;
   credit: { author: string; license: string; url: string };
+}
+
+export interface Feature {
+  label: string;
+  title: string;
+  /**
+   * Only where a public page shows this feature. Without one the card is a
+   * plain tile: a link to a page about something else reads as broken.
+   */
+  href?: string;
+  photo: Photo;
 }
 
 export interface Destination {
@@ -293,257 +305,323 @@ export interface Destination {
   category: string;
   name: string;
   region: string;
-  /** The kind of event the place is picked for. */
+  /** The step of a booking this stop presents: the card's headline. */
   kind: string;
-  /** One line on the events there. */
+  /** One line on that feature. */
   tagline: string;
+  /** Four related features, shown as the small cards around the stop's card. */
+  features: Feature[];
   lat: number;
   lng: number;
-  /** Photos of events there, served from /public/destinations. */
+  /** The card's photos: one per feature, in the same order. */
   photos: Photo[];
 }
 
 /**
- * The tour, in the order the plane flies it, eastward from Washington, D.C. round to
- * Tokyo: capital cities, each with the kinds of event it is known for. The point
- * is the events, not the travel; the map only shows they happen everywhere.
- * Photos are from Wikimedia Commons under Creative Commons licences, credited on
- * screen.
+ * A free photo from Unsplash (Unsplash License: free to use, no credit
+ * required, though the card still credits it). The files are in
+ * public/features, and in the bucket under static/features for setups that set
+ * NEXT_PUBLIC_ASSETS_URL, so the page never loads from Unsplash.
  */
-export const DESTINATIONS: Destination[] = [
-  {
-    key: "washington",
-    category: "social",
-    name: "Washington, D.C.",
-    region: "United States",
-    kind: "Arena concerts",
-    tagline: "Arena nights, Pride and open-air shows in the capital.",
-    lat: 38.9072,
-    lng: -77.0369,
-    photos: [
-      {
-        src: assetUrl("destinations/washington-city.jpg"),
-        subject: "city",
-        credit: {
-          author:
-            "U.S. Navy photo by Photographer's Mate 2nd Class Daniel J. McLain",
-          license: "Public domain",
-          url: "https://commons.wikimedia.org/wiki/File:US_Navy_040709-N-0295M-004_The_Washington_Monument_and_Thomas_Jefferson_Memorial_fill_the_skyline_of_Washington,_D.C.jpg",
-        },
-      },
-      {
-        src: assetUrl("destinations/washington-1.jpg"),
-        credit: {
-          author: "Ted Eytan",
-          license: "CC BY-SA 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:Justin_Timberlake_-_The_2020_Experience_World_Tour_-_Washington_-_03.jpg",
-        },
-      },
-      {
-        src: assetUrl("destinations/washington-2.jpg"),
-        credit: {
-          author: "Mrs. Gemstone",
-          license: "CC BY-SA 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:Muse_Concert_-_Verizon_Center_-_February_1,_2016_-_24554291014.jpg",
-        },
-      },
-      {
-        src: assetUrl("destinations/washington-3.jpg"),
-        credit: {
-          author: "Ted Eytan",
-          license: "CC BY-SA 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:2018.06.10_Alessia_Cara_at_the_Capital_Pride_Concert_with_a_Sony_A7III,_Washington,_DC_USA_03656_(42017806694).jpg",
-        },
-      },
-      {
-        src: assetUrl("destinations/washington-4.jpg"),
-        credit: {
-          author: "Danazar",
-          license: "CC BY-SA 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Imagine_Dragons_July_6_2015_Verizon_Center.jpg",
-        },
-      },
-    ],
+const unsplash = (
+  file: string,
+  alt: string,
+  author: string,
+  id: string,
+): Photo => ({
+  src: assetUrl(`features/${file}.jpg`),
+  alt,
+  credit: {
+    author,
+    license: "Unsplash License",
+    url: `https://unsplash.com/photos/${id}`,
   },
-  {
-    key: "paris",
-    category: "social",
-    name: "Paris",
-    region: "France",
-    kind: "Stadium and arena tours",
-    tagline: "From the Stade de France to fireworks over the Eiffel Tower.",
-    lat: 48.8566,
-    lng: 2.3522,
-    photos: [
-      {
-        src: assetUrl("destinations/paris.jpg"),
-        credit: {
-          author: "U2start",
-          license: "CC BY 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:U2_in_Paris,_Dec_7_2015_(22980099304).jpg",
+});
+
+/**
+ * The tour, in the order the plane flies it, eastward from Washington, D.C. round to
+ * Tokyo. Each landing presents what FoxPassport does, in the order a booking goes:
+ * plan, choose who to trust, know the price, the night itself, and after. Every
+ * feature named here is one the platform has today, and each has a photo of
+ * what it's about; the stop's card turns through those same photos.
+ */
+export const DESTINATIONS: Destination[] = (
+  [
+    {
+      key: "washington",
+      category: "social",
+      name: "Washington, D.C.",
+      region: "United States",
+      kind: "Plan it in one place",
+      tagline:
+        "The venue, the gear and the crew for any event, found and booked in one place.",
+      features: [
+        {
+          label: "One booking",
+          title: "Venue, gear and crew in a single package",
+          href: "/packages",
+          photo: unsplash(
+            "one-booking",
+            "Round tables set with flowers and gold chairs for an event",
+            "Michael Kyule",
+            "rJWykl03fbA",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/paris-1.jpg"),
-        credit: {
-          author: "Like tears in rain",
-          license: "CC BY-SA 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Rihanna_au_Stade_de_France.jpg",
+        {
+          label: "Prices up front",
+          title: "See package prices before you sign up",
+          href: "/packages",
+          photo: unsplash(
+            "prices-up-front",
+            "Someone browsing on a phone in the dark",
+            "Gilles Lambert",
+            "pb_lF8VWaPU",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/paris-2.jpg"),
-        credit: {
-          author: "Syced",
-          license: "CC0",
-          url: "https://commons.wikimedia.org/wiki/File:F%C3%AAte_de_la_Musique_2008,_Paris.jpg",
+        {
+          label: "Every kind of event",
+          title: "Weddings, birthdays, corporate and social nights",
+          href: "/packages",
+          photo: unsplash(
+            "every-kind-of-event",
+            "Guests raising a toast at a long table under string lights",
+            "Al Elmes",
+            "ULHxWq8reao",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/paris-3.jpg"),
-        credit: {
-          author: "Kenneth Lu",
-          license: "CC BY 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:Eiffel_Tower_fireworks_on_Bastille_Day_2017_(36303814041).jpg",
+        {
+          label: "Venue map",
+          title: "Browse venues on the map",
+          href: "/venues/map",
+          photo: unsplash(
+            "venue-map",
+            "A hand placing a red pin on a city map",
+            "GeoJango Maps",
+            "Z8UgB80_46w",
+          ),
         },
-      },
-    ],
-  },
-  {
-    key: "male",
-    category: "wedding",
-    name: "Malé",
-    region: "Maldives",
-    kind: "Weddings and celebrations",
-    tagline:
-      "Island weddings and city celebrations in the heart of the Maldives.",
-    lat: 4.1755,
-    lng: 73.5093,
-    photos: [
-      {
-        src: assetUrl("destinations/maldives.jpg"),
-        credit: {
-          author: "Shifaaz shamoon sotti",
-          license: "CC0",
-          url: "https://commons.wikimedia.org/wiki/File:Maldives_wedding_(Unsplash).jpg",
+      ],
+      lat: 38.9072,
+      lng: -77.0369,
+    },
+    {
+      key: "paris",
+      category: "social",
+      name: "Paris",
+      region: "France",
+      kind: "Book people you can trust",
+      tagline:
+        "Every venue and supplier is ID-checked and reviewed by our team before they can take a booking.",
+      features: [
+        {
+          label: "Verified Foxers",
+          title: "ID-checked and reviewed by our team",
+          href: "/search",
+          photo: unsplash(
+            "verified-foxers",
+            "Two people shaking hands",
+            "Cytonn Photography",
+            "n95VMLxqM2I",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/male-1.jpg"),
-        credit: {
-          author: "Ibrahim Asad",
-          license: "CC BY 3.0",
-          url: "https://commons.wikimedia.org/wiki/File:Wedding_Couple_in_Maldives_palm_beach_-_panoramio.jpg",
+        {
+          label: "Gear",
+          title: "Sound, lights, staging and furniture to rent",
+          href: "/search?type=gear",
+          photo: unsplash(
+            "gear",
+            "Microphones, drums and keyboards on a stage under spotlights",
+            "Magnus Lunay",
+            "LHR6tUw8N34",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/male-2.jpg"),
-        credit: {
-          author: "The President's Office, Maldives",
-          license: "CC BY 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Eid_lights_in_the_Maldives.jpg",
+        {
+          label: "Talent",
+          title: "Catering, design and staff, by the hour or the job",
+          href: "/search?type=service",
+          photo: unsplash(
+            "talent",
+            "Chefs plating small dishes for service",
+            "Filipp Romanovski",
+            "__BxlspIesw",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/male-3.jpg"),
-        credit: {
-          author: "The President's Office, Maldives",
-          license: "CC BY 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Flag_hoisting_repbulic_square_national_day_2025.jpg",
+        {
+          label: "Performers",
+          title: "DJs, bands, hosts and photographers",
+          photo: unsplash(
+            "performers",
+            "A DJ's hand over a lit mixing deck",
+            "Marcela Laskoski",
+            "YrtFlrLo2DQ",
+          ),
         },
-      },
-    ],
-  },
-  {
-    key: "manila",
-    category: "social",
-    name: "Manila",
-    region: "Philippines",
-    kind: "Concerts and festivals",
-    tagline:
-      "Arena concerts, Pride and processions with crowds that fill the street.",
-    lat: 14.5995,
-    lng: 120.9842,
-    photos: [
-      {
-        src: assetUrl("destinations/manila-1.jpg"),
-        credit: {
-          author: "Patrick Cristiano",
-          license: "CC BY-SA 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Sam_Smith%27s_The_Thrill_of_It_All_Tour_in_Manila.jpg",
+      ],
+      lat: 48.8566,
+      lng: 2.3522,
+    },
+    {
+      key: "male",
+      category: "wedding",
+      name: "Malé",
+      region: "Maldives",
+      kind: "Know the price first",
+      tagline:
+        "Browse complete packages with prices. You only need an account when you book.",
+      features: [
+        {
+          label: "Package prices",
+          title: "See what a full package costs",
+          href: "/packages",
+          photo: unsplash(
+            "package-prices",
+            "Someone stacking coins on a table",
+            "Towfiqu barbhuiya",
+            "jpqyfK7GB4w",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/manila-2.jpg"),
-        credit: {
-          author: "Patrick Cristiano",
-          license: "CC BY-SA 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Mariah_Carey_at_the_SM_Mall_of_Asia_Arena_in_2025.jpg",
+        {
+          label: "Account at booking",
+          title: "Sign up only when you reserve",
+          photo: unsplash(
+            "account-at-booking",
+            "A reserved sign on a table",
+            "Alexandr Popadin",
+            "tPG1lcsMZVk",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/manila-3.jpg"),
-        credit: {
-          author: "Sean Ronquillo",
-          license: "CC BY-SA 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:Black_Nazarene_Traslacion_Quezon_Boulevard_4.jpg",
+        {
+          label: "Cancellation policy",
+          title: "See the cancellation terms before you book",
+          photo: unsplash(
+            "cancellation-policy",
+            "An open monthly planner on a desk",
+            "Eric Rothermel",
+            "FoKO4DpXamQ",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/manila-4.jpg"),
-        credit: {
-          author: "Pandekate",
-          license: "CC BY-SA 4.0",
-          url: "https://commons.wikimedia.org/wiki/File:2019_Metro_Manila_Pride_1.jpg",
+        {
+          label: "Secure checkout",
+          title: "Pay by card through Stripe",
+          photo: unsplash(
+            "secure-checkout",
+            "Someone holding a card while paying on a laptop",
+            "rupixen",
+            "Q59HmzK38eQ",
+          ),
         },
-      },
-    ],
-  },
-  {
-    key: "tokyo",
-    category: "social",
-    name: "Tokyo",
-    region: "Japan",
-    kind: "Festivals and fireworks",
-    tagline: "Summer Sonic, Sumida fireworks and a Dome full of fans.",
-    lat: 35.6762,
-    lng: 139.6503,
-    photos: [
-      {
-        src: assetUrl("destinations/tokyo-1.jpg"),
-        credit: {
-          author: "LuxTonnerre",
-          license: "CC BY 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:Marine_Stage_at_Summer_Sonic_Festival.jpg",
+      ],
+      lat: 4.1755,
+      lng: 73.5093,
+    },
+    {
+      key: "manila",
+      category: "social",
+      name: "Manila",
+      region: "Philippines",
+      kind: "On the night",
+      tagline:
+        "Your booking has a QR code. Show it at the entrance and you're checked in.",
+      features: [
+        {
+          label: "QR check-in",
+          title: "Show your booking's QR code at the door",
+          photo: unsplash(
+            "qr-check-in",
+            "A guest's booking checked on a phone at the entrance",
+            "Claudio Schwarz",
+            "wMgW6bjjzZU",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/tokyo-2.jpg"),
-        credit: {
-          author: "Dick Thomas Johnson",
-          license: "CC BY 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:Sumidagawa_Fireworks_Festival_2023_(53329043888).jpg",
+        {
+          label: "Message your Foxers",
+          title: "Chat with your host and suppliers before the day",
+          photo: unsplash(
+            "message-your-foxers",
+            "Someone writing a message on a phone",
+            "freestocks",
+            "mw6Onwg4frY",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/tokyo-3.jpg"),
-        credit: {
-          author: "Guilhem Vellut",
-          license: "CC BY 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:Sanja_Matsuri_@_Asakusa_(14228881562).jpg",
+        {
+          label: "Booking details",
+          title: "Date, venue and guests on one booking page",
+          photo: unsplash(
+            "booking-details",
+            "A guest book held in someone's hand",
+            "Erik Mclean",
+            "aNZnKZKfAq8",
+          ),
         },
-      },
-      {
-        src: assetUrl("destinations/tokyo-4.jpg"),
-        credit: {
-          author: "nagi usano",
-          license: "CC BY 2.0",
-          url: "https://commons.wikimedia.org/wiki/File:BiSH_%22Bye-Bye_Show_for_Never%22_in_Tokyo_Dome.jpg",
+        {
+          label: "Change requests",
+          title: "Ask for a change to your booking in the app",
+          photo: unsplash(
+            "change-requests",
+            "Someone working on a laptop at dusk",
+            "Thought Catalog",
+            "UK78i6vK3sc",
+          ),
         },
-      },
-    ],
-  },
-];
+      ],
+      lat: 14.5995,
+      lng: 120.9842,
+    },
+    {
+      key: "tokyo",
+      category: "social",
+      name: "Tokyo",
+      region: "Japan",
+      kind: "Keep the night",
+      tagline: "Every event you attend adds a stamp to your FoxPassport.",
+      features: [
+        {
+          label: "Passport stamps",
+          title: "A stamp for every event you attend",
+          photo: unsplash(
+            "passport-stamps",
+            "An open passport full of stamps",
+            "Kit (formerly ConvertKit)",
+            "htQznS-Rx7w",
+          ),
+        },
+        {
+          label: "Badges and levels",
+          title: "Earn badges and level up as you go",
+          photo: unsplash(
+            "badges-and-levels",
+            "A row of gold medals with red ribbons",
+            "George Pisarevsky",
+            "u-OIymmnw1s",
+          ),
+        },
+        {
+          label: "Reviews",
+          title: "Review the venues and Foxers you booked",
+          photo: unsplash(
+            "reviews",
+            "A row of glitter stars on a dark background",
+            "Markus Spiske",
+            "vJ_LviEnR1A",
+          ),
+        },
+        {
+          label: "Foxer Republic",
+          title: "Share your night on the community feed",
+          href: "/republic",
+          photo: unsplash(
+            "foxer-republic",
+            "A fan filming the stage on a phone at a concert",
+            "Noiseporn",
+            "JNuKyKXLh8U",
+          ),
+        },
+      ],
+      lat: 35.6762,
+      lng: 139.6503,
+    },
+  ] satisfies Omit<Destination, "photos">[]
+).map((d) => ({ ...d, photos: d.features.map((f) => f.photo) }));
 
 export interface Stop extends Destination {
   /** Real venues within about a hundred kilometres. */

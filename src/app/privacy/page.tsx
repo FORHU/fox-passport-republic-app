@@ -5,7 +5,7 @@ import LandingFooter from "@/features/landing/components/sections/LandingFooter"
 import { Shield, Lock, Eye, FileText, Trash2, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | FoxPassport",
+  title: "Privacy Policy",
   description:
     "Learn how FoxPassport collects, uses, protects, and manages your personal data, including Google and Meta/Facebook platform information.",
   openGraph: {

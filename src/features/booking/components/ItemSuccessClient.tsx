@@ -12,7 +12,7 @@ import {
 } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { formatCurrency } from "@/shared/lib/currency";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 export default function ItemSuccessClient() {
   const router = useRouter();
@@ -78,7 +78,7 @@ export default function ItemSuccessClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -130,7 +130,7 @@ export default function ItemSuccessClient() {
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Hero */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
+            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-accent text-black font-bold mb-6">
               <span className="material-symbols-outlined text-5xl">
                 check_circle
               </span>
@@ -335,7 +335,7 @@ export default function ItemSuccessClient() {
                     reset();
                     router.push("/categories");
                   }}
-                  className="flex-1 btn-neon rounded-xl bg-accent px-6 py-3 text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 text-center flex items-center justify-center gap-2"
+                  className="flex-1 btn-neon rounded-xl bg-accent px-6 py-3 text-black font-bold text-sm transition-all active:scale-95 text-center flex items-center justify-center gap-2"
                 >
                   Browse More
                   <span className="material-symbols-outlined text-[18px]">

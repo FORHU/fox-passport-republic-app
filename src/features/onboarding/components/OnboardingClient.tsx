@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { takeReturnTo } from "@/shared/auth/returnTo";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
 import { isFoxerRole } from "@/shared/constants/roles";
-import { ROLES, type RoleCatalogEntry } from "../roleCatalog";
+import { ROLES, type RoleCatalogEntry } from "@/shared/data/roleCatalog";
 import { RoleDetailsModal } from "./RoleDetailsModal";
 import {
   CascadingLocationFields,
@@ -364,14 +365,14 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
             <div className={STEP_CARD}>
               <StepHeader
                 icon="explore"
-                color="#a78bfa"
+                color="#B4B8F8"
                 title="What brings you here?"
                 subtitle="Choose how you plan to use FoxPassport."
               />
 
               <div className="relative space-y-3">
                 <button
-                  onClick={() => router.push("/search")}
+                  onClick={() => router.push(takeReturnTo())}
                   className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-accent/40 hover:bg-white/[0.06] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
@@ -400,13 +401,13 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
                 <button
                   onClick={() => setStep(3)}
-                  className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-[#ff00aa]/40 hover:bg-white/[0.06] transition-all duration-300"
+                  className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-[#5C62D6]/40 hover:bg-white/[0.06] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-[#ff00aa]/15 flex items-center justify-center shrink-0">
+                    <div className="h-12 w-12 rounded-xl bg-[#5C62D6]/15 flex items-center justify-center shrink-0">
                       <span
                         className="material-symbols-outlined text-[24px]"
-                        style={{ color: "#ff00aa" }}
+                        style={{ color: "var(--periwinkle)" }}
                       >
                         badge
                       </span>
@@ -420,7 +421,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         professionally.
                       </p>
                     </div>
-                    <span className="material-symbols-outlined text-white/20 group-hover:text-[#ff00aa] transition-colors">
+                    <span className="material-symbols-outlined text-white/20 group-hover:text-[#5C62D6] transition-colors">
                       arrow_forward
                     </span>
                   </div>
@@ -472,7 +473,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
             <div className={STEP_CARD}>
               <StepHeader
                 icon="badge"
-                color="#ec4899"
+                color="#A3A8F5"
                 title={
                   hasExistingRoles
                     ? "Your roles"
@@ -511,7 +512,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         key={role.type}
                         className={`relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
-                          boxShadow: "inset 0 0 0 1px rgba(34,197,94,0.15)",
+                          boxShadow: "inset 0 0 0 1px rgba(173,209,63,0.15)",
                         }}
                       >
                         <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-wider">
@@ -522,7 +523,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         </span>
                         <div
                           className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
-                          style={{ backgroundColor: `${role.color}20` }}
+                          style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
                         >
                           <span
                             className="material-symbols-outlined text-[24px]"
@@ -547,7 +548,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         key={role.type}
                         className={`relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
-                          boxShadow: "inset 0 0 0 1px rgba(245,158,11,0.12)",
+                          boxShadow: "inset 0 0 0 1px rgba(217,154,38,0.12)",
                         }}
                       >
                         <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
@@ -558,7 +559,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         </span>
                         <div
                           className="h-12 w-12 rounded-xl flex items-center justify-center mb-4 opacity-60"
-                          style={{ backgroundColor: `${role.color}15` }}
+                          style={{ backgroundColor: `color-mix(in srgb, ${role.color} 8%, transparent)` }}
                         >
                           <span
                             className="material-symbols-outlined text-[24px]"
@@ -584,7 +585,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         href={`/foxer/resubmit/${revisionRequest.id}`}
                         className={`group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-white/[0.06] transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
-                          boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.15)",
+                          boxShadow: "inset 0 0 0 1px rgba(217,154,38,0.15)",
                         }}
                       >
                         <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[10px] font-bold uppercase tracking-wider">
@@ -595,7 +596,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         </span>
                         <div
                           className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
-                          style={{ backgroundColor: `${role.color}20` }}
+                          style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
                         >
                           <span
                             className="material-symbols-outlined text-[24px]"
@@ -629,7 +630,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       />
                       <div
                         className="h-12 w-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all"
-                        style={{ backgroundColor: `${role.color}20` }}
+                        style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
                       >
                         <span
                           className="material-symbols-outlined text-[24px]"
@@ -676,7 +677,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 <button
                   type="button"
                   onClick={() =>
-                    router.push(hasExistingRoles ? "/creator-dashboard" : "/")
+                    router.push(
+                      hasExistingRoles ? "/creator-dashboard" : takeReturnTo(),
+                    )
                   }
                   className="sm:ml-auto py-3 px-6 rounded-xl border border-white/10 text-white/70 text-sm font-bold hover:bg-white/5 hover:text-white transition-colors"
                 >

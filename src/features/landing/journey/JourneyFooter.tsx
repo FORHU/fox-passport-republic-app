@@ -4,7 +4,8 @@ const COLUMNS = [
   {
     title: "Discover",
     links: [
-      ["Search", "/search"],
+      ["Find events", "/packages"],
+      ["Find Foxers", "/search"],
       ["Categories", "/categories"],
       ["Map", "/venues/map"],
       ["Republic feed", "/republic"],
@@ -13,10 +14,11 @@ const COLUMNS = [
   {
     title: "Become a Foxer",
     links: [
-      ["See the roles", "/onboarding"],
-      ["Venue Foxer", "/venue-foxer/apply"],
-      ["Event Foxer", "/creator-dashboard/apply"],
-      ["Other roles", "/foxer/apply"],
+      // Public pages only: the apply routes need sign-in, so a signed-out
+      // visitor was bounced. The role docs ask them to sign in at Apply.
+      ["See the roles", "#earn"],
+      ["Event Foxer", "/earn/event"],
+      ["Venue Foxer", "/earn/venue"],
     ],
   },
   {
@@ -31,19 +33,20 @@ const COLUMNS = [
 
 export default function JourneyFooter() {
   return (
-    <footer className="bg-canvas px-5 pb-28 pt-14 sm:px-10 sm:pb-10">
-      <div className="mx-auto grid max-w-6xl gap-10 border-t border-white/15 pt-10 sm:grid-cols-[1.4fr_repeat(3,1fr)]">
-        <div>
+    // The drawing set's last title block: the cells share hairlines, not gaps.
+    <footer className="bg-canvas px-5 pb-10 sm:px-10">
+      <div className="mx-auto grid max-w-6xl gap-px overflow-hidden rounded-2xl border border-white/15 bg-white/15 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="bg-canvas p-6">
           <p className="font-landing-display text-3xl text-white">
             FoxPassport
           </p>
-          <p className="mt-3 max-w-xs text-sm text-white/55">
+          <p className="mt-3 max-w-xs text-sm text-white/70">
             Book the venue, the gear and the people for any event, anywhere.
           </p>
         </div>
         {COLUMNS.map((c) => (
-          <div key={c.title}>
-            <p className="font-landing-mono mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white/65">
+          <div key={c.title} className="bg-canvas p-6">
+            <p className="font-landing-mono mb-3 text-xs font-bold uppercase tracking-[0.12em] text-white/70">
               {c.title}
             </p>
             <ul className="space-y-2 text-sm font-semibold">
@@ -51,7 +54,7 @@ export default function JourneyFooter() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-white/75 transition-colors hover:text-white"
+                    className="text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
                   >
                     {label}
                   </Link>
@@ -61,7 +64,7 @@ export default function JourneyFooter() {
           </div>
         ))}
       </div>
-      <p className="font-landing-mono mx-auto mt-10 max-w-6xl text-[11px] uppercase tracking-[0.2em] text-white/55">
+      <p className="font-landing-mono mx-auto mt-6 max-w-6xl text-xs uppercase tracking-[0.12em] text-white/70">
         © {new Date().getFullYear()} FoxPassport, Inc.
       </p>
     </footer>

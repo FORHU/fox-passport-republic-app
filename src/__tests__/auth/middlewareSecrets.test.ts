@@ -45,20 +45,17 @@ function sourceFiles(dir: string, acc: string[] = []): string[] {
 
 describe("the frontend holds no backend signing key", () => {
   it("proxy.ts does not read ACCESS_TOKEN_SECRET", () => {
-    expect(read("proxy.ts")).not.toMatch(/ACCESS_TOKEN_SECRET/);
+    expect(read("src/proxy.ts")).not.toMatch(/ACCESS_TOKEN_SECRET/);
   });
 
   it("proxy.ts does not verify the token itself", () => {
-    const middleware = read("proxy.ts");
+    const middleware = read("src/proxy.ts");
     expect(middleware).not.toMatch(/jwtVerify/);
     expect(middleware).not.toMatch(/from "jose"/);
   });
 
   it("no source file anywhere reads it", () => {
-    const offenders = [
-      join(root, "proxy.ts"),
-      ...sourceFiles(join(root, "src")),
-    ]
+    const offenders = sourceFiles(join(root, "src"))
       .filter((file) =>
         stripComments(readFileSync(file, "utf-8")).includes(
           "ACCESS_TOKEN_SECRET",
@@ -79,18 +76,27 @@ describe("the frontend holds no backend signing key", () => {
 });
 
 describe("what middleware still does", () => {
-  const middleware = read("proxy.ts");
+  const middleware = read("src/proxy.ts");
 
-  it("gates on the presence of the session cookie", () => {
-    expect(middleware).toMatch(/cookies\.get\(TOKEN_COOKIE\)/);
+  it("gates on the presence of a session cookie", () => {
+    expect(middleware).toMatch(/cookies\.get\(name\)/);
     expect(middleware).toMatch(/redirectToLogin/);
   });
 
-  it("reads the same cookie name the login flow writes", () => {
-    const authActions = read("src/shared/lib/server/auth-actions.ts");
-    const name = middleware.match(/const TOKEN_COOKIE = "([^"]+)"/)?.[1];
-    expect(name, "middleware no longer names a cookie").toBeTruthy();
-    expect(authActions).toContain(`"${name}"`);
+  // The guard once checked a different list than /api/proxy and bounced every
+  // Better Auth user off every protected route on refresh. Every place that
+  // asks "is there a session?" now reads the one list, and none names a cookie
+  // of its own.
+  it.each([
+    "src/proxy.ts",
+    "src/app/api/proxy/[...path]/route.ts",
+    "src/shared/lib/server/data.ts",
+    "src/shared/lib/server/home-redirect.ts",
+    "src/shared/lib/server/auth-actions.ts",
+  ])("%s reads the shared session-cookie list", (file) => {
+    const source = read(file);
+    expect(source).toContain('from "@/shared/auth/session-cookies"');
+    expect(source).not.toMatch(/session_token"|"fox_token"/);
   });
 });
 
@@ -103,7 +109,7 @@ describe("what middleware still does", () => {
  * adding one to `PROTECTED_ROUTES` without guarding it fails this.
  */
 describe("every protected route tree guards itself", () => {
-  const middleware = read("proxy.ts");
+  const middleware = read("src/proxy.ts");
   const routes = (
     middleware.match(/const PROTECTED_ROUTES = \[([\s\S]*?)\]/)?.[1] ?? ""
   )
@@ -112,6 +118,10 @@ describe("every protected route tree guards itself", () => {
     .filter(Boolean);
 
   const GUARDS = /requireAuth|requireAdmin|requireHost|RequireAuth/;
+
+  // Pages inside a protected tree that are public by decision, each matched
+  // by an exception in proxy.ts (and pinned by proxyPublicProfiles.test.ts).
+  const PUBLIC_PAGES = [join("user", "[id]", "page.tsx")];
 
   it("reads the route list out of the middleware", () => {
     expect(routes.length).toBeGreaterThan(0);
@@ -141,9 +151,12 @@ describe("every protected route tree guards itself", () => {
     }
     if (treeGuarded) return;
 
-    // No tree-level guard, so every page has to carry its own.
+    // No tree-level guard, so every page has to carry its own - except the
+    // ones public on purpose, which proxy.ts lets through as well.
     const unguarded = pages.filter(
-      (file) => !GUARDS.test(stripComments(readFileSync(file, "utf-8"))),
+      (file) =>
+        !PUBLIC_PAGES.some((page) => file.endsWith(page)) &&
+        !GUARDS.test(stripComments(readFileSync(file, "utf-8"))),
     );
     expect(
       unguarded,

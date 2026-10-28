@@ -1,14 +1,32 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { assetUrl } from "@/shared/lib/assets";
+
+// openGraph and twitter replace the layout's whole objects rather than merging
+// into them, so the image and url are repeated here.
+const SHARE_IMAGE = assetUrl("foxonlylogo.png");
 
 export const metadata: Metadata = {
   title: { absolute: "FoxPassport — Book any event, anywhere" },
   description:
     "Book the venue, the gear and the crew for any event: concerts, weddings, festivals and private parties. Search by event type, city and date.",
+  // "/" also for `/?q=…` searches, so they aren't indexed as separate pages.
+  alternates: { canonical: "/" },
   openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "FoxPassport",
     title: "FoxPassport — Book any event, anywhere",
     description:
       "Book the venue, the gear and the crew for any event, in one booking.",
+    images: [{ url: SHARE_IMAGE, width: 1200, height: 630, alt: "FoxPassport" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FoxPassport — Book any event, anywhere",
+    description:
+      "Book the venue, the gear and the crew for any event, in one booking.",
+    images: [SHARE_IMAGE],
   },
 };
 
@@ -17,7 +35,6 @@ export const metadata: Metadata = {
 // Server component: import leaves directly, not feature barrels, so the whole
 // client graph of each feature doesn't get pulled into this page's bundle.
 import JourneyLanding from "@/features/landing/journey/JourneyLanding";
-import WelcomeGuide from "@/features/onboarding/components/WelcomeGuide";
 
 // --- Search Results Components ---
 import Link from "next/link";
@@ -42,6 +59,8 @@ import {
   getVenues,
 } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
+import { getSignedInRedirect } from "@/shared/lib/server/home-redirect";
+import { redirect } from "next/navigation";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
 
@@ -177,14 +196,19 @@ async function HomeContent({ searchParams }: HomePageProps) {
   ]);
 
   return (
+    // No WelcomeGuide here: a modal over the first visit hid the page before it
+    // had said anything, and repeated what the page itself shows.
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <WelcomeGuide />
       <JourneyLanding />
     </HydrationBoundary>
   );
 }
 
-export default function Home({ searchParams }: HomePageProps) {
+export default async function Home({ searchParams }: HomePageProps) {
+  // This page is the public landing. Signed-in visitors are sent into the app.
+  const destination = await getSignedInRedirect(await searchParams);
+  if (destination) redirect(destination);
+
   return (
     <>
       <Suspense fallback={null}>
@@ -192,11 +216,9 @@ export default function Home({ searchParams }: HomePageProps) {
         <FacebookAuthErrorToast />
       </Suspense>
       <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            Loading...
-          </div>
-        }
+        // The landing's own canvas colour, so there is no flash of plain text
+        // before the hero.
+        fallback={<div aria-busy="true" className="min-h-screen bg-canvas" />}
       >
         <HomeContent searchParams={searchParams} />
       </Suspense>

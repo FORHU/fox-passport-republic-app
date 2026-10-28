@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { useUIStore } from "@/shared/store/useUIStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useLogout } from "@/shared/auth/useLogout";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 import { hasPermission, type Permission } from "@/shared/lib/permissions";
 
@@ -36,6 +38,13 @@ const NAV_ITEMS = [
     icon: "event",
     id: "events",
     section: "Manage",
+    permission: "queue:read",
+  },
+  {
+    // Ended with nobody checked in; an admin settles each booking.
+    label: "Needs review",
+    icon: "fact_check",
+    id: "needs-review",
     permission: "queue:read",
   },
   {
@@ -124,6 +133,20 @@ export const AdminSidebar: React.FC = () => {
   const { sidebarOpen, setSidebarOpen, activeAdminTab, setActiveAdminTab } =
     useUIStore();
   const user = useAuthStore((s) => s.user);
+  const logout = useLogout();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // The same sign-out as the site's user menu: session cookies, the auth
+  // store, cached queries and per-account client state all go with it.
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    setSidebarOpen(false);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   const navItems = NAV_ITEMS.filter((item) =>
     hasPermission(user, item.permission),
@@ -209,6 +232,31 @@ export const AdminSidebar: React.FC = () => {
             <span className="ml-auto text-[9px] font-bold text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full shrink-0">
               Admin
             </span>
+          </div>
+
+          {/* Without these the only ways out were the logo or the address bar. */}
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Link
+              href="/"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-white/5 text-xs font-bold text-text-muted hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_back
+              </span>
+              Back to site
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-white/5 text-xs font-bold text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-default"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                logout
+              </span>
+              {loggingOut ? "Logging out…" : "Log out"}
+            </button>
           </div>
         </div>
       </aside>

@@ -105,7 +105,7 @@ export default function MobileCreatorBottomNav() {
               className="material-symbols-outlined"
               style={{
                 fontSize: 21,
-                color: active ? "#ccff00" : "rgba(255,255,255,0.35)",
+                color: active ? "#C4E85A" : "rgba(255,255,255,0.35)",
                 fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0",
               }}
             >
@@ -117,7 +117,7 @@ export default function MobileCreatorBottomNav() {
                 fontWeight: 700,
                 letterSpacing: "0.04em",
                 lineHeight: 1,
-                color: active ? "#ccff00" : "rgba(255,255,255,0.35)",
+                color: active ? "#C4E85A" : "rgba(255,255,255,0.35)",
               }}
             >
               {tab.label}

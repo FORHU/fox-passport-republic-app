@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Search, X, Loader2, Globe2, MapPin } from "lucide-react";
 import { getEffectiveMapboxToken } from "@/shared/lib/mapbox";
+import { mapboxGeocode } from "@/shared/lib/geocoding";
 
 export interface LocationSearchResult {
   name: string;
@@ -71,15 +72,13 @@ export function LocationSearchControl({
       abortRef.current = controller;
 
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          trimmed,
-        )}.json?types=country,place&limit=8&access_token=${token}`;
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) throw new Error("Geocoding request failed");
-        const data = await res.json();
-        const features = Array.isArray(data.features) ? data.features : [];
+        const features = await mapboxGeocode(trimmed, {
+          types: "country,place",
+          limit: 8,
+          signal: controller.signal,
+        });
         setResults(
-          features.map((f: any) => ({
+          features.map((f) => ({
             name: f.text,
             placeName: f.place_name,
             center: f.center as [number, number],

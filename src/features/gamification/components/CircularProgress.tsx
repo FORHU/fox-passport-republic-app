@@ -57,7 +57,7 @@ export default function CircularProgress({
           strokeLinecap="round"
           className="transition-all duration-1000 ease-out"
           style={{
-            filter: `drop-shadow(0 0 8px ${color}40)`,
+            filter: "none",
           }}
         />
       </svg>

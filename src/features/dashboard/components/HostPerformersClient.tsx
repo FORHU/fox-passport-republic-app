@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardHeader,
   PerformersSection,
 } from "@/features/dashboard/components";
 import {
-  STATUS_OPTIONS,
+  FILTER_STATUS_OPTIONS,
   type ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
@@ -38,7 +38,11 @@ export default function HostPerformersClient({
 }: HostPerformersClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [status, setStatus] = useState<"all" | string>("all");
+  // The Studio's "My Drafts" links here with ?status=draft.
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"all" | string>(
+    () => searchParams.get("status") ?? "all",
+  );
   const [services, setServices] = useState<ServiceItem[]>(initialServices);
 
   const filteredServices = useMemo(() => {
@@ -74,7 +78,7 @@ export default function HostPerformersClient({
       className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
-          "radial-gradient(circle at 15% 50%, rgba(245,158,11,0.08) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(124,58,237,0.08) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(245,158,11,0.04) 0%, transparent 50%), #02040a",
+          "radial-gradient(circle at 15% 50%, rgba(217,154,38,0.08) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(92,98,214,0.08) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(217,154,38,0.04) 0%, transparent 50%), var(--canvas)",
         backgroundAttachment: "fixed",
       }}
     >
@@ -86,14 +90,14 @@ export default function HostPerformersClient({
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 mb-3">
-                <span className="flex h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-pulse" />
+                <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
                 <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
                   Performer Studio
                 </span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mb-1.5">
                 My Gigs &{" "}
-                <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="text-white">
                   Performances
                 </span>
               </h1>
@@ -108,7 +112,7 @@ export default function HostPerformersClient({
                 onClick={() =>
                   router.push("/foxer/create-listing?type=service")
                 }
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-amber-400 text-black text-sm font-bold hover:bg-amber-300 transition-colors shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-amber-400 text-black text-sm font-bold hover:bg-amber-300 transition-colors shrink-0"
               >
                 <span className="material-symbols-outlined text-[16px]">
                   add
@@ -134,7 +138,7 @@ export default function HostPerformersClient({
                   onChange={setStatus}
                   options={[
                     { value: "all", label: "All Status" },
-                    ...STATUS_OPTIONS.service.map((s) => ({
+                    ...FILTER_STATUS_OPTIONS.service.map((s) => ({
                       value: s,
                       label: s,
                     })),

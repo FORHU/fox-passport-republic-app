@@ -15,12 +15,12 @@ function getStampMeta(title: string): StampMeta {
   if (t.includes("wedding"))
     return {
       icon: "💍",
-      color: "#ec4899",
+      color: "var(--periwinkle)",
       label: "CELEBRATION",
       shape: "circle",
     };
   if (t.includes("birthday") || t.includes("surprise") || t.includes("party"))
-    return { icon: "🎂", color: "#f59e0b", label: "FESTIVITY", shape: "rect" };
+    return { icon: "🎂", color: "var(--warning)", label: "FESTIVITY", shape: "rect" };
   if (
     t.includes("corporate") ||
     t.includes("summit") ||
@@ -28,16 +28,16 @@ function getStampMeta(title: string): StampMeta {
     t.includes("startup") ||
     t.includes("acme")
   )
-    return { icon: "🏢", color: "#3b82f6", label: "BUSINESS", shape: "rect" };
+    return { icon: "🏢", color: "var(--periwinkle)", label: "BUSINESS", shape: "rect" };
   if (
     t.includes("social") ||
     t.includes("rooftop") ||
     t.includes("festival") ||
     t.includes("music")
   )
-    return { icon: "🎊", color: "#10b981", label: "SOCIAL", shape: "circle" };
+    return { icon: "🎊", color: "var(--accent-text)", label: "SOCIAL", shape: "circle" };
   if (t.includes("concert") || t.includes("band") || t.includes("live"))
-    return { icon: "🎵", color: "#8b5cf6", label: "MUSIC", shape: "circle" };
+    return { icon: "🎵", color: "var(--periwinkle)", label: "MUSIC", shape: "circle" };
   return { icon: "⭐", color: "var(--accent-text)", label: "EVENT", shape: "rect" };
 }
 

@@ -1,99 +1,42 @@
 "use client";
 
 import api from "@/shared/lib/axios";
+import { authClient } from "@/shared/auth/auth-client";
 import type { User } from "@/shared/auth/types";
 
 /**
- * Session calls that need the API's cookies to reach the browser.
- *
- * These were Server Actions. A Server Action runs on the Next server and its
- * fetch to the API receives the `Set-Cookie` headers there - the browser never
- * sees them - so each action had to re-compose the cookies itself from the JSON
- * body, restating names, flags and a lifetime the API owns.
- *
- * Going through the proxy instead means the API's own headers are relayed the
- * whole way. Nothing here reads or writes a cookie; the tokens stay as
- * unreachable from this file as they are from any other client module.
+ * Session calls. Sessions are Better Auth's (docs/BETTER-AUTH-CONSOLIDATION.md
+ * in the API repo): it sets its own cookie, so nothing here reads or writes
+ * one, and there is no token pair to rotate.
  */
 
-interface RefreshResponse {
-  user?: User;
-}
-
 /**
- * Trades the current refresh token for a new pair and returns the profile that
- * comes back with it. Used to pick up a role granted mid-session.
- *
- * No argument: the refresh token is httpOnly and unreadable here. The proxy
- * holds it and fills it in - see the explicit-refresh branch in its handler.
+ * The signed-in user as the API sees them right now, permissions included.
+ * Better Auth reads the user fresh on every request, so this is also how a
+ * role granted mid-session is picked up. `null` when signed out.
  */
 export async function refreshSession(): Promise<User | null> {
   try {
-    const { data } = await api.post<RefreshResponse>("/auth/refresh-token");
-    return data?.user ?? null;
+    const { data } = await api.get("/profile");
+    return ((data?.data ?? data) as User) || null;
   } catch {
-    // A dead or already-rotated token answers 401. The caller treats that as
-    // "could not sync" rather than ending the session, because the access
-    // token in hand may still be perfectly good.
     return null;
   }
 }
 
-interface GoogleExchangeResponse {
-  data?: {
-    user?: User;
-    isNewUser?: boolean;
-  };
-}
+export type SocialProvider = "google" | "facebook";
 
 /**
- * Redeems the opaque single-use code the API put on the redirect back here.
- *
- * The code is worthless to anyone who intercepts it a minute later, which is
- * why it - and not the tokens - is what travels in the URL.
+ * Sends the browser to Google or Facebook through Better Auth. It comes back to
+ * `/auth/<provider>/callback`, with `?new=1` for a first sign-in and
+ * `?error=...` if it failed — the session cookie is already set by then.
  */
-export async function completeGoogleAuth(
-  exchangeCode: string,
-): Promise<{ user: User; isNewUser: boolean } | null> {
-  try {
-    const { data } = await api.post<GoogleExchangeResponse>(
-      "/auth/google/exchange",
-      { code: exchangeCode },
-    );
-
-    const session = data?.data;
-    if (!session?.user) return null;
-
-    return { user: session.user, isNewUser: Boolean(session.isNewUser) };
-  } catch {
-    return null;
-  }
-}
-
-interface FacebookExchangeResponse {
-  data?: {
-    user?: User;
-    isNewUser?: boolean;
-  };
-}
-
-/**
- * Redeems the opaque single-use code the API put on the Facebook redirect.
- */
-export async function completeFacebookAuth(
-  exchangeCode: string,
-): Promise<{ user: User; isNewUser: boolean } | null> {
-  try {
-    const { data } = await api.post<FacebookExchangeResponse>(
-      "/auth/facebook/exchange",
-      { code: exchangeCode },
-    );
-
-    const session = data?.data;
-    if (!session?.user) return null;
-
-    return { user: session.user, isNewUser: Boolean(session.isNewUser) };
-  } catch {
-    return null;
-  }
+export async function startSocialSignIn(provider: SocialProvider) {
+  const back = `${window.location.origin}/auth/${provider}/callback`;
+  await authClient.signIn.social({
+    provider,
+    callbackURL: back,
+    newUserCallbackURL: `${back}?new=1`,
+    errorCallbackURL: back,
+  });
 }

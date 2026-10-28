@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Notifications | Fox Passport Republic",
+  title: "Notifications",
   description: "View your in-app notifications.",
 };
 

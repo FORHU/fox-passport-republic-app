@@ -8,7 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import { Badge } from "@/shared/components/ui/badge";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 export default function RepublicHeader() {
   const { isAuthenticated, openLogin } = useAuthStore();
@@ -31,7 +31,7 @@ export default function RepublicHeader() {
         >
           <div className="flex h-9 w-9 items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shrink-0">
             <Image
-              src={assetUrl("foxonlylogo.png")}
+              src={LOGO_SRC}
               alt="FoxPassport Logo"
               width={36}
               height={36}
@@ -62,7 +62,7 @@ export default function RepublicHeader() {
               href={tab.href}
               className={
                 active
-                  ? "px-4 py-1.5 rounded-full text-xs font-black text-black bg-lime-400 shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all"
+                  ? "px-4 py-1.5 rounded-full text-xs font-black text-black bg-lime-400 transition-all"
                   : "px-4 py-1.5 rounded-full text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-all"
               }
             >

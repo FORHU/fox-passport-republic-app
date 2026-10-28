@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Notification } from "../types/notification";
+import { onAccountChange } from "@/shared/auth/useAuthStore";
 
 interface NotificationState {
   notifications: Notification[];
@@ -49,3 +50,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       unreadCount: 0,
     })),
 }));
+
+onAccountChange(() =>
+  useNotificationStore.setState({ notifications: [], unreadCount: 0 }),
+);

@@ -104,7 +104,7 @@ export default function WaitlistButton({
     <button
       onClick={handleJoin}
       disabled={joinMutation.isPending}
-      className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
     >
       <span className="relative z-10 flex items-center justify-center gap-2">
         {joinMutation.isPending ? (

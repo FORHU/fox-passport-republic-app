@@ -3,7 +3,7 @@ import InvestorApplicationClient from "@/features/role-application/components/In
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Apply to be a Partner Foxer | FoxPassport",
+  title: "Apply to be a Partner Foxer",
   description:
     "Apply to become an authorized Investor (Partner Foxer) on FoxPassport.",
 };

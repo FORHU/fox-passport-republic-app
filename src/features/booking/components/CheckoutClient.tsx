@@ -17,7 +17,7 @@ import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { smartBack } from "@/shared/lib/navigation";
 import { toast } from "sonner";
 import { formatCurrency } from "@/shared/lib/currency";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -112,8 +112,8 @@ export default function CheckoutClient() {
         appearance: {
           theme: "night" as const,
           variables: {
-            colorPrimary: "#ccff00",
-            colorBackground: "#0d0f1a",
+            colorPrimary: "#C4E85A",
+            colorBackground: "#14161B",
             colorText: "#ffffff",
           },
         },
@@ -131,7 +131,7 @@ export default function CheckoutClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -152,12 +152,12 @@ export default function CheckoutClient() {
               </Link>
               <Link
                 href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
               >
                 Bookings
               </Link>
               <Link
-                href="/passport"
+                href="/republic"
                 className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
               >
                 Community
@@ -252,7 +252,7 @@ export default function CheckoutClient() {
                 </Link>
                 <div className="w-8 h-px bg-white/10"></div>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold shadow-[0_0_10px_#ccff00]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold">
                     2
                   </span>
                   <span className="text-sm font-bold text-white">Pay</span>

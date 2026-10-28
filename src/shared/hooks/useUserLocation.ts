@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getEffectiveMapboxToken } from "@/shared/lib/mapbox";
+import { mapboxGeocode } from "@/shared/lib/geocoding";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export interface UserLocationState {
@@ -78,10 +79,11 @@ export function useUserLocation(): UserLocationState {
     abortControllerRef.current = controller;
 
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=country,place,region&access_token=${token}`;
-      const res = await fetch(url, { signal: controller.signal });
-      if (!res.ok) throw new Error("Geocoding failed");
-      const data = await res.json();
+      const features = await mapboxGeocode([lng, lat], {
+        types: "country,place,region",
+        signal: controller.signal,
+      });
+      if (!features.length) throw new Error("Geocoding failed");
 
       if (!isMountedRef.current) return;
 
@@ -90,8 +92,8 @@ export function useUserLocation(): UserLocationState {
       let detectedCity = "";
       let detectedRegion = "";
 
-      if (data.features && data.features.length > 0) {
-        for (const feature of data.features) {
+      if (features.length > 0) {
+        for (const feature of features) {
           if (feature.place_type.includes("country")) {
             detectedCountry = feature.text;
             detectedCode = (

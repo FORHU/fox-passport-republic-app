@@ -6,7 +6,8 @@ import PageLoader from "@/shared/components/ui/PageLoader";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { completeFacebookAuth } from "@/shared/auth/session-api";
+import { refreshSession } from "@/shared/auth/session-api";
+import { takeReturnTo } from "@/shared/auth/returnTo";
 
 function FacebookCallbackContent() {
   const router = useRouter();
@@ -18,22 +19,25 @@ function FacebookCallbackContent() {
     if (ranOnce.current) return;
     ranOnce.current = true;
 
-    const exchangeCode = searchParams.get("xc");
-
-    if (!exchangeCode) {
-      toast.error("Facebook sign-in failed. Please try again.");
+    // Better Auth has already set the session cookie by the time it sends the
+    // browser here; `new=1` only steers a first sign-in to onboarding.
+    // The code (Better Auth's `?error=`, or `no_session` when the session
+    // didn't stick) is shown so a failure can be reported, not just retried.
+    const fail = (code: string) => {
+      console.error("[facebook-callback] sign-in failed:", code);
+      toast.error(
+        code === "email_not_found"
+          ? "Facebook didn't share an email address. Add a confirmed email to your Facebook account, or sign up with email instead."
+          : `Facebook sign-in failed (${code}). Please try again.`,
+      );
       router.replace("/");
-      return;
-    }
+    };
+    const error = searchParams.get("error");
+    if (error) return fail(error);
 
-    completeFacebookAuth(exchangeCode).then((session) => {
-      if (!session) {
-        toast.error("Facebook sign-in failed. Please try again.");
-        router.replace("/");
-        return;
-      }
-
-      const { user, isNewUser } = session;
+    const isNewUser = searchParams.get("new") === "1";
+    refreshSession().then((user) => {
+      if (!user) return fail("no_session");
 
       login({ user });
       toast.success(`Welcome${isNewUser ? "" : " back"}!`);
@@ -42,7 +46,7 @@ function FacebookCallbackContent() {
         localStorage.setItem("fp_new_user", "1");
         window.location.href = "/onboarding";
       } else {
-        window.location.href = "/";
+        window.location.href = takeReturnTo();
       }
     });
   }, [searchParams, router, login]);

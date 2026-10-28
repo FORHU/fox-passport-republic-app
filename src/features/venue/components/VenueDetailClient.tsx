@@ -20,6 +20,7 @@ import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore"
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
 
@@ -61,9 +62,13 @@ export default function VenueDetailClient({
   const venuePrice = Number((venue as any).price || 0);
 
   const { user } = useAuthStore();
+  // Signed out, sign in and come back here: an investor then gets the modal,
+  // anyone else the Partner Foxer application.
   const handleProposePartnership = () => {
-    if (!user?.roleType?.includes("investor")) {
-      router.push("/onboarding/partner");
+    if (!user) {
+      signInThen(`/venues/${venue.id}`);
+    } else if (!user.roleType?.includes("investor")) {
+      router.push("/foxer/apply-investor");
     } else {
       onProposePartnership?.();
     }
@@ -87,9 +92,10 @@ export default function VenueDetailClient({
   // Messages go to the venue's Shared Inbox, answered by its Mayor and
   // Organizers together (CONTEXT.md) rather than to the Mayor in person.
   // Composed at the app layer: this feature doesn't import `messages`.
+  // Signed out, sign in and come back to this venue.
   const handleContactOwner = useCallback(() => {
     if (!user) {
-      router.push("/auth/login");
+      signInThen(`/venues/${venue.id}`);
       return;
     }
     if (!onContactVenue) {
@@ -97,15 +103,15 @@ export default function VenueDetailClient({
       return;
     }
     onContactVenue();
-  }, [user, onContactVenue, router]);
+  }, [user, onContactVenue, venue.id]);
 
   const handleReportListing = useCallback(() => {
     if (!user) {
-      router.push("/auth/login");
+      signInThen(`/venues/${venue.id}`);
       return;
     }
     setIsReportOpen(true);
-  }, [user, router]);
+  }, [user, venue.id]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -166,7 +172,7 @@ export default function VenueDetailClient({
           <button
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
             className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm"
-            style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
+            style={{ boxShadow: "0 4px 16px rgba(196,232,90,0.35)" }}
           >
             Book Now
           </button>
@@ -520,7 +526,7 @@ export default function VenueDetailClient({
           <button
             type="button"
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
-            className="px-6 py-3 rounded-xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all active:scale-95"
+            className="px-6 py-3 rounded-xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 transition-all active:scale-95"
           >
             Book Now
           </button>

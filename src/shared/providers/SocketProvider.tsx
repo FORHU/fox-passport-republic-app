@@ -13,6 +13,10 @@ import {
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // Reconnect when the account changes, not only on sign-in/out: signing in as
+  // someone else without logging out keeps `isAuthenticated` true, and the
+  // socket would go on receiving the previous account's events.
+  const userId = useAuthStore((state) => state.user?.id);
   const queryClient = useQueryClient();
 
   /**
@@ -107,7 +111,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.off(SOCKET_EVENTS.MESSAGE_PINNED);
       disconnectSocket();
     };
-  }, [isAuthenticated, queryClient, fetchTicket]);
+  }, [isAuthenticated, userId, queryClient, fetchTicket]);
 
   return <>{children}</>;
 }

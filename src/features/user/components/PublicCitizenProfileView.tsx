@@ -16,6 +16,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { Money } from "@/shared/components/ui/Money";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { smartBack } from "@/shared/lib/navigation";
 
 export interface PublicCitizenProfileViewProps {
   followCounts?: { followers: number; following: number };
@@ -50,12 +51,12 @@ const RARITY_COLORS: Record<
   legendary: {
     badge: "bg-gradient-to-r from-amber-500/20 to-yellow-500/20",
     text: "text-amber-300",
-    border: "border-amber-400/50 shadow-[0_0_15px_rgba(245,158,11,0.25)]",
+    border: "border-amber-400/50",
   },
   epic: {
     badge: "bg-purple-500/20",
     text: "text-purple-300",
-    border: "border-purple-400/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]",
+    border: "border-purple-400/50",
   },
   rare: {
     badge: "bg-sky-500/20",
@@ -166,7 +167,7 @@ export default function PublicCitizenProfileView({
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => router.back()}
+            onClick={() => smartBack(router, "/republic")}
             className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">
@@ -187,7 +188,7 @@ export default function PublicCitizenProfileView({
         <div
           className={`relative overflow-hidden rounded-3xl p-6 sm:p-8 border backdrop-blur-xl ${
             isPartner
-              ? "bg-gradient-to-br from-amber-950/20 via-zinc-950 to-zinc-900/80 border-amber-500/30 shadow-[0_0_40px_rgba(245,158,11,0.08)]"
+              ? "bg-gradient-to-br from-amber-950/20 via-zinc-950 to-zinc-900/80 border-amber-500/30"
               : "bg-zinc-950/80 border-zinc-800/80 shadow-2xl"
           }`}
         >
@@ -200,8 +201,8 @@ export default function PublicCitizenProfileView({
               <div
                 className={`w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden p-1 ${
                   isPartner
-                    ? "bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700 shadow-[0_0_25px_rgba(245,158,11,0.3)]"
-                    : "bg-gradient-to-b from-lime-400 to-emerald-600 shadow-[0_0_20px_rgba(163,230,53,0.2)]"
+                    ? "bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700"
+                    : "bg-gradient-to-b from-lime-400 to-emerald-600"
                 }`}
               >
                 <img
@@ -523,21 +524,21 @@ export default function PublicCitizenProfileView({
                     return (
                       <div
                         key={stamp.id}
-                        className="group relative rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-amber-500/50 p-4 transition-all hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] flex flex-col"
+                        className="group relative rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-amber-500/50 p-4 transition-all flex flex-col"
                       >
                         <div className="flex items-center gap-3 mb-3">
                           {/* Circular Stamp Seal */}
                           <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400/60 p-0.5 bg-zinc-900 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
                             <img
                               src={stampSeal}
-                              alt={stamp.venue?.name ?? stamp.eventName}
+                              alt={stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
                               className="w-full h-full object-cover rounded-full"
                             />
                           </div>
 
                           <div className="min-w-0 flex-1">
                             <h4 className="font-bold text-sm text-white truncate group-hover:text-amber-300 transition-colors">
-                              {stamp.venue?.name ?? stamp.eventName}
+                              {stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
                             </h4>
                             <p className="text-xs text-zinc-400 truncate">
                               {stamp.venue?.city ||
@@ -550,19 +551,25 @@ export default function PublicCitizenProfileView({
                           </div>
                         </div>
 
-                        <div className="mt-auto pt-2 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500">
-                          <span>{stamp.eventName}</span>
-                          <span>
-                            {new Date(stamp.eventDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
+                        {/* The event and its date come only on the person's
+                            own profile (see CitizenStamp). */}
+                        {(stamp.eventName || stamp.eventDate) && (
+                          <div className="mt-auto pt-2 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500">
+                            <span>{stamp.eventName}</span>
+                            {stamp.eventDate && (
+                              <span>
+                                {new Date(stamp.eventDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </span>
                             )}
-                          </span>
-                        </div>
+                          </div>
+                        )}
 
                         {stamp.venueId && (
                           <Link

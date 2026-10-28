@@ -2,7 +2,9 @@
 
 import React, { useRef } from "react";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
+import { toast } from "sonner";
 import { Money } from "@/shared/components/ui/Money";
+import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 interface ListingPreviewCardProps {
   activeType: ListingType;
@@ -43,10 +45,14 @@ export function ListingPreviewCard({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Cleared so picking the same file again after a rejection still fires.
+    e.target.value = "";
     if (file) {
-      // limit to 5MB
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image too large (max 5MB)");
+      // Caught here, not at Publish: the upload only takes these types, and
+      // `image/*` would also let through HEIC/AVIF photos it then refuses.
+      const problem = checkUploadFile(file, "image");
+      if (problem) {
+        toast.error(problem);
         return;
       }
       const reader = new FileReader();
@@ -62,7 +68,7 @@ export function ListingPreviewCard({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={UPLOAD_ACCEPT.image}
         className="hidden"
         onChange={handleFileChange}
       />
@@ -126,7 +132,7 @@ export function ListingPreviewCard({
         {/* Preview Card */}
         <div className="relative group w-[320px] mx-auto perspective-1000">
           {image && (
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-[2.2rem] blur opacity-25 group-hover:opacity-50 transition duration-500" />
+            <div className="absolute -inset-1 bg-transparent rounded-[2.2rem] blur opacity-25 group-hover:opacity-50 transition duration-500" />
           )}
           <div className="relative bg-surface-raised rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
             {/* Image Area */}
@@ -198,7 +204,7 @@ export function ListingPreviewCard({
                 <div
                   className={`h-6 w-6 rounded-full flex items-center justify-center ${
                     activeType === "inventory"
-                      ? "bg-primary/20 text-primary"
+                      ? "bg-primary/20 text-primary-glow"
                       : "bg-warning/20 text-warning"
                   }`}
                 >

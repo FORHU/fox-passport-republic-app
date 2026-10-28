@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
@@ -10,38 +10,38 @@ const CATEGORIES = [
   {
     label: "Weddings",
     icon: "diamond",
-    color: "#ec4899",
-    gradient: "rgba(236,72,153,0.2)",
+    color: "var(--color-white)",
+    gradient: "rgba(255,255,255,0.05)",
   },
   {
     label: "Corporate",
     icon: "business_center",
-    color: "#3b82f6",
-    gradient: "rgba(59,130,246,0.2)",
+    color: "var(--color-white)",
+    gradient: "rgba(255,255,255,0.05)",
   },
   {
     label: "Birthdays",
     icon: "cake",
-    color: "#f97316",
-    gradient: "rgba(249,115,22,0.2)",
+    color: "var(--color-white)",
+    gradient: "rgba(255,255,255,0.05)",
   },
   {
     label: "Social",
     icon: "people",
-    color: "#22c55e",
-    gradient: "rgba(34,197,94,0.2)",
+    color: "var(--color-white)",
+    gradient: "rgba(255,255,255,0.05)",
   },
   {
     label: "Nightlife",
     icon: "nightlife",
-    color: "#a855f7",
-    gradient: "rgba(168,85,247,0.2)",
+    color: "var(--color-white)",
+    gradient: "rgba(255,255,255,0.05)",
   },
   {
     label: "Outdoor",
     icon: "park",
-    color: "var(--accent-text)",
-    gradient: "rgba(204,255,0,0.15)",
+    color: "var(--color-white)",
+    gradient: "rgba(255,255,255,0.05)",
   },
 ];
 
@@ -80,7 +80,7 @@ export default function MobileCategoryGrid() {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
@@ -142,7 +142,7 @@ export default function MobileCategoryGrid() {
               height: 120,
               borderRadius: 20,
               overflow: "hidden",
-              background: `${STRIPE_BG}, #0e0f14`,
+              background: `${STRIPE_BG}, var(--canvas)`,
               border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               cursor: "pointer",
               textAlign: "left",

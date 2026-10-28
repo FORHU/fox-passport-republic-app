@@ -80,7 +80,7 @@ export function mapPaths(apiPaths: ApiPassportPath[]): PathProgress[] {
       requiredXP,
       totalXP: p.totalXP,
       label: getPathLabel(path, p.level),
-      color: PATH_COLORS[path] ?? "#ccff00",
+      color: PATH_COLORS[path] ?? "#C4E85A",
     };
   });
 }

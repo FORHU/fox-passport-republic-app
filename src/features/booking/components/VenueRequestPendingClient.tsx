@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { formatCurrency } from "@/shared/lib/currency";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 export default function VenueRequestPendingClient() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function VenueRequestPendingClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -53,7 +53,7 @@ export default function VenueRequestPendingClient() {
               </Link>
               <Link
                 href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
               >
                 Bookings
               </Link>
@@ -85,7 +85,7 @@ export default function VenueRequestPendingClient() {
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Hero */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-amber-500/20 border border-amber-500/40 shadow-[0_0_50px_rgba(245,158,11,0.3)] mb-6">
+            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-amber-500/20 border border-amber-500/40 mb-6">
               <span className="material-symbols-outlined text-5xl text-amber-400">
                 hourglass_top
               </span>
@@ -199,7 +199,7 @@ export default function VenueRequestPendingClient() {
               </Link>
               <Link
                 href="/"
-                className="flex-1 px-6 py-3.5 rounded-xl bg-accent text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 text-center flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3.5 rounded-xl bg-accent text-black font-bold text-sm transition-all active:scale-95 text-center flex items-center justify-center gap-2"
               >
                 Explore More Venues
                 <span className="material-symbols-outlined text-[18px]">

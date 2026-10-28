@@ -1,31 +1,25 @@
 import { create } from "zustand";
 import { User, LoginResponse } from "@/shared/auth/types";
 
-/**
- * Reads the `fox_user` cookie `setAuthCookies` sets alongside the httpOnly
- * token cookies. Non-httpOnly by design (see `setAuthCookies`), carrying
- * profile data and no token.
- *
- * The cookie exists for the server, not for this: `getUser` in
- * `shared/lib/server/auth.ts` parses it when the API is unreachable, and
- * localStorage is invisible from there. Here it is only the fallback — see
- * `initialize`.
- */
-function readFoxUserCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|; )fox_user=([^;]*)/);
-  if (!match) return null;
-  try {
-    return decodeURIComponent(match[1]);
-  } catch {
-    return null;
-  }
-}
-
 type AuthView =
   "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
 
 const PENDING_VERIFICATION_EMAIL_KEY = "fp_pending_verification_email";
+
+// Written by the old custom sign-in and never by anything now, but browsers
+// from that time still carry it, naming whoever signed in back then.
+const dropLegacyUserCookie = () => {
+  document.cookie = "fox_user=; path=/; max-age=0";
+};
+
+/** The package a signed-out visitor is reserving, shown beside the sign-up form. */
+export interface BookingSummary {
+  title: string;
+  image?: string;
+  place?: string;
+  date?: string;
+  price?: number;
+}
 
 interface AuthState {
   // State
@@ -37,11 +31,20 @@ interface AuthState {
   isOpen: boolean;
   view: AuthView;
   pendingEmail: string | null;
+  bookingSummary: BookingSummary | null;
+  /**
+   * Changes on every login and logout. A profile request that started under
+   * one session and answers under the next is the previous account's, and
+   * `fetchProfile` drops it rather than writing it into the store.
+   */
+  sessionEpoch: number;
 
   // Actions
   initialize: () => void;
   openLogin: () => void;
   openSignup: () => void;
+  /** Sign-up at the moment of booking: the same form, with the package beside it. */
+  openSignupFor: (summary: BookingSummary) => void;
   setView: (view: AuthView) => void;
   setPendingEmail: (email: string) => void;
   setPendingVerificationEmail: (email: string) => void;
@@ -68,29 +71,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   isOpen: false,
   view: "login",
   pendingEmail: null,
+  bookingSummary: null,
+  sessionEpoch: 0,
 
   initialize: () => {
     if (typeof window === "undefined") return;
 
     try {
-      // Tokens live in httpOnly cookies and are deliberately unreadable here.
-      // `fox_user` is profile display data only, so presence of a stored user
-      // is what rehydrates the session optimistically; the first proxied
-      // request settles whether the cookie is still valid.
-      //
-      // localStorage first, cookie second, because localStorage is the fresher
-      // of the two: `setUser` rewrites it on every profile fetch, while the
-      // `fox_user` cookie is only written at login and by `refreshUserSession`
-      // — the proxy's silent refresh does not touch it. Reading the cookie
-      // first served a stale name, avatar and `roleType` (which gates UI) on
-      // every reload until the next poll landed.
-      //
-      // The cookie remains the fallback for the case localStorage cannot
-      // cover: site storage cleared while cookies survive, e.g. by a privacy
-      // tool, where the session is still live and dropping to "logged out"
-      // would be wrong.
-      const storedUser =
-        localStorage.getItem("fox_user") ?? readFoxUserCookie();
+      // The session lives in an httpOnly cookie, deliberately unreadable here.
+      // `fox_user` in localStorage is profile display data only, so a stored
+      // user rehydrates the UI optimistically; the first proxied request
+      // settles whether the session is still valid.
+      const storedUser = localStorage.getItem("fox_user");
       const pendingVerificationEmail = localStorage.getItem(
         PENDING_VERIFICATION_EMAIL_KEY,
       );
@@ -119,6 +111,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   openLogin: () => set({ isOpen: true, view: "login" }),
   openSignup: () => set({ isOpen: true, view: "signup" }),
+  openSignupFor: (summary) =>
+    set({ isOpen: true, view: "signup", bookingSummary: summary }),
   setView: (view) => set({ view }),
   setPendingEmail: (email) => set({ pendingEmail: email }),
   setPendingVerificationEmail: (email) => {
@@ -129,7 +123,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     set({ pendingEmail: email });
   },
-  close: () => set({ isOpen: false }),
+  close: () => set({ isOpen: false, bookingSummary: null }),
   toggleView: () =>
     set((state) => ({
       view: state.view === "login" ? "signup" : "login",
@@ -137,7 +131,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setLoading: (loading) => set({ isLoading: loading }),
 
-  // `fox_user` holds profile data only. The token lives under `fox_token`;
+  // `fox_user` holds profile data only. The session is an httpOnly cookie;
   // duplicating it inside the user object just widened its exposure.
   setUser: (user) => {
     localStorage.setItem("fox_user", JSON.stringify(user));
@@ -151,27 +145,61 @@ export const useAuthStore = create<AuthState>((set) => ({
     // cookies by the `setAuthCookies` server action - putting copies here is
     // what previously handed the whole session to any XSS on the page.
     localStorage.setItem("fox_user", JSON.stringify(user));
+    dropLegacyUserCookie();
 
-    set({
+    set((state) => ({
       isAuthenticated: true,
       user,
       isOpen: false,
       isLoading: false,
-    });
+      bookingSummary: null,
+      sessionEpoch: state.sessionEpoch + 1,
+    }));
   },
 
   logout: () => {
     // Client state only. Cookies are the server action's job — call
     // `endSession` rather than this directly, so the two cannot drift.
     localStorage.removeItem("fox_user");
-    set({
+    dropLegacyUserCookie();
+    set((state) => ({
       isAuthenticated: false,
       user: null,
       accessToken: null,
       refreshToken: null,
-    });
+      sessionEpoch: state.sessionEpoch + 1,
+    }));
   },
 }));
+
+/**
+ * Runs `reset` whenever the signed-in account changes: someone else signing in
+ * without logging out first, a sign-out, or a stored profile replaced by the
+ * session's real user. Not on the first hydrate, so a reload keeps the user's
+ * own state. Stores holding one account's data reset themselves with this, so
+ * the next account never sees it (BUG-07).
+ */
+export function onAccountChange(reset: () => void) {
+  return useAuthStore.subscribe((state, prev) => {
+    const before = prev.user?.id;
+    if (before && state.user?.id !== before) reset();
+  });
+}
+
+// Per-account state kept in sessionStorage: the checkout and item-booking
+// stores (contact details, booking ids, Stripe client secrets) and the
+// investment wizard's draft. Removed by name, because a store whose module
+// hasn't loaded yet would otherwise rehydrate the previous account's copy.
+const ACCOUNT_SESSION_KEYS = [
+  "foxpassport-checkout",
+  "foxpassport-item-booking",
+  "foxpassport_draft_investment_wizard",
+];
+
+onAccountChange(() => {
+  if (typeof window === "undefined") return;
+  for (const key of ACCOUNT_SESSION_KEYS) sessionStorage.removeItem(key);
+});
 
 // --- SELECTORS (Hooks for clean usage) ---
 export const useAuthStatus = () =>

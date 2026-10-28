@@ -19,7 +19,7 @@ import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { formatCurrency } from "@/shared/lib/currency";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -135,8 +135,8 @@ export default function VenueCheckoutClient() {
         appearance: {
           theme: "night" as const,
           variables: {
-            colorPrimary: "#ccff00",
-            colorBackground: "#0d0f1a",
+            colorPrimary: "#C4E85A",
+            colorBackground: "#14161B",
             colorText: "#ffffff",
           },
         },
@@ -175,7 +175,7 @@ export default function VenueCheckoutClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -196,7 +196,7 @@ export default function VenueCheckoutClient() {
               </Link>
               <Link
                 href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
               >
                 Bookings
               </Link>
@@ -292,7 +292,7 @@ export default function VenueCheckoutClient() {
 
                     {paymentSuccess ? (
                       <div className="text-center py-8">
-                        <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-accent text-black font-bold shadow-[0_0_40px_rgba(204,255,0,0.3)] mb-6">
+                        <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-accent text-black font-bold mb-6">
                           <span className="material-symbols-outlined text-4xl">
                             check_circle
                           </span>
@@ -434,7 +434,7 @@ export default function VenueCheckoutClient() {
                           onClick={() => formRef.current?.submit()}
                           className="w-full rounded-2xl bg-accent py-4 px-6 text-black font-bold text-lg transition-all flex items-center justify-center gap-2
                                      disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none
-                                     enabled:hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] enabled:active:scale-95"
+                                     enabled:active:scale-95"
                         >
                           {loadingIntent ? (
                             <>
@@ -479,7 +479,7 @@ export default function VenueCheckoutClient() {
                       </Link>
                       <Link
                         href="/"
-                        className="px-8 py-4 rounded-xl bg-accent text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all flex items-center gap-2"
+                        className="px-8 py-4 rounded-xl bg-accent text-black font-bold text-sm transition-all flex items-center gap-2"
                       >
                         Return Home
                         <span className="material-symbols-outlined text-[18px]">

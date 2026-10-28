@@ -99,7 +99,7 @@ export const KPI_DATA = [
     icon: "video_camera_front",
     iconColor: "text-accent",
     barColor: "bg-accent",
-    glowColor: "#ccff00",
+    glowColor: "#C4E85A",
     barWidth: "0%",
   },
   {
@@ -111,7 +111,7 @@ export const KPI_DATA = [
     icon: "groups",
     iconColor: "text-purple-500",
     barColor: "bg-purple-500",
-    glowColor: "#a855f7",
+    glowColor: "#A3A8F5",
     barWidth: "0%",
   },
   {
@@ -123,7 +123,7 @@ export const KPI_DATA = [
     icon: "visibility",
     iconColor: "text-pink-500",
     barColor: "bg-pink-500",
-    glowColor: "#ec4899",
+    glowColor: "#A3A8F5",
     barWidth: "0%",
     trendType: "flat",
   },
@@ -134,7 +134,7 @@ export const KPI_DATA = [
     icon: "star",
     iconColor: "text-yellow-400",
     barColor: "bg-yellow-400",
-    glowColor: "#facc15",
+    glowColor: "#E8B54D",
     barWidth: "0%",
     isRating: true,
   },
@@ -146,6 +146,17 @@ export const STATUS_OPTIONS = {
   venue: ["draft", "pending", "available", "rejected", "archived"],
   inventory: ["available", "reserved", "unavailable"],
   service: ["active", "paused", "unavailable"],
+};
+
+/**
+ * What the Gear and Talent lists can be filtered by: the statuses an owner
+ * can set, plus the two a listing passes through before approval. Kept apart
+ * from STATUS_OPTIONS, which is also StatusBadge's "change status" menu and
+ * must not offer these.
+ */
+export const FILTER_STATUS_OPTIONS = {
+  inventory: ["draft", "pending", ...STATUS_OPTIONS.inventory],
+  service: ["draft", "pending", ...STATUS_OPTIONS.service],
 };
 
 export type StatusType = "event" | "venue" | "inventory" | "service";

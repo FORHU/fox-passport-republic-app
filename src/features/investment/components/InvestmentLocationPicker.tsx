@@ -14,6 +14,7 @@ import {
   setupMapboxFallback,
 } from "@/shared/lib/mapbox";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
+import { mapboxGeocode } from "@/shared/lib/geocoding";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 interface LocationData {
@@ -126,10 +127,9 @@ export default function InvestmentLocationPicker({
       geocodeAbortRef.current = controller;
 
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}`;
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) return;
-        const data = await res.json();
+        const features = await mapboxGeocode([lng, lat], {
+          signal: controller.signal,
+        });
 
         if (!isMountedRef.current || geocodeAbortRef.current !== controller)
           return;
@@ -139,9 +139,9 @@ export default function InvestmentLocationPicker({
         let state = "";
         let country = "";
 
-        if (data.features && data.features.length > 0) {
-          streetAddress = data.features[0].place_name;
-          for (const feat of data.features) {
+        if (features.length > 0) {
+          streetAddress = features[0].place_name;
+          for (const feat of features) {
             if (feat.place_type.includes("country")) {
               country = feat.text;
             } else if (feat.place_type.includes("region")) {
@@ -191,23 +191,18 @@ export default function InvestmentLocationPicker({
       searchAbortRef.current = controller;
 
       try {
-        const countryFilter = countryCode
-          ? `&country=${countryCode.toLowerCase()}`
-          : "";
-        const proximity =
-          value.lng != null && value.lat != null
-            ? `&proximity=${value.lng},${value.lat}`
-            : "";
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          query.trim(),
-        )}.json?access_token=${token}${countryFilter}${proximity}&limit=5`;
-
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) throw new Error("Search failed");
-        const data = await res.json();
+        const features = await mapboxGeocode(query.trim(), {
+          country: countryCode || undefined,
+          proximity:
+            value.lng != null && value.lat != null
+              ? [value.lng, value.lat]
+              : undefined,
+          limit: 5,
+          signal: controller.signal,
+        });
 
         if (isMountedRef.current && searchAbortRef.current === controller) {
-          setSuggestions(data.features || []);
+          setSuggestions(features);
         }
       } catch (err: unknown) {
         if ((err as Error)?.name === "AbortError") return;
@@ -302,7 +297,7 @@ export default function InvestmentLocationPicker({
       // Custom draggable gold pin for partner depot
       const pinEl = document.createElement("div");
       pinEl.className =
-        "w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 border-2 border-white shadow-[0_0_20px_rgba(245,158,11,0.6)] flex items-center justify-center text-black cursor-grab active:cursor-grabbing";
+        "w-8 h-8 rounded-full bg-accent border-2 border-white flex items-center justify-center text-black cursor-grab active:cursor-grabbing";
       pinEl.innerHTML = `<span class="material-symbols-outlined text-[18px]">inventory_2</span>`;
 
       const marker = new mapboxgl.Marker({

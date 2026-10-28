@@ -8,6 +8,7 @@ import {
 } from "@/shared/lib/server/data";
 import CategoryDetailClient from "@/features/category/components/CategoryDetailClient";
 import { assetUrl } from "@/shared/lib/assets";
+import { categoryLabel } from "@/shared/lib/categoryLabel";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   birthday: "from-lime-300 via-green-400 to-emerald-500",
@@ -34,11 +35,12 @@ export async function generateMetadata({
     };
   }
 
-  const name = category.name || "Experiences";
-  const title = `${name} Experiences`;
+  // The API's name is the stored value ("beach_resort"), not display text.
+  const name = categoryLabel(category.name) || "Event";
+  const title = `${name} experiences`;
   const description =
     category.tagline ||
-    `Explore ${name} events, venues, and experiences on FoxPassport.`;
+    `Explore ${name.toLowerCase()} events, venues, and experiences on FoxPassport.`;
 
   return {
     title,
@@ -83,7 +85,7 @@ export default async function CategoryDetailPage({
     ...category,
     title: category.name,
     tagline: category.tagline || "Explore experiences",
-    color: category.color || "#ccff00",
+    color: category.color || "#C4E85A",
     spots: category.spotLabel || "Explore",
     gradient:
       CATEGORY_GRADIENTS[category.name?.toLowerCase()] ||

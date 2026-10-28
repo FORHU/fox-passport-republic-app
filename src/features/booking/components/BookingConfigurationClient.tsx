@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -18,11 +18,27 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { Money } from "@/shared/components/ui/Money";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const NO_DATES: string[] = [];
 
-export default function BookingConfigurationClient() {
+/** Who "Ask the Event Foxer" talks to, about which package. */
+export interface AskEventFoxerTarget {
+  foxer: { id: string; name?: string | null; imgId?: string | null };
+  templateId: string;
+  templateName: string;
+}
+
+/**
+ * `renderAskEventFoxer` is the chat button for a full event. It is passed in
+ * from the app layer (`app/booking/config/_components`), since this feature
+ * may not import `messages` itself.
+ */
+export default function BookingConfigurationClient({
+  renderAskEventFoxer,
+}: {
+  renderAskEventFoxer?: (target: AskEventFoxerTarget) => ReactNode;
+} = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get("templateId");
@@ -78,6 +94,12 @@ export default function BookingConfigurationClient() {
   const currentAttendees = template?.currentAttendees ?? 0;
   const isFull =
     template?.maxAttendees != null && currentAttendees >= template.maxAttendees;
+  // Full is the Event Foxer's number, not the venue's: they can raise it in
+  // Event Studio, so a full event offers a chat with them next to the waitlist.
+  const eventFoxer =
+    template?.owner?.id && template.owner.id !== user?.id
+      ? template.owner
+      : null;
 
   // Collect all optional items from the template
   const optionalAssets: any[] = (template?.templateAssets ?? []).filter(
@@ -147,7 +169,7 @@ export default function BookingConfigurationClient() {
             >
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -168,12 +190,12 @@ export default function BookingConfigurationClient() {
               </Link>
               <Link
                 href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
               >
                 Bookings
               </Link>
               <Link
-                href="/passport"
+                href="/republic"
                 className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
               >
                 Community
@@ -267,7 +289,10 @@ export default function BookingConfigurationClient() {
                     </h3>
                     <p className="text-text-muted max-w-md">
                       All spots are currently filled. Join the waitlist to be
-                      notified when a spot opens up.
+                      notified when a spot opens up
+                      {eventFoxer
+                        ? ", or ask the Event Foxer whether they can make room."
+                        : "."}
                     </p>
                   </div>
                 </div>
@@ -435,12 +460,7 @@ export default function BookingConfigurationClient() {
                             "restaurant",
                             "camera",
                           ];
-                          const gradients = [
-                            "from-purple-500 to-indigo-600",
-                            "from-orange-400 to-red-500",
-                            "from-emerald-400 to-teal-500",
-                            "from-blue-400 to-cyan-500",
-                          ];
+                          const gradients = ["from-white/10 to-white/10"];
                           return (
                             <div
                               key={ts.id ?? i}
@@ -698,6 +718,12 @@ export default function BookingConfigurationClient() {
                           </p>
                         </div>
                         <WaitlistButton templateId={template.id} />
+                        {eventFoxer &&
+                          renderAskEventFoxer?.({
+                            foxer: eventFoxer,
+                            templateId: template.id,
+                            templateName: template.name || "Event",
+                          })}
                       </div>
                     ) : (
                       <>
@@ -781,7 +807,7 @@ export default function BookingConfigurationClient() {
                               router.push("/checkout");
                             }
                           }}
-                          className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <span className="relative z-10 flex items-center justify-center gap-2">
                             {isCreatingBooking ? (
@@ -817,7 +843,7 @@ export default function BookingConfigurationClient() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-accent/20 bg-linear-to-b from-accent/5 to-black/20 overflow-hidden">
+                <div className="rounded-3xl border border-accent/20 bg-white/3 overflow-hidden">
                   <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-accent/10">
                     <span className="material-symbols-outlined text-accent text-2xl">
                       verified_user

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {} from "next/navigation";
@@ -15,11 +15,16 @@ import { EventShareModal } from "./EventShareModal";
 import { EventPaymentPanel } from "@/features/event/components/EventPaymentPanel";
 import { EventLineItemsPanel } from "@/features/event/components/EventLineItemsPanel";
 import ProposePartnershipModal from "@/features/partnership/components/ProposePartnershipModal";
+import { packageProposalTarget } from "@/features/partnership/utils/packageProposalTarget";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useRouter as useNavigationRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import {
+  useRouter as useNavigationRouter,
+  useSearchParams,
+} from "next/navigation";
+import { LOGO_SRC } from "@/shared/lib/assets";
+import { signInThen } from "@/shared/auth/returnTo";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -80,6 +85,8 @@ export function EventDetailView({
     enabled: !!eventId && !!user,
   });
   const isRealEvent = lineItems?.isEvent === true;
+  // This page only serves public packages (page.tsx 404s otherwise).
+  const proposalTarget = packageProposalTarget(template);
 
   const templateImages: string[] = (template?.images ?? [])
     .map((img: any) => img.url)
@@ -88,10 +95,27 @@ export function EventDetailView({
   const maxAttendees: number | null = template?.maxAttendees ?? null;
   const category: string = template?.category ?? "";
 
+  // Designing a custom experience needs an account. Signed out, sign in first;
+  // `?custom=1` brings the user back here with the builder open.
+  const openCustomBuilder = () => {
+    if (user) setIsCustomBookingOpen(true);
+    else signInThen(`/event/${eventId}?custom=1`);
+  };
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("custom") !== "1" || !user) return;
+    setIsCustomBookingOpen(true);
+    router.replace(`/event/${eventId}`, { scroll: false });
+  }, [searchParams, user, eventId, router]);
+
+  // Signed out, sign in and come back here: an investor then gets the modal,
+  // anyone else the Partner Foxer application.
   const handleProposePartnership = () => {
-    // Basic redirect for non-partners, although backend may supply a clearer flag in V2
-    if (!user?.roleType?.includes("investor")) {
-      router.push("/onboarding/partner");
+    if (!user) {
+      signInThen(`/event/${eventId}`);
+    } else if (!user.roleType?.includes("investor")) {
+      router.push("/foxer/apply-investor");
     } else {
       setIsPartnershipOpen(true);
     }
@@ -115,10 +139,11 @@ export function EventDetailView({
           onClose={() => setIsCustomBookingOpen(false)}
           venuePrice={price}
         />
-        {isPartnershipOpen && (
+        {isPartnershipOpen && proposalTarget && (
           <ProposePartnershipModal
-            targetEventId={eventId}
-            targetName={template.name || "Untitled Event"}
+            targetVenueId={proposalTarget.venueId}
+            targetName={proposalTarget.name}
+            targetNote={`This package is held at ${proposalTarget.name}. Your proposal goes to the venue's owner.`}
             onClose={() => setIsPartnershipOpen(false)}
           />
         )}
@@ -158,7 +183,7 @@ export function EventDetailView({
             <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
@@ -171,7 +196,7 @@ export function EventDetailView({
               </h2>
             </Link>
             <div className="flex items-center gap-4">
-              {!isPreview && (
+              {!isPreview && proposalTarget && (
                 <button
                   onClick={handleProposePartnership}
                   className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-accent/10 hover:border-accent/30 text-sm font-medium text-white hover:text-accent transition-colors cursor-pointer"
@@ -330,7 +355,7 @@ export function EventDetailView({
                 <EventInclusions
                   inclusions={inclusions}
                   isPreview={isPreview}
-                  onCustomizeClick={() => setIsCustomBookingOpen(true)}
+                  onCustomizeClick={openCustomBuilder}
                 />
 
                 {(inclusions.length > 0 || isPreview) && (
@@ -393,7 +418,14 @@ export function EventDetailView({
                 price={price}
                 platformFee={platformFee}
                 isPreview={isPreview}
-                onCustomExperienceClick={() => setIsCustomBookingOpen(true)}
+                onCustomExperienceClick={openCustomBuilder}
+                bookingSummary={{
+                  title: template.name || "Untitled Event",
+                  image: templateImages[0],
+                  place: location ?? undefined,
+                  date: eventDate ?? undefined,
+                  price: price > 0 ? price : undefined,
+                }}
               />
             </div>
           </div>
@@ -412,7 +444,8 @@ export function EventDetailView({
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                © {new Date().getFullYear()} FoxPassport Republic. All rights reserved.
+                © {new Date().getFullYear()} FoxPassport Republic. All rights
+                reserved.
               </p>
               <div className="flex gap-6">
                 <a

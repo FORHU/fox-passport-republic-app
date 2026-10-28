@@ -22,10 +22,14 @@ export function useFollowStatus(
   targetId?: string,
   initialIsFollowing?: boolean,
 ) {
+  // Signed out there is no status to read, and the call would 401, which
+  // the axios interceptor treats as an ended session and sends the visitor
+  // home. Public profiles render this for signed-out visitors.
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery<FollowStatusResult>({
     queryKey: ["followStatus", targetId],
     queryFn: () => getFollowStatus(targetId!),
-    enabled: !!targetId,
+    enabled: !!targetId && isAuthenticated,
     ...(initialIsFollowing
       ? {
           initialData: { status: "accepted", direction: null },
@@ -36,10 +40,12 @@ export function useFollowStatus(
 }
 
 export function useFollowCounts(userId?: string) {
+  // GET /follows/:id/counts needs a session; see useFollowStatus.
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
     queryKey: ["followCounts", userId],
     queryFn: () => getFollowCounts(userId!),
-    enabled: !!userId,
+    enabled: !!userId && isAuthenticated,
   });
 }
 

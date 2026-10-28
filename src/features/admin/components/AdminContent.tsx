@@ -18,6 +18,7 @@ import {
   AdminPlatformFeeConfigs,
   AdminPromotions,
   AdminDisputesPanel,
+  AdminReviewPanel,
   AdminReportsPanel,
   AdminIdentityPanel,
 } from "@/features/admin/components";
@@ -145,6 +146,8 @@ export const AdminContent: React.FC<Props> = ({
       {activeTab === "events" && (
         <AdminEventsTable events={events} isLoading={loadingEvents} />
       )}
+
+      {activeTab === "needs-review" && <AdminReviewPanel />}
 
       {activeTab === "categories" && (
         <AdminCategoriesTable

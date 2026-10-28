@@ -14,6 +14,7 @@ import {
   ListingType,
 } from "@/features/asset/data/listingBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
+import { imageUrlToFile } from "@/shared/lib/imageFile";
 
 export function useInventoryBuilder() {
   const router = useRouter();
@@ -24,6 +25,8 @@ export function useInventoryBuilder() {
   const [isNotification, setIsNotification] = useState(false);
   const [, setCategoryMap] = useState<{ [key: string]: string }>({});
   const { uploadFile } = useFileUpload();
+  // Set only on the edit page (adoptDraft), so a Studio never quietly
+  // updates an earlier draft.
   const savedDraftId = useRef<string | null>(null);
 
   // Initialize type from URL params
@@ -162,15 +165,40 @@ export function useInventoryBuilder() {
     [],
   );
 
+  // The picked image is uploaded once: a draft saved with it and then
+  // published reuses the same file instead of uploading it twice.
+  const uploadedImage = useRef<{ src: string; fileId: string } | null>(null);
+  // An opened draft's image, already on the listing: not re-uploaded.
+  const keptImage = useRef<string | null>(null);
+  const uploadPickedImage = useCallback(
+    async (src: string) => {
+      if (uploadedImage.current?.src === src) {
+        return uploadedImage.current.fileId;
+      }
+      const result = await uploadFile(await imageUrlToFile(src, "asset"));
+      if (!result?.fileId) {
+        throw new Error("Failed to upload image. Please try again.");
+      }
+      uploadedImage.current = { src, fileId: result.fileId };
+      return result.fileId;
+    },
+    [uploadFile],
+  );
+
   // Handlers
   const handleBack = useCallback(() => {
     router.push("/creator-dashboard");
   }, [router]);
 
-  const handleSaveDraft = useCallback(async () => {
+  // A draft needs only a title. Its image, if one was picked, is saved with
+  // it; the API asks for one only on publish.
+  const handleSaveDraft = useCallback(async (): Promise<boolean> => {
+    // Read live, not from this render: a second click mustn't start a
+    // second save before the first has flipped the flag in a re-render.
+    if (useListingBuilderStore.getState().isSubmitting) return false;
     if (!store.title.trim()) {
       setError("Add a title before saving a draft");
-      return;
+      return false;
     }
     store.setIsSubmitting(true);
     setError(null);
@@ -184,6 +212,16 @@ export function useInventoryBuilder() {
         "Flat Rate": "one_time",
       };
       const parsedPrice = Number(store.price) || 0;
+      // A failed upload mustn't cost the user their progress: save the draft
+      // without the image and say so.
+      let imgIds: string[] = [];
+      if (store.image && store.image !== keptImage.current) {
+        try {
+          imgIds = [await uploadPickedImage(store.image)];
+        } catch {
+          toast.error("Couldn't upload the image; saving the draft without it");
+        }
+      }
 
       if (savedDraftId.current) {
         await updateAsset(savedDraftId.current, {
@@ -198,9 +236,12 @@ export function useInventoryBuilder() {
           lat: store.lat ?? undefined,
           lng: store.lng ?? undefined,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
+          status: "draft",
+          ...(imgIds.length > 0 && { imgIds }),
         } as any);
+        toast.success("Draft saved");
       } else {
-        const result = await createAsset({
+        await createAsset({
           name: store.title,
           description: store.description || " ",
           condition: store.condition || "good",
@@ -212,21 +253,32 @@ export function useInventoryBuilder() {
           country: store.country || undefined,
           lat: store.lat ?? undefined,
           lng: store.lng ?? undefined,
-          imgIds: [],
+          imgIds,
+          status: "draft",
           cancellationPolicyId: store.cancellationPolicyId || undefined,
         } as any);
-        const newId = (result as any)?.data?.id ?? (result as any)?.id;
-        if (newId) savedDraftId.current = String(newId);
+        // Ready for the next one; this draft is under My Drafts.
+        uploadedImage.current = null;
+        store.initializeForType("inventory");
+        toast.success("Draft saved. Find it under My Drafts.");
       }
-      toast.success("Draft saved");
+      return true;
     } catch (err: any) {
       const msg =
         err?.response?.data?.message || err?.message || "Failed to save draft";
       setError(msg);
+      return false;
     } finally {
       store.setIsSubmitting(false);
     }
-  }, [store, getUserId]);
+  }, [store, getUserId, uploadPickedImage]);
+
+  // For the edit page: Save Draft updates the draft that's open rather than
+  // creating a new one, and leaves its current image alone unless replaced.
+  const adoptDraft = useCallback((id: string, currentImage?: string) => {
+    savedDraftId.current = id;
+    keptImage.current = currentImage || null;
+  }, []);
 
   const handleImageUpload = useCallback(
     (url: string) => {
@@ -291,17 +343,7 @@ export function useInventoryBuilder() {
         throw new Error("An image is required for publishing");
       }
 
-      // Convert local blob URL to File and upload to S3
-      const response = await fetch(store.image);
-      const blob = await response.blob();
-      const file = new File([blob], `asset-${Date.now()}.jpg`, {
-        type: blob.type,
-      });
-
-      const uploadResult = await uploadFile(file);
-      if (!uploadResult || !uploadResult.fileId) {
-        throw new Error("Failed to upload image. Please try again.");
-      }
+      const fileId = await uploadPickedImage(store.image);
 
       // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
       // such value, so map it to the closest backend equivalent.
@@ -321,7 +363,7 @@ export function useInventoryBuilder() {
           country: store.country || undefined,
           lat: store.lat ?? undefined,
           lng: store.lng ?? undefined,
-          imgIds: [uploadResult.fileId],
+          imgIds: [fileId],
           status,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
         };
@@ -358,7 +400,7 @@ export function useInventoryBuilder() {
     getHostId,
     createAssetWithAPI,
     router,
-    uploadFile,
+    uploadPickedImage,
   ]);
 
   return {
@@ -376,9 +418,14 @@ export function useInventoryBuilder() {
     // Handlers
     handleBack,
     handleSaveDraft,
+    adoptDraft,
+    // Owned here, not derived from the store's type, which another builder
+    // mounted on the same page could change.
+    myDraftsHref: "/creator-dashboard/assets?status=draft",
     handlePublish,
     handleImageUpload,
     handleCategorySelect,
+    uploadPickedImage,
     setError,
   };
 }

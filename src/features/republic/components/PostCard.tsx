@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Award,
   Handshake,
@@ -27,6 +26,7 @@ import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
 import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { Badge } from "@/shared/components/ui/badge";
 import { Money } from "@/shared/components/ui/Money";
 
@@ -141,8 +141,11 @@ export function PostCard({
   onMessageFoxerClick,
   renderShareModal,
 }: PostCardProps) {
-  const router = useRouter();
   const { user } = useAuthStore();
+  // Signed out, sign in and come back to wherever this card is shown
+  // (the feed, saved posts, a post modal).
+  const signInHere = () =>
+    signInThen(window.location.pathname + window.location.search);
   const [myReaction, setMyReaction] = useState<ReactionType | null>(
     post.myReaction ?? (post.isLikedByMe ? "like" : null),
   );
@@ -163,7 +166,7 @@ export function PostCard({
 
   const handleReact = async (type: ReactionType | null) => {
     if (!user) {
-      router.push("/auth/login");
+      signInHere();
       return;
     }
     const prevReaction = myReaction;
@@ -218,7 +221,7 @@ export function PostCard({
 
   const handleSendClick = () => {
     if (!user) {
-      router.push("/auth/login");
+      signInHere();
       return;
     }
     setShowShareModal(true);
@@ -233,7 +236,7 @@ export function PostCard({
     contextId: string,
   ) => {
     if (!user) {
-      router.push("/auth/login");
+      signInHere();
       return;
     }
     onMessageFoxerClick?.({
@@ -275,7 +278,7 @@ export function PostCard({
     <article
       className={`relative w-full rounded-2xl transition-all duration-300 ${
         isPartnerPost
-          ? "bg-gradient-to-b from-amber-950/20 via-zinc-900/90 to-zinc-900 border-2 border-amber-500/40 shadow-[0_4px_30px_rgba(245,158,11,0.15)]"
+          ? "bg-gradient-to-b from-amber-950/20 via-zinc-900/90 to-zinc-900 border-2 border-amber-500/40 shadow-[0_4px_30px_rgba(217,154,38,0.15)]"
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
       } p-4 sm:p-5`}
     >
@@ -726,7 +729,7 @@ export function PostCard({
                 post.id,
               )
             }
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 transition-all"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={2} />
             Contact Partner
@@ -788,7 +791,7 @@ export function PostCard({
             <button
               onClick={() => {
                 if (!user) {
-                  router.push("/auth/login");
+                  signInHere();
                   return;
                 }
                 setShowRepostModal(true);
