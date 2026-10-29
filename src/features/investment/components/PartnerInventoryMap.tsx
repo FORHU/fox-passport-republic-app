@@ -12,10 +12,12 @@ import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
   fetchInvestmentsOnMap,
-  cancelInvestment,
+  archiveInvestment,
+  deleteInvestment,
   InventoryCategory,
 } from "@/shared/api/investments";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { hasPermission } from "@/shared/lib/permissions";
 import { toast } from "sonner";
 import {
   getEffectiveMapboxToken,
@@ -82,9 +84,10 @@ export default function PartnerInventoryMap({
     selectedCategory || "all",
   );
   const [loading, setLoading] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
+  const [hubActionBusy, setHubActionBusy] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-  const currentUserId = useAuthStore((s) => s.user?.id);
+  const currentUser = useAuthStore((s) => s.user);
+  const currentUserId = currentUser?.id;
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollCatLeft, setCanScrollCatLeft] = useState(false);
   const [canScrollCatRight, setCanScrollCatRight] = useState(false);
@@ -406,29 +409,32 @@ export default function PartnerInventoryMap({
     };
   }, [fetchPins]);
 
-  const handleCancelInvestment = async () => {
+  // Archive and delete both take the hub off the map, so they share the
+  // confirm → call → drop-from-list flow.
+  const runHubAction = async (
+    action: (id: string) => Promise<unknown>,
+    confirmText: string,
+    successText: string,
+  ) => {
     if (!selectedPin) return;
-    if (
-      !window.confirm(
-        "Cancel this investment pledge? It will stop counting toward any revenue share and disappear from the map.",
-      )
-    ) {
-      return;
-    }
-    setCancelling(true);
+    if (!window.confirm(confirmText)) return;
+    setHubActionBusy(true);
     try {
-      await cancelInvestment(selectedPin.id);
+      await action(selectedPin.id);
       setInvestments((prev) => prev.filter((i) => i.id !== selectedPin.id));
       setSelectedPin(null);
-      toast.success("Investment cancelled.");
+      toast.success(successText);
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message ?? "Failed to cancel investment",
-      );
+      toast.error(err?.response?.data?.message ?? "Something went wrong");
     } finally {
-      setCancelling(false);
+      setHubActionBusy(false);
     }
   };
+
+  const isHubOwner =
+    !!selectedPin?.partner && selectedPin.partner.id === currentUserId;
+  const canManageHub =
+    isHubOwner || hasPermission(currentUser, "investments:manage");
 
   const hasCenteredRef = useRef(false);
   useEffect(() => {
@@ -630,7 +636,7 @@ export default function PartnerInventoryMap({
               </div>
             </div>
 
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               {selectedPin.partner &&
                 selectedPin.partner.id !== currentUserId &&
                 (renderMessageButton ? (
@@ -661,18 +667,59 @@ export default function PartnerInventoryMap({
                   </button>
                 ))}
 
-              {selectedPin.partner?.id === currentUserId && (
+              {isHubOwner && (
                 <button
                   type="button"
-                  onClick={handleCancelInvestment}
-                  disabled={cancelling}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-red-500/30 hover:border-red-500/60 text-red-400 hover:text-red-300 font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
+                  onClick={() =>
+                    router.push(`/foxer/create-investment?edit=${selectedPin.id}`)
+                  }
+                  disabled={hubActionBusy}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-zinc-500 text-zinc-200 hover:text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
                 >
                   <span className="material-symbols-outlined text-[16px]">
-                    cancel
+                    edit
                   </span>
-                  {cancelling ? "Cancelling..." : "Cancel Investment"}
+                  Edit
                 </button>
+              )}
+
+              {canManageHub && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      runHubAction(
+                        archiveInvestment,
+                        "Archive this hub? It will be hidden from the map and no longer offered to venues.",
+                        "Hub archived.",
+                      )
+                    }
+                    disabled={hubActionBusy}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-amber-500/30 hover:border-amber-500/60 text-amber-300 hover:text-amber-200 font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      archive
+                    </span>
+                    Archive
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      runHubAction(
+                        deleteInvestment,
+                        "Delete this hub? It will be removed from the map and lists.",
+                        "Hub deleted.",
+                      )
+                    }
+                    disabled={hubActionBusy}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-red-500/30 hover:border-red-500/60 text-red-400 hover:text-red-300 font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      delete
+                    </span>
+                    Delete
+                  </button>
+                </>
               )}
             </div>
           </div>

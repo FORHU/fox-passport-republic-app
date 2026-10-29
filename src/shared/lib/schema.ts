@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // --- PROFILE FIELD SCHEMAS ---
 // Kept in step with the API's PUT /profile validation (profile.controller.ts).
+// The phone schema lives in ./phone, with the metadata it needs.
 
 // Saved lowercase; letters, numbers, `_` and `.` — no spaces or symbols.
 export const usernameSchema = z
@@ -14,25 +15,6 @@ export const usernameSchema = z
     /^[a-z0-9._]+$/,
     "Usernames can only use letters, numbers, dots and underscores.",
   );
-
-// Optional: "" clears it. Spaces, dashes and brackets are formatting and are
-// stripped, leaving an optional + and 8–15 digits.
-export const phoneSchema = z
-  .string()
-  .trim()
-  .overwrite((s) => s.replace(/[\s()-]/g, ""))
-  .regex(
-    /^(\+?\d{8,15})?$/,
-    "Enter a phone number like +63 917 123 4567 (8–15 digits).",
-  );
-
-export const profileUpdateSchema = z.object({
-  name: z.string().trim(),
-  username: usernameSchema,
-  phone: phoneSchema,
-});
-
-export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
 
 // --- AUTH SCHEMAS ---
 export const loginSchema = z.object({

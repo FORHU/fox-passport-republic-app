@@ -8,6 +8,8 @@ import {
   InventoryCategory,
   TransportPolicy,
   createInvestment,
+  fetchInvestmentById,
+  updateInvestment,
 } from "@/shared/api/investments";
 import InvestmentLocationPicker from "./InvestmentLocationPicker";
 import api from "@/shared/lib/axios";
@@ -86,7 +88,13 @@ const INITIAL_FORM_STATE: WizardFormState = {
   revenueSharePercent: 10,
 };
 
-export default function CreateInvestmentWizard() {
+/**
+ * With `editId`, the same steps edit an existing equipment hub: the modality
+ * step is skipped, nothing is drafted to sessionStorage, and submit PATCHes.
+ */
+export default function CreateInvestmentWizard({
+  editId,
+}: { editId?: string } = {}) {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -101,6 +109,7 @@ export default function CreateInvestmentWizard() {
 
   // Load saved draft from sessionStorage on initial client mount
   useEffect(() => {
+    if (editId) return;
     try {
       const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
       if (raw) {
@@ -118,10 +127,11 @@ export default function CreateInvestmentWizard() {
     } catch {
       // Storage unavailable or disabled
     }
-  }, []);
+  }, [editId]);
 
   // Autosave current draft to sessionStorage
   useEffect(() => {
+    if (editId) return;
     try {
       sessionStorage.setItem(
         DRAFT_STORAGE_KEY,
@@ -130,7 +140,47 @@ export default function CreateInvestmentWizard() {
     } catch {
       // Quota exceeded or private browsing restrictions
     }
-  }, [form, modality, step]);
+  }, [editId, form, modality, step]);
+
+  // Edit mode: prefill from the saved hub and start at Equipment Details.
+  useEffect(() => {
+    if (!editId) return;
+    fetchInvestmentById(editId)
+      .then((inv) => {
+        setModality("physical_inventory");
+        setForm((prev) => ({
+          ...prev,
+          title: inv.title,
+          description: inv.description,
+          inventoryCategory: inv.inventoryCategory ?? prev.inventoryCategory,
+          quantityTotal: inv.quantityTotal ?? prev.quantityTotal,
+          itemCondition: inv.itemCondition ?? prev.itemCondition,
+          usageTerms: inv.usageTerms ?? prev.usageTerms,
+          transportPolicy: inv.transportPolicy ?? prev.transportPolicy,
+          location: {
+            lat: inv.lat ?? prev.location.lat,
+            lng: inv.lng ?? prev.location.lng,
+            address: inv.address ?? "",
+            city: inv.city ?? "",
+            state: inv.state ?? "",
+            country: inv.country ?? prev.location.country,
+            deliveryRadiusKm:
+              inv.deliveryRadiusKm ?? prev.location.deliveryRadiusKm,
+          },
+          mediaUrls: inv.mediaUrls ?? [],
+        }));
+      })
+      .catch(() => {
+        toast.error("Could not load this hub.");
+        router.push("/republic/investments");
+      });
+  }, [editId, router]);
+
+  // The modality can't change after creation, so step 1 is off-limits while
+  // editing — this also catches the stepper and step 2's Back button.
+  useEffect(() => {
+    if (editId && step < 2) setStep(2);
+  }, [editId, step]);
 
   const handleResetDraft = () => {
     if (window.confirm("Discard your current draft and reset all fields?")) {
@@ -279,6 +329,29 @@ export default function CreateInvestmentWizard() {
 
     setIsSubmitting(true);
     try {
+      if (editId) {
+        await updateInvestment(editId, {
+          title: form.title,
+          description: form.description,
+          inventoryCategory: form.inventoryCategory,
+          quantityTotal: form.quantityTotal,
+          itemCondition: form.itemCondition,
+          usageTerms: form.usageTerms,
+          address: form.location.address || undefined,
+          city: form.location.city || undefined,
+          state: form.location.state || undefined,
+          country: form.location.country || undefined,
+          lat: form.location.lat,
+          lng: form.location.lng,
+          deliveryRadiusKm: form.location.deliveryRadiusKm,
+          transportPolicy: form.transportPolicy,
+          mediaUrls: form.mediaUrls,
+        });
+        toast.success("Hub updated.");
+        router.push("/republic/investments");
+        return;
+      }
+
       if (modality === "venue_equity") {
         await createInvestment({
           type: "venue_equity",
@@ -366,13 +439,13 @@ export default function CreateInvestmentWizard() {
                 (modality === "venue_equity"
                   ? "New Revenue Share"
                   : "New Equipment Hub")}{" "}
-              (Draft)
+              {editId ? "(Editing)" : "(Draft)"}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {(Boolean(form.title) || Boolean(form.description) || step > 1 || form.mediaUrls.length > 0) && (
+          {!editId && (Boolean(form.title) || Boolean(form.description) || step > 1 || form.mediaUrls.length > 0) && (
             <button
               type="button"
               onClick={handleResetDraft}
@@ -394,7 +467,7 @@ export default function CreateInvestmentWizard() {
             Partner Resource Pooling
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-            Register Partner Investment
+            {editId ? "Edit Equipment Hub" : "Register Partner Investment"}
           </h1>
           <p className="text-zinc-400 text-sm mt-1">
             Deploy physical tools and supplies stored at your depot to power
@@ -1047,28 +1120,30 @@ export default function CreateInvestmentWizard() {
             </div>
 
             {/* Feed Broadcast Switch */}
-            <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                  <span className="material-symbols-outlined text-amber-400 text-[16px]">
-                    campaign
-                  </span>
-                  Broadcast to Republic Foxer Partners Feed
+            {!editId && (
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                    <span className="material-symbols-outlined text-amber-400 text-[16px]">
+                      campaign
+                    </span>
+                    Broadcast to Republic Foxer Partners Feed
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    Instantly publish an announcement card in the Partners feed
+                    and earn +50 Partner XP.
+                  </p>
                 </div>
-                <p className="text-[11px] text-zinc-400">
-                  Instantly publish an announcement card in the Partners feed
-                  and earn +50 Partner XP.
-                </p>
+                <input
+                  type="checkbox"
+                  checked={form.broadcastToFeed}
+                  onChange={(e) =>
+                    setForm({ ...form, broadcastToFeed: e.target.checked })
+                  }
+                  className="w-5 h-5 accent-amber-400 cursor-pointer"
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={form.broadcastToFeed}
-                onChange={(e) =>
-                  setForm({ ...form, broadcastToFeed: e.target.checked })
-                }
-                className="w-5 h-5 accent-amber-400 cursor-pointer"
-              />
-            </div>
+            )}
 
             {/* Review Summary Card */}
             {modality === "venue_equity" ? (
@@ -1163,7 +1238,9 @@ export default function CreateInvestmentWizard() {
               >
                 {isSubmitting
                   ? "Submitting..."
-                  : modality === "venue_equity"
+                  : editId
+                    ? "Save Changes"
+                    : modality === "venue_equity"
                     ? "Register Revenue Share"
                     : "Deploy Equipment to Map"}
                 <span className="material-symbols-outlined text-[18px]">
