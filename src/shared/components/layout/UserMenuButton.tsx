@@ -9,7 +9,6 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { toast } from "sonner";
 import { RoleDef } from "./user-menu/types";
-import { RoleLockDialog } from "./user-menu/RoleLockDialog";
 import { UserMenuProfileHeader } from "./user-menu/UserMenuProfileHeader";
 import { UserMenuRoleSection } from "./user-menu/UserMenuRoleSection";
 import { UserMenuNavLinks } from "./user-menu/UserMenuNavLinks";
@@ -22,7 +21,6 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
   const router = useRouter();
   const { user, setUser, openLogin } = useAuthStore();
   const { isOpen, toggle, close, menuRef } = useUserMenu();
-  const [lockedRole, setLockedRole] = useState<RoleDef | null>(null);
   const [syncing, setSyncing] = useState(false);
   const { unreadCount: unreadMessages } = useUnreadMessagesCount();
 
@@ -50,8 +48,8 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
 
   const hasRoleAccess = (def: RoleDef) => {
     if (isAdmin) return true;
-    // Citizen Dashboard is always accessible to any authenticated user
-    if (def.key === "user") return !!user;
+    // Foxers (the default page) is open to any authenticated user
+    if (def.key === "foxers") return !!user;
     if (def.systemRoles?.includes(sysRole)) return true;
     return def.roleTypes.some((r) => roleTypes.includes(r));
   };
@@ -76,13 +74,11 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
     }
   };
 
-  const handleSelectRole = (def: RoleDef, unlocked: boolean) => {
+  // The menu lists only dashboards the user can open; applying for the
+  // others is "Apply for a Role".
+  const handleSelectRole = (def: RoleDef) => {
     close();
-    if (unlocked) {
-      router.push(def.href);
-    } else {
-      setLockedRole(def);
-    }
+    router.push(def.href);
   };
 
   const handleSelectAdmin = () => {
@@ -91,60 +87,54 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
   };
 
   return (
-    <>
-      <div ref={menuRef} className="relative">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!user) {
-              if (onSignIn) onSignIn();
-              else openLogin();
-              return;
-            }
-            toggle();
-          }}
-          className={`h-10 w-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 backdrop-blur-md group cursor-pointer ${
-            isOpen ? "ring-2 ring-accent/50 bg-white/10 text-white" : ""
-          }`}
-          aria-label="User menu"
-        >
-          <Menu className="w-5 h-5 transition-transform group-hover:scale-110" />
-          {user && unreadMessages > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-black">
-              {unreadMessages > 9 ? "9+" : unreadMessages}
-            </span>
-          )}
-        </button>
-
-        {isOpen && user && (
-          <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-96 max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface-raised rounded-2xl border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
-            {/* Identity */}
-            <UserMenuProfileHeader user={user} />
-
-            {/* Role Dashboards */}
-            <UserMenuRoleSection
-              isAdmin={isAdmin}
-              roleTypes={roleTypes}
-              hasRoleAccess={hasRoleAccess}
-              onSelectRole={handleSelectRole}
-              onSelectAdmin={handleSelectAdmin}
-            />
-
-            {/* Standard links, sync, and logout */}
-            <UserMenuNavLinks
-              userId={user?.id}
-              isAdmin={isAdmin}
-              syncing={syncing}
-              onSync={handleSyncSession}
-              onClose={close}
-            />
-          </div>
+    <div ref={menuRef} className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!user) {
+            if (onSignIn) onSignIn();
+            else openLogin();
+            return;
+          }
+          toggle();
+        }}
+        className={`h-10 w-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 backdrop-blur-md group cursor-pointer ${
+          isOpen ? "ring-2 ring-accent/50 bg-white/10 text-white" : ""
+        }`}
+        aria-label="User menu"
+      >
+        <Menu className="w-5 h-5 transition-transform group-hover:scale-110" />
+        {user && unreadMessages > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-black">
+            {unreadMessages > 9 ? "9+" : unreadMessages}
+          </span>
         )}
-      </div>
+      </button>
 
-      {lockedRole && (
-        <RoleLockDialog role={lockedRole} onClose={() => setLockedRole(null)} />
+      {isOpen && user && (
+        <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-96 max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface-raised rounded-2xl border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+          {/* Identity */}
+          <UserMenuProfileHeader user={user} />
+
+          {/* Role Dashboards */}
+          <UserMenuRoleSection
+            isAdmin={isAdmin}
+            roleTypes={roleTypes}
+            hasRoleAccess={hasRoleAccess}
+            onSelectRole={handleSelectRole}
+            onSelectAdmin={handleSelectAdmin}
+          />
+
+          {/* Standard links, sync, and logout */}
+          <UserMenuNavLinks
+            userId={user?.id}
+            isAdmin={isAdmin}
+            syncing={syncing}
+            onSync={handleSyncSession}
+            onClose={close}
+          />
+        </div>
       )}
-    </>
+    </div>
   );
 }

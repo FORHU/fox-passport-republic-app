@@ -1,5 +1,5 @@
 import { FOXER_ROLES } from "@/shared/constants/roles";
-import { LayoutDashboard, Building2, Coins, Compass } from "lucide-react";
+import { Users, Building2, Coins, Handshake } from "lucide-react";
 
 export interface RoleDef {
   key: string;
@@ -19,26 +19,18 @@ export interface RoleDef {
   descriptionFor?: (roleTypes: string[]) => string;
 }
 
+// The Citizen Dashboard and Republic Foxer Hub used to be listed here too;
+// they are Passport and Republic in the top bar now (APP_NAV), so the menu
+// keeps the default Foxers page plus the role dashboards.
 export const ROLE_DEFS: RoleDef[] = [
   {
-    key: "user",
-    label: "Citizen Dashboard",
-    href: "/user",
+    key: "foxers",
+    label: "Foxers",
+    href: "/search",
     applyHref: "",
-    description: "Your personal passport hub",
-    icon: LayoutDashboard,
-    emoji: "🏙️",
-    roleTypes: [],
-    systemRoles: ["user", "admin", "admin_secretary"],
-  },
-  {
-    key: "republic",
-    label: "Republic Foxer Hub",
-    href: "/republic",
-    applyHref: "",
-    description: "Community feed, marketplace & map",
-    icon: Compass,
-    emoji: "🌐",
+    description: "Find Foxers, venues & packages",
+    icon: Users,
+    emoji: "🦊",
     roleTypes: [],
     systemRoles: ["user", "admin", "admin_secretary"],
   },
@@ -65,6 +57,18 @@ export const ROLE_DEFS: RoleDef[] = [
       singleFoxerRoleLabel(roleTypes) === "venueFoxer"
         ? "Venue listing & space manager"
         : "Manage your venues & events",
+  },
+  {
+    // An Investor's way into the creator dashboard (its overview). Creator
+    // Dashboard above is for supply-side roles only, so investors had no way in.
+    key: "investorDashboard",
+    label: "Investor Dashboard",
+    href: "/creator-dashboard",
+    applyHref: "/foxer/apply-investor",
+    description: "Partnerships, investments & payouts",
+    icon: Handshake,
+    emoji: "🤝",
+    roleTypes: ["investor"],
   },
   {
     key: "investor",

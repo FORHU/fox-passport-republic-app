@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { takeReturnTo } from "@/shared/auth/returnTo";
+import { getLandingPath } from "@/shared/lib/dashboard-path";
 
 export default function GoogleAuthCallbackPage() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function GoogleAuthCallbackPage() {
         localStorage.setItem("fp_new_user", "1");
         router.replace("/onboarding");
       } else {
-        router.replace(takeReturnTo());
+        router.replace(takeReturnTo(getLandingPath(user)));
       }
     });
   }, [searchParams, router, login]);

@@ -39,6 +39,7 @@ describe("GoogleAuthCallbackPage", () => {
     mocks.params = {};
     mocks.refreshSession.mockResolvedValue(null);
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it("redirects home when Better Auth reports an error", async () => {
@@ -59,7 +60,7 @@ describe("GoogleAuthCallbackPage", () => {
     expect(mocks.toastError).toHaveBeenCalled();
   });
 
-  it("enters the app as an existing user", async () => {
+  it("lands an existing citizen on Foxers", async () => {
     const user = { id: "user-1", name: "Citizen" };
     mocks.refreshSession.mockResolvedValue(user);
 
@@ -68,6 +69,30 @@ describe("GoogleAuthCallbackPage", () => {
     await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/search"));
     expect(mocks.login).toHaveBeenCalledWith({ user });
     expect(mocks.toastSuccess).toHaveBeenCalledWith("Welcome back!");
+  });
+
+  it("sends an existing Foxer to the creator dashboard", async () => {
+    const user = { id: "user-3", name: "Foxer", roleType: ["venueFoxer"] };
+    mocks.refreshSession.mockResolvedValue(user);
+
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith("/creator-dashboard"),
+    );
+  });
+
+  it("still resumes a remembered path over the dashboard", async () => {
+    sessionStorage.setItem("fox_return_to", "/booking/config?templateId=t1");
+    mocks.refreshSession.mockResolvedValue({ id: "user-4", name: "Citizen" });
+
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith(
+        "/booking/config?templateId=t1",
+      ),
+    );
   });
 
   it("sends a new Google user to onboarding", async () => {

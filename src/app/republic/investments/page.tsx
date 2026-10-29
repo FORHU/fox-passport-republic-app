@@ -1,16 +1,15 @@
 import React from "react";
 import Link from "next/link";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
-import RepublicHeader from "@/features/republic/components/RepublicHeader";
-import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
 export const dynamic = "force-dynamic";
 
 export default function RepublicInvestmentsMapPage() {
   return (
-    <div className="min-h-screen bg-canvas text-white pt-20 pb-36 px-3 sm:px-6 selection:bg-amber-400 selection:text-black">
-      {/* Full-width docked header */}
-      <RepublicHeader />
+    <div className="min-h-screen bg-canvas text-white pt-20 sm:pt-32 pb-36 px-3 sm:px-6 selection:bg-amber-400 selection:text-black">
+      {/* The same top bar (and mobile bottom nav) as every other app page */}
+      <LandingHeader />
 
       <div className="max-w-6xl mx-auto space-y-5">
         {/* Navigation & Header */}
@@ -51,9 +50,6 @@ export default function RepublicInvestmentsMapPage() {
         {/* Full-screen interactive map with responsive height */}
         <PartnerInventoryMap className="h-[440px] sm:h-[620px] w-full rounded-3xl overflow-hidden" />
       </div>
-
-      {/* Mobile Floating Bottom Navigation */}
-      <MobileBottomNav />
     </div>
   );
 }
