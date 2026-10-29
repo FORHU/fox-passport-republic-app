@@ -25,27 +25,40 @@ function renderSection(isAdmin = false) {
 
 /**
  * "My Dashboards" used to start collapsed behind a toggle, which hid from
- * first-time users where their dashboards were. It is now always open.
+ * first-time users where their dashboards were. It is now always open, and
+ * lists only the dashboards the user can open; the rest are applied for
+ * through "Apply for a Role".
  */
 describe("UserMenuRoleSection", () => {
   afterEach(cleanup);
 
-  it("lists every dashboard without a click, and has no toggle", () => {
+  it("lists the user's dashboards without a click, and has no toggle", () => {
     renderSection();
     expect(screen.getByRole("group", { name: "My Dashboards" })).toBeTruthy();
-    for (const def of ROLE_DEFS)
+    for (const def of ROLE_DEFS.slice(0, -1))
       expect(screen.getByText(labelOf(def))).toBeTruthy();
     expect(screen.queryByRole("button", { name: /my dashboards/i })).toBeNull();
   });
 
-  it("still opens a dashboard, locked or not", () => {
+  it("hides dashboards the user can't open", () => {
+    renderSection();
+    const locked = ROLE_DEFS[ROLE_DEFS.length - 1];
+    expect(screen.queryByText(labelOf(locked))).toBeNull();
+    expect(screen.queryByText(/apply/i)).toBeNull();
+  });
+
+  it("lists Foxers, not the pages that are in the top bar", () => {
+    renderSection();
+    expect(screen.getByText("Foxers")).toBeTruthy();
+    expect(screen.queryByText("Citizen Dashboard")).toBeNull();
+    expect(screen.queryByText("Republic Foxer Hub")).toBeNull();
+  });
+
+  it("opens a dashboard", () => {
     const { onSelectRole } = renderSection();
     const first = ROLE_DEFS[0];
-    const last = ROLE_DEFS[ROLE_DEFS.length - 1];
     fireEvent.click(screen.getByText(labelOf(first)));
-    expect(onSelectRole).toHaveBeenLastCalledWith(first, true);
-    fireEvent.click(screen.getByText(labelOf(last)));
-    expect(onSelectRole).toHaveBeenLastCalledWith(last, false);
+    expect(onSelectRole).toHaveBeenLastCalledWith(first);
   });
 
   it("shows the Admin dashboard only to admins", () => {

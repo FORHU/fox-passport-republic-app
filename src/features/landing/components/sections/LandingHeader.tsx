@@ -19,6 +19,7 @@ import {
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
 
 interface LandingHeaderProps {
   /** Optional — defaults to the auth store's own `openLogin`, so a server
@@ -34,18 +35,13 @@ interface LandingHeaderProps {
   };
 }
 
-// Signed-out visitors get the landing page's own nav; signed-in users get the app's.
-// On small screens the same links open from the menu button.
+// Signed-out visitors get the landing page's own nav; signed-in users get the
+// app's (APP_NAV, the same places as the mobile bottom nav). On small screens
+// the landing links open from the menu button.
 const LANDING_TABS = [
   { label: "Find events", href: "/#events" },
   { label: "How it works", href: "/#how-it-works" },
   { label: "List your business", href: "/#earn" },
-];
-
-const APP_TABS = [
-  { label: "Foxers", href: "/search" },
-  { label: "Map", href: "/venues/map" },
-  { label: "Foxer Republic", href: "/republic" },
 ];
 
 export default function LandingHeader({
@@ -56,10 +52,9 @@ export default function LandingHeader({
   const handleSignIn = onSignIn ?? openLogin;
   const [menuOpen, setMenuOpen] = useState(false);
   // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
-  const navTabs = isLoading ? [] : isAuthenticated ? APP_TABS : LANDING_TABS;
+  const navTabs = isLoading ? [] : isAuthenticated ? APP_NAV : LANDING_TABS;
   const pathname = usePathname();
-  const isTabActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname?.startsWith(href);
+  const isTabActive = (href: string) => isNavActive(pathname, href);
 
   return (
     <>
@@ -104,9 +99,11 @@ export default function LandingHeader({
                     <Link
                       href={tab.href}
                       className={
+                        // px-4 below xl: five app tabs plus the search box
+                        // don't fit a 1024px header at px-6.
                         active
-                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
-                          : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+                          ? "px-4 xl:px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
+                          : "px-4 xl:px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
                       }
                     >
                       {tab.label}
@@ -123,7 +120,7 @@ export default function LandingHeader({
                         // can clear, so its bottom edge dipped back down
                         // into the pill it's meant to float above.
                         // -top-6 (24px) clears it with a bit of margin.
-                        className="pointer-events-none absolute -top-6 -right-6 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
+                        className="pointer-events-none absolute -top-6 -right-1 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
                       >
                         Beta Community
                       </Badge>

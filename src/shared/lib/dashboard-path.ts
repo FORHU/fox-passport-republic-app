@@ -42,3 +42,17 @@ export function getDashboardPath(
 
   return "/user";
 }
+
+/**
+ * Where a fresh sign-in lands when no return path is remembered. Admins and
+ * supply-side roles (investors included) go to their dashboard, as
+ * `getDashboardPath`; a plain citizen lands on Foxers (`APP_HOME`), the
+ * default entry in the user menu, since their dashboard is Passport in the
+ * top bar.
+ */
+export function getLandingPath(
+  user: Pick<User, "systemRole" | "roleType"> | null | undefined,
+): string {
+  const dashboard = getDashboardPath(user);
+  return dashboard === "/user" ? APP_HOME : dashboard;
+}

@@ -38,6 +38,7 @@ vi.mock("@/shared/components/layout/MobileBottomNav", () => ({
 }));
 
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { APP_NAV } from "@/shared/lib/app-nav";
 
 /**
  * Signed-out visitors on small screens used to get no navigation at all: the
@@ -86,6 +87,15 @@ describe("LandingHeader mobile menu", () => {
     expect(
       screen.queryByRole("button", { name: "Open menu" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("gives signed-in users the app nav, the same places as the mobile bar", () => {
+    mockAuthState.isAuthenticated = true;
+    render(<LandingHeader />);
+    const hrefs = within(screen.getByRole("navigation"))
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(APP_NAV.map((i) => i.href));
   });
 
   it("has no menu button until auth has loaded", () => {

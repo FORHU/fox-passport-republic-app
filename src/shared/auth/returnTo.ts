@@ -20,10 +20,14 @@ export function signUpThen(path: string, summary: BookingSummary) {
   useAuthStore.getState().openSignupFor(summary);
 }
 
-/** Where to go after authenticating: the remembered path (once), else the app home. */
-export function takeReturnTo(): string {
+/**
+ * Where to go after authenticating: the remembered path (once), else
+ * `fallback`. Sign-in passes the user's dashboard here, so a fresh login lands
+ * somewhere the user menu can mark as "Current" instead of on `/search`.
+ */
+export function takeReturnTo(fallback: string = APP_HOME): string {
   const path = sessionStorage.getItem(KEY);
   sessionStorage.removeItem(KEY);
   // Same-origin paths only, so this can never become an open redirect.
-  return path?.startsWith("/") && !path.startsWith("//") ? path : APP_HOME;
+  return path?.startsWith("/") && !path.startsWith("//") ? path : fallback;
 }

@@ -9,6 +9,7 @@ import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 import { takeReturnTo } from "@/shared/auth/returnTo";
+import { getLandingPath } from "@/shared/lib/dashboard-path";
 
 // These used to go through a private axios instance pointed straight at
 // `config.apiUrl` - the one place the browser talked to the API directly, and
@@ -173,7 +174,7 @@ export const useLogin = () => {
         localStorage.removeItem("fp_new_user");
         router.push("/onboarding");
       } else {
-        router.push(takeReturnTo());
+        router.push(takeReturnTo(getLandingPath(data.user)));
       }
     },
     onError: (error: any, variables) => {

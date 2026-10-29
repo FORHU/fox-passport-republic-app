@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
 
 /** The app's mobile nav — signed-in only, like the desktop app tabs. */
 export default function MobileBottomNav() {
@@ -11,8 +12,7 @@ export default function MobileBottomNav() {
   const { user, isLoading } = useAuthStore();
   const isAuthenticated = !!user;
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const isActive = (href: string) => isNavActive(pathname, href);
 
   const [imgError, setImgError] = useState(false);
 
@@ -31,15 +31,14 @@ export default function MobileBottomNav() {
     user?.email?.charAt(0).toUpperCase() ??
     "?";
 
-  const tabs = [
-    { icon: "group", href: "/search", label: "Foxers" },
-    { icon: "map", href: "/venues/map", label: "Map" },
-  ];
-
-  const rightTabs = [
-    { icon: "confirmation_number", href: "/booking", label: "Bookings" },
-    { icon: "person", href: "/user", label: "Profile" },
-  ];
+  // Same places as the desktop header (APP_NAV); Republic is the raised
+  // centre button, with two tabs either side.
+  const republic = APP_NAV.find((item) => item.href === "/republic")!;
+  const sideTabs = APP_NAV.filter((item) => item !== republic);
+  const tabs = sideTabs.slice(0, 2);
+  const rightTabs = sideTabs.slice(2);
+  // The last tab is the user's own space, shown as their avatar.
+  const avatarHref = APP_NAV[APP_NAV.length - 1].href;
 
   const NavIcon = ({
     icon,
@@ -166,13 +165,13 @@ export default function MobileBottomNav() {
       {/* Center Republic Foxer Tab */}
       <div className="flex items-center justify-center">
         <Link
-          href="/republic"
-          aria-label="Republic Foxer"
+          href={republic.href}
+          aria-label={republic.label}
           style={{
             width: 56,
             height: 56,
             borderRadius: 999,
-            background: isActive("/republic")
+            background: isActive(republic.href)
               ? "linear-gradient(135deg, #CBEB6E 0%, #ADD13F 100%)"
               : "linear-gradient(135deg, #1C1F26 0%, #14161B 100%)",
             display: "flex",
@@ -180,10 +179,10 @@ export default function MobileBottomNav() {
             alignItems: "center",
             justifyContent: "center",
             transform: "translateY(-14px)",
-            boxShadow: isActive("/republic")
+            boxShadow: isActive(republic.href)
               ? "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(196,232,90,0.3)"
               : "0 0 0 4px rgba(14,14,20,0.92), 0 4px 16px rgba(0,0,0,0.5)",
-            border: isActive("/republic")
+            border: isActive(republic.href)
               ? "none"
               : "1px solid rgba(255,255,255,0.12)",
             textDecoration: "none",
@@ -193,24 +192,24 @@ export default function MobileBottomNav() {
           <span
             className="material-symbols-outlined"
             style={{
-              color: isActive("/republic") ? "#111317" : "#C4E85A",
+              color: isActive(republic.href) ? "#111317" : "#C4E85A",
               fontSize: 24,
               fontVariationSettings: "'FILL' 1, 'wght' 700",
             }}
           >
-            dynamic_feed
+            {republic.icon}
           </span>
           <span
             style={{
               fontSize: 8,
               fontWeight: 800,
               letterSpacing: "0.02em",
-              color: isActive("/republic") ? "#111317" : "#C4E85A",
+              color: isActive(republic.href) ? "#111317" : "#C4E85A",
               lineHeight: 1,
               marginTop: 1,
             }}
           >
-            REPUBLIC
+            {republic.label.toUpperCase()}
           </span>
         </Link>
       </div>
@@ -227,7 +226,7 @@ export default function MobileBottomNav() {
             icon={tab.icon}
             label={tab.label}
             active={isActive(tab.href)}
-            isProfile={tab.label === "Profile"}
+            isProfile={tab.href === avatarHref}
           />
         </Link>
       ))}

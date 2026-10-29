@@ -31,6 +31,17 @@ describe("returnTo", () => {
     expect(takeReturnTo()).toBe("/search");
   });
 
+  it("falls back to the given dashboard when nothing is remembered", () => {
+    expect(takeReturnTo("/creator-dashboard")).toBe("/creator-dashboard");
+  });
+
+  it("prefers the remembered path over the given dashboard", () => {
+    signInThen("/booking/config?templateId=t3");
+    expect(takeReturnTo("/creator-dashboard")).toBe(
+      "/booking/config?templateId=t3",
+    );
+  });
+
   it.each(["https://evil.example", "//evil.example", "javascript:alert(1)"])(
     "never redirects off-site (%s)",
     (path) => {
