@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface EventHeaderProps {
   eventTitle: string;
@@ -42,15 +43,7 @@ export function EventHeader({
   return (
     <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-surface z-20">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-        <button
-          onClick={onBack}
-          aria-label="Back"
-          className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 shrink-0"
-        >
-          <span className="material-symbols-outlined text-[18px]">
-            arrow_back
-          </span>
-        </button>
+        <BackButton onClick={onBack} />
         <div className="min-w-0">
           <h2 className="font-display font-bold text-base sm:text-lg flex items-center gap-2 truncate">
             Event Studio

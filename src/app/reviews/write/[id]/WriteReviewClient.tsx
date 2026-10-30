@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import { MapPin, ArrowLeft } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useWriteReview } from "@/features/review/hooks/useWriteReview";
 import {
   StarRating,
   CategoryTags,
   RecentReviews,
 } from "@/features/review/components";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface WriteReviewClientProps {
   venue: any;
@@ -33,13 +34,11 @@ export default function WriteReviewClient({ venue }: WriteReviewClientProps) {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Back Button */}
-        <button
+        <BackButton
+          variant="label"
           onClick={handleBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-semibold"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back
-        </button>
+          className="mb-6 text-gray-600 hover:text-gray-900"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left: Review Form */}

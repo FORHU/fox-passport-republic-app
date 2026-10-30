@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -15,15 +16,12 @@ export default function RepublicInvestmentsMapPage() {
         {/* Navigation & Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <Link
+            <BackButton
+              variant="label"
               href="/republic?tab=partners"
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white font-semibold transition-colors mb-2 cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[14px]">
-                arrow_back
-              </span>
-              Back to Republic Partners Feed
-            </Link>
+              label="Back to Republic Partners Feed"
+              className="mb-2"
+            />
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
               <span className="material-symbols-outlined text-amber-400 text-3xl">
                 radar

@@ -20,6 +20,7 @@ import {
 import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 type InvestmentModality = "physical_inventory" | "venue_equity";
 
@@ -416,16 +417,7 @@ export default function CreateInvestmentWizard({
           padding at the top. */}
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-surface sticky top-0 z-20">
         <div className="flex items-center gap-4 min-w-0">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
-            aria-label="Go back"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              arrow_back
-            </span>
-          </button>
+          <BackButton onClick={() => router.back()} />
           <div className="min-w-0">
             <h2 className="font-display font-bold text-lg flex items-center gap-2 truncate">
               Investment Studio
