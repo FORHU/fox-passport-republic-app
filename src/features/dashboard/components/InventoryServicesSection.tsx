@@ -88,7 +88,8 @@ export function InventorySection({
                 )}
               </div>
 
-              <div className="absolute top-3 left-3 z-50">
+              {/* Raised only while its menu is open, so closed badges stay under page dropdowns and the header */}
+              <div className="absolute top-3 left-3 z-10 has-[[aria-expanded=true]]:z-40">
                 <StatusBadge
                   currentStatus={it.status}
                   type="inventory"
