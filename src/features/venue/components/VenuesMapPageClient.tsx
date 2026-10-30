@@ -213,7 +213,7 @@ function VenueDetailCard({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 20, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
-      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl overflow-hidden"
+      className="absolute bottom-16 sm:bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm max-h-[calc(100%-5.5rem)] sm:max-h-[calc(100%-3rem)] rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl overflow-y-auto"
     >
       <div className="relative h-40 w-full bg-white/5">
         <Image
@@ -688,7 +688,8 @@ export function VenuesMapPageClient({
 
   return (
     <div className="h-screen w-full bg-canvas text-white font-body flex flex-col overflow-hidden">
-      <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28">
+      {/* pb-24 below lg keeps the list and map clear of the fixed MobileBottomNav */}
+      <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28 pb-24 lg:pb-0">
         {/* Left: scrollable venue list */}
         <div
           className={`${mobileView === "map" ? "hidden" : "flex"} sm:flex w-full sm:w-[400px] lg:w-[440px] shrink-0 flex-col border-r border-white/10 min-h-0`}
