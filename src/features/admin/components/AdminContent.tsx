@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useUIStore } from "@/shared/store/useUIStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { hasPermission } from "@/shared/lib/permissions";
 import {
   AdminKPISection,
   AdminChartsSection,
@@ -53,6 +55,7 @@ export const AdminContent: React.FC<Props> = ({
   bookings: initialBookings,
 }) => {
   const activeTab = useUIStore((s) => s.activeAdminTab);
+  const user = useAuthStore((s) => s.user);
 
   // Only the active tab is rendered, so only the active tab fetches. Every one
   // of these polls on an interval; left ungated they all ran at once, so the
@@ -109,7 +112,10 @@ export const AdminContent: React.FC<Props> = ({
             bookingsByDay={adminStats?.bookingsByDay ?? [0, 0, 0, 0, 0, 0, 0]}
             categoryStats={adminStats?.categoryStats ?? []}
           />
-          <AdminSubmissionsTable />
+          {/* Role applications: the API's list and review routes need
+              roles:manage, which the admin secretary lacks — rendered for
+              them, it failed with a toast on every load. */}
+          {hasPermission(user, "roles:manage") && <AdminSubmissionsTable />}
 
           <div className="space-y-6">
             <h2 className="text-xl font-display font-bold text-white">

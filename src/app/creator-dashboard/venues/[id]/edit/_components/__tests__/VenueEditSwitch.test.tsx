@@ -99,4 +99,44 @@ describe("VenueEditSwitch", () => {
     // that message lives.
     expect(screen.getByText("mayor-studio")).toBeTruthy();
   });
+
+  it("refuses someone without the Venue role who isn't an Organizer", () => {
+    access.value = {
+      isLoading: false,
+      data: { role: null, permissions: [] },
+    };
+    render(
+      createElement(
+        Switch as unknown as React.FC<{
+          venueId: string;
+          denied?: React.ReactNode;
+          children?: React.ReactNode;
+        }>,
+        { venueId: "v1", denied: createElement("div", null, "access-denied") },
+        studio,
+      ),
+    );
+    expect(screen.getByText("access-denied")).toBeTruthy();
+    expect(screen.queryByText("mayor-studio")).toBeNull();
+  });
+
+  it("still gives an Organizer their sections when the Venue role is missing", () => {
+    access.value = {
+      isLoading: false,
+      data: { role: "organizer", permissions: ["venue:calendar"] },
+    };
+    render(
+      createElement(
+        Switch as unknown as React.FC<{
+          venueId: string;
+          denied?: React.ReactNode;
+          children?: React.ReactNode;
+        }>,
+        { venueId: "v1", denied: createElement("div", null, "access-denied") },
+        studio,
+      ),
+    );
+    expect(screen.getByText("calendar")).toBeTruthy();
+    expect(screen.queryByText("access-denied")).toBeNull();
+  });
 });

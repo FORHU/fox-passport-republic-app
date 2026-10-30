@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useClientMatchRequests } from "@/features/gamification/hooks/usePassport";
 import type { ClientMatchRequest } from "@/features/gamification/api/passport";
 
@@ -29,15 +30,19 @@ function subtitleOf(req: ClientMatchRequest) {
  * with desktop in one pass; acting on a request still means going to
  * /user/passport, same as desktop's own "View All" does.
  *
- * Self-gated on `hasListings`, the same as desktop's `PendingRequests`: an
- * Organizer or Investor owns no event template, so there is nothing here
- * that is theirs to answer.
+ * Self-gated the same as desktop's `PendingRequests`: Foxers with listings,
+ * and Organizers, whose inbox holds the requests of the events they help run
+ * (the API grants them event:approve-bookings). An Investor has none.
  */
 export function MobilePendingRequests() {
   const { hasListings } = useRoleAccess();
-  const { data: page, isLoading } = useClientMatchRequests(0, hasListings);
+  const isOrganizer = (useAuthStore((s) => s.user?.roleType) ?? []).includes(
+    "organizer",
+  );
+  const show = hasListings || isOrganizer;
+  const { data: page, isLoading } = useClientMatchRequests(0, show);
 
-  if (!hasListings) return null;
+  if (!show) return null;
 
   const pending = (page?.data ?? []).filter(
     (r) => r.requestStatus === "pending",

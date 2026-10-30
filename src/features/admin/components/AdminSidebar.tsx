@@ -83,7 +83,8 @@ const NAV_ITEMS = [
     icon: "gavel",
     id: "disputes",
     section: "System",
-    permission: "bookings:read:all",
+    // What the API's dispute routes check.
+    permission: "disputes:resolve",
   },
   {
     label: "Reports",
@@ -101,7 +102,7 @@ const NAV_ITEMS = [
     label: "Policies",
     icon: "policy",
     id: "policies",
-    permission: "bookings:read:all",
+    permission: "policies:manage",
   },
   {
     label: "Platform Fees",
@@ -205,6 +206,20 @@ export const AdminSidebar: React.FC = () => {
               </button>
             </React.Fragment>
           ))}
+          {/* Refunds is its own page, not a tab; it had no link at all, so
+              only someone who knew the URL could reach it. */}
+          {hasPermission(user, "refunds:manage") && (
+            <Link
+              href="/admin/refunds"
+              onClick={() => setSidebarOpen(false)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group text-text-muted hover:text-white hover:bg-white/5"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                currency_exchange
+              </span>
+              <span className="font-medium text-sm">Refunds</span>
+            </Link>
+          )}
         </nav>
 
         {/* User card */}
@@ -230,7 +245,7 @@ export const AdminSidebar: React.FC = () => {
               </div>
             </div>
             <span className="ml-auto text-[9px] font-bold text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full shrink-0">
-              Admin
+              {user?.systemRole === "admin_secretary" ? "Secretary" : "Admin"}
             </span>
           </div>
 

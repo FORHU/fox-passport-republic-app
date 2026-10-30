@@ -2,10 +2,15 @@ import React from "react";
 import Link from "next/link";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { getUser } from "@/shared/lib/server/auth";
+import { hasPermission } from "@/shared/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
-export default function RepublicInvestmentsMapPage() {
+export default async function RepublicInvestmentsMapPage() {
+  // Registering a hub is for investors (`partnership:propose`); everyone else
+  // was sent to the investor application by a button saying "Register".
+  const canRegister = hasPermission(await getUser(), "partnership:propose");
   return (
     <div className="min-h-screen bg-canvas text-white pt-20 sm:pt-32 pb-36 px-3 sm:px-6 selection:bg-amber-400 selection:text-black">
       {/* The same top bar (and mobile bottom nav) as every other app page */}
@@ -37,13 +42,15 @@ export default function RepublicInvestmentsMapPage() {
           </div>
 
           <Link
-            href="/foxer/create-investment"
+            href={
+              canRegister ? "/foxer/create-investment" : "/foxer/apply-investor"
+            }
             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">
-              add_circle
+              {canRegister ? "add_circle" : "handshake"}
             </span>
-            Register Investment Hub
+            {canRegister ? "Register Investment Hub" : "Become a Partner"}
           </Link>
         </div>
 

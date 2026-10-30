@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
+import api from "@/shared/lib/axios";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { ROLES as CATALOG } from "@/shared/data/roleCatalog";
 import { ROLES } from "./data";
 
@@ -20,6 +23,26 @@ const LIST =
 export default function RoleDocs({ slug }: { slug: string }) {
   const user = useAuthStore((s) => s.user);
   const doc = CATALOG.find((c) => c.slug === slug) ?? CATALOG[0];
+
+  // The API refuses an application for a role you hold or have pending, but
+  // only at submit, after the whole form — so don't offer one. The same
+  // request list onboarding reads.
+  const holdsRole = (user?.roleType ?? []).includes(doc.roleType as never);
+  const [pendingRoles, setPendingRoles] = useState<string[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    api
+      .get("/role-requests/my")
+      .then((res) => {
+        const requests: { status: string; roleType: string }[] =
+          res.data?.data ?? [];
+        setPendingRoles(
+          requests.filter((r) => r.status === "pending").map((r) => r.roleType),
+        );
+      })
+      .catch(() => {});
+  }, [user]);
+  const pending = pendingRoles.includes(doc.roleType);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-16">
@@ -86,7 +109,23 @@ export default function RoleDocs({ slug }: { slug: string }) {
 
         {/* Apply routes are protected: signed out, sign in here and continue
             to the form after, instead of being bounced to the landing page. */}
-        {user ? (
+        {user && holdsRole ? (
+          <>
+            <p className="mt-12 text-base text-white/80">
+              You&apos;re already a {doc.title}.
+            </p>
+            <Link
+              href={getDashboardPath(user)}
+              className="mt-4 inline-block rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
+            >
+              Go to your dashboard
+            </Link>
+          </>
+        ) : user && pending ? (
+          <p className="mt-12 inline-block rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-white/70">
+            Application pending review
+          </p>
+        ) : user ? (
           <Link href={doc.href} className={APPLY_CTA}>
             Apply as {doc.title}
           </Link>

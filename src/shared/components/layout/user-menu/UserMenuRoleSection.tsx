@@ -3,6 +3,7 @@
 import React, { useId } from "react";
 import { usePathname } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
+import { isNavActive } from "@/shared/lib/app-nav";
 import { RoleDef, ROLE_DEFS } from "./types";
 
 interface UserMenuRoleSectionProps {
@@ -21,15 +22,14 @@ export function UserMenuRoleSection({
   onSelectAdmin,
 }: UserMenuRoleSectionProps) {
   const labelId = useId();
-  const pathname = usePathname() ?? "";
+  const pathname = usePathname();
 
   // Only the dashboards this user can open. Locked ones used to sit here
   // greyed out with an "Apply" tag, duplicating "Apply for a Role" below.
   const dashboards = ROLE_DEFS.filter(hasRoleAccess);
 
   // Segment-safe prefix match, so "/user" doesn't light up on "/users".
-  const matches = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+  const matches = (href: string) => isNavActive(pathname, href);
 
   // Longest match wins, so a dashboard nested under another's path is the one
   // marked. Only listed dashboards count.
