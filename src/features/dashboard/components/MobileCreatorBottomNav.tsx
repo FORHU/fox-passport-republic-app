@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
+import { useCreatorNavLinks } from "@/features/dashboard/hooks/useCreatorNavLinks";
+import { CreatorNavMoreSheet } from "./CreatorNavMoreSheet";
 
 const BASE_TABS = [
   { icon: "dashboard", label: "Overview", href: "/creator-dashboard" },
@@ -18,6 +20,7 @@ export default function MobileCreatorBottomNav() {
   const pathname = usePathname();
   const access = useRoleAccess();
   const { canReceivePayouts, hasListings, canProposePartnerships } = access;
+  const { allNavLinks } = useCreatorNavLinks();
 
   // The Listings tab opens the first listing type this person actually
   // manages — it used to always open Venues, an empty page for a Gear,
@@ -56,8 +59,16 @@ export default function MobileCreatorBottomNav() {
       label: "Earnings",
       href: "/creator-dashboard/earnings",
     },
-    BASE_TABS[2],
   ].filter((x) => x !== false);
+
+  // Every other section the desktop nav shows (Team, Check In, Promotions,
+  // Partnerships, …) — this bar replaces the header's on the overview, and
+  // used to leave them unreachable on a phone — then Profile.
+  const tabHrefs = new Set(tabs.map((t) => t.href));
+  const more = [
+    ...allNavLinks.filter((link) => !tabHrefs.has(link.href)),
+    BASE_TABS[2],
+  ];
 
   const isActive = (href: string) =>
     href === "/creator-dashboard"
@@ -125,6 +136,13 @@ export default function MobileCreatorBottomNav() {
           </Link>
         );
       })}
+      <div style={{ display: "flex" }}>
+        <CreatorNavMoreSheet
+          links={more}
+          iconSize={21}
+          labelClassName="text-[9px] font-bold tracking-[0.04em] leading-none"
+        />
+      </div>
     </div>
   );
 }

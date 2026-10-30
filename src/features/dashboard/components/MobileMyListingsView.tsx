@@ -5,17 +5,44 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { useRoleAccess, type RoleAccess } from "@/shared/auth/useRoleAccess";
 
 const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
 // This page lists venues; the other kinds of listing each have their own
-// dashboard page, so the tabs go there rather than filtering in place.
-const FILTER_TABS = [
-  { label: "Venues", href: "/creator-dashboard/venues" },
-  { label: "Events", href: "/creator-dashboard/events" },
-  { label: "Assets", href: "/creator-dashboard/assets" },
-  { label: "Services", href: "/creator-dashboard/services" },
-] as const;
+// dashboard page, so the tabs go there rather than filtering in place. Each
+// tab shows only with the permission its page requires — the others bounced.
+const FILTER_TABS: {
+  label: string;
+  href: string;
+  allowed: keyof RoleAccess;
+}[] = [
+  {
+    label: "Venues",
+    href: "/creator-dashboard/venues",
+    allowed: "canManageVenues",
+  },
+  {
+    label: "Events",
+    href: "/creator-dashboard/events",
+    allowed: "canManageEvents",
+  },
+  {
+    label: "Assets",
+    href: "/creator-dashboard/assets",
+    allowed: "canManageInventory",
+  },
+  {
+    label: "Services",
+    href: "/creator-dashboard/services",
+    allowed: "canManageServices",
+  },
+  {
+    label: "Performers",
+    href: "/creator-dashboard/performers",
+    allowed: "canManagePerformers",
+  },
+];
 
 // The API's VenueStatus values.
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
@@ -50,6 +77,7 @@ export default function MobileMyListingsView({
   guide?: React.ReactNode;
 }) {
   const router = useRouter();
+  const access = useRoleAccess();
 
   return (
     <div
@@ -141,7 +169,7 @@ export default function MobileMyListingsView({
             paddingBottom: 2,
           }}
         >
-          {FILTER_TABS.map((tab) => {
+          {FILTER_TABS.filter((tab) => access[tab.allowed]).map((tab) => {
             const active = tab.label === "Venues";
             return (
               <button

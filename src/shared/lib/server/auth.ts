@@ -7,6 +7,10 @@ import {
   canAccessAdmin,
   type Permission,
 } from "@/shared/lib/permissions";
+import {
+  APP_HOME,
+  canAccessCreatorDashboard,
+} from "@/shared/lib/dashboard-path";
 
 // Memoised per render pass. requireAuth/requireHost are called by a page and
 // then again inside the data helpers it calls, so the profile lookup - a
@@ -88,30 +92,16 @@ export async function requireAnyPermission(
  * could never reach `/creator-dashboard/earnings` or `/stripe-onboard` at
  * all, despite the API granting both roles `payouts:onboard`. Every RoleType
  * in ROLE_TYPES (shared/constants/roles.ts) belongs here now.
+ *
+ * The rule itself is `canAccessCreatorDashboard` (shared/lib/dashboard-path.ts),
+ * shared with the user menu so it only offers this dashboard to people let in.
  */
 export async function requireHost() {
   const user = await requireAuth();
-  const roleType: string[] = user?.roleType ?? [];
-  const hostRoleTypes = [
-    "eventFoxer",
-    "venueFoxer",
-    "gearFoxer",
-    "serviceFoxer",
-    "performerFoxer",
-    "investor",
-    // Holds nothing to manage of their own, but the dashboard is where they
-    // answer invitations and find the teams they help run (ADR 0005).
-    "organizer",
-  ];
-
-  // Host areas are an admin override over someone else's data, which the
-  // secretary deliberately does not have.
-  const hasAccess =
-    hasPermission(user, "bookings:read:all") ||
-    roleType.some((r) => hostRoleTypes.includes(r));
-
-  if (!hasAccess) {
-    redirect("/");
+  // Signed in but without access: straight to the app home rather than via
+  // "/", which would only redirect there again.
+  if (!canAccessCreatorDashboard(user)) {
+    redirect(APP_HOME);
   }
   return user;
 }

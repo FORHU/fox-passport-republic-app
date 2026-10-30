@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { hasPermission } from "@/shared/lib/permissions";
 
 interface EventsTableProps {
   events: any[];
@@ -20,6 +22,11 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  // Seeing the queue (queue:read) isn't deciding it, as AdminReviewPanel.
+  const canDecide = hasPermission(
+    useAuthStore((s) => s.user),
+    "queue:decide",
+  );
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -257,22 +264,26 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({
                           {updatingId === event.id && (
                             <div className="w-4 h-4 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
                           )}
-                          <button
-                            disabled={!!updatingId}
-                            onClick={() =>
-                              openRejectDialog(event.id, event.name)
-                            }
-                            className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
-                          >
-                            Reject
-                          </button>
-                          <button
-                            disabled={!!updatingId}
-                            onClick={() => approve(event.id)}
-                            className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
-                          >
-                            Approve
-                          </button>
+                          {canDecide && (
+                            <>
+                              <button
+                                disabled={!!updatingId}
+                                onClick={() =>
+                                  openRejectDialog(event.id, event.name)
+                                }
+                                className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                disabled={!!updatingId}
+                                onClick={() => approve(event.id)}
+                                className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
+                              >
+                                Approve
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

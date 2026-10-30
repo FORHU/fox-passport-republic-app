@@ -19,9 +19,14 @@ import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/
  */
 export function VenueEditSwitch({
   venueId,
+  denied = null,
   children,
 }: {
   venueId: string;
+  /** The Venue Studio's access-denied page, for someone who is neither an
+   * Organizer of this venue nor holds `venue:manage`; the full studio used
+   * to open for any signed-in user. */
+  denied?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const access = useMyAccess({ type: "venue", id: venueId });
@@ -34,7 +39,7 @@ export function VenueEditSwitch({
     );
   }
 
-  if (access.data?.role !== "organizer") return <>{children}</>;
+  if (access.data?.role !== "organizer") return <>{denied ?? children}</>;
 
   const can = (permission: string) =>
     access.data?.permissions.includes(permission) ?? false;

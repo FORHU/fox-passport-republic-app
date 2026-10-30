@@ -324,7 +324,8 @@ export default function ItemSuccessClient() {
                 <button
                   onClick={() => {
                     reset();
-                    router.push(getDashboardPath(user));
+                    // It says My Bookings; it used to open the dashboard.
+                    router.push("/booking");
                   }}
                   className="flex-1 px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all text-center"
                 >
