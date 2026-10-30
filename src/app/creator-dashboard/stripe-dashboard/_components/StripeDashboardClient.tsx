@@ -14,9 +14,10 @@ import {
   ConnectNotificationBanner,
   ConnectAccountManagement,
 } from "@stripe/react-connect-js";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { stripeAppearanceColors } from "@/shared/lib/theme";
 import api from "@/shared/lib/axios";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export default function StripeDashboardClient() {
   const router = useRouter();
@@ -82,13 +83,12 @@ export default function StripeDashboardClient() {
       }}
     >
       <div className="mx-auto max-w-5xl px-4 py-12">
-        <button
+        <BackButton
+          variant="label"
+          label="Back to Dashboard"
           onClick={() => router.push("/creator-dashboard")}
-          className="flex items-center gap-2 text-white/50 hover:text-white text-sm mb-8 transition"
-        >
-          <ArrowLeft size={16} />
-          Back to Dashboard
-        </button>
+          className="mb-8"
+        />
 
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">

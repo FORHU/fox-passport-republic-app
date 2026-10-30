@@ -1,9 +1,9 @@
 import React from "react";
-import Link from "next/link";
 import QRScannerClient from "@/app/creator-dashboard/_components/QRScannerClient";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { getUser } from "@/shared/lib/server/auth";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export default async function ScannerPage() {
   // Check-in Helpers can be plain users, and the scanner is in everyone's
@@ -22,6 +22,7 @@ export default async function ScannerPage() {
           </span>
           {back === "/user" ? "Passport" : "Dashboard"}
         </Link>
+        <BackButton variant="label" href="/creator-dashboard" label="Dashboard" />
         <span className="text-[11px] font-mono text-accent">
           FoxCheck v2.4
         </span>

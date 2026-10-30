@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 type Props = {
   foxer?: {
@@ -72,25 +73,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
           height={22}
           style={{ objectFit: "contain" }}
         />
-        <button
-          onClick={() => router.back()}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
-            arrow_back
-          </span>
-        </button>
+        <BackButton onClick={() => router.back()} />
         <p
           style={{
             flex: 1,

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import type { ZodType } from "zod";
@@ -18,6 +17,7 @@ import { cn } from "@/shared/lib/utils";
 import { usernameSchema } from "@/shared/lib/schema";
 import { countryOfPhone, phoneSchema, splitPhone } from "@/shared/lib/phone";
 import { fetchCountries, type GeoCountry } from "@/shared/api/geo";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export type SettingsSection = "profile" | "privacy" | "security" | "danger";
 
@@ -301,20 +301,16 @@ export default function ProfileSettingsClient({
         <div className="mx-auto max-w-6xl px-4 h-20 flex items-center gap-4">
           {/* On a phone this page is reached from the settings menu, so back
               goes there; on desktop that menu doesn't exist. */}
-          <Link
+          <BackButton
             href="/user/settings"
-            aria-label="Back to settings"
-            className="lg:hidden h-10 w-10 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <Link
+            label="Back to settings"
+            className="lg:hidden"
+          />
+          <BackButton
             href="/user"
-            aria-label="Back to profile"
-            className="hidden lg:flex h-10 w-10 shrink-0 rounded-full bg-white/5 border border-white/10 items-center justify-center hover:bg-white hover:text-black transition-all"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
+            label="Back to profile"
+            className="hidden lg:inline-flex"
+          />
           <div className="min-w-0">
             <h1 className="text-xl font-display font-bold">Account Settings</h1>
             <p className="text-xs text-white/40 truncate">
