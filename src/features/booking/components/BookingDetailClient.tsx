@@ -18,6 +18,7 @@ import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { formatCurrency } from "@/shared/lib/currency";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -314,15 +315,7 @@ export default function BookingDetailClient({
       <main className="grow pt-24 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6 gap-4">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                arrow_back
-              </span>
-              Back
-            </button>
+            <BackButton variant="label" onClick={() => router.back()} />
             <div className="flex items-center gap-2 text-sm text-text-muted min-w-0">
               <Link href="/" className="hover:text-white transition-colors">
                 Home

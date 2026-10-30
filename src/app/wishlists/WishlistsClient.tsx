@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import type { Favorite } from "@/shared/api/favorites";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 // `format` is the viewer's display-currency formatter (useCurrency), passed in
 // since this helper sits outside the component.
@@ -42,13 +43,7 @@ export default function WishlistsClient() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
         <div className="mx-auto max-w-7xl px-4 h-20 flex items-center gap-4">
-          <button
-            onClick={() => router.back()}
-            aria-label="Go back"
-            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
+          <BackButton onClick={() => router.back()} />
           <h1 className="text-2xl font-display font-bold">Saved</h1>
         </div>
       </header>

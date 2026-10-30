@@ -27,6 +27,7 @@ import {
 } from "@/features/venue/api/venues";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 // A searched country has an exact bbox from Mapbox; a searched city
 // sometimes doesn't (small towns), so pad a fixed radius around its center
@@ -696,15 +697,7 @@ export function VenuesMapPageClient({
         >
           <div className="px-4 sm:px-6 py-4 shrink-0">
             <h1 className="text-xl font-display font-bold flex items-center gap-2">
-              <button
-                onClick={() => router.back()}
-                aria-label="Back"
-                className="h-8 w-8 -ml-1.5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  arrow_back
-                </span>
-              </button>
+              <BackButton onClick={() => router.back()} />
               <span className="material-symbols-outlined text-accent">
                 map
               </span>

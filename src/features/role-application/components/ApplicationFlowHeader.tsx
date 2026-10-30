@@ -34,7 +34,7 @@ export function ApplicationFlowHeader() {
       <button
         type="button"
         onClick={() => router.back()}
-        aria-label="Back"
+        aria-label="Close"
         className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
       >
         <span className="material-symbols-outlined text-[18px]">close</span>

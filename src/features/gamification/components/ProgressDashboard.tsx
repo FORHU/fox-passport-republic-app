@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CircularProgress from "@/features/gamification/components/CircularProgress";
 import { BadgeGrid } from "@/features/gamification/components/BadgeCard";
@@ -14,6 +13,7 @@ import {
 import BadgeModal from "@/features/gamification/components/BadgeModal";
 import { Badge } from "@/features/gamification/types/gamification";
 import { useMyPassport } from "@/features/gamification/hooks/usePassport";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface ProgressDashboardProps {
   showPassport?: boolean;
@@ -59,15 +59,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 a second same-weight pill right next to the status chip
                 read as visual clutter, two badges competing for attention
                 before the eye even reaches the headline. */}
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 w-fit text-white/40 hover:text-accent text-xs font-semibold transition-colors group"
-            >
-              <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform">
-                arrow_back
-              </span>
-              Back to Main Page
-            </Link>
+            <BackButton variant="label" href="/" label="Back to Main Page" />
 
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
               <span className="w-2 h-2 rounded-full bg-green-500"></span>

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft, Bookmark, CheckCircle2 } from "lucide-react";
+import { Bookmark, CheckCircle2 } from "lucide-react";
 import { FeedPost } from "@/features/republic/types";
 import { getSavedPosts } from "@/shared/api/feed";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { SharePostModal } from "@/features/messages/components/SharePostModal";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export default function SavedPostsPage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -89,13 +89,7 @@ export default function SavedPostsPage() {
 
       <div className="max-w-2xl mx-auto px-3 sm:px-6 w-full pb-16 pt-5">
         <div className="flex items-center gap-3 mb-5">
-          <Link
-            href="/republic"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900/80 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-            aria-label="Back to Republic feed"
-          >
-            <ArrowLeft className="h-4 w-4" strokeWidth={2} />
-          </Link>
+          <BackButton href="/republic" label="Back to Republic feed" />
           <div className="flex items-center gap-2">
             <Bookmark className="h-5 w-5 text-lime-400" strokeWidth={2} />
             <h1 className="text-base font-black text-white">Saved Posts</h1>
