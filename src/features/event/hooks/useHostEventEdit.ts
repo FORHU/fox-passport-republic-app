@@ -23,6 +23,7 @@ import {
   TALENT_ICONS,
 } from "@/features/event/data/eventBuilderData";
 import type { Id } from "@/shared/lib/api-types";
+import { EVENT_DESCRIPTION_MAX, firstLimitError } from "@/shared/lib/limits";
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
@@ -195,6 +196,16 @@ export function useHostEventEdit(eventId: string) {
   const submitEvent = async (targetStatus: string) => {
     if (!builder.eventTitle) {
       toast.error("Please add an event title");
+      return;
+    }
+    const limitMsg = firstLimitError({
+      name: builder.eventTitle,
+      description: builder.description,
+      descriptionMax: EVENT_DESCRIPTION_MAX,
+      quantity: builder.maxAttendees > 0 ? builder.maxAttendees : undefined,
+    });
+    if (limitMsg) {
+      toast.error(limitMsg);
       return;
     }
     if (targetStatus === "pending" && !builder.category) {

@@ -12,6 +12,7 @@ import {
   ASSET_CATEGORIES,
   CONDITIONS,
 } from "@/features/asset/data/listingBuilderData";
+import { firstLimitError } from "@/shared/lib/limits";
 
 function belongsToHost(record: any, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -210,6 +211,15 @@ export function useHostAssetEdit(assetId: string) {
       inventory.setError(
         "Please complete all required fields before publishing",
       );
+      return;
+    }
+    const limitMsg = firstLimitError({
+      name: inventory.title,
+      description: inventory.description,
+      price: inventory.price,
+    });
+    if (limitMsg) {
+      inventory.setError(limitMsg);
       return;
     }
 
