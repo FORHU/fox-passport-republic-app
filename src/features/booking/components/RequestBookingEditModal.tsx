@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { createBookingEditRequest } from "@/features/booking/api/bookings";
 import type { BookingEditRequest } from "@/features/booking/types/booking.types";
 
@@ -63,6 +64,10 @@ export default function RequestBookingEditModal({
       setError("Change something before submitting.");
       return;
     }
+    if (startDate && endDate && endDate < startDate) {
+      setError("The end date must be on or after the start date.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
@@ -89,7 +94,7 @@ export default function RequestBookingEditModal({
       });
       onSubmitted(request);
     } catch (e: any) {
-      setError(e?.response?.data?.message ?? e.message ?? "Failed to submit request");
+      setError(getApiErrorMessage(e, "Couldn't submit your request. Check the dates and try again."));
     } finally {
       setSubmitting(false);
     }

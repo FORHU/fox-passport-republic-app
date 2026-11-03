@@ -17,6 +17,7 @@ import {
 import AuditHistoryPanel from "./AuditHistoryPanel";
 
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 
 const FEE_HISTORY_FIELDS = {
   name: "Name",
@@ -107,6 +108,15 @@ function FeeRuleModal({
     const fixed = fixedAmount.trim() === "" ? null : Number(fixedAmount);
     if (pct == null && fixed == null) {
       toast.error("Set a percentage, a fixed amount, or both");
+      return;
+    }
+    if ((pct != null && (pct < 0 || pct > 100)) || (fixed != null && fixed < 0)) {
+      toast.error("Enter a percentage from 0 to 100 and a fixed amount of 0 or more.");
+      return;
+    }
+    const from = rule?.effectiveFrom ? rule.effectiveFrom.slice(0, 10) : new Date().toISOString().slice(0, 10);
+    if (effectiveUntil && effectiveUntil <= from) {
+      toast.error("Pick an \"Effective until\" date after the rule starts.");
       return;
     }
     onSave({
@@ -458,8 +468,10 @@ export default function AdminPlatformFeeConfigs() {
       await deletePlatformFeeConfig(id);
       toast.success("Fee rule deactivated.");
       load();
-    } catch {
-      toast.error("Failed to deactivate fee rule.");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Couldn't deactivate the fee rule. Try again."),
+      );
     }
   };
 
@@ -476,8 +488,10 @@ export default function AdminPlatformFeeConfigs() {
       setShowModal(false);
       setEditRule(null);
       load();
-    } catch {
-      toast.error("Failed to save fee rule.");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Couldn't save the fee rule. Check the values and try again."),
+      );
     } finally {
       setSaving(false);
     }

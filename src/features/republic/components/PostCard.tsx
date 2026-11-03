@@ -25,6 +25,8 @@ import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
 import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
 import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
+import { POST_MAX, POST_MESSAGE } from "@/shared/lib/limits";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
 import { Badge } from "@/shared/components/ui/badge";
@@ -62,7 +64,7 @@ function PollCard({
       const updated = await voteOnPoll(postId, optionId);
       onVoted(updated);
     } catch (err: unknown) {
-      toast.error((err as Error)?.message || "Could not cast your vote.");
+      toast.error(getApiErrorMessage(err, "Could not cast your vote. Try again."));
     } finally {
       setVoting(false);
     }
@@ -209,13 +211,19 @@ export function PostCard({
       toast.error("Post content cannot be empty.");
       return;
     }
+    if (trimmed.length > POST_MAX) {
+      toast.error(POST_MESSAGE);
+      return;
+    }
     try {
       const updated = await editPost(post.id, { content: trimmed });
       setContent(updated.content);
       setEditedAt(updated.editedAt ?? new Date().toISOString());
       setIsEditing(false);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Could not save changes.");
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(error, "Could not save your changes. Check your connection and try again."),
+      );
     }
   };
 
@@ -318,6 +326,7 @@ export function PostCard({
             onChange={(e) => setEditContent(e.target.value)}
             rows={3}
             autoFocus
+            maxLength={POST_MAX}
             className="w-full resize-none bg-zinc-900 border border-zinc-800 focus:border-lime-400/60 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none transition-colors"
           />
           <div className="flex items-center gap-2">
@@ -340,7 +349,7 @@ export function PostCard({
       ) : (
         <div
           onClick={openable ? handleOpenDetail : undefined}
-          className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed ${openable ? "cursor-pointer" : ""}`}
+          className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap break-words leading-relaxed ${openable ? "cursor-pointer" : ""}`}
         >
           {renderUsernameMentions(displayedContent)}
           {isLongText && !textExpanded && (
@@ -403,7 +412,7 @@ export function PostCard({
             <p className="text-xs font-bold text-zinc-200">
               {post.originalPost.author.name}
             </p>
-            <p className="text-[11px] text-zinc-500 line-clamp-2">
+            <p className="text-[11px] text-zinc-500 line-clamp-2 break-words">
               {post.originalPost.content}
             </p>
           </div>

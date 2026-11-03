@@ -259,3 +259,16 @@ describe("form limit messages", () => {
     expect(firstLimitError({ name: "ok", quantity: "5", price: 10 })).toBeNull();
   });
 });
+
+describe("createEventSchema — date range", () => {
+  it("rejects an end that is not after the start, with a plain message", () => {
+    const result = createEventSchema.safeParse({
+      ...eventBase,
+      endDatetime: new Date("2026-08-01T09:00:00"),
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("The end date must be after the start date.");
+    }
+  });
+});

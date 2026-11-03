@@ -62,7 +62,7 @@ describe("useFileUpload", () => {
   it("shows the API's message when it refuses the upload", async () => {
     api.post
       .mockResolvedValueOnce({ data: { url: "https://s3/put", key: "k" } })
-      .mockRejectedValueOnce({ response: { data: { message: FILE_UNSUPPORTED.image } } });
+      .mockRejectedValueOnce({ response: { status: 400, data: { message: FILE_UNSUPPORTED.image } } });
     const { result } = renderHook(() => useFileUpload());
 
     await act(async () => {
