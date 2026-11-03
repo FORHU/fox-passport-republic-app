@@ -254,7 +254,7 @@ export function CustomExperienceBuilderModal({
                         {foxer.role}
                       </p>
                       <div className="flex items-center gap-1 mt-2 text-[10px] text-text-muted">
-                        <span className="material-symbols-outlined text-[12px] text-yellow-400">
+                        <span className="material-symbols-outlined text-[12px] gold-foil">
                           star
                         </span>
                         <span>{foxer.rating}</span>

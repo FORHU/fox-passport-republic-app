@@ -503,7 +503,7 @@ export default function VenueDetailClient({
             </span>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-white/70">
-            <span className="material-symbols-outlined text-[13px] text-yellow-400 fill-current">
+            <span className="material-symbols-outlined text-[13px] gold-foil fill-current">
               star
             </span>
             <span>{venue.rating || 0}</span>

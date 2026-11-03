@@ -51,7 +51,7 @@ export function BookingWidget({
             </span>
           </div>
           <div className="flex items-center gap-1 text-xs text-white font-bold">
-            <span className="material-symbols-outlined text-[14px] fill-current text-yellow-400">
+            <span className="material-symbols-outlined text-[14px] fill-current gold-foil">
               star
             </span>
             {rating} ·{" "}

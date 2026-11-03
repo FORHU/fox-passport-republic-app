@@ -17,8 +17,8 @@ function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   const label = spec.category.replace(/_/g, " ");
   if (spec.source === "earned") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-yellow-400/15 border border-yellow-400/40 text-yellow-300">
-        <span className="material-symbols-outlined text-[13px] fill-current">
+      <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-gold-tint border border-gold-edge text-gold">
+        <span className="material-symbols-outlined gold-foil text-[13px] fill-current">
           star
         </span>
         {label}
@@ -259,7 +259,7 @@ const FoxerProfile: React.FC = () => {
                       {foxer.avgRating != null
                         ? foxer.avgRating.toFixed(1)
                         : "—"}
-                      <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">
+                      <span className="material-symbols-outlined gold-foil text-[16px] fill-current">
                         star
                       </span>
                     </p>

@@ -30,7 +30,7 @@ export function ResourceCard({
       onDragStart={(e) => !isGatedVenue && onDragStart(e, item)}
       className={`group bg-surface-raised border border-white/5 rounded-2xl p-4 transition-colors relative ${
         isGatedVenue
-          ? "opacity-60"
+          ? "opacity-100"
           : "hover:bg-surface-raised hover:border-white/10 cursor-grab"
       }`}
     >

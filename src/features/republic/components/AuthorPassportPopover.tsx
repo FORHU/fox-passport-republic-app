@@ -118,8 +118,8 @@ export function AuthorPassportPopover({
             {stampsCount > 0 && (
               <>
                 <span>•</span>
-                <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 font-medium">
-                  <Award className="h-[13px] w-[13px]" strokeWidth={2} />
+                <span className="inline-flex items-center gap-1 text-[11px] text-gold font-medium">
+                  <Award className="h-[13px] w-[13px] gold-foil-svg" strokeWidth={2} />
                   {stampsCount} {stampsCount === 1 ? "Stamp" : "Stamps"}
                 </span>
               </>
@@ -136,7 +136,7 @@ export function AuthorPassportPopover({
               <span
                 key={b.id}
                 title={b.name}
-                className="flex items-center justify-center text-amber-400"
+                className="flex items-center justify-center text-green-400"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {b.icon || "star"}
