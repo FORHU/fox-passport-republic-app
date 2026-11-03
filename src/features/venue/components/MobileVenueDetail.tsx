@@ -214,8 +214,8 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             }}
           >
             <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 14, color: "var(--warning)" }}
+              className="material-symbols-outlined gold-foil"
+              style={{ fontSize: 14 }}
             >
               star
             </span>

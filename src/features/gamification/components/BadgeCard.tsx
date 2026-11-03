@@ -32,10 +32,10 @@ const RARITY_CONFIG: Record<
     label: "text-purple-400",
   },
   legendary: {
-    bg: "bg-amber-950/40",
-    border: "border-amber-500/30",
-    glow: "#D99A26",
-    label: "text-amber-400",
+    bg: "bg-gold-tint",
+    border: "border-gold-edge",
+    glow: "#C9A04A",
+    label: "text-gold",
   },
 };
 

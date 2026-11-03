@@ -683,7 +683,7 @@ export function ComposePostBox({
               />
             </div>
 
-            <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+            <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-xp bg-xp-tint border border-xp/30 px-2 py-0.5 rounded-full">
               <span className="material-symbols-outlined text-[12px]">
                 bolt
               </span>

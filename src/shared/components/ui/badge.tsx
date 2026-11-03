@@ -16,8 +16,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         // Partner/commercial accreditation — "Partner Foxer" and similar.
+        // Polished gold bar (globals.css `gold-foil-pill`), the premium mark.
         partner:
-          "bg-amber-400/15 border-amber-400/40 text-amber-300 font-black uppercase tracking-wider",
+          "gold-foil-pill font-black uppercase tracking-wider",
         // Verified/accent status — "Verified Citizen" and similar.
         verified:
           "bg-lime-400/10 border-lime-400/20 text-lime-400 font-bold uppercase tracking-wider",
@@ -36,7 +37,7 @@ const badgeVariants = cva(
         solid:
           "bg-lime-400 border-transparent text-black font-black uppercase tracking-wider shadow-md",
         "solid-amber":
-          "bg-amber-400 border-transparent text-black font-black uppercase tracking-wider shadow-md",
+          "gold-foil-pill font-black uppercase tracking-wider shadow-md",
       },
     },
     defaultVariants: {
