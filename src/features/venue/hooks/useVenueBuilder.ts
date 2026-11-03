@@ -15,6 +15,7 @@ import {
   fetchVenueCatalog,
   updateVenue,
 } from "@/features/venue/api/venues";
+import { LONG_DESCRIPTION_MAX, firstLimitError } from "@/shared/lib/limits";
 
 type VenueCatalog = { tech: string[]; amenities: string[]; staff: string[] };
 const CATALOG_TABS = new Set(["tech", "amenities", "staff"]);
@@ -218,6 +219,16 @@ export function useVenueBuilder() {
       toast.error("Please enter a venue name before saving");
       return;
     }
+    const draftLimitMsg = firstLimitError({
+      name: store.venueName,
+      description: store.description,
+      descriptionMax: LONG_DESCRIPTION_MAX,
+      quantity: store.capacity,
+    });
+    if (draftLimitMsg) {
+      toast.error(draftLimitMsg);
+      return;
+    }
 
     store.setIsSubmitting(true);
     try {
@@ -291,6 +302,17 @@ export function useVenueBuilder() {
 
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(", ")}`);
+      return;
+    }
+
+    const limitMsg = firstLimitError({
+      name: store.venueName,
+      description: store.description,
+      descriptionMax: LONG_DESCRIPTION_MAX,
+      quantity: store.capacity,
+    });
+    if (limitMsg) {
+      toast.error(limitMsg);
       return;
     }
 

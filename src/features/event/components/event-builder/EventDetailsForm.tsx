@@ -6,6 +6,13 @@ import { countWords } from "@/features/event/utils/textStats";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import {
+  EVENT_DESCRIPTION_MAX,
+  QUANTITY_MAX,
+  descriptionError,
+  nameError,
+  quantityError,
+} from "@/shared/lib/limits";
 import DateTimePicker from "./DateTimePicker";
 
 interface EventDetailsFormProps {
@@ -62,6 +69,9 @@ export function EventDetailsForm({
   onCancellationPolicyChange,
   onCloseGuide,
 }: EventDetailsFormProps) {
+  const titleMsg = nameError(eventTitle);
+  const attendeesMsg = quantityError(maxAttendees);
+  const descriptionMsg = descriptionError(description, EVENT_DESCRIPTION_MAX);
   return (
     <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8">
       {/* Guide Banner */}
@@ -99,8 +109,14 @@ export function EventDetailsForm({
             value={eventTitle}
             onChange={(e) => onTitleChange(e.target.value)}
             placeholder="Enter your event title..."
+            aria-invalid={!!titleMsg}
             className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-10 focus:border-accent/30 outline-none transition-colors"
           />
+          {titleMsg && (
+            <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+              {titleMsg}
+            </p>
+          )}
         </div>
 
         {/* Category - Moved below Title */}
@@ -131,36 +147,16 @@ export function EventDetailsForm({
           </p>
         </div>
 
-        {/* Date & Location */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+        {/* When and Max Attendees share a row; the location gets a full-width
+            row below, because its three selects need the room. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="min-w-0">
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               When
             </label>
             <DateTimePicker value={date} onChange={onDateChange} />
           </div>
-          <div className="flex-1">
-            {/* Where — country → state → city, each locked until the one
-                before it is picked. `location` stays the display string the
-                listing shows ("City, State"). */}
-            <CascadingLocationFields
-              value={{
-                country: targetCountry,
-                state: targetState,
-                city: targetCity,
-              }}
-              onChange={(next) => {
-                onTargetCountryChange?.(next.country);
-                onTargetStateChange?.(next.state);
-                onTargetCityChange?.(next.city);
-                onLocationChange(
-                  [next.city, next.state].filter(Boolean).join(", "),
-                );
-              }}
-              onCoordinates={(lat, lng) => onLatLngChange?.(lat, lng)}
-            />
-          </div>
-          <div className="flex-1">
+          <div className="min-w-0">
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               Max Attendees
             </label>
@@ -176,11 +172,38 @@ export function EventDetailsForm({
                 }
                 placeholder="100"
                 min="1"
+                max={QUANTITY_MAX}
+                aria-invalid={!!attendeesMsg}
                 className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
               />
             </div>
+            {attendeesMsg && (
+              <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                {attendeesMsg}
+              </p>
+            )}
           </div>
         </div>
+
+        {/* Where — country → state → city, each locked until the one
+            before it is picked. `location` stays the display string the
+            listing shows ("City, State"). */}
+        <CascadingLocationFields
+          value={{
+            country: targetCountry,
+            state: targetState,
+            city: targetCity,
+          }}
+          onChange={(next) => {
+            onTargetCountryChange?.(next.country);
+            onTargetStateChange?.(next.state);
+            onTargetCityChange?.(next.city);
+            onLocationChange(
+              [next.city, next.state].filter(Boolean).join(", "),
+            );
+          }}
+          onCoordinates={(lat, lng) => onLatLngChange?.(lat, lng)}
+        />
 
         {/* Cancellation Policy */}
         <div className="max-w-xs">
@@ -238,6 +261,11 @@ export function EventDetailsForm({
                   placeholder="Describe the vibe, the music, the crowd... (100–500 words)"
                   className={`w-full bg-white/5 border ${borderColor} rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-52 focus:border-accent/30 outline-none transition-colors`}
                 />
+                {descriptionMsg && (
+                  <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                    {descriptionMsg}
+                  </p>
+                )}
                 {tooShort && wordCount > 0 && (
                   <p className="mt-1.5 text-[10px] text-yellow-400/80">
                     Minimum 100 words required to publish.

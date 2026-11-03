@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  EVENT_DESCRIPTION_MAX,
+  LONG_DESCRIPTION_MAX,
+  descriptionField,
+  nameField,
+  priceField,
+  quantityField,
+} from "./limits";
 
 // --- PROFILE FIELD SCHEMAS ---
 // Kept in step with the API's PUT /profile validation (profile.controller.ts).
@@ -39,10 +47,7 @@ export const signupSchema = z
       ),
     confirmPassword: z.string(),
     username: usernameSchema,
-    name: z
-      .string()
-      .min(1, "Name is required")
-      .regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
+    name: nameField("Name is required").regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
     mobileNumber: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -85,11 +90,14 @@ export type VerifyEmailFormData = z.infer<typeof verifyEmailSchema>;
 
 // --- ASSET / INVENTORY SCHEMAS ---
 export const createAssetSchema = z.object({
-  name: z.string().min(1, "Asset name is required"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+  name: nameField("Asset name is required"),
+  description: descriptionField().min(
+    10,
+    "Description must be at least 10 characters",
+  ),
   category: z.string().min(1, "Category is required"),
-  price: z.number().min(0, "Price must be non-negative"),
-  quantity: z.number().int().min(1, "Quantity must be at least 1").optional(),
+  price: priceField(),
+  quantity: quantityField().optional(),
 });
 
 export type CreateAssetFormData = z.infer<typeof createAssetSchema>;
@@ -102,10 +110,13 @@ export type UpdateAssetFormData = z.infer<typeof updateAssetSchema>;
 
 // --- SERVICE SCHEMAS ---
 export const createServiceSchema = z.object({
-  name: z.string().min(1, "Service name is required"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+  name: nameField("Service name is required"),
+  description: descriptionField().min(
+    10,
+    "Description must be at least 10 characters",
+  ),
   category: z.string().min(1, "Category is required"),
-  price: z.number().min(0, "Price must be non-negative"),
+  price: priceField(),
   billingRate: z
     .enum(["hourly", "daily", "weekly", "monthly"])
     .default("hourly"),
@@ -124,14 +135,14 @@ export type UpdateServiceFormData = z.infer<typeof updateServiceSchema>;
 
 // --- EVENT SCHEMAS ---
 export const createEventSchema = z.object({
-  name: z.string().min(1, "Event name is required"),
-  description: z.string().optional(),
+  name: nameField("Event name is required"),
+  description: descriptionField(EVENT_DESCRIPTION_MAX).optional(),
   eventType: z.string().min(1, "Event type is required"),
   venueId: z.string().min(1, "Venue is required"),
   startDatetime: z.date(),
   endDatetime: z.date(),
-  maxAttendees: z.number().int().min(1, "Max attendees must be at least 1"),
-  totalPrice: z.number().min(0, "Price must be non-negative").optional(),
+  maxAttendees: quantityField(),
+  totalPrice: priceField().optional(),
   status: z
     .enum(["draft", "pending", "ongoing", "completed", "cancelled"])
     .default("draft"),
@@ -147,15 +158,15 @@ export type UpdateEventFormData = z.infer<typeof updateEventSchema>;
 
 // --- VENUE SCHEMAS ---
 export const createVenueSchema = z.object({
-  name: z.string().min(1, "Venue name is required"),
-  description: z.string().optional(),
+  name: nameField("Venue name is required"),
+  description: descriptionField(LONG_DESCRIPTION_MAX).optional(),
   type: z.string().min(1, "Venue type is required"),
-  capacity: z.number().int().min(1, "Capacity must be at least 1"),
+  capacity: quantityField(),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   state: z.string().optional(),
   country: z.string().min(1, "Country is required"),
-  price: z.number().min(0, "Price must be non-negative"),
+  price: priceField(),
   status: z
     .enum(["draft", "pending", "available", "archived", "rejected"])
     .default("draft"),

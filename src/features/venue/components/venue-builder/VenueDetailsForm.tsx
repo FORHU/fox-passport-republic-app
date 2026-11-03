@@ -17,6 +17,12 @@ import {
 import { fetchBarangays } from "@/shared/api/geo";
 import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
+import {
+  LONG_DESCRIPTION_MAX,
+  descriptionError,
+  nameError,
+  quantityError,
+} from "@/shared/lib/limits";
 
 interface VenueDetailsFormProps {
   venueName: string;
@@ -91,6 +97,9 @@ export function VenueDetailsForm({
 }: VenueDetailsFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPhilippines = /^philippines$/i.test(country.trim());
+  const nameMsg = nameError(venueName);
+  const capacityMsg = quantityError(capacity);
+  const descriptionMsg = descriptionError(description, LONG_DESCRIPTION_MAX);
 
   const barangays = useQuery({
     queryKey: ["geo", "barangays", state, city],
@@ -192,9 +201,15 @@ export function VenueDetailsForm({
                   value={venueName}
                   onChange={(e) => onNameChange(e.target.value)}
                   placeholder="Enter venue name..."
+                  aria-invalid={!!nameMsg}
                   className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
                 />
               </div>
+              {nameMsg && (
+                <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                  {nameMsg}
+                </p>
+              )}
             </div>
 
             {/* Type & Capacity */}
@@ -231,9 +246,16 @@ export function VenueDetailsForm({
                     value={capacity}
                     onChange={(e) => onCapacityChange(e.target.value)}
                     placeholder="e.g. 200"
+                    inputMode="numeric"
+                    aria-invalid={!!capacityMsg}
                     className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
                   />
                 </div>
+                {capacityMsg && (
+                  <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                    {capacityMsg}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -356,8 +378,14 @@ export function VenueDetailsForm({
                 value={description}
                 onChange={(e) => onDescriptionChange(e.target.value)}
                 placeholder="Describe the venue..."
+                aria-invalid={!!descriptionMsg}
                 className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-32"
               />
+              {descriptionMsg && (
+                <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                  {descriptionMsg}
+                </p>
+              )}
             </div>
 
             {/* Gallery Section */}

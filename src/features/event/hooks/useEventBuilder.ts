@@ -15,6 +15,7 @@ import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { countWords } from "@/features/event/utils/textStats";
 import { fetchMyAffiliations } from "@/shared/api/venue-affiliations";
+import { EVENT_DESCRIPTION_MAX, firstLimitError } from "@/shared/lib/limits";
 
 // `category` on the backend is a fixed enum (corporate/birthday/wedding/
 // social/other) — unlike a venue's free-text category, there's no field to
@@ -523,6 +524,17 @@ export function useEventBuilder() {
         if (!opts?.silent) toast.error("Add an event title before saving");
         return;
       }
+      const draftLimitMsg = firstLimitError({
+        name: store.eventTitle,
+        description: store.description,
+        descriptionMax: EVENT_DESCRIPTION_MAX,
+        quantity: store.maxAttendees > 0 ? store.maxAttendees : undefined,
+      });
+      if (draftLimitMsg) {
+        useEventBuilderStore.getState().setIsSubmitting(false);
+        if (!opts?.silent) toast.error(draftLimitMsg);
+        return;
+      }
 
       const safeEventTypeMapping: Record<string, string> = {
         corporate: "corporate",
@@ -790,6 +802,16 @@ export function useEventBuilder() {
     }
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(", ")}`);
+      return;
+    }
+    const limitMsg = firstLimitError({
+      name: store.eventTitle,
+      description: store.description,
+      descriptionMax: EVENT_DESCRIPTION_MAX,
+      quantity: store.maxAttendees > 0 ? store.maxAttendees : undefined,
+    });
+    if (limitMsg) {
+      toast.error(limitMsg);
       return;
     }
 
