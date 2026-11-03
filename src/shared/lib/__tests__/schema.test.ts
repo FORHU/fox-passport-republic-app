@@ -132,7 +132,7 @@ describe("usernameSchema", () => {
     expect(usernameSchema.parse(" Multi.Role_1 ")).toBe("multi.role_1");
   });
 
-  it.each(["bad name", "a@b!", "hi-there", "ab", "a".repeat(31)])(
+  it.each(["bad name", "a@b!", "hi-there", "ab", "fox😀", "a".repeat(31), "a".repeat(100)])(
     "rejects %j",
     (value) => {
       expect(usernameSchema.safeParse(value).success).toBe(false);

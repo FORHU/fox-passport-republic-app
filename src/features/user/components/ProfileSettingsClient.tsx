@@ -422,7 +422,7 @@ export default function ProfileSettingsClient({
                   label="Username"
                   icon="alternate_email"
                   htmlFor="username"
-                  hint="Letters, numbers, _ and . only"
+                  hint="3–30 characters: letters, numbers, . and _"
                   error={fieldErrors.username}
                   errorId="username-error"
                 >
@@ -435,14 +435,13 @@ export default function ProfileSettingsClient({
                         // Usernames are stored lowercase; show that as they type.
                         const next = e.target.value.toLowerCase();
                         setUsername(next);
-                        recheck("username", next);
+                        checkOnBlur("username", next);
                       }}
                       onBlur={() => checkOnBlur("username", username)}
                       placeholder="your_username"
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      maxLength={30}
                       aria-invalid={!!fieldErrors.username}
                       aria-describedby={
                         fieldErrors.username ? "username-error" : undefined
