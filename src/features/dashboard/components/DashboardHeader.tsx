@@ -10,21 +10,14 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import {
+  useCreatorNavLinks,
+  isCreatorLinkActive,
+} from "@/features/dashboard/hooks/useCreatorNavLinks";
+import { CreatorNavMoreSheet } from "./CreatorNavMoreSheet";
 
-const NAV_ICONS: Record<string, string> = {
-  Overview: "dashboard",
-  Events: "celebration",
-  Venues: "location_city",
-  Assets: "inventory_2",
-  Services: "design_services",
-  Performers: "theater_comedy",
-  "Check In": "qr_code_scanner",
-  Earnings: "account_balance_wallet",
-  Promotions: "sell",
-  Partnerships: "handshake",
-  Affiliations: "link",
-  Team: "groups",
-};
+/** Tabs the mobile bar holds; past that, the last slot is "More". */
+const MOBILE_TAB_SLOTS = 5;
 
 interface DashboardHeaderProps {
   /** The caller already renders its own mobile bottom nav (e.g.
@@ -60,7 +53,8 @@ export function DashboardHeader({
   const roleType = user?.roleType ?? [];
   const roleLabels: string[] = [];
   if (access.isMayor) roleLabels.push("Venue Foxer");
-  if (access.isHost) roleLabels.push("Event Foxer");
+  // From the event permission: isHost (booking:check-in) is held by admins too.
+  if (access.canManageEvents) roleLabels.push("Event Foxer");
   if (access.canManageInventory) roleLabels.push("Gear Foxer");
   if (access.canManageServices) roleLabels.push("Talent Foxer");
   if (access.canManagePerformers) roleLabels.push("Performer Foxer");
@@ -76,73 +70,16 @@ export function DashboardHeader({
         : `${roleLabels[0]} +${roleLabels.length - 1}`;
   const fullRoleTooltip = roleLabels.join(" · ") || "Creator";
 
-  // Primary workspace links
-  const primaryLinks = [
-    { label: "Overview", href: "/creator-dashboard" },
-    access.canManageEvents && {
-      label: "Events",
-      href: "/creator-dashboard/events",
-    },
-    access.canManageVenues && {
-      label: "Venues",
-      href: "/creator-dashboard/venues",
-    },
-    access.canManageInventory && {
-      label: "Assets",
-      href: "/creator-dashboard/assets",
-    },
-    access.canManageServices && {
-      label: "Services",
-      href: "/creator-dashboard/services",
-    },
-    access.canManagePerformers && {
-      label: "Performers",
-      href: "/creator-dashboard/performers",
-    },
-    // An Investor's whole workspace — it had no way in from the nav.
-    access.canProposePartnerships && {
-      label: "Partnerships",
-      href: "/creator-dashboard/partnerships",
-    },
-  ].filter(Boolean) as { label: string; href: string }[];
-
-  // Secondary tools & operations
-  const secondaryLinks = [
-    // Organizers & Check-in Helpers for every Venue and Event you own.
-    (access.canManageEvents || access.canManageVenues) && {
-      label: "Team",
-      href: "/creator-dashboard/team",
-    },
-    // Event Foxer ↔ venue approvals — an Event Foxer can't publish without
-    // one, and this was only reachable from a link inside the event builder.
-    (access.canManageEvents || access.canManageVenues) && {
-      label: "Affiliations",
-      href: "/foxer/affiliations",
-    },
-    // Owners receive the proposals Investors send them.
-    !access.canProposePartnerships &&
-      (access.canManageEvents || access.canManageVenues) && {
-        label: "Partnerships",
-        href: "/creator-dashboard/partnerships",
-      },
-    access.canManagePromotions && {
-      label: "Promotions",
-      href: "/creator-dashboard/promotions",
-    },
-    // Organizers check guests in too, on the Events and Venues they help run.
-    (access.isHost || roleType.includes("organizer")) && {
-      label: "Check In",
-      href: "/creator-dashboard/check-in",
-    },
-    // An Organizer gets no platform pay (ADR 0005) — nothing to see here.
-    access.canReceivePayouts && {
-      label: "Earnings",
-      href: "/creator-dashboard/earnings",
-    },
-  ].filter(Boolean) as { label: string; href: string }[];
-
-  const allNavLinks = [...primaryLinks, ...secondaryLinks];
+  const { primaryLinks, secondaryLinks, allNavLinks } = useCreatorNavLinks();
   const useDropdown = allNavLinks.length > 5;
+  // Every section stays reachable on a phone: past the slots, "More".
+  const mobileOverflow = allNavLinks.length > MOBILE_TAB_SLOTS;
+  const mobileTabs = mobileOverflow
+    ? allNavLinks.slice(0, MOBILE_TAB_SLOTS - 1)
+    : allNavLinks;
+  const mobileMore = mobileOverflow
+    ? allNavLinks.slice(MOBILE_TAB_SLOTS - 1)
+    : [];
 
   return (
     <>
@@ -177,10 +114,7 @@ export function DashboardHeader({
             {/* Navigation — Compact pills with clean responsive density */}
             <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 bg-black/40 p-1 rounded-full border border-white/5">
               {(useDropdown ? primaryLinks : allNavLinks).map((link) => {
-                const isActive =
-                  link.href === "/creator-dashboard"
-                    ? pathname === "/creator-dashboard"
-                    : pathname.startsWith(link.href);
+                const isActive = isCreatorLinkActive(pathname, link.href);
                 return (
                   <Link
                     key={link.label}
@@ -222,7 +156,7 @@ export function DashboardHeader({
                     <div className="absolute right-0 top-full mt-2 w-48 bg-surface/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                       {secondaryLinks.map((link) => {
                         const isActive = pathname.startsWith(link.href);
-                        const icon = NAV_ICONS[link.label] ?? "arrow_forward";
+                        const icon = link.icon;
                         return (
                           <Link
                             key={link.label}
@@ -262,7 +196,8 @@ export function DashboardHeader({
                     {primaryRoleLabel}
                   </div>
                 </div>
-                <UserMenuButton />
+                {/* The app's shared pages too: this header has no app nav. */}
+                <UserMenuButton showAppNav />
               </div>
             </div>
           </div>
@@ -283,12 +218,9 @@ export function DashboardHeader({
             boxShadow: "0 10px 40px rgba(0,0,0,0.65)",
           }}
         >
-          {allNavLinks.slice(0, 5).map((link) => {
-            const isActive =
-              link.href === "/creator-dashboard"
-                ? pathname === "/creator-dashboard"
-                : pathname.startsWith(link.href);
-            const icon = NAV_ICONS[link.label] ?? "circle";
+          {mobileTabs.map((link) => {
+            const isActive = isCreatorLinkActive(pathname, link.href);
+            const icon = link.icon;
             return (
               <Link
                 key={link.label}
@@ -315,6 +247,7 @@ export function DashboardHeader({
               </Link>
             );
           })}
+          {mobileOverflow && <CreatorNavMoreSheet links={mobileMore} />}
         </nav>
       )}
     </>
@@ -381,8 +314,9 @@ export function WelcomeBanner({
       icon: "inventory_2",
       iconColor: "text-purple-400",
       allowed: access.canManageInventory,
-      requiredRole: "Foxer (Asset)",
-      applyHref: "/onboarding",
+      requiredRole: "Gear Foxer",
+      // The role's own application, as the Studios link (roleCatalog).
+      applyHref: "/foxer/apply?type=asset",
       onClick: onNavigateToCreateInventory,
     },
     {
@@ -390,8 +324,8 @@ export function WelcomeBanner({
       icon: "design_services",
       iconColor: "text-yellow-400",
       allowed: access.canManageServices,
-      requiredRole: "Foxer (Service)",
-      applyHref: "/onboarding",
+      requiredRole: "Talent Foxer",
+      applyHref: "/foxer/apply?type=service",
       onClick: onNavigateToCreateService,
     },
     {
@@ -400,7 +334,7 @@ export function WelcomeBanner({
       iconColor: "text-amber-500",
       allowed: access.canManagePerformers,
       requiredRole: "Performer Foxer",
-      applyHref: "/onboarding",
+      applyHref: "/foxer/apply?type=performer",
       onClick: onNavigateToCreatePerformerService || onNavigateToCreateService,
     },
   ];
@@ -420,6 +354,9 @@ export function WelcomeBanner({
             {user?.name?.split(" ")[0] || "Creator"}!
           </span>
         </h1>
+        {/* Organizers, Investors and admins create no listings: no empty
+            "You have access to" and no menu of locked items. */}
+        {access.hasListings && (
         <p className="text-sm text-white/50">
           You have access to{" "}
           {[
@@ -455,6 +392,7 @@ export function WelcomeBanner({
               [],
             )}
         </p>
+        )}
       </div>
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto shrink-0">
         <Link
@@ -466,6 +404,7 @@ export function WelcomeBanner({
           </span>
           Calendar
         </Link>
+        {access.hasListings && (
         <div className="relative" ref={menuRef}>
           <button
             onClick={onToggleCreateMenu}
@@ -516,6 +455,7 @@ export function WelcomeBanner({
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );

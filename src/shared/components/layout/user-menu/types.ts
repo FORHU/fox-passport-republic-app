@@ -1,5 +1,7 @@
 import { FOXER_ROLES } from "@/shared/constants/roles";
-import { Users, Building2, Coins, Handshake } from "lucide-react";
+import { Users, Building2, Coins } from "lucide-react";
+import type { User } from "@/shared/auth/types";
+import { canAccessCreatorDashboard } from "@/shared/lib/dashboard-path";
 
 export interface RoleDef {
   key: string;
@@ -9,8 +11,9 @@ export interface RoleDef {
   description: string;
   icon: React.ElementType;
   emoji: string;
-  roleTypes: string[];
-  systemRoles?: string[];
+  /** Whether this user can open the dashboard — the same rule as the page's
+   * own guard, so the menu never offers a dashboard that bounces. */
+  canOpen: (user: User) => boolean;
   /** Overrides `label` when the viewer holds exactly one of `roleTypes`
    * (excluding "organizer", which rides along on this dashboard without
    * making it "theirs") — so a venueFoxer with no other Foxer role sees
@@ -31,8 +34,7 @@ export const ROLE_DEFS: RoleDef[] = [
     description: "Find Foxers, venues & packages",
     icon: Users,
     emoji: "🦊",
-    roleTypes: [],
-    systemRoles: ["user", "admin", "admin_secretary"],
+    canOpen: () => true,
   },
   {
     key: "host",
@@ -42,33 +44,26 @@ export const ROLE_DEFS: RoleDef[] = [
     description: "Manage your venues & events",
     icon: Building2,
     emoji: "🏠",
-    // Organizers aren't Foxers, but their Appointments are run from here.
-    roleTypes: [...FOXER_ROLES, "organizer"],
-    // A venueFoxer with no other Foxer role gets "their" name for this same
-    // dashboard instead of the generic umbrella one — see
-    // singleFoxerRoleLabel below. There used to be a separate "Venue Foxer
-    // Console" menu entry for this; it only ever redirected into this same
-    // dashboard's Venues tab, so it was a second door to one room.
+    // Foxers, organizers (their Appointments are run from here) and investors
+    // (partnerships and payouts) — whoever `requireHost` lets in.
+    canOpen: canAccessCreatorDashboard,
+    // One entry for one dashboard, named for whoever holds it. A venueFoxer
+    // with no other Foxer role gets "their" name — see singleFoxerRoleLabel
+    // below; there used to be a separate "Venue Foxer Console" entry, a second
+    // door to one room. Investors had their own "Investor Dashboard" entry to
+    // this same page, so a Foxer who also invests saw two.
     labelFor: (roleTypes) =>
       singleFoxerRoleLabel(roleTypes) === "venueFoxer"
         ? "Venue Foxer Console"
-        : "Creator Dashboard",
+        : isInvestorOnly(roleTypes)
+          ? "Investor Dashboard"
+          : "Creator Dashboard",
     descriptionFor: (roleTypes) =>
       singleFoxerRoleLabel(roleTypes) === "venueFoxer"
         ? "Venue listing & space manager"
-        : "Manage your venues & events",
-  },
-  {
-    // An Investor's way into the creator dashboard (its overview). Creator
-    // Dashboard above is for supply-side roles only, so investors had no way in.
-    key: "investorDashboard",
-    label: "Investor Dashboard",
-    href: "/creator-dashboard",
-    applyHref: "/foxer/apply-investor",
-    description: "Partnerships, investments & payouts",
-    icon: Handshake,
-    emoji: "🤝",
-    roleTypes: ["investor"],
+        : isInvestorOnly(roleTypes)
+          ? "Partnerships, investments & payouts"
+          : "Manage your venues & events",
   },
   {
     key: "investor",
@@ -82,9 +77,19 @@ export const ROLE_DEFS: RoleDef[] = [
     description: "Equipment depots, capital map & inventory",
     icon: Coins,
     emoji: "💎",
-    roleTypes: ["investor"],
+    canOpen: (user) => (user.roleType ?? []).includes("investor"),
   },
 ];
+
+/** An investor with no Foxer or organizer role: the dashboard is theirs as
+ * an investor. */
+function isInvestorOnly(roleTypes: string[]): boolean {
+  return (
+    roleTypes.includes("investor") &&
+    !roleTypes.includes("organizer") &&
+    !FOXER_ROLES.some((r) => roleTypes.includes(r))
+  );
+}
 
 /** The one FOXER_ROLES entry the viewer holds, or null if they hold none or
  * more than one. `organizer` doesn't count — it never makes this dashboard

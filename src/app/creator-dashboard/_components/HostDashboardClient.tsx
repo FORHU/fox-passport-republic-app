@@ -288,7 +288,9 @@ export default function HostDashboardClient({
             </div>
           )}
 
-          {access.hasListings && (
+          {/* Organizers answer the requests of the events they help run
+              (the API's inbox includes them, with event:approve-bookings). */}
+          {(access.hasListings || isOrganizer) && (
             <div
               data-tour="host-requests"
               className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10"

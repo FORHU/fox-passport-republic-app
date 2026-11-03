@@ -150,7 +150,8 @@ export default function LandingHeader({
               )}
 
               {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
-              {!isAuthenticated && (
+              {/* Not while the store hydrates: it flashed for signed-in users. */}
+              {!isLoading && !isAuthenticated && (
                 <button
                   onClick={handleSignIn}
                   className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black transition-all duration-300 group overflow-hidden relative cursor-pointer"

@@ -166,7 +166,10 @@ export const useLogin = () => {
       // Close modal and redirect based on role
       close();
       if (canAccessAdmin(data.user)) {
-        router.push("/admin");
+        // Admins skip onboarding, but a remembered return path still wins, as
+        // it does for them through Google and Facebook sign-in. The landing
+        // fallback for an admin is /admin.
+        router.push(takeReturnTo(getLandingPath(data.user)));
       } else if (
         typeof window !== "undefined" &&
         localStorage.getItem("fp_new_user")

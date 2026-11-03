@@ -8,25 +8,37 @@ import { useUnreadMessagesCount } from "@/shared/hooks/useUnreadMessagesCount";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { toast } from "sonner";
+import { canAccessAdmin } from "@/shared/lib/permissions";
+import { ROLES } from "@/shared/data/roleCatalog";
 import { RoleDef } from "./user-menu/types";
 import { UserMenuProfileHeader } from "./user-menu/UserMenuProfileHeader";
 import { UserMenuRoleSection } from "./user-menu/UserMenuRoleSection";
+import { UserMenuAppNav } from "./user-menu/UserMenuAppNav";
 import { UserMenuNavLinks } from "./user-menu/UserMenuNavLinks";
 
 interface UserMenuButtonProps {
   onSignIn?: () => void;
+  /** Adds the app's main places (Map, Republic, …) to the menu, for headers
+   * that don't show the app nav themselves (creator dashboard, admin). */
+  showAppNav?: boolean;
 }
 
-export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
+export default function UserMenuButton({
+  onSignIn,
+  showAppNav = false,
+}: UserMenuButtonProps = {}) {
   const router = useRouter();
   const { user, setUser, openLogin } = useAuthStore();
   const { isOpen, toggle, close, menuRef } = useUserMenu();
   const [syncing, setSyncing] = useState(false);
   const { unreadCount: unreadMessages } = useUnreadMessagesCount();
 
-  const sysRole = user?.systemRole ?? "user";
   const roleTypes: string[] = user?.roleType ?? [];
-  const isAdmin = sysRole === "admin" || sysRole === "admin_secretary";
+  // The server-granted capability, as `requireAdmin` checks — not systemRole.
+  const isAdmin = canAccessAdmin(user);
+  // Nothing left to apply for once every applicable role is held.
+  const canApply =
+    !isAdmin && ROLES.some((role) => !roleTypes.includes(role.roleType));
 
   // Sync session on mount so imgId + roles are always fresh without waiting
   // for the menu to open. hasSyncedRef prevents duplicate calls.
@@ -46,13 +58,9 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
       .catch(() => {});
   }, [user, setUser]);
 
-  const hasRoleAccess = (def: RoleDef) => {
-    if (isAdmin) return true;
-    // Foxers (the default page) is open to any authenticated user
-    if (def.key === "foxers") return !!user;
-    if (def.systemRoles?.includes(sysRole)) return true;
-    return def.roleTypes.some((r) => roleTypes.includes(r));
-  };
+  // Each dashboard's own rule, admins included: an admin isn't shown a
+  // dashboard their permissions don't open.
+  const hasRoleAccess = (def: RoleDef) => !!user && def.canOpen(user);
 
   const handleSyncSession = async () => {
     setSyncing(true);
@@ -125,10 +133,12 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
             onSelectAdmin={handleSelectAdmin}
           />
 
+          {showAppNav && <UserMenuAppNav onClose={close} />}
+
           {/* Standard links, sync, and logout */}
           <UserMenuNavLinks
             userId={user?.id}
-            isAdmin={isAdmin}
+            canApply={canApply}
             syncing={syncing}
             onSync={handleSyncSession}
             onClose={close}
