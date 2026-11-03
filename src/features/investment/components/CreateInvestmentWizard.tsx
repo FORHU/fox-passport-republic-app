@@ -21,8 +21,19 @@ import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 import { BackButton } from "@/shared/components/ui/BackButton";
-
-type InvestmentModality = "physical_inventory" | "venue_equity";
+import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+import { getApiErrorMessage, uploadErrorMessage } from "@/shared/lib/apiError";
+import { QUANTITY_MAX } from "@/shared/lib/limits";
+import { cn } from "@/shared/lib/utils";
+import {
+  FIELD_STEP,
+  apiFieldErrors,
+  firstInvalidStep,
+  stepErrors,
+  type InvestmentModality,
+  type StepErrors,
+  type WizardField,
+} from "../utils/wizardValidation";
 
 interface WizardFormState {
   title: string;
@@ -64,6 +75,16 @@ const CATEGORY_OPTIONS: {
 ];
 
 const DRAFT_STORAGE_KEY = "foxpassport_draft_investment_wizard";
+
+// Input ids for the fields Step 2 can flag; each one's message is `<id>-error`.
+const FIELD_ID: Partial<Record<WizardField, string>> = {
+  title: "inv-title",
+  inventoryCategory: "inv-category",
+  quantityTotal: "inv-quantity",
+  description: "inv-description",
+  monetaryValue: "inv-capital",
+  revenueSharePercent: "inv-revenue-share",
+};
 
 const INITIAL_FORM_STATE: WizardFormState = {
   title: "",
@@ -107,6 +128,13 @@ export default function CreateInvestmentWizard({
   const [venueSearchLoading, setVenueSearchLoading] = useState(false);
 
   const [form, setForm] = useState<WizardFormState>(INITIAL_FORM_STATE);
+  // The step whose Continue was refused: its errors show, and clear as they are fixed.
+  const [blockedStep, setBlockedStep] = useState<number | null>(null);
+  // The API's field errors from the last submit, with the values it rejected.
+  const [serverErrors, setServerErrors] = useState<{
+    errors: StepErrors;
+    form: WizardFormState;
+  } | null>(null);
 
   // Load saved draft from sessionStorage on initial client mount
   useEffect(() => {
@@ -122,7 +150,14 @@ export default function CreateInvestmentWizard({
           setModality(parsed.modality);
         }
         if (typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 4) {
-          setStep(parsed.step);
+          // A draft never reopens past a step that isn't complete.
+          setStep(
+            firstInvalidStep(
+              { ...INITIAL_FORM_STATE, ...parsed.form },
+              parsed.modality ?? "physical_inventory",
+              parsed.step,
+            ),
+          );
         }
       }
     } catch {
@@ -241,78 +276,63 @@ export default function CreateInvestmentWizard({
         }));
         toast.success("Image uploaded successfully!");
       }
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to upload image");
+    } catch (err) {
+      toast.error(uploadErrorMessage(err));
     } finally {
       setUploadingImage(false);
       e.target.value = "";
     }
   };
 
-  // Per-step validation
+  // What to flag on screen: the refused step's own rules (live, so each message
+  // clears once fixed), and the API's errors while the field keeps the value it
+  // rejected.
+  const shownErrors: StepErrors = {
+    ...Object.fromEntries(
+      Object.entries(serverErrors?.errors ?? {}).filter(
+        ([f]) =>
+          form[f as keyof WizardFormState] ===
+          serverErrors?.form[f as keyof WizardFormState],
+      ),
+    ),
+    ...(blockedStep === step ? stepErrors(form, modality, step) : {}),
+  };
+
+  // id, aria-invalid and aria-describedby for a field's input.
+  const fieldProps = (field: WizardField) => ({
+    id: FIELD_ID[field],
+    "aria-invalid": shownErrors[field] ? true : undefined,
+    "aria-describedby": shownErrors[field] ? `${FIELD_ID[field]}-error` : undefined,
+  });
+
+  const fieldMessage = (field: WizardField) => (
+    <FieldError id={`${FIELD_ID[field]}-error`} message={shownErrors[field]} />
+  );
+
+  const focusField = (field: WizardField) => {
+    window.setTimeout(() => {
+      const el = document.getElementById(FIELD_ID[field] ?? "");
+      el?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      el?.focus({ preventScroll: true });
+    }, 0);
+  };
+
+  // Whether `currentStep` can be left. If not, the wizard shows that step with
+  // every problem flagged; what was typed stays as it is.
   const validateStep = (currentStep: number): boolean => {
-    if (currentStep === 1) {
-      return true;
-    }
+    const errors = stepErrors(form, modality, currentStep);
+    const fields = Object.keys(errors) as WizardField[];
+    if (fields.length === 0) return true;
 
-    if (currentStep === 2) {
-      if (!form.title.trim()) {
-        toast.error(
-          modality === "venue_equity"
-            ? "Please provide an agreement title."
-            : "Please provide an equipment name (e.g. 500 Chiavari Chairs).",
-        );
-        return false;
-      }
-      if (!form.description.trim() || form.description.trim().length < 10) {
-        toast.error(
-          "Please provide a description with specifications (at least 10 characters).",
-        );
-        return false;
-      }
-      if (modality === "venue_equity") {
-        if (form.revenueSharePercent <= 0 || form.revenueSharePercent > 100) {
-          toast.error("Revenue share must be between 1% and 100%.");
-          return false;
-        }
-        if (form.monetaryValue < 0) {
-          toast.error("Capital pledged cannot be negative.");
-          return false;
-        }
-      } else {
-        if (form.quantityTotal < 1) {
-          toast.error("Quantity available must be at least 1.");
-          return false;
-        }
-      }
-      return true;
-    }
-
-    if (currentStep === 3) {
-      if (modality === "venue_equity") {
-        if (!form.targetVenue) {
-          toast.error("Please search for and select the target venue you're backing.");
-          return false;
-        }
-      } else {
-        if (
-          typeof form.location.lat !== "number" ||
-          typeof form.location.lng !== "number" ||
-          isNaN(form.location.lat) ||
-          isNaN(form.location.lng)
-        ) {
-          toast.error("Please select a valid depot location on the map.");
-          return false;
-        }
-        if (form.location.deliveryRadiusKm < 1) {
-          toast.error("Dispatch / coverage radius must be at least 1 km.");
-          return false;
-        }
-      }
-      return true;
-    }
-
-    return true;
+    setStep(currentStep);
+    setBlockedStep(currentStep);
+    toast.error(
+      fields.length > 1
+        ? "Fix the highlighted fields to continue."
+        : errors[fields[0]]!,
+    );
+    focusField(fields[0]);
+    return false;
   };
 
   const goToStep = (nextStep: number) => {
@@ -328,6 +348,10 @@ export default function CreateInvestmentWizard({
     if (!validateStep(2)) return;
     if (!validateStep(3)) return;
 
+    // Optional text left blank is not sent.
+    const itemCondition = form.itemCondition.trim() || undefined;
+    const usageTerms = form.usageTerms.trim() || undefined;
+
     setIsSubmitting(true);
     try {
       if (editId) {
@@ -336,8 +360,8 @@ export default function CreateInvestmentWizard({
           description: form.description,
           inventoryCategory: form.inventoryCategory,
           quantityTotal: form.quantityTotal,
-          itemCondition: form.itemCondition,
-          usageTerms: form.usageTerms,
+          itemCondition,
+          usageTerms,
           address: form.location.address || undefined,
           city: form.location.city || undefined,
           state: form.location.state || undefined,
@@ -376,9 +400,9 @@ export default function CreateInvestmentWizard({
           description: form.description,
           inventoryCategory: form.inventoryCategory,
           quantityTotal: form.quantityTotal,
-          itemCondition: form.itemCondition,
+          itemCondition,
           monetaryValue: 0,
-          usageTerms: form.usageTerms,
+          usageTerms,
           address: form.location.address || undefined,
           city: form.location.city || undefined,
           state: form.location.state || undefined,
@@ -399,9 +423,18 @@ export default function CreateInvestmentWizard({
       } catch {}
 
       router.push("/republic?tab=partners");
-    } catch (err: any) {
+    } catch (err) {
+      // A field the API rejected is flagged on its step, which the wizard returns to.
+      const rejected = apiFieldErrors(err);
+      const fields = Object.keys(rejected) as WizardField[];
+      if (fields.length > 0) {
+        const back = Math.min(...fields.map((f) => FIELD_STEP[f]));
+        setServerErrors({ errors: rejected, form });
+        setStep(back);
+        focusField(fields.find((f) => FIELD_STEP[f] === back)!);
+      }
       toast.error(
-        err?.response?.data?.message || "Failed to register investment",
+        getApiErrorMessage(err, "Couldn't save your investment. Try again."),
       );
     } finally {
       setIsSubmitting(false);
@@ -626,44 +659,68 @@ export default function CreateInvestmentWizard({
             className="space-y-6"
           >
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+              <label
+                htmlFor={FIELD_ID.title}
+                className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+              >
                 Agreement Title *
               </label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. Renovation Capital for Grand Ballroom"
-                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm font-semibold"
-              />
+              <FieldControl invalid={!!shownErrors.title}>
+                <input
+                  type="text"
+                  {...fieldProps("title")}
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. Renovation Capital for Grand Ballroom"
+                  className={cn(
+                    "w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm font-semibold",
+                    shownErrors.title && "field-invalid",
+                  )}
+                />
+              </FieldControl>
+              {fieldMessage("title")}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                <label
+                  htmlFor={FIELD_ID.monetaryValue}
+                  className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+                >
                   Capital Pledged
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.monetaryValue || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      monetaryValue: Math.max(0, Number(e.target.value) || 0),
-                    })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
-                />
+                <FieldControl invalid={!!shownErrors.monetaryValue}>
+                  <input
+                    type="number"
+                    min="0"
+                    {...fieldProps("monetaryValue")}
+                    value={form.monetaryValue || ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        monetaryValue: Math.max(0, Number(e.target.value) || 0),
+                      })
+                    }
+                    className={cn(
+                      "w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm",
+                      shownErrors.monetaryValue && "field-invalid",
+                    )}
+                  />
+                </FieldControl>
+                {fieldMessage("monetaryValue")}
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                <label
+                  htmlFor={FIELD_ID.revenueSharePercent}
+                  className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+                >
                   Your Revenue Share (%) *
                 </label>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
+                    {...fieldProps("revenueSharePercent")}
                     min={1}
                     max={100}
                     value={form.revenueSharePercent}
@@ -679,6 +736,7 @@ export default function CreateInvestmentWizard({
                     {form.revenueSharePercent}%
                   </span>
                 </div>
+                {fieldMessage("revenueSharePercent")}
                 <p className="text-[11px] text-zinc-500">
                   This percentage of the venue&apos;s own payout comes to you
                   automatically each time it earns — the Venue Foxer keeps the
@@ -688,18 +746,26 @@ export default function CreateInvestmentWizard({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+              <label
+                htmlFor={FIELD_ID.description}
+                className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+              >
                 Description & Terms *
               </label>
               <textarea
                 rows={4}
+                {...fieldProps("description")}
                 value={form.description}
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
                 placeholder="Describe what the capital covers and any conditions of the revenue-share agreement..."
-                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm"
+                className={cn(
+                  "w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm",
+                  shownErrors.description && "field-invalid",
+                )}
               />
+              {fieldMessage("description")}
             </div>
 
             <div className="pt-4 flex items-center justify-between">
@@ -837,28 +903,52 @@ export default function CreateInvestmentWizard({
           >
             {/* Title */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+              <label
+                htmlFor={FIELD_ID.title}
+                className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+              >
                 Equipment / Tool Name *
               </label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. 500 White Padded Banquet Chairs"
-                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm font-semibold"
-              />
+              <FieldControl invalid={!!shownErrors.title}>
+                <input
+                  type="text"
+                  {...fieldProps("title")}
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. 500 White Padded Banquet Chairs"
+                  className={cn(
+                    "w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm font-semibold",
+                    shownErrors.title && "field-invalid",
+                  )}
+                />
+              </FieldControl>
+              {fieldMessage("title")}
             </div>
 
             {/* Category Picker */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+              <label
+                id="inv-category-label"
+                className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+              >
                 Tool / Inventory Category *
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div
+                role="radiogroup"
+                aria-labelledby="inv-category-label"
+                tabIndex={-1}
+                {...fieldProps("inventoryCategory")}
+                className={cn(
+                  "grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-xl focus:outline-none",
+                  shownErrors.inventoryCategory && "ring-1 ring-red-400/70 p-1",
+                )}
+              >
                 {CATEGORY_OPTIONS.map((cat) => (
                   <button
                     key={cat.id}
                     type="button"
+                    role="radio"
+                    aria-checked={form.inventoryCategory === cat.id}
                     onClick={() =>
                       setForm({ ...form, inventoryCategory: cat.id })
                     }
@@ -875,26 +965,38 @@ export default function CreateInvestmentWizard({
                   </button>
                 ))}
               </div>
+              {fieldMessage("inventoryCategory")}
             </div>
 
             {/* Quantity and Condition */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                <label
+                  htmlFor={FIELD_ID.quantityTotal}
+                  className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+                >
                   Quantity Available in Depot *
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={form.quantityTotal || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      quantityTotal: Math.max(1, parseInt(e.target.value, 10) || 1),
-                    })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
-                />
+                <FieldControl invalid={!!shownErrors.quantityTotal}>
+                  <input
+                    type="number"
+                    min="1"
+                    max={QUANTITY_MAX}
+                    {...fieldProps("quantityTotal")}
+                    value={form.quantityTotal || ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        quantityTotal: Math.max(1, parseInt(e.target.value, 10) || 1),
+                      })
+                    }
+                    className={cn(
+                      "w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm",
+                      shownErrors.quantityTotal && "field-invalid",
+                    )}
+                  />
+                </FieldControl>
+                {fieldMessage("quantityTotal")}
               </div>
 
               <div className="space-y-2">
@@ -917,10 +1019,14 @@ export default function CreateInvestmentWizard({
             {/* Terms & Transport Policy */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                <label
+                  htmlFor="inv-usage-terms"
+                  className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+                >
                   Usage / Resource Terms
                 </label>
                 <input
+                  id="inv-usage-terms"
                   type="text"
                   value={form.usageTerms}
                   onChange={(e) =>
@@ -961,18 +1067,26 @@ export default function CreateInvestmentWizard({
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+              <label
+                htmlFor={FIELD_ID.description}
+                className="text-xs font-bold text-zinc-300 uppercase tracking-wider block"
+              >
                 Description & Specifications *
               </label>
               <textarea
                 rows={4}
+                {...fieldProps("description")}
                 value={form.description}
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
                 placeholder="Include dimensions, stackability, power specs, or handling notes..."
-                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm"
+                className={cn(
+                  "w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm",
+                  shownErrors.description && "field-invalid",
+                )}
               />
+              {fieldMessage("description")}
             </div>
 
             <div className="pt-4 flex items-center justify-between">
