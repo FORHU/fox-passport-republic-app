@@ -22,6 +22,7 @@ import type {
   VenueUpdatePayload,
   VenueImage,
 } from "@/features/venue/types/venue";
+import { LONG_DESCRIPTION_MAX, firstLimitError } from "@/shared/lib/limits";
 
 function belongsToHost(record: Venue, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -185,6 +186,17 @@ export function useHostVenueEdit(venueId: string) {
     }
     if (builder.venueType === "Other" && !builder.venueTypeOther.trim()) {
       toast.error("Please specify the venue type");
+      return;
+    }
+
+    const limitMsg = firstLimitError({
+      name: builder.venueName,
+      description: builder.description,
+      descriptionMax: LONG_DESCRIPTION_MAX,
+      quantity: builder.capacity,
+    });
+    if (limitMsg) {
+      toast.error(limitMsg);
       return;
     }
 

@@ -5,6 +5,7 @@ import { ListingType } from "@/features/asset/data/listingBuilderData";
 import { toast } from "sonner";
 import { Money } from "@/shared/components/ui/Money";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
+import { descriptionError, nameError } from "@/shared/lib/limits";
 
 interface ListingPreviewCardProps {
   activeType: ListingType;
@@ -113,8 +114,14 @@ export function ListingPreviewCard({
                   ? "e.g. Pioneer CDJ-3000"
                   : "e.g. Event Photography"
               }
+              aria-invalid={!!nameError(title)}
               className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
             />
+            {nameError(title) && (
+              <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                {nameError(title)}
+              </p>
+            )}
           </div>
           <div>
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
@@ -124,8 +131,14 @@ export function ListingPreviewCard({
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
               placeholder="Describe your item or service..."
+              aria-invalid={!!descriptionError(description)}
               className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-40 focus:border-accent/30 outline-none transition-colors"
             />
+            {descriptionError(description) && (
+              <p role="alert" className="mt-1.5 text-[10px] text-red-400">
+                {descriptionError(description)}
+              </p>
+            )}
           </div>
         </div>
 

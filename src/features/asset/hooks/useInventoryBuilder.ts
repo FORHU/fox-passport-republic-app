@@ -15,6 +15,7 @@ import {
 } from "@/features/asset/data/listingBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { imageUrlToFile } from "@/shared/lib/imageFile";
+import { firstLimitError } from "@/shared/lib/limits";
 
 export function useInventoryBuilder() {
   const router = useRouter();
@@ -200,6 +201,15 @@ export function useInventoryBuilder() {
       setError("Add a title before saving a draft");
       return false;
     }
+    const draftLimitMsg = firstLimitError({
+      name: store.title,
+      description: store.description,
+      price: store.price,
+    });
+    if (draftLimitMsg) {
+      setError(draftLimitMsg);
+      return false;
+    }
     store.setIsSubmitting(true);
     setError(null);
     try {
@@ -306,6 +316,15 @@ export function useInventoryBuilder() {
     if (!store.image) missing.push("Image");
     if (missing.length > 0) {
       setError(`Please fill in: ${missing.join(", ")}`);
+      return;
+    }
+    const limitMsg = firstLimitError({
+      name: store.title,
+      description: store.description,
+      price: store.price,
+    });
+    if (limitMsg) {
+      setError(limitMsg);
       return;
     }
 

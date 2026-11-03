@@ -9,6 +9,7 @@ import {
   SERVICE_UNITS,
 } from "@/shared/data/listingBuilderData";
 
+import { PRICE_MAX, priceError } from "@/shared/lib/limits";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
@@ -69,6 +70,7 @@ export function ListingSidebar({
   onCancellationPolicyChange,
 }: ListingSidebarProps) {
   const units = activeType === "inventory" ? INVENTORY_UNITS : SERVICE_UNITS;
+  const priceMsg = priceError(price);
 
   return (
     <aside className="w-80 shrink-0 border-r border-white/5 bg-surface flex flex-col relative z-10">
@@ -162,6 +164,10 @@ export function ListingSidebar({
                 value={price || ""}
                 onChange={(e) => onPriceChange(parseFloat(e.target.value) || 0)}
                 placeholder="0"
+                min="0"
+                max={PRICE_MAX}
+                step="0.01"
+                aria-invalid={!!priceMsg}
                 className="w-full bg-white/5 border border-white/5 rounded-xl py-4 pl-10 pr-16 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none font-mono transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <div className="absolute right-2 flex flex-col gap-0.5">
@@ -185,6 +191,11 @@ export function ListingSidebar({
                 </button>
               </div>
             </div>
+            {priceMsg && (
+              <p role="alert" className="text-[10px] text-red-400">
+                {priceMsg}
+              </p>
+            )}
             <StyledSelect
               value={unit}
               onChange={onUnitChange}
