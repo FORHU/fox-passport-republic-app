@@ -33,6 +33,7 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 import { getSocket } from "@/shared/lib/socket";
+import { uploadErrorMessage } from "@/shared/lib/apiError";
 import { uploadMessageAttachment, getUserPresence } from "../api/messages";
 import type { Presence, Candidate } from "../types";
 import {
@@ -881,11 +882,7 @@ export default function ChatPanel({
             error?.code !== "ERR_CANCELED" &&
             error?.name !== "CanceledError"
           ) {
-            toast.error(
-              error?.response?.data?.message ||
-                error?.message ||
-                "Failed to upload attachment.",
-            );
+            toast.error(uploadErrorMessage(error));
           }
         })
         .finally(() => {
@@ -921,11 +918,7 @@ export default function ChatPanel({
         },
       );
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to upload the photo.",
-      );
+      toast.error(uploadErrorMessage(error));
     }
   };
 

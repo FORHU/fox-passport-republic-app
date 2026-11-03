@@ -5,6 +5,7 @@ import axios from "axios"; // Used for direct S3 upload
 import api from "@/shared/lib/axios"; // Used for backend API calls
 import { toast } from "sonner";
 import { checkUploadFile } from "@/shared/lib/uploadRules";
+import { uploadErrorMessage } from "@/shared/lib/apiError";
 
 export interface UploadResult {
   fileId: string;
@@ -51,11 +52,15 @@ export const useFileUpload = () => {
       // STEP 4: Upload directly to S3. The URL is signed to this Content-Type
       // and size, so both must match what was declared above.
       // We use raw axios to ensure we don't send auth tokens or custom baseURL to S3
-      await axios.put(uploadUrl, file, {
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
+      try {
+        await axios.put(uploadUrl, file, {
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+      } catch (storageError) {
+        return fail(uploadErrorMessage(storageError, true));
+      }
 
       console.log(
         `[useFileUpload] S3 Upload successful, registering metadata...`,
@@ -79,10 +84,7 @@ export const useFileUpload = () => {
         "[useFileUpload] Direct Upload error:",
         error.response?.data || error.message,
       );
-      return fail(
-        error.response?.data?.message ||
-          "Upload failed. Please check your connection.",
-      );
+      return fail(uploadErrorMessage(error));
     } finally {
       setIsUploading(false);
     }
@@ -106,10 +108,7 @@ export const useFileUpload = () => {
       const { data } = await api.post("/files/upload-private", form);
       return { fileId: data.fileId };
     } catch (error: any) {
-      return fail(
-        error.response?.data?.message ||
-          "Upload failed. Please check your connection.",
-      );
+      return fail(uploadErrorMessage(error));
     } finally {
       setIsUploading(false);
     }

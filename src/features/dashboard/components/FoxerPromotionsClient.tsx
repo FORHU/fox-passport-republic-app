@@ -130,6 +130,11 @@ function PromotionModal({
       return;
     }
 
+    if (startDate && endDate && endDate < startDate) {
+      toast.error("The end date must be on or after the start date.");
+      return;
+    }
+
     const [kind, id] = scope.split(":");
     onSave({
       name: name.trim(),
