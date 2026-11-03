@@ -4,7 +4,7 @@ import React from "react";
 import ConversationListClient from "@/features/messages/components/ConversationListClient";
 import { useFollowing } from "@/features/follow/api/useFollow";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { UserHeader } from "@/features/user/components/citizen/UserHeader";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
 export default function ConversationListWrapper() {
   const { user } = useAuthStore();
@@ -12,7 +12,7 @@ export default function ConversationListWrapper() {
   return (
     <ConversationListClient
       followingUsers={followingPage?.data}
-      renderHeader={(auth) => <UserHeader isAuthenticated={auth} />}
+      renderHeader={() => <LandingHeader />}
     />
   );
 }

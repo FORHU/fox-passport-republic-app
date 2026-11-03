@@ -19,9 +19,14 @@ import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/
  */
 export function VenueEditSwitch({
   venueId,
+  denied = null,
   children,
 }: {
   venueId: string;
+  /** The Venue Studio's access-denied page, for someone who is neither an
+   * Organizer of this venue nor holds `venue:manage`; the full studio used
+   * to open for any signed-in user. */
+  denied?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const access = useMyAccess({ type: "venue", id: venueId });
@@ -34,7 +39,7 @@ export function VenueEditSwitch({
     );
   }
 
-  if (access.data?.role !== "organizer") return <>{children}</>;
+  if (access.data?.role !== "organizer") return <>{denied ?? children}</>;
 
   const can = (permission: string) =>
     access.data?.permissions.includes(permission) ?? false;
@@ -57,8 +62,8 @@ export function VenueEditSwitch({
               </h1>
               <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-white/50">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#A3A8F5]" />
-                You help run this venue. Pricing, payouts and its team stay
-                with the Mayor.
+                You help run this venue. Pricing, payouts and its team stay with
+                the Mayor.
               </p>
             </div>
             <Link
@@ -72,7 +77,9 @@ export function VenueEditSwitch({
           {can("venue:edit-listing") && (
             <VenueListingDetailsForm venueId={venueId} />
           )}
-          {can("venue:calendar") && <VenueAvailabilitySection venueId={venueId} />}
+          {can("venue:calendar") && (
+            <VenueAvailabilitySection venueId={venueId} />
+          )}
           {can("venue:approve-affiliations") && (
             <VenueAffiliatesSection venueId={venueId} asOrganizer />
           )}

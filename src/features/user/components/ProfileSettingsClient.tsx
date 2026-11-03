@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import type { ZodType } from "zod";
 import { useProfile } from "@/features/user/hooks/useProfile";
 import { useLogout } from "@/shared/auth/useLogout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -11,23 +12,29 @@ import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
 import { FormErrorSummary } from "@/shared/components/ui/FormErrorSummary";
 import { InlineAlert } from "@/shared/components/ui/InlineAlert";
 import { ConfirmDialog } from "@/shared/components/ui/ConfirmDialog";
+import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
 import { cn } from "@/shared/lib/utils";
-import { phoneSchema, usernameSchema } from "@/shared/lib/schema";
+import { usernameSchema } from "@/shared/lib/schema";
+import { countryOfPhone, phoneSchema, splitPhone } from "@/shared/lib/phone";
+import { fetchCountries, type GeoCountry } from "@/shared/api/geo";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export type SettingsSection = "profile" | "privacy" | "security" | "danger";
 
 type ValidatedField = "username" | "phone";
-const FIELD_SCHEMAS = { username: usernameSchema, phone: phoneSchema };
 // How each field is named in the "things to fix" summary.
 const FIELD_FIXES: Record<ValidatedField, string> = {
   username: "Fix your username",
   phone: "Fix your phone number",
 };
 
-function fieldError(field: ValidatedField, value: string) {
-  const result = FIELD_SCHEMAS[field].safeParse(value);
+function schemaError(schema: ZodType, value: string) {
+  const result = schema.safeParse(value);
   return result.success ? undefined : result.error.issues[0]?.message;
 }
+
+const phoneCountryLabel = (c: GeoCountry) =>
+  `${c.flag} ${c.name} (+${c.phoneCode})`;
 
 function SectionButton({
   active,
@@ -114,6 +121,7 @@ export default function ProfileSettingsClient({
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState("PH");
   const [profileImage, setProfileImage] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
 
@@ -126,11 +134,46 @@ export default function ProfileSettingsClient({
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
+  // The project's countries that have phone numbering — the same list (and
+  // cache) as the location pickers.
+  const countries = useQuery({
+    queryKey: ["geo", "countries"],
+    queryFn: fetchCountries,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+  const phoneCountries = useMemo(
+    () => (countries.data ?? []).filter((c) => c.phoneCode),
+    [countries.data],
+  );
+  const allowedPhoneCountries = useMemo(
+    () =>
+      countries.data ? new Set(phoneCountries.map((c) => c.code)) : undefined,
+    [countries.data, phoneCountries],
+  );
+  const selectedPhoneCountry = phoneCountries.find(
+    (c) => c.code === phoneCountry,
+  );
+
+  const fieldError = (
+    field: ValidatedField,
+    value: string,
+    country = phoneCountry,
+  ) =>
+    schemaError(
+      field === "phone"
+        ? phoneSchema(country, allowedPhoneCountries)
+        : usernameSchema,
+      value,
+    );
+
   useEffect(() => {
     if (profile) {
       setName(profile.name ?? "");
       setUsername(profile.username ?? "");
-      setPhone(profile.phone ?? "");
+      const saved = splitPhone(profile.phone ?? "");
+      setPhone(saved.number);
+      setPhoneCountry(saved.country ?? "PH");
       setProfileImage(profile.imgId ?? "");
       setIsPrivate(profile.isPrivate ?? false);
     }
@@ -143,11 +186,11 @@ export default function ProfileSettingsClient({
 
   // Re-check a field that is already showing an error, so the message goes
   // away as soon as the value is fixed rather than on the next save.
-  const recheck = (field: ValidatedField, value: string) => {
+  const recheck = (field: ValidatedField, value: string, country?: string) => {
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({
         ...prev,
-        [field]: fieldError(field, value),
+        [field]: fieldError(field, value, country),
       }));
     }
   };
@@ -170,8 +213,8 @@ export default function ProfileSettingsClient({
       await updateProfile({
         name: name.trim() || undefined,
         username: usernameSchema.parse(username),
-        // "" is sent on purpose: it clears a saved number.
-        phone: phoneSchema.parse(phone),
+        // E.164, or "" on purpose: it clears a saved number.
+        phone: phoneSchema(phoneCountry, allowedPhoneCountries).parse(phone),
         profileImage: profileImage.trim() || undefined,
         isPrivate,
       });
@@ -258,20 +301,16 @@ export default function ProfileSettingsClient({
         <div className="mx-auto max-w-6xl px-4 h-20 flex items-center gap-4">
           {/* On a phone this page is reached from the settings menu, so back
               goes there; on desktop that menu doesn't exist. */}
-          <Link
+          <BackButton
             href="/user/settings"
-            aria-label="Back to settings"
-            className="lg:hidden h-10 w-10 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <Link
+            label="Back to settings"
+            className="lg:hidden"
+          />
+          <BackButton
             href="/user"
-            aria-label="Back to profile"
-            className="hidden lg:flex h-10 w-10 shrink-0 rounded-full bg-white/5 border border-white/10 items-center justify-center hover:bg-white hover:text-black transition-all"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
+            label="Back to profile"
+            className="hidden lg:inline-flex"
+          />
           <div className="min-w-0">
             <h1 className="text-xl font-display font-bold">Account Settings</h1>
             <p className="text-xs text-white/40 truncate">
@@ -383,7 +422,7 @@ export default function ProfileSettingsClient({
                   label="Username"
                   icon="alternate_email"
                   htmlFor="username"
-                  hint="Letters, numbers, _ and . only"
+                  hint="3–30 characters: letters, numbers, . and _"
                   error={fieldErrors.username}
                   errorId="username-error"
                 >
@@ -396,14 +435,13 @@ export default function ProfileSettingsClient({
                         // Usernames are stored lowercase; show that as they type.
                         const next = e.target.value.toLowerCase();
                         setUsername(next);
-                        recheck("username", next);
+                        checkOnBlur("username", next);
                       }}
                       onBlur={() => checkOnBlur("username", username)}
                       placeholder="your_username"
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      maxLength={30}
                       aria-invalid={!!fieldErrors.username}
                       aria-describedby={
                         fieldErrors.username ? "username-error" : undefined
@@ -435,6 +473,28 @@ export default function ProfileSettingsClient({
                   error={fieldErrors.phone}
                   errorId="phone-error"
                 >
+                  <div className="mb-2">
+                    <SearchableDropdown
+                      value={
+                        selectedPhoneCountry
+                          ? phoneCountryLabel(selectedPhoneCountry)
+                          : ""
+                      }
+                      options={phoneCountries.map(phoneCountryLabel)}
+                      placeholder={
+                        countries.isPending ? "Loading…" : "Country code"
+                      }
+                      searchPlaceholder="Search countries or codes…"
+                      onChange={(label) => {
+                        const next = phoneCountries.find(
+                          (c) => phoneCountryLabel(c) === label,
+                        )?.code;
+                        if (!next) return;
+                        setPhoneCountry(next);
+                        recheck("phone", phone, next);
+                      }}
+                    />
+                  </div>
                   <FieldControl invalid={!!fieldErrors.phone}>
                     <input
                       id="phone"
@@ -443,15 +503,22 @@ export default function ProfileSettingsClient({
                       autoComplete="tel"
                       value={phone}
                       onChange={(e) => {
-                        // Keep what a phone number can contain; the format
-                        // itself is checked on blur and on save.
-                        const next = e.target.value.replace(/[^\d+\s()-]/g, "");
+                        // Kept as typed — the format is checked on blur and on
+                        // save. A full number with its own +code picks its
+                        // country.
+                        const next = e.target.value;
+                        const named = countryOfPhone(next);
+                        const country =
+                          named && allowedPhoneCountries?.has(named)
+                            ? named
+                            : phoneCountry;
+                        setPhoneCountry(country);
                         setPhone(next);
-                        recheck("phone", next);
+                        recheck("phone", next, country);
                       }}
                       onBlur={() => checkOnBlur("phone", phone)}
-                      placeholder="+63 917 123 4567"
-                      maxLength={22}
+                      placeholder="917 123 4567"
+                      maxLength={30}
                       aria-invalid={!!fieldErrors.phone}
                       aria-describedby={
                         fieldErrors.phone ? "phone-error" : undefined

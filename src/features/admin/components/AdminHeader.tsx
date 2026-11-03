@@ -3,6 +3,7 @@
 import React from "react";
 import { useUIStore } from "@/shared/store/useUIStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -22,11 +23,18 @@ export const AdminHeader: React.FC = () => {
     bookings: "All Bookings",
     citizens: "Citizen Management",
     events: "Event Templates",
+    "needs-review": "Needs Review",
     categories: "Categories",
     venues: "Venues",
+    map: "Map",
     assets: "Assets & Gear",
     services: "Services",
+    disputes: "Disputes",
+    reports: "Reports",
     identity: "Identity Checks",
+    policies: "Policies",
+    "platform-fees": "Platform Fees",
+    promotions: "Promotions",
     settings: "Settings",
   };
 
@@ -70,6 +78,10 @@ export const AdminHeader: React.FC = () => {
           <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
           Live
         </div>
+
+        {/* My Dashboards and the app's shared pages, so an admin can switch
+            without "Back to site". */}
+        <UserMenuButton showAppNav />
       </div>
     </header>
   );

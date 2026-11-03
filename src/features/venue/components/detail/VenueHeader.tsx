@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { joinPlace } from "@/shared/lib/place";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface VenueNavHeaderProps {
   title: string;
@@ -22,15 +23,7 @@ export function VenueNavHeader({
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[18px]">
-            arrow_back
-          </span>
-          <span className="hidden sm:inline">Back</span>
-        </button>
+        <BackButton variant="label" hideLabelOnMobile onClick={onBack} />
         <Link
           href="/"
           className="flex items-center gap-2 sm:gap-3 group cursor-pointer"

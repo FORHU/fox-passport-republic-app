@@ -111,7 +111,9 @@ export function RoleGettingStarted({
           label: "Approve an Event Foxer",
           detail:
             "Event Foxers apply to host at your venue — or invite one yourself.",
-          href: "/foxer/affiliations",
+          // A Mayor approves on the venue's own page (its Affiliates
+          // section); /foxer/affiliations is the Event Foxer side only.
+          href: "/creator-dashboard/venues",
           done: approved(affiliations.data?.asVenueMayor),
         },
       ],

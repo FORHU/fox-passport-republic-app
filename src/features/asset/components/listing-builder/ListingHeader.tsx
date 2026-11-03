@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface ListingHeaderProps {
   activeType: ListingType;
@@ -39,14 +40,7 @@ export function ListingHeader({
     <>
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface z-20">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              arrow_back
-            </span>
-          </button>
+          <BackButton onClick={onBack} />
           <div>
             <h2 className="font-display font-bold text-lg flex items-center gap-2 capitalize">
               {activeType} Studio

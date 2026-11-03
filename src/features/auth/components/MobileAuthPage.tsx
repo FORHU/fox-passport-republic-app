@@ -21,6 +21,7 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { startSocialSignIn } from "@/shared/auth/session-api";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -685,26 +686,12 @@ function ForgotView({ onBack }: { onBack: () => void }) {
 
   return (
     <div style={{ marginTop: "auto", padding: "0 24px 44px" }}>
-      <button
+      <BackButton
+        variant="label"
+        label="Back to login"
         onClick={onBack}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          fontSize: 13,
-          marginBottom: 28,
-          padding: 0,
-        }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-          arrow_back
-        </span>
-        Back to login
-      </button>
+        className="mb-7 self-start"
+      />
 
       <p
         style={{

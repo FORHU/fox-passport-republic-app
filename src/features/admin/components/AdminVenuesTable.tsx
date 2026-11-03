@@ -8,6 +8,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { hasPermission } from "@/shared/lib/permissions";
 
 interface VenueTableProps {
   venues: any[];
@@ -131,6 +133,11 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  // Seeing the queue (queue:read) isn't deciding it, as AdminReviewPanel.
+  const canDecide = hasPermission(
+    useAuthStore((s) => s.user),
+    "queue:decide",
+  );
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
@@ -456,22 +463,26 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                             {updatingId === venue.id && (
                               <div className="w-4 h-4 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
                             )}
-                            <button
-                              disabled={!!updatingId}
-                              onClick={() =>
-                                openRejectDialog(venue.id, venue.name)
-                              }
-                              className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
-                            >
-                              Reject
-                            </button>
-                            <button
-                              disabled={!!updatingId}
-                              onClick={() => approve(venue.id)}
-                              className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
-                            >
-                              Approve
-                            </button>
+                            {canDecide && (
+                              <>
+                                <button
+                                  disabled={!!updatingId}
+                                  onClick={() =>
+                                    openRejectDialog(venue.id, venue.name)
+                                  }
+                                  className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  disabled={!!updatingId}
+                                  onClick={() => approve(venue.id)}
+                                  className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
+                                >
+                                  Approve
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -665,36 +676,37 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                               )}
 
                               {/* Approve / Reject actions */}
-                              {(venue.status === "pending" ||
-                                venue.status === "draft") && (
-                                <div className="p-5 flex items-center gap-3 bg-white/1">
-                                  <span className="text-xs text-white/40 mr-2">
-                                    Quick actions:
-                                  </span>
-                                  <button
-                                    disabled={updatingId === venue.id}
-                                    onClick={() => approve(venue.id)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold hover:bg-green-500/20 transition-all disabled:opacity-40"
-                                  >
-                                    <span className="material-symbols-outlined text-[16px]">
-                                      check_circle
+                              {canDecide &&
+                                (venue.status === "pending" ||
+                                  venue.status === "draft") && (
+                                  <div className="p-5 flex items-center gap-3 bg-white/1">
+                                    <span className="text-xs text-white/40 mr-2">
+                                      Quick actions:
                                     </span>
-                                    Approve & Make Available
-                                  </button>
-                                  <button
-                                    disabled={updatingId === venue.id}
-                                    onClick={() =>
-                                      openRejectDialog(venue.id, venue.name)
-                                    }
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all disabled:opacity-40"
-                                  >
-                                    <span className="material-symbols-outlined text-[16px]">
-                                      cancel
-                                    </span>
-                                    Reject
-                                  </button>
-                                </div>
-                              )}
+                                    <button
+                                      disabled={updatingId === venue.id}
+                                      onClick={() => approve(venue.id)}
+                                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold hover:bg-green-500/20 transition-all disabled:opacity-40"
+                                    >
+                                      <span className="material-symbols-outlined text-[16px]">
+                                        check_circle
+                                      </span>
+                                      Approve & Make Available
+                                    </button>
+                                    <button
+                                      disabled={updatingId === venue.id}
+                                      onClick={() =>
+                                        openRejectDialog(venue.id, venue.name)
+                                      }
+                                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all disabled:opacity-40"
+                                    >
+                                      <span className="material-symbols-outlined text-[16px]">
+                                        cancel
+                                      </span>
+                                      Reject
+                                    </button>
+                                  </div>
+                                )}
                             </div>
                           </td>
                         </tr>

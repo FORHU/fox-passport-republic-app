@@ -11,11 +11,11 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createPaymentIntent } from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
-import { smartBack } from "@/shared/lib/navigation";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { formatCurrency } from "@/shared/lib/currency";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -187,15 +187,7 @@ export default function ItemCheckoutClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4 gap-4">
-              <button
-                onClick={() => smartBack(router, "/categories")}
-                className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  arrow_back
-                </span>
-                Back
-              </button>
+              <BackButton variant="label" fallback="/categories" />
               <div className="flex items-center gap-2 text-sm text-text-muted min-w-0">
                 <Link
                   href="/categories"

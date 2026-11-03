@@ -1,9 +1,10 @@
 ﻿"use client";
 
 import React, { useState } from "react";
-import { ArrowLeft, Star, Calendar } from "lucide-react";
+import { Star, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSubmitReview } from "@/features/review/hooks/useSubmitReview";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface WriteReviewClientProps {
   booking: any;
@@ -50,13 +51,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm font-medium">Back</span>
-            </button>
+            <BackButton variant="label" onClick={() => router.back()} />
             <h2 className="text-2xl font-display font-bold tracking-tight text-white">
               Write a Review
             </h2>

@@ -7,7 +7,7 @@ import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signUpThen } from "@/shared/auth/returnTo";
-import { smartBack } from "@/shared/lib/navigation";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface MobileEventDetailProps {
   event?: any;
@@ -111,29 +111,7 @@ export default function MobileEventDetail({
           height={22}
           style={{ objectFit: "contain", filter: "brightness(0) invert(1)" }}
         />
-        <button
-          onClick={() => smartBack(router, "/")}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 999,
-            background:
-              "color-mix(in srgb, var(--color-black) 40%, transparent)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            border: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            flexShrink: 0,
-            color: "var(--color-white)",
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-            arrow_back
-          </span>
-        </button>
+        <BackButton tone="overlay" fallback="/" />
         <p
           style={{
             flex: 1,

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   getFollowers,
@@ -18,6 +17,7 @@ import {
 } from "../api/useFollow";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { FollowUserRow } from "./FollowUserRow";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 type Tab = "followers" | "following" | "requests";
 
@@ -42,12 +42,7 @@ export function ConnectionsPageClient() {
     <div className="min-h-screen bg-black">
       <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-xl border-b border-zinc-900">
         <div className="mx-auto max-w-2xl px-4 py-4 flex items-center gap-4">
-          <Link
-            href={`/user/${id}`}
-            className="h-9 w-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+          <BackButton href={`/user/${id}`} />
           <h1 className="text-lg font-display font-bold text-white">
             Connections
           </h1>

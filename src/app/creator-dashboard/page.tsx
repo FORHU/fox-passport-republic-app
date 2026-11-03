@@ -25,11 +25,9 @@ export default async function Dashboard() {
     <>
       <MobileCreatorHome
         user={user}
+        tourButton={<TourReplayButton tourKey={CREATOR_TOUR_KEY} />}
         organizing={
           <div className="space-y-6">
-            <div className="flex justify-end -mb-3">
-              <TourReplayButton tourKey={CREATOR_TOUR_KEY} />
-            </div>
             <div data-tour="host-guide">
               <RoleGettingStarted
                 totals={{

@@ -22,6 +22,7 @@ import DateRangePicker, {
 import { smartBack } from "@/shared/lib/navigation";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface Foxer {
   id: string;
@@ -336,19 +337,15 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
-            <button
+            <BackButton
+              variant="label"
+              hideLabelOnMobile
               onClick={() =>
                 step > 1
                   ? prevStep()
                   : smartBack(router, `/foxer/${foxerId as string}`)
               }
-              className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                arrow_back
-              </span>
-              <span className="hidden sm:inline">Back</span>
-            </button>
+            />
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image

@@ -1,4 +1,5 @@
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
+import { LandingFooterAccountLinks } from "./LandingFooterAccountLinks";
 
 export default function LandingFooter() {
   return (
@@ -44,22 +45,7 @@ export default function LandingFooter() {
             <h3 className="font-bold text-white mb-3 sm:mb-6 font-display text-xs sm:text-sm uppercase tracking-widest">
               Account
             </h3>
-            <ul className="space-y-2 sm:space-y-4">
-              {[
-                { label: "Sign in", href: "/auth" },
-                // Public, unlike /onboarding; the role docs' sidebar lists every role.
-                { label: "Become a Foxer", href: "/earn/event" },
-              ].map((item) => (
-                <li key={item.label}>
-                  <a
-                    className="text-xs text-gray-400 hover:text-accent font-medium transition-colors"
-                    href={item.href}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <LandingFooterAccountLinks />
           </div>
         </div>
 

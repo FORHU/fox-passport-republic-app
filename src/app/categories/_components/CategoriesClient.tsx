@@ -9,9 +9,10 @@ import { useEventsByCategory } from "@/features/category/hooks/useEventsByCatego
 import { useVenuesByCategory } from "@/features/venue/hooks/useVenuesByCategory";
 import { EventCard } from "@/features/event";
 import { VenueCard } from "@/features/venue";
-import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { CategoryListHero } from "@/features/category/components/list/CategoryListHero";
 import { CategoryBentoGrid } from "@/features/category/components/list/CategoryBentoGrid";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface CategoriesClientProps {
   initialCategories: any[];
@@ -92,12 +93,7 @@ function CategoriesContent({
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={handleBack}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors border border-transparent hover:border-white/20"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-300" />
-              </button>
+              <BackButton onClick={handleBack} />
               <div>
                 <h1 className="text-3xl font-bold text-white">
                   {displayTitle}

@@ -9,6 +9,7 @@ import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 import { takeReturnTo } from "@/shared/auth/returnTo";
+import { getLandingPath } from "@/shared/lib/dashboard-path";
 
 // These used to go through a private axios instance pointed straight at
 // `config.apiUrl` - the one place the browser talked to the API directly, and
@@ -165,7 +166,10 @@ export const useLogin = () => {
       // Close modal and redirect based on role
       close();
       if (canAccessAdmin(data.user)) {
-        router.push("/admin");
+        // Admins skip onboarding, but a remembered return path still wins, as
+        // it does for them through Google and Facebook sign-in. The landing
+        // fallback for an admin is /admin.
+        router.push(takeReturnTo(getLandingPath(data.user)));
       } else if (
         typeof window !== "undefined" &&
         localStorage.getItem("fp_new_user")
@@ -173,7 +177,7 @@ export const useLogin = () => {
         localStorage.removeItem("fp_new_user");
         router.push("/onboarding");
       } else {
-        router.push(takeReturnTo());
+        router.push(takeReturnTo(getLandingPath(data.user)));
       }
     },
     onError: (error: any, variables) => {

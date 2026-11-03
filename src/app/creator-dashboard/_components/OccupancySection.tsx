@@ -9,9 +9,16 @@ import {
   useDeclineMatch,
 } from "@/features/gamification/hooks/usePassport";
 import type { ClientMatchRequest } from "@/features/gamification/api/passport";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 export function PendingRequests() {
   const router = useRouter();
+  // Declining refunds the client, so the API keeps it the Event Owner's
+  // alone; an Organizer can accept but not decline. Someone with no listing
+  // role owns no event, so they're never offered Decline. (The inbox doesn't
+  // say who owns each event, so an owner who also organises others' events
+  // still sees it on those — the API refuses it there.)
+  const { hasListings: mayOwnEvents } = useRoleAccess();
   const [tab, setTab] = React.useState<"pending" | "confirmed">("pending");
   const { data: page, isLoading } = useClientMatchRequests(0, true);
   const acceptMutation = useAcceptMatch();
@@ -126,19 +133,21 @@ export function PendingRequests() {
                         check
                       </span>
                     </button>
-                    <button
-                      disabled={isActing}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        declineMutation.mutate(req.id);
-                      }}
-                      title="Decline"
-                      className="h-7 w-7 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <span className="material-symbols-outlined text-[14px]">
-                        close
-                      </span>
-                    </button>
+                    {mayOwnEvents && (
+                      <button
+                        disabled={isActing}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          declineMutation.mutate(req.id);
+                        }}
+                        title="Decline"
+                        className="h-7 w-7 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">
+                          close
+                        </span>
+                      </button>
+                    )}
                   </div>
                 ) : req.bookingStatus === "pending" ? (
                   <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-orange-400 bg-orange-500/10 border border-orange-500/30 shrink-0 text-center">

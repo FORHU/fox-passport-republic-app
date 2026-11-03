@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/shared/components/ui/badge";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { hasPermission } from "@/shared/lib/permissions";
 interface PartnerEquipmentDepotCardProps {
   onMapToggled?: (isOpen: boolean) => void;
   mapSlot?: React.ReactNode;
@@ -13,6 +15,12 @@ export function PartnerEquipmentDepotCard({
   mapSlot,
 }: PartnerEquipmentDepotCardProps) {
   const [showInlineMap, setShowInlineMap] = useState(false);
+  // Adding tools is for investors (`partnership:propose`); for anyone else
+  // the button is the way to become one.
+  const canAddTools = hasPermission(
+    useAuthStore((s) => s.user),
+    "partnership:propose",
+  );
 
   const toggleMap = () => {
     const next = !showInlineMap;
@@ -88,13 +96,17 @@ export function PartnerEquipmentDepotCard({
         )}
 
         <Link
-          href="/foxer/create-investment"
+          href={
+            canAddTools ? "/foxer/create-investment" : "/foxer/apply-investor"
+          }
           className="min-w-0 px-3 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
         >
           <span className="material-symbols-outlined text-[16px] shrink-0">
-            add_circle
+            {canAddTools ? "add_circle" : "handshake"}
           </span>
-          <span className="truncate min-w-0">Add Tools</span>
+          <span className="truncate min-w-0">
+            {canAddTools ? "Add Tools" : "Become a Partner"}
+          </span>
         </Link>
       </div>
 

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import LandingFooter from "@/features/landing/components/sections/LandingFooter";
-import { Trash2, ArrowLeft, ShieldCheck, Mail, RefreshCw } from "lucide-react";
+import { Trash2, ShieldCheck, Mail, RefreshCw } from "lucide-react";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export const metadata: Metadata = {
   title: "Data Deletion Instructions",
@@ -27,13 +28,7 @@ export default function DataDeletionPage() {
       <main className="relative pt-28 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-accent transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Home
-          </Link>
+          <BackButton variant="label" href="/" label="Back to Home" />
           <span className="text-gray-600">/</span>
           <Link
             href="/privacy"

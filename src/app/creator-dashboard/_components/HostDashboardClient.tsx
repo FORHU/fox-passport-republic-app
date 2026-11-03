@@ -19,6 +19,7 @@ import {
   isPerformerService,
   CalendarWidget,
   CreatorProfile,
+  CREATOR_DASHBOARD_BG,
 } from "@/features/dashboard/components";
 import { PendingRequests } from "./OccupancySection";
 import { OrganizerAttention } from "./OrganizerAttention";
@@ -240,8 +241,7 @@ export default function HostDashboardClient({
     <div
       className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
-        background:
-          "radial-gradient(circle at 15% 50%, rgba(92,98,214,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(92,98,214,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(196,232,90,0.05) 0%, transparent 50%), var(--canvas)",
+        background: CREATOR_DASHBOARD_BG,
         backgroundAttachment: "fixed",
       }}
     >
@@ -288,7 +288,9 @@ export default function HostDashboardClient({
             </div>
           )}
 
-          {access.hasListings && (
+          {/* Organizers answer the requests of the events they help run
+              (the API's inbox includes them, with event:approve-bookings). */}
+          {(access.hasListings || isOrganizer) && (
             <div
               data-tour="host-requests"
               className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10"

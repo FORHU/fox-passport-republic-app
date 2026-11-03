@@ -38,8 +38,13 @@ const mockAuthState = {
 type MockAuthState = typeof mockAuthState;
 
 vi.mock("@/shared/auth/useAuthStore", () => ({
-  useAuthStore: <T,>(selector?: (s: MockAuthState) => T) =>
-    selector ? selector(mockAuthState) : mockAuthState,
+  useAuthStore: Object.assign(
+    <T,>(selector?: (s: MockAuthState) => T) =>
+      selector ? selector(mockAuthState) : mockAuthState,
+    // UserMenuButton reads the session epoch around its profile sync.
+    { getState: () => mockAuthState },
+  ),
+  onAccountChange: () => () => {},
 }));
 
 vi.mock("@/shared/components/layout/NotificationBell", () => ({

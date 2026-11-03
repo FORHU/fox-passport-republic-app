@@ -22,7 +22,6 @@ here.
 | `findings/mobile-ux-consolidation-strategy.md` | Mobile UX Consolidation Strategy & Information Architecture: resolves feature congestion, dual-mode (Citizen vs. Creator Studio) paradigm, 5-tab mobile structure, and delivery roadmap. Added 16 Oct. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
-| `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
 | `SPATIAL-PLAN.md` | The spatial vision and counter-plan: what already exists, and the order to build in. `FoxPassportSpatialIntelligence.md`'s still-valid principles were folded in here 13 Sep; its wrong stack/sequencing assumptions were not. |
 
 ---
@@ -75,10 +74,13 @@ app today, so nothing currently relies on it working.
 
 The api's Central Payment backend (Invoice/Checkout/Payment/Payout/Voucher/
 PricingEngine, plus bidding and partnership) had zero frontend integration as
-of `api-audit.md`'s last pass — see `CENTRAL-PAYMENT-FRONTEND-PLAN.md` for
-the full plan. Both the backend HTTP layer (`fox-passport-republic-api`
-commit `09e893e`) and this app's integration have now landed and been
-reviewed; that plan document carries the full "Built and reviewed" record.
+of `api-audit.md`'s last pass. Both the backend HTTP layer
+(`fox-passport-republic-api` commit `09e893e`) and this app's integration have
+now landed and been reviewed. The plan, `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, was
+deleted 27 Oct once finished; its "Built and reviewed" record is in git
+history. The one piece it left unbuilt, the per-vendor breakdown beside Pay
+Now, shipped later as `EventLineItemsPanel` (17 Sep). Its manual Stripe pass
+moved to the browser checks below.
 
 **The one bug worth knowing about even without opening that doc:** the
 plan's own testing checklist named "pay successfully → browser redirects →
@@ -201,8 +203,9 @@ that way — if it goes non-zero again, something regressed.
       venue page's pattern), `event` importing `search`'s `categoryLabel` (now
       `shared/lib/categoryLabel.ts`), and a test importing `../../proxy`
       because vitest's `@` alias pointed at the repo root rather than `src/`
-      as tsconfig does (fixed, so `@/proxy` resolves). It keeps regressing
-      because CI doesn't run `pnpm validate`.
+      as tsconfig does (fixed, so `@/proxy` resolves). It kept regressing
+      because CI didn't run `pnpm validate`; from 27 Oct it does, right after
+      lint.
 
 ### Read first, in this order
 
@@ -681,6 +684,23 @@ invisible to admins).
 - [ ] **Password change and reset** revoke all sessions — confirm the user is
       signed out and can sign back in.
 - [ ] **Proxy edge cases**: a multipart upload, and 401 → refresh → replay.
+- [ ] **Central Payment in Stripe test mode, on dev**: pay an Event invoice
+      and a sponsorship end to end, then the success and cancel pages. Carried
+      over 27 Oct from the deleted `CENTRAL-PAYMENT-FRONTEND-PLAN.md`, where it
+      was never run because no staging existed then.
+- [ ] **"Ask the Event Foxer"** on a *full* event's `/booking/config`: still
+      shows, and opens a chat with the Event Foxer. #187 moved where the button
+      is wired (`app/booking/config/_components/BookingConfigPageClient.tsx`);
+      covered by types and tests, never clicked.
+- [ ] **Needs review** (admin, next to Events): after the 01:00 sweep, an Event
+      that ended with a standing booking and nobody checked in appears; Attended
+      settles a paid booking (payout, Stamp), No-show cancels it with no refund,
+      and the Event leaves the list once its last booking is settled. API #205,
+      app #184, ADR 0006 in the API.
+- [ ] **A public profile, signed out**: `/user/<id>` loads for a visitor
+      (#174) and shows stamps without dates, and nothing sends the visitor
+      home (the follow requests wait for a session, so no 401 trips the
+      sign-out redirect).
 
 ---
 
@@ -715,8 +735,9 @@ invisible to admins).
       `display: none` (not in the accessibility tree) and the alternatives
       either drop the phone's `<h1>` or need viewport detection on the server.
       Still open, not dead ends: "Trips" and "Help Center" in the user menu
-      point at pages that don't exist, but both are marked coming soon, and
-      `NAV_MENU` in `shared/lib/constants.ts` is unused and full of dead links.
+      point at pages that don't exist, but both are marked coming soon.
+      `NAV_MENU` in `shared/lib/constants.ts`, unused and full of dead links,
+      was removed on 28 Oct along with `shared/config/navMenuData.ts`.
 - [x] **The 11 widened routes.** Resolved 26 Oct: 8 of the resource-level
       approve/reject twins were already deleted on 5 Sep; the last 3
       (`/event-requests/:id/approve|reject|complete`, no callers) went in API
@@ -735,8 +756,9 @@ invisible to admins).
       the layout itself could become a server component calling `requireAuth`.
       **Since then `src/app/host` is gone** (renamed to `/creator-dashboard`,
       which has its own `requireAuth` layout), so `HostShell.tsx` no longer
-      exists and `"/host"` in `proxy.ts`'s `PROTECTED_ROUTES` is a harmless
-      stale entry that can be removed.
+      exists. The stale `"/host"` entry in `proxy.ts`'s `PROTECTED_ROUTES` was
+      removed on 28 Oct: `next.config.mjs` permanently redirects `/host` and its
+      old pages to `/creator-dashboard` before the proxy runs.
 - [x] **Silent Google account linking** — decided 20 Oct: **keep, for Google
       and Facebook both.** An existing email signing in with either joins that
       account (`accountLinking.trustedProviders` in the API's `better-auth.ts`).
@@ -750,8 +772,41 @@ invisible to admins).
 - [x] **`requireOwnerOrAdmin`** had zero call sites. Decided: deleted, with
       the other legacy guards, 23 Sep — see §4. Ownership stays checked inside
       each service.
-- [ ] **Does `MobileAdminView` earn its keep?** Two implementations of the same
-      console to keep in step.
+- [x] **Does `MobileAdminView` earn its keep?** Two implementations of the same
+      console to keep in step. **Kept, 27 Oct.** The Flutter app has no admin and
+      won't get one, so a phone browser is the only way to reach admin on a
+      phone. And it is only the dashboard tab now (`AdminBody`); every other tab
+      already renders the real `AdminContent` at phone width.
+- [ ] **Foxer profiles (`/foxer/<id>`): public, or out of the sitemap?** They
+      are signed-in only by design (`app/foxer/layout.tsx` and `proxy.ts`), yet
+      the sitemap lists them, robots allows them and they carry JSON-LD and a
+      canonical, so a crawler gets a redirect to sign-in. Make them public as
+      `/user/<id>` was (#174), or drop them from the sitemap and robots.
+- [ ] **Organizers and capacity, (a) or (b).** (a) package-level Appointments
+      with their own permission, or (b) Organizers may change a booked Event's
+      guest count. Organizers seeing a package's History waits on this.
+- [ ] **The 5 legacy event categories' groups.** Recorded in ADR 0001
+      (`docs/adr/0001-dynamic-events-architecture.md`, "Still open"): the
+      group names `corporate`, `birthday`, `wedding`, `social` and `other` fold
+      into, needed before the taxonomy migration.
+
+**Needs your access, not a decision** (nothing here can be done from the code):
+
+- [ ] **Duplicate package venues** from the old re-Publish bug (fixed in API
+      #195): on the dev and prod databases, run
+      `SELECT "templateId","venueId",count(*) FROM event_template_venues GROUP BY 1,2 HAVING count(*)>1;`
+      and remove the extra rows it finds.
+- [ ] **Static images on AWS**: upload `static-assets/` to S3 `static/` behind
+      the dev CloudFront, set the `staging` environment's
+      `NEXT_PUBLIC_ASSETS_URL`, and re-run Deploy Dev (`static-assets/README.md`
+      has the mechanism).
+- [ ] **Facebook sign-in** (parked): live sign-in fails with `email_not_found`.
+      The code is fine; Facebook sends no email (unconfirmed email, or the email
+      permission unpublished for a user with no app role). Check with Graph
+      Explorer `me?fields=id,name,email`, and rotate `FACEBOOK_APP_SECRET` once
+      it works.
+- [ ] **Launching `foxpassport.com`** (no date yet): set
+      `NEXT_PUBLIC_APP_URL`, point DNS, and submit the sitemap.
 
 ---
 
@@ -762,7 +817,7 @@ invisible to admins).
       `/api/v1/admin/stats` and `/api/v1/users/` routes: unauthenticated `401`,
       denied citizen/secretary `403`, and allowed `admin_secretary` `200`
       responses. The broader per-route ownership triads remain a follow-up.
-- [ ] **Close the remaining test suite's blind spot — this is the
+- [x] **Close the remaining test suite's blind spot — this is the
       highest-leverage item
       here.** Twice on 2 Sep a feature was entirely broken while its tests
       passed: the socket had been dead for weeks, and 41 tests pinned the
@@ -776,6 +831,19 @@ invisible to admins).
       than another ten table tests, and any feature whose only coverage is a
       source scan should get one behavioural test that exercises it the way a
       person would.
+      **27 Oct:** the triads exist on the API (`tests/rbac.route-matrix.spec.ts`
+      walks every guarded route: 401 with no token, 403 per refused role, and
+      the allowed roles let through). The socket, the original case, now has
+      `src/__tests__/data/socketProvider.test.tsx`: it drives `SocketProvider`
+      as the server does and checks the ticket request, the query refreshes per
+      topic and the hand-off to features; breaking either the ticket call or
+      the refresh fails it. **Closed 27 Oct.** The other tests that read source
+      were checked one by one, and none is the blind spot: `dashboardFetchers`
+      and `queryDefaults` already exercise the real fetchers and client;
+      `middlewareSecrets` and `permissions` guard an absence (no signing key, no
+      copy of the grant table), which has no behaviour to assert, and the proxy
+      itself is driven by `proxyPublicProfiles.test.ts`; `lightThemeContrast`
+      is a styling convention.
 - [x] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` configuration — completed 23
       Sep.** Google OAuth now rejects partial credentials and invalid callback
       URLs at API startup; the fully unset integration remains optional with a

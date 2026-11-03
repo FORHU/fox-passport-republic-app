@@ -7,11 +7,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { toast } from "sonner";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export interface WizardStepProps {
   /** Short name in the stepper. */
@@ -315,20 +315,17 @@ export function ApplicationWizard({
 
             <div className="relative mt-10 flex flex-col-reverse gap-3 border-t border-white/5 pt-6 sm:flex-row sm:items-center">
               {current === 0 ? (
-                <Link
+                <BackButton
+                  variant="label"
                   href={backHref}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-3 text-sm font-bold text-white/40 transition-colors hover:text-white"
-                >
-                  <ArrowLeft size={16} /> Back
-                </Link>
+                  className="px-4 py-3"
+                />
               ) : (
-                <button
-                  type="button"
+                <BackButton
+                  variant="label"
                   onClick={back}
-                  className="inline-flex cursor-pointer items-center justify-center gap-1.5 px-4 py-3 text-sm font-bold text-white/40 transition-colors hover:text-white"
-                >
-                  <ArrowLeft size={16} /> Back
-                </button>
+                  className="px-4 py-3"
+                />
               )}
               <button
                 type="button"

@@ -13,6 +13,7 @@ import {
   PERK_META,
 } from "@/features/gamification/data/passportData";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export interface PassportSidebarContentProps {
   user: any;
@@ -73,16 +74,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
           </div>
         </Link>
-        <button
-          onClick={() => router.back()}
-          aria-label="Go back"
-          title="Back"
-          className="h-9 w-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all shrink-0 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[18px]">
-            arrow_back
-          </span>
-        </button>
+        <BackButton onClick={() => router.back()} />
       </div>
 
       <div className="flex flex-col items-center text-center mb-6">

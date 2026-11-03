@@ -3,6 +3,7 @@ export { StatusBadge } from "./StatusBadge";
 export { LockedSection } from "./LockedSection";
 export { DashboardHeader, WelcomeBanner } from "./DashboardHeader";
 export { KPICards } from "./KPICards";
+export { CREATOR_DASHBOARD_BG } from "./dashboardBackground";
 
 export { EventsSection } from "./EventsSection";
 export { VenuesSection } from "./VenuesSection";

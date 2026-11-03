@@ -1,11 +1,10 @@
 "use client";
 
 import { memo, ReactNode } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { CitizenProfileSidebarCard } from "@/features/republic/components/CitizenProfileSidebarCard";
 import { PartnerEquipmentDepotCard } from "@/features/republic/components/PartnerEquipmentDepotCard";
 import { RepublicShortcutsCard } from "@/features/republic/components/RepublicShortcutsCard";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface RepublicLeftSidebarProps {
   /** Map component injected from the app layer to keep cross-feature
@@ -37,16 +36,7 @@ export const RepublicLeftSidebar = memo(function RepublicLeftSidebar({
   return (
     <div className="w-full space-y-4">
       {/* Direct Back to Home link */}
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold border border-zinc-800/80 transition-all shadow-sm group cursor-pointer"
-      >
-        <ArrowLeft
-          className="h-4 w-4 text-zinc-400 group-hover:text-lime-400 group-hover:-translate-x-1 transition-all"
-          strokeWidth={2}
-        />
-        Back to Main Page
-      </Link>
+      <BackButton variant="label" href="/" label="Back to Main Page" />
 
       {/* Profile Icon / Passport Card */}
       <CitizenProfileSidebarCard />

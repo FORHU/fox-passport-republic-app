@@ -75,6 +75,7 @@ export function StatusBadge({
   return (
     <div className={`relative ${className}`} ref={ref}>
       <button
+        aria-expanded={isOpen}
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);

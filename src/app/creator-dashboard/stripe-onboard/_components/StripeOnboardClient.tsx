@@ -10,8 +10,10 @@ import {
   ConnectAccountOnboarding,
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { stripeAppearanceColors } from "@/shared/lib/theme";
+import api from "@/shared/lib/axios";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 export default function StripeOnboardClient() {
   const router = useRouter();
@@ -28,28 +30,11 @@ export default function StripeOnboardClient() {
 
         const instance = loadConnectAndInitialize({
           publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+          // The API opens the signed-in user's own Connect account; the
+          // browser never names one.
           fetchClientSecret: async () => {
-            const storedId = localStorage.getItem("fox_stripe_account_id");
-            const res = await fetch("/api/stripe-connect/session", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ stripeAccountId: storedId || undefined }),
-            });
-            if (!res.ok) {
-              const err = await res
-                .json()
-                .catch(() => ({ error: "Request failed" }));
-              throw new Error(err.error || `HTTP ${res.status}`);
-            }
-            const data = await res.json();
-            if (!data.clientSecret)
-              throw new Error("No client secret returned");
-            if (data.stripeAccountId)
-              localStorage.setItem(
-                "fox_stripe_account_id",
-                data.stripeAccountId,
-              );
-            return data.clientSecret;
+            const { data } = await api.post("/stripe-connect/account-session");
+            return data.data.clientSecret;
           },
           appearance: {
             overlays: "dialog",
@@ -84,13 +69,12 @@ export default function StripeOnboardClient() {
       }}
     >
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <button
+        <BackButton
+          variant="label"
+          label="Back to Dashboard"
           onClick={() => router.push("/creator-dashboard")}
-          className="flex items-center gap-2 text-white/50 hover:text-white text-sm mb-8 transition"
-        >
-          <ArrowLeft size={16} />
-          Back to Dashboard
-        </button>
+          className="mb-8"
+        />
 
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">

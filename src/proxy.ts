@@ -45,16 +45,15 @@ const PROTECTED_ROUTES = [
   "/progress",
   "/booking",
   "/checkout",
-  "/mayor",
   "/foxer",
   "/reviews",
   "/kyc",
   "/notifications",
   "/scanner",
   "/wishlists",
-  "/host",
   "/match",
   "/venue-foxer",
+  "/messages",
 ];
 
 // dev.foxpassport.com (staging), Vercel previews and localhost answer

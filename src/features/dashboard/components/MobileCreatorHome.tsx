@@ -7,6 +7,7 @@ import { DashboardHeader } from "./DashboardHeader";
 import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 import { formatCurrency } from "@/shared/lib/currency";
+import { CREATOR_DASHBOARD_BG } from "./dashboardBackground";
 
 const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
@@ -16,12 +17,15 @@ interface MobileCreatorHomeProps {
   organizing?: React.ReactNode;
   /** Same reason: the real pending-requests data lives in `gamification`. */
   pendingRequests?: React.ReactNode;
+  /** Same reason: the tour key lives in `app/creator-dashboard`. */
+  tourButton?: React.ReactNode;
 }
 
 export default function MobileCreatorHome({
   user,
   organizing,
   pendingRequests,
+  tourButton,
 }: MobileCreatorHomeProps) {
   const firstName = user?.firstName || user?.name?.split(" ")[0] || "Creator";
   const {
@@ -81,9 +85,10 @@ export default function MobileCreatorHome({
 
   return (
     <div
-      className="lg:hidden"
+      className="lg:hidden font-body antialiased"
       style={{
-        background: "var(--canvas)",
+        background: CREATOR_DASHBOARD_BG,
+        backgroundAttachment: "fixed",
         minHeight: "100svh",
         color: "var(--color-white)",
       }}
@@ -96,30 +101,36 @@ export default function MobileCreatorHome({
       <DashboardHeader hideMobileBottomNav />
 
       {/* Scrollable content */}
-      <div style={{ padding: "80px 20px 112px" }}>
+      {/* pt-32 from sm matches the desktop dashboard: DashboardHeader grows
+          to sm:top-6 sm:h-18 there and would otherwise cover the greeting. */}
+      <div className="px-5 pt-20 sm:pt-32 pb-28">
         {/* Greeting */}
-        <div style={{ marginBottom: 24 }}>
-          <p
-            style={{
-              fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-              fontSize: 26,
-              fontWeight: 700,
-              margin: "0 0 4px",
-              lineHeight: 1.2,
-            }}
-          >
-            Good morning,{" "}
-            <span style={{ color: "var(--accent-text)" }}>{firstName}.</span>
-          </p>
-          <p
-            style={{
-              fontSize: 13,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              margin: 0,
-            }}
-          >
-            Here&apos;s what&apos;s happening today.
-          </p>
+        <div className="flex items-start justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <p
+              style={{
+                fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
+                fontSize: 26,
+                fontWeight: 700,
+                margin: "0 0 4px",
+                lineHeight: 1.2,
+              }}
+            >
+              Good morning,{" "}
+              <span style={{ color: "var(--accent-text)" }}>{firstName}.</span>
+            </p>
+            <p
+              style={{
+                fontSize: 13,
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                margin: 0,
+              }}
+            >
+              Here&apos;s what&apos;s happening today.
+            </p>
+          </div>
+          {tourButton && <div className="shrink-0 mt-1.5">{tourButton}</div>}
         </div>
 
         {organizing && <div style={{ marginBottom: 28 }}>{organizing}</div>}

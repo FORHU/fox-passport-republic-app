@@ -2,10 +2,9 @@
 
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
-import { smartBack } from "@/shared/lib/navigation";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface MobileVenueDetailProps {
   venue?: any;
@@ -18,7 +17,6 @@ const AMENITIES = [
 ];
 
 export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
-  const router = useRouter();
 
   const name: string = venue?.name ?? "Skyline Rooftop Loft";
   const rating: string = venue?.rating ? String(venue.rating) : "4.9";
@@ -109,25 +107,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           height={22}
           style={{ objectFit: "contain" }}
         />
-        <button
-          onClick={() => smartBack(router, "/venues/map")}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
-            arrow_back
-          </span>
-        </button>
+        <BackButton fallback="/venues/map" />
         <p
           style={{
             flex: 1,

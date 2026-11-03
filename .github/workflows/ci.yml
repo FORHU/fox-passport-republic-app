@@ -71,6 +71,11 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Feature isolation and the shared kernel (tools/validate-architecture.mjs).
+      # Without it here, violations crept back between manual runs.
+      - name: Architecture boundaries
+        run: pnpm validate
+
       - name: Build
         run: pnpm build
 

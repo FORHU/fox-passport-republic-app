@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { onAccountChange } from "@/shared/auth/useAuthStore";
 
 export interface Attendee {
   firstName: string;
@@ -129,3 +130,6 @@ export const useCheckoutStore = create<CheckoutState>()(
     },
   ),
 );
+
+// One account's checkout (contact details, attendees, payment) is not the next one's.
+onAccountChange(() => useCheckoutStore.getState().resetCheckout());

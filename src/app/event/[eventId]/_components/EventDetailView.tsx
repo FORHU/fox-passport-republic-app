@@ -25,6 +25,7 @@ import {
 } from "next/navigation";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { signInThen } from "@/shared/auth/returnTo";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -171,15 +172,11 @@ export function EventDetailView({
           }`}
         >
           <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-            <button
+            <BackButton
+              variant="label"
+              hideLabelOnMobile
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                arrow_back
-              </span>
-              <span className="hidden sm:inline">Back</span>
-            </button>
+            />
             <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image

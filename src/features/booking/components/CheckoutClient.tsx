@@ -14,10 +14,10 @@ import {
 } from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
-import { smartBack } from "@/shared/lib/navigation";
 import { toast } from "sonner";
 import { formatCurrency } from "@/shared/lib/currency";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -199,15 +199,7 @@ export default function CheckoutClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-10 reveal-on-scroll">
             <div className="flex items-center justify-between mb-4 gap-4">
-              <button
-                onClick={() => smartBack(router, "/booking")}
-                className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  arrow_back
-                </span>
-                Back
-              </button>
+              <BackButton variant="label" fallback="/booking" />
               <div className="flex items-center gap-2 text-text-muted text-sm font-display min-w-0">
                 <Link
                   href="/"

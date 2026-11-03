@@ -27,6 +27,7 @@ import {
 } from "@/features/venue/api/venues";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 // A searched country has an exact bbox from Mapbox; a searched city
 // sometimes doesn't (small towns), so pad a fixed radius around its center
@@ -213,7 +214,7 @@ function VenueDetailCard({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 20, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
-      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl overflow-hidden"
+      className="absolute bottom-16 sm:bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm max-h-[calc(100%-5.5rem)] sm:max-h-[calc(100%-3rem)] rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl overflow-y-auto"
     >
       <div className="relative h-40 w-full bg-white/5">
         <Image
@@ -688,22 +689,15 @@ export function VenuesMapPageClient({
 
   return (
     <div className="h-screen w-full bg-canvas text-white font-body flex flex-col overflow-hidden">
-      <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28">
+      {/* pb-24 below lg keeps the list and map clear of the fixed MobileBottomNav */}
+      <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28 pb-24 lg:pb-0">
         {/* Left: scrollable venue list */}
         <div
           className={`${mobileView === "map" ? "hidden" : "flex"} sm:flex w-full sm:w-[400px] lg:w-[440px] shrink-0 flex-col border-r border-white/10 min-h-0`}
         >
           <div className="px-4 sm:px-6 py-4 shrink-0">
             <h1 className="text-xl font-display font-bold flex items-center gap-2">
-              <button
-                onClick={() => router.back()}
-                aria-label="Back"
-                className="h-8 w-8 -ml-1.5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  arrow_back
-                </span>
-              </button>
+              <BackButton onClick={() => router.back()} />
               <span className="material-symbols-outlined text-accent">
                 map
               </span>

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MessageCircle, Users, Pin, BellOff } from "lucide-react";
+import { MessageCircle, Users, Pin, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import {
   useConversations,
@@ -18,6 +18,7 @@ import { NewGroupModal } from "./NewGroupModal";
 import type { Conversation, Candidate } from "../types";
 import { RoleBadges } from "@/shared/components/ui/RoleBadges";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface ConversationListClientProps {
   followingUsers?: Candidate[];
@@ -143,13 +144,7 @@ export default function ConversationListClient({
 
       <div className="max-w-2xl mx-auto pt-32 pb-20 px-4 sm:px-8">
         <div className="flex items-center gap-3 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={2} />
-            Back
-          </button>
+          <BackButton variant="label" onClick={() => router.back()} />
         </div>
 
         <div className="flex items-center justify-between mb-6">

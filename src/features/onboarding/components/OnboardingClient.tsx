@@ -15,6 +15,7 @@ import {
   CascadingLocationFields,
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 type Step = 1 | 2 | 3;
 
@@ -68,9 +69,6 @@ function StepFooter({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
-const BACK_BUTTON =
-  "inline-flex items-center justify-center gap-1.5 py-3 px-4 text-sm font-bold text-white/40 hover:text-white transition-colors";
 
 export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const router = useRouter();
@@ -197,15 +195,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
         <div className="relative w-full max-w-2xl mx-auto">
           {/* Exit + stepper */}
           <div className="flex items-center justify-between gap-4 mb-8">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-sm font-bold text-white/40 hover:text-white transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                arrow_back
-              </span>
-              Home
-            </Link>
+            <BackButton variant="label" href="/" label="Home" />
 
             <ol className="flex items-center gap-2">
               {journey.map((j, i) => {
@@ -454,16 +444,11 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
               </div>
 
               <StepFooter>
-                <button
-                  type="button"
+                <BackButton
+                  variant="label"
                   onClick={() => setStep(1)}
-                  className={BACK_BUTTON}
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    arrow_back
-                  </span>
-                  Back
-                </button>
+                  className="px-4 py-3"
+                />
               </StepFooter>
             </div>
           )}
@@ -664,16 +649,11 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
               />
 
               <StepFooter>
-                <button
-                  type="button"
+                <BackButton
+                  variant="label"
                   onClick={goBackFromRoles}
-                  className={BACK_BUTTON}
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    arrow_back
-                  </span>
-                  Back
-                </button>
+                  className="px-4 py-3"
+                />
                 <button
                   type="button"
                   onClick={() =>

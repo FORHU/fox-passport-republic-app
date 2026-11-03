@@ -17,6 +17,7 @@ import {
   fetchMyAffiliations,
   rejectAffiliation,
 } from "@/features/venue-affiliation/api/venueAffiliations";
+import { BackButton } from "@/shared/components/ui/BackButton";
 
 async function searchVenues(query: string): Promise<PickerItem[]> {
   const { venues } = await fetchVenuesByViewport({ search: query, limit: 8 });
@@ -116,15 +117,11 @@ export default function VenueAffiliationDashboardClient() {
 
   return (
     <div className="min-h-screen bg-canvas text-white px-6 py-10 max-w-3xl mx-auto">
-      <button
+      <BackButton
+        variant="label"
         onClick={() => router.back()}
-        className="text-white/50 hover:text-white text-sm mb-6 flex items-center gap-1"
-      >
-        <span className="material-symbols-outlined text-[18px]">
-          arrow_back
-        </span>
-        Back
-      </button>
+        className="mb-6"
+      />
 
       <h1 className="font-display font-bold text-2xl mb-1">
         Venue Affiliations

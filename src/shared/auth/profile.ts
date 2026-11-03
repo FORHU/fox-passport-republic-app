@@ -56,6 +56,7 @@ export interface ProfileData {
 export const PROFILE_QUERY_KEY = ["me"] as const;
 
 export async function fetchProfile(): Promise<ProfileData> {
+  const startedIn = useAuthStore.getState().sessionEpoch;
   const resp = await api.get("/profile");
   const data: ProfileData = resp.data?.data ?? resp.data;
 
@@ -63,9 +64,18 @@ export async function fetchProfile(): Promise<ProfileData> {
   // approves a role application, and the navbar and route guards read it from
   // the store. Read current state directly rather than closing over it, so this
   // does not depend on the state it writes.
-  const { user: currentUser, setUser } = useAuthStore.getState();
-  if (data) {
-    setUser(currentUser ? { ...currentUser, ...data } : data);
+  const { user: currentUser, setUser, sessionEpoch } = useAuthStore.getState();
+  // Someone signed in or out while this was in flight: it answered for the
+  // previous account, and writing it back would put that account in the header.
+  if (sessionEpoch !== startedIn) return data;
+  // No id, no identity: never let it replace (or blank) the signed-in user.
+  if (data?.id) {
+    // Merge into the same person only. Another account's profile replaces the
+    // stored one (an account switched outside the UI), or the previous user's
+    // fields would ride along on the new one.
+    setUser(
+      currentUser?.id === data.id ? { ...currentUser, ...data } : data,
+    );
   }
   return data;
 }

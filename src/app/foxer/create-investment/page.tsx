@@ -9,7 +9,12 @@ export const dynamic = "force-dynamic";
 // Republic surfaces link here as a general "become a Partner Foxer" CTA, so
 // without this guard a citizen who isn't an investor yet lands here with no
 // application form and no way forward. Send them to apply instead.
-export default async function CreateInvestmentPage() {
+export default async function CreateInvestmentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>;
+}) {
   await requirePermission("partnership:propose", "/foxer/apply-investor");
-  return <CreateInvestmentWizard />;
+  const { edit } = await searchParams;
+  return <CreateInvestmentWizard editId={edit} />;
 }

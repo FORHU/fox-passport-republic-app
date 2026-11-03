@@ -27,7 +27,11 @@ vi.mock(
   "@/features/venue-affiliation/components/VenueAffiliatesSection",
   () => ({
     VenueAffiliatesSection: ({ asOrganizer }: { asOrganizer?: boolean }) =>
-      createElement("div", null, `affiliates:${asOrganizer ? "organizer" : "mayor"}`),
+      createElement(
+        "div",
+        null,
+        `affiliates:${asOrganizer ? "organizer" : "mayor"}`,
+      ),
   }),
 );
 
@@ -94,5 +98,45 @@ describe("VenueEditSwitch", () => {
     // The studio already says "not owned by you" — it stays the one place
     // that message lives.
     expect(screen.getByText("mayor-studio")).toBeTruthy();
+  });
+
+  it("refuses someone without the Venue role who isn't an Organizer", () => {
+    access.value = {
+      isLoading: false,
+      data: { role: null, permissions: [] },
+    };
+    render(
+      createElement(
+        Switch as unknown as React.FC<{
+          venueId: string;
+          denied?: React.ReactNode;
+          children?: React.ReactNode;
+        }>,
+        { venueId: "v1", denied: createElement("div", null, "access-denied") },
+        studio,
+      ),
+    );
+    expect(screen.getByText("access-denied")).toBeTruthy();
+    expect(screen.queryByText("mayor-studio")).toBeNull();
+  });
+
+  it("still gives an Organizer their sections when the Venue role is missing", () => {
+    access.value = {
+      isLoading: false,
+      data: { role: "organizer", permissions: ["venue:calendar"] },
+    };
+    render(
+      createElement(
+        Switch as unknown as React.FC<{
+          venueId: string;
+          denied?: React.ReactNode;
+          children?: React.ReactNode;
+        }>,
+        { venueId: "v1", denied: createElement("div", null, "access-denied") },
+        studio,
+      ),
+    );
+    expect(screen.getByText("calendar")).toBeTruthy();
+    expect(screen.queryByText("access-denied")).toBeNull();
   });
 });

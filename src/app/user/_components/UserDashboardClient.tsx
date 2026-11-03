@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useUserDashboard } from "@/features/user/hooks/useUserDashboard";
-import { UserHeader } from "@/features/user/components/citizen/UserHeader";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { UserWelcome } from "@/features/user/components/citizen/UserWelcome";
 import { UserNextUp } from "@/features/user/components/citizen/UserNextUp";
 import { UserForYou } from "@/features/user/components/citizen/UserForYou";
@@ -69,7 +69,6 @@ function UserDashboardContent({
 }: UserDashboardClientProps) {
   const {
     userName,
-    isAuthenticated,
     walletBalance,
     recentTransactions,
     savedVibes,
@@ -89,10 +88,8 @@ function UserDashboardContent({
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
-      <UserHeader
-        isAuthenticated={isAuthenticated}
-        userName={displayUserName}
-      />
+      {/* The same top bar as every other app page, so Passport doesn't swap it. */}
+      <LandingHeader />
 
       <main className="grow pt-24 sm:pt-32 px-4 pb-16">
         <div className="mx-auto max-w-7xl flex flex-col gap-8 lg:gap-10">

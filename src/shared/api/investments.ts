@@ -140,9 +140,25 @@ export async function fetchInvestmentById(
   return res.data?.data;
 }
 
-export async function cancelInvestment(
+export async function updateInvestment(
+  id: string,
+  payload: Partial<CreateInvestmentPayload>,
+): Promise<PartnerInvestment> {
+  const res = await api.patch(`/investments/${id}`, payload);
+  return res.data?.data;
+}
+
+export async function archiveInvestment(
   id: string,
 ): Promise<PartnerInvestment> {
-  const res = await api.patch(`/investments/${id}/cancel`);
+  const res = await api.patch(`/investments/${id}/archive`);
+  return res.data?.data;
+}
+
+/** Soft delete — the hub disappears from every list; the row is kept. */
+export async function deleteInvestment(
+  id: string,
+): Promise<PartnerInvestment> {
+  const res = await api.delete(`/investments/${id}`);
   return res.data?.data;
 }
