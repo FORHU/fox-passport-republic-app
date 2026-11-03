@@ -81,21 +81,103 @@ describe("CreateInvestmentWizard", () => {
     expect(screen.getByText("Quantity Available in Depot *")).toBeInTheDocument();
   });
 
-  it("prevents advancing from Step 2 to Step 3 if title and description are missing", () => {
+  it("blocks Step 2 with every missing field flagged and keeps what was typed", () => {
     render(<CreateInvestmentWizard />);
 
     // Advance to Step 2
     fireEvent.click(screen.getByRole("button", { name: /continue to equipment details/i }));
+    fireEvent.change(screen.getByLabelText("Quantity Available in Depot *"), {
+      target: { value: "40" },
+    });
 
     // Try to advance without filling title/description
-    const step3Btn = screen.getByRole("button", { name: /set location on map/i });
-    fireEvent.click(step3Btn);
+    fireEvent.click(screen.getByRole("button", { name: /set location on map/i }));
+
+    expect(toast.error).toHaveBeenCalledWith("Fix the highlighted fields to continue.");
+    // Still on Step 2, both required fields flagged with their message
+    const title = screen.getByLabelText("Equipment / Tool Name *");
+    const description = screen.getByLabelText("Description & Specifications *");
+    expect(title).toHaveAttribute("aria-invalid", "true");
+    expect(description).toHaveAttribute("aria-invalid", "true");
+    expect(title).toHaveAccessibleDescription(/enter the equipment name/i);
+    expect(description).toHaveAccessibleDescription(/at least 10 characters/i);
+    expect(screen.queryByText("Depot / Warehouse Location")).not.toBeInTheDocument();
+    // What was entered is untouched
+    expect(screen.getByLabelText("Quantity Available in Depot *")).toHaveValue(40);
+  });
+
+  it("rejects a title shorter than the API allows and clears the message once fixed", () => {
+    render(<CreateInvestmentWizard />);
+    fireEvent.click(screen.getByRole("button", { name: /continue to equipment details/i }));
+
+    const title = screen.getByLabelText("Equipment / Tool Name *");
+    fireEvent.change(title, { target: { value: "PA" } });
+    fireEvent.change(screen.getByLabelText("Description & Specifications *"), {
+      target: { value: "Two active speakers with stands." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /set location on map/i }));
 
     expect(toast.error).toHaveBeenCalledWith(
-      expect.stringContaining("Please provide an equipment name"),
+      expect.stringContaining("at least 3 characters"),
     );
-    // Should still be on Step 2
-    expect(screen.getByText("Equipment / Tool Name *")).toBeInTheDocument();
+    expect(title).toHaveAttribute("aria-invalid", "true");
+
+    fireEvent.change(title, { target: { value: "PA Speakers" } });
+    expect(title).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("reopens a saved draft on the first incomplete step, not the saved one", () => {
+    sessionStorage.setItem(
+      "foxpassport_draft_investment_wizard",
+      JSON.stringify({
+        modality: "physical_inventory",
+        step: 3,
+        form: { title: "", description: "" },
+      }),
+    );
+    render(<CreateInvestmentWizard />);
+
+    expect(screen.getByLabelText("Equipment / Tool Name *")).toBeInTheDocument();
+    expect(screen.queryByText("Depot / Warehouse Location")).not.toBeInTheDocument();
+  });
+
+  it("returns to the field the API rejected and leaves blank optional text out", async () => {
+    vi.mocked(createInvestment).mockRejectedValueOnce({
+      response: {
+        status: 400,
+        data: {
+          success: false,
+          code: "VALIDATION",
+          message: "Enter a title of at least 3 characters.",
+          fields: [{ field: "title", message: "Enter a title of at least 3 characters." }],
+        },
+      },
+    });
+    render(<CreateInvestmentWizard />);
+    fireEvent.click(screen.getByRole("button", { name: /continue to equipment details/i }));
+    fireEvent.change(screen.getByLabelText("Equipment / Tool Name *"), {
+      target: { value: "Generator Set" },
+    });
+    fireEvent.change(screen.getByLabelText("Description & Specifications *"), {
+      target: { value: "Two 20 kVA diesel generators with cabling." },
+    });
+    fireEvent.change(screen.getByLabelText("Usage / Resource Terms"), {
+      target: { value: "  " },
+    });
+    // The stepper checks Steps 2 and 3 on the way to Step 4
+    fireEvent.click(screen.getByRole("button", { name: /photos & deploy/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /deploy equipment to map/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Equipment / Tool Name *")).toHaveAccessibleDescription(
+        "Enter a title of at least 3 characters.",
+      );
+    });
+    expect(vi.mocked(createInvestment).mock.calls[0][0].usageTerms).toBeUndefined();
+    expect(toast.error).toHaveBeenCalledWith("Enter a title of at least 3 characters.");
+    // The typed value is still there
+    expect(screen.getByLabelText("Equipment / Tool Name *")).toHaveValue("Generator Set");
   });
 
   it("advances to Step 3 and renders location picker when step 2 fields are valid", async () => {
