@@ -134,7 +134,7 @@ export const updateServiceSchema = createServiceSchema.extend({
 export type UpdateServiceFormData = z.infer<typeof updateServiceSchema>;
 
 // --- EVENT SCHEMAS ---
-export const createEventSchema = z.object({
+const eventFields = z.object({
   name: nameField("Event name is required"),
   description: descriptionField(EVENT_DESCRIPTION_MAX).optional(),
   eventType: z.string().min(1, "Event type is required"),
@@ -148,11 +148,19 @@ export const createEventSchema = z.object({
     .default("draft"),
 });
 
+export const END_BEFORE_START_MESSAGE = "The end date must be after the start date.";
+
+const endsAfterStart = (v: { startDatetime: Date; endDatetime: Date }) =>
+  v.endDatetime > v.startDatetime;
+const endsAfterStartIssue = { message: END_BEFORE_START_MESSAGE, path: ["endDatetime"] };
+
+export const createEventSchema = eventFields.refine(endsAfterStart, endsAfterStartIssue);
+
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
 
-export const updateEventSchema = createEventSchema.extend({
-  id: z.string().min(1, "Event ID is required"),
-});
+export const updateEventSchema = eventFields
+  .extend({ id: z.string().min(1, "Event ID is required") })
+  .refine(endsAfterStart, endsAfterStartIssue);
 
 export type UpdateEventFormData = z.infer<typeof updateEventSchema>;
 

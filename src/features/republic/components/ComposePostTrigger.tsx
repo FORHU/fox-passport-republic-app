@@ -65,13 +65,20 @@ export function ComposePostTrigger({ onOpen }: ComposePostTriggerProps) {
           onClick={openCompose}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[18px] text-amber-400">
+          <span className="material-symbols-outlined text-[18px] gold-foil">
             handshake
           </span>
           Offer
         </button>
-        <span className="flex-1 flex items-center justify-center gap-1 text-[10px] font-bold text-amber-400/80">
-          <span className="material-symbols-outlined text-[12px]">bolt</span>
+        <span className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-xp">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/10">
+            <span
+              className="material-symbols-outlined text-[18px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              bolt
+            </span>
+          </span>
           +15 XP
         </span>
       </div>

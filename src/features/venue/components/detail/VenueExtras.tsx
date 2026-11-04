@@ -413,7 +413,7 @@ export function VenueReviews({
                       {[...Array(5)].map((_, i) => (
                         <span
                           key={i}
-                          className={`material-symbols-outlined text-[12px] ${i < review.rating ? "text-yellow-400" : "text-white/20"}`}
+                          className={`material-symbols-outlined text-[12px] ${i < review.rating ? "gold-foil" : "text-white/20"}`}
                         >
                           star
                         </span>

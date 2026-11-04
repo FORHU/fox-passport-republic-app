@@ -453,6 +453,45 @@ body {
   }
 }
 
+/* Metallic gold for marks (ratings, partner status, earned badges). The
+   stops come from the --gold-* tokens, so they follow the theme.
+   gold-foil paints text and Material Symbols glyphs only: it makes the
+   colour transparent, so a Lucide icon inside it would vanish — give those
+   gold-foil-svg instead (needs <GoldFoilDefs /> in the root layout). */
+@utility gold-foil {
+  background-image: linear-gradient(
+    135deg,
+    var(--gold-shadow) 0%,
+    var(--gold-deep) 25%,
+    var(--gold-highlight) 47%,
+    var(--gold-base) 60%,
+    var(--gold-shadow) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0.5px rgb(0 0 0 / 0.18));
+}
+
+/* Outline icons take the stroke; filled shapes (rating stars) add the fill. */
+@utility gold-foil-svg {
+  stroke: url(#gold-foil);
+}
+
+@utility gold-foil-fill {
+  fill: url(#gold-foil);
+}
+
+/* A polished gold bar, the same in both themes: a top sheen over the metal. */
+@utility gold-foil-pill {
+  background-image:
+    linear-gradient(to bottom, rgb(255 255 255 / 0.35), transparent 55%),
+    linear-gradient(135deg, #A67C2E, #D9B95E 35%, #F5E4A8 50%, #D4AE55 65%, #A9802F);
+  border-color: #A67C2E;
+  color: #3A2706;
+}
+
 .stripe {
   background-image: repeating-linear-gradient(
     135deg,
@@ -1042,6 +1081,14 @@ body {
   --color-surface-raised: var(--surface-raised);
   /* The pressed/hover shade of the lime accent (formerly bg-[#ADD13F]). */
   --color-accent-hover: var(--accent-hover);
+  /* XP, levels and progress, kept apart from partner gold. */
+  --color-xp: var(--xp);
+  --color-xp-tint: var(--xp-tint);
+  /* Premium gold for marks: ratings, partner status, earned badges and
+   * stamps. Warnings keep the amber remap below. */
+  --color-gold: var(--gold-text);
+  --color-gold-edge: var(--gold-edge);
+  --color-gold-tint: var(--gold-tint);
 }
 
 :root {
@@ -1055,6 +1102,16 @@ body {
   --periwinkle: #A3A8F5;
   --error: #F2766E;
   --warning: #E8B54D;
+  --xp: #B9A3FF;
+  --xp-tint: rgb(185 163 255 / 0.14);
+  /* Gold foil stops (dark to highlight), solid text gold, edge and tint. */
+  --gold-shadow: #9A6E22;
+  --gold-deep: #C9A04A;
+  --gold-base: #DDB860;
+  --gold-highlight: #F8EBC0;
+  --gold-text: #E3C474;
+  --gold-edge: rgb(221 184 96 / 0.45);
+  --gold-tint: rgb(221 184 96 / 0.12);
   --landing-chart-line: rgb(169 175 187 / 0.065);
   --landing-chart-dot: rgb(169 175 187 / 0.11);
   --landing-chart-route: rgb(196 232 90 / 0.09);
@@ -1071,6 +1128,15 @@ body {
   --periwinkle: #3F45B0;
   --error: #B42318;
   --warning: #8A5A00;
+  --xp: #6B3FD1;
+  --xp-tint: #F1ECFD;
+  --gold-shadow: #6F4A0E;
+  --gold-deep: #9A6E1C;
+  --gold-base: #B8892E;
+  --gold-highlight: #E8CC7E;
+  --gold-text: #8A6416;
+  --gold-edge: rgb(184 137 46 / 0.55);
+  --gold-tint: #FBF4E2;
   --landing-chart-line: rgb(84 91 103 / 0.07);
   --landing-chart-dot: rgb(84 91 103 / 0.12);
   --landing-chart-route: rgb(74 107 16 / 0.1);

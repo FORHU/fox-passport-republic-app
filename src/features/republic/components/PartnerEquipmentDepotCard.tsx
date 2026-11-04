@@ -29,15 +29,15 @@ export function PartnerEquipmentDepotCard({
   };
 
   return (
-    <div className="w-full rounded-3xl bg-gradient-to-br from-amber-950/30 via-zinc-900/90 to-zinc-950 border border-amber-500/30 p-5 shadow-xl backdrop-blur-md space-y-4 relative overflow-hidden">
+    <div className="w-full rounded-3xl bg-gradient-to-br from-gold-tint via-zinc-900/90 to-zinc-950 border border-gold-edge p-5 shadow-xl backdrop-blur-md space-y-4 relative overflow-hidden">
       {/* Background flare */}
-      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gold-tint blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0 text-[10px] font-black uppercase tracking-wider text-amber-400">
-            <span className="material-symbols-outlined text-[16px] shrink-0">
+          <div className="flex items-center gap-1.5 min-w-0 text-[10px] font-black uppercase tracking-wider text-gold">
+            <span className="material-symbols-outlined gold-foil text-[16px] shrink-0">
               inventory_2
             </span>
             <span className="truncate min-w-0">Partner Resource Pool</span>
@@ -72,7 +72,7 @@ export function PartnerEquipmentDepotCard({
             onClick={toggleMap}
             className={`min-w-0 px-3 py-2.5 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               showInlineMap
-                ? "bg-amber-400 text-black border-amber-300 shadow-md"
+                ? "gold-foil-pill shadow-md"
                 : "bg-zinc-800/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200 hover:text-white"
             }`}
           >
@@ -117,7 +117,7 @@ export function PartnerEquipmentDepotCard({
           <div className="flex justify-end">
             <Link
               href="/republic/investments"
-              className="text-[11px] font-bold text-amber-400 hover:underline flex items-center gap-1"
+              className="text-[11px] font-bold text-gold hover:underline flex items-center gap-1"
             >
               Open Full Partner Hub{" "}
               <span className="material-symbols-outlined text-[14px]">

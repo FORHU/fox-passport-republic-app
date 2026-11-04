@@ -118,7 +118,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                     <Star
                       className={`w-10 h-10 md:w-12 md:h-12 ${
                         star <= (hoveredRating || rating)
-                          ? "fill-yellow-400 text-yellow-400"
+                          ? "gold-foil-fill gold-foil-svg"
                           : "text-white/20"
                       }`}
                     />

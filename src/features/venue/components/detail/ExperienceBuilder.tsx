@@ -234,8 +234,8 @@ export function CustomExperienceBuilder({
                           <span className="text-accent font-bold font-display text-lg">
                             <Money amount={foxer.fee} />
                           </span>
-                          <div className="flex items-center text-yellow-400 text-xs font-bold gap-1 bg-black/30 px-2 py-1 rounded-full mt-1">
-                            <span className="material-symbols-outlined text-[14px] fill-current">
+                          <div className="flex items-center text-gold text-xs font-bold gap-1 bg-black/30 px-2 py-1 rounded-full mt-1">
+                            <span className="material-symbols-outlined gold-foil text-[14px] fill-current">
                               star
                             </span>{" "}
                             {foxer.rating}

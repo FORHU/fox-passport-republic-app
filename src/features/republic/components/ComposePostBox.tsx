@@ -30,6 +30,8 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
 import { hasPermission } from "@/shared/lib/permissions";
 import api from "@/shared/lib/axios";
+import { getApiErrorMessage, uploadErrorMessage } from "@/shared/lib/apiError";
+import { POST_MAX, POST_MESSAGE } from "@/shared/lib/limits";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
@@ -299,10 +301,7 @@ export function ComposePostBox({
       setMediaUrls((prev) => [...prev, ...validUrls]);
     } catch (err: any) {
       console.error("Upload error:", err);
-      setError(
-        err?.response?.data?.message ||
-          "Failed to upload media. Please try again.",
-      );
+      setError(uploadErrorMessage(err));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -358,6 +357,10 @@ export function ComposePostBox({
       setError("Add at least 2 unique poll options.");
       return;
     }
+    if (content.trim().length > POST_MAX) {
+      setError(POST_MESSAGE);
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -393,7 +396,9 @@ export function ComposePostBox({
       onPostCreated?.();
       onClose?.();
     } catch (err: unknown) {
-      setError((err as Error)?.message || "Failed to publish post");
+      setError(
+        getApiErrorMessage(err, "Could not publish your post. Check your connection and try again."),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -678,7 +683,7 @@ export function ComposePostBox({
               />
             </div>
 
-            <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+            <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-xp bg-xp-tint border border-xp/30 px-2 py-0.5 rounded-full">
               <span className="material-symbols-outlined text-[12px]">
                 bolt
               </span>

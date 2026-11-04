@@ -211,7 +211,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               5.0
               <span
                 aria-hidden
-                className="material-symbols-outlined fill-current text-[16px] text-yellow-400"
+                className="material-symbols-outlined fill-current text-[16px] gold-foil"
               >
                 star
               </span>

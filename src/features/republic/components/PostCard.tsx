@@ -25,6 +25,8 @@ import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
 import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
 import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
+import { POST_MAX, POST_MESSAGE } from "@/shared/lib/limits";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
 import { Badge } from "@/shared/components/ui/badge";
@@ -62,7 +64,7 @@ function PollCard({
       const updated = await voteOnPoll(postId, optionId);
       onVoted(updated);
     } catch (err: unknown) {
-      toast.error((err as Error)?.message || "Could not cast your vote.");
+      toast.error(getApiErrorMessage(err, "Could not cast your vote. Try again."));
     } finally {
       setVoting(false);
     }
@@ -209,13 +211,19 @@ export function PostCard({
       toast.error("Post content cannot be empty.");
       return;
     }
+    if (trimmed.length > POST_MAX) {
+      toast.error(POST_MESSAGE);
+      return;
+    }
     try {
       const updated = await editPost(post.id, { content: trimmed });
       setContent(updated.content);
       setEditedAt(updated.editedAt ?? new Date().toISOString());
       setIsEditing(false);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Could not save changes.");
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(error, "Could not save your changes. Check your connection and try again."),
+      );
     }
   };
 
@@ -278,7 +286,7 @@ export function PostCard({
     <article
       className={`relative w-full rounded-2xl transition-all duration-300 ${
         isPartnerPost
-          ? "bg-gradient-to-b from-amber-950/20 via-zinc-900/90 to-zinc-900 border-2 border-amber-500/40 shadow-[0_4px_30px_rgba(217,154,38,0.15)]"
+          ? "bg-gradient-to-b from-gold-tint via-zinc-900/90 to-zinc-900 border-2 border-gold-edge shadow-[0_4px_30px_rgba(201,160,74,0.18)]"
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
       } p-4 sm:p-5`}
     >
@@ -318,6 +326,7 @@ export function PostCard({
             onChange={(e) => setEditContent(e.target.value)}
             rows={3}
             autoFocus
+            maxLength={POST_MAX}
             className="w-full resize-none bg-zinc-900 border border-zinc-800 focus:border-lime-400/60 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none transition-colors"
           />
           <div className="flex items-center gap-2">
@@ -340,7 +349,7 @@ export function PostCard({
       ) : (
         <div
           onClick={openable ? handleOpenDetail : undefined}
-          className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed ${openable ? "cursor-pointer" : ""}`}
+          className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap break-words leading-relaxed ${openable ? "cursor-pointer" : ""}`}
         >
           {renderUsernameMentions(displayedContent)}
           {isLongText && !textExpanded && (
@@ -403,7 +412,7 @@ export function PostCard({
             <p className="text-xs font-bold text-zinc-200">
               {post.originalPost.author.name}
             </p>
-            <p className="text-[11px] text-zinc-500 line-clamp-2">
+            <p className="text-[11px] text-zinc-500 line-clamp-2 break-words">
               {post.originalPost.content}
             </p>
           </div>
@@ -422,22 +431,22 @@ export function PostCard({
 
       {/* Verified Venue Stamp Badge (if linked to a stamp) */}
       {post.stamp && (
-        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs shadow-sm">
+        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gold-tint border border-gold-edge text-gold text-xs shadow-sm">
           {post.stamp.imageUrl ? (
             <Image
               src={post.stamp.imageUrl}
               alt="Stamp"
               width={20}
               height={20}
-              className="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
+              className="w-5 h-5 rounded-full object-cover ring-1 ring-gold-edge"
             />
           ) : (
-            <Award className="h-4 w-4" strokeWidth={2} />
+            <Award className="h-4 w-4 gold-foil-svg" strokeWidth={2} />
           )}
           <span className="font-bold">Verified Venue Stamp:</span>
           <span>{post.stamp.venue?.name || post.stamp.eventName}</span>
           {post.stamp.venue?.city && (
-            <span className="text-amber-400/80">• {post.stamp.venue.city}</span>
+            <span className="text-gold/80">• {post.stamp.venue.city}</span>
           )}
         </div>
       )}
@@ -506,13 +515,15 @@ export function PostCard({
       {post.type === "review_share" && post.review && (
         <div className="mt-3.5 p-3.5 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-amber-400">
+            <div className="flex items-center gap-1 text-gold">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className="h-[18px] w-[18px]"
+                  className={`h-[18px] w-[18px] gold-foil-svg ${
+                    i < post.review!.rating ? "gold-foil-fill" : ""
+                  }`}
                   strokeWidth={2}
-                  fill={i < post.review!.rating ? "currentColor" : "none"}
+                  fill="none"
                 />
               ))}
               <span className="text-xs font-bold text-white ml-1">
@@ -710,11 +721,11 @@ export function PostCard({
 
       {/* 6. Partner Announcement Embed */}
       {post.type === "partner_announcement" && (
-        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-gold-tint to-transparent border border-gold-edge flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <span className="text-xs font-extrabold text-amber-300 flex items-center gap-1">
-              <Handshake className="h-[15px] w-[15px]" strokeWidth={2} />
-              Official Partner Foxer Opportunity
+            <span className="text-xs font-extrabold flex items-center gap-1">
+              <Handshake className="h-[15px] w-[15px] gold-foil-svg" strokeWidth={2} />
+              <span className="gold-foil">Official Partner Foxer Opportunity</span>
             </span>
             <p className="text-[11px] text-zinc-400 mt-0.5">
               Available for funding, package allocations & co-host production.

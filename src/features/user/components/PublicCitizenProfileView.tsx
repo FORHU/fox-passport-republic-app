@@ -49,9 +49,9 @@ const RARITY_COLORS: Record<
   { badge: string; text: string; border: string }
 > = {
   legendary: {
-    badge: "bg-gradient-to-r from-amber-500/20 to-yellow-500/20",
-    text: "text-amber-300",
-    border: "border-amber-400/50",
+    badge: "bg-gold-tint",
+    text: "text-gold",
+    border: "border-gold-edge",
   },
   epic: {
     badge: "bg-purple-500/20",
@@ -180,7 +180,7 @@ export default function PublicCitizenProfileView({
         <div
           className={`relative overflow-hidden rounded-3xl p-6 sm:p-8 border backdrop-blur-xl ${
             isPartner
-              ? "bg-gradient-to-br from-amber-950/20 via-zinc-950 to-zinc-900/80 border-amber-500/30"
+              ? "bg-gradient-to-br from-gold-tint via-zinc-950 to-zinc-900/80 border-gold-edge"
               : "bg-zinc-950/80 border-zinc-800/80 shadow-2xl"
           }`}
         >
@@ -193,7 +193,7 @@ export default function PublicCitizenProfileView({
               <div
                 className={`w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden p-1 ${
                   isPartner
-                    ? "bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700"
+                    ? "gold-foil-pill"
                     : "bg-gradient-to-b from-lime-400 to-emerald-600"
                 }`}
               >
@@ -206,7 +206,7 @@ export default function PublicCitizenProfileView({
               <div
                 className={`absolute -bottom-2 -right-2 px-2.5 py-1 rounded-xl text-xs font-black border shadow-lg ${
                   isPartner
-                    ? "bg-amber-400 text-black border-amber-300"
+                    ? "gold-foil-pill"
                     : "bg-zinc-950 text-lime-400 border-lime-400/40"
                 }`}
               >
@@ -222,7 +222,7 @@ export default function PublicCitizenProfileView({
                 </h1>
                 <VerifiedBadge verifiedAt={profile.identityVerifiedAt} />
                 {isPartner && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500/25 to-yellow-500/25 text-amber-300 border border-amber-500/40 shadow-sm">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black gold-foil-pill border shadow-sm">
                     <span className="material-symbols-outlined text-[14px]">
                       verified
                     </span>
@@ -284,7 +284,7 @@ export default function PublicCitizenProfileView({
                       key={r}
                       className={`px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${
                         isInv
-                          ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                          ? "gold-foil-pill"
                           : "bg-zinc-900 text-zinc-300 border-zinc-800"
                       }`}
                     >
@@ -364,8 +364,8 @@ export default function PublicCitizenProfileView({
           </div>
 
           <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
-              <span className="material-symbols-outlined text-[16px]">
+            <div className="flex items-center justify-center gap-1.5 text-gold text-xs font-bold uppercase tracking-wider mb-1">
+              <span className="material-symbols-outlined gold-foil text-[16px]">
                 verified
               </span>
               Venue Stamps
@@ -516,11 +516,11 @@ export default function PublicCitizenProfileView({
                     return (
                       <div
                         key={stamp.id}
-                        className="group relative rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-amber-500/50 p-4 transition-all flex flex-col"
+                        className="group relative rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-gold-edge p-4 transition-all flex flex-col"
                       >
                         <div className="flex items-center gap-3 mb-3">
                           {/* Circular Stamp Seal */}
-                          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400/60 p-0.5 bg-zinc-900 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
+                          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold-edge p-0.5 bg-zinc-900 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
                             <img
                               src={stampSeal}
                               alt={stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
@@ -529,7 +529,7 @@ export default function PublicCitizenProfileView({
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-bold text-sm text-white truncate group-hover:text-amber-300 transition-colors">
+                            <h4 className="font-bold text-sm text-white truncate group-hover:text-gold transition-colors">
                               {stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
                             </h4>
                             <p className="text-xs text-zinc-400 truncate">

@@ -12,6 +12,7 @@ import MessageSocketBridge from "@/features/messages/components/MessageSocketBri
 import ChatWindowsWrapper from "@/app/ChatWindowsWrapper";
 import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
 import RouteProgressBar from "@/shared/components/ui/RouteProgressBar";
+import { GoldFoilDefs } from "@/shared/components/ui/GoldFoilDefs";
 
 // Import the Master Provider
 import Providers from "@/shared/providers";
@@ -110,6 +111,8 @@ export default function RootLayout({
         className="antialiased font-body text-text-main bg-background flex flex-col min-h-screen bg-gradient-dark"
         suppressHydrationWarning
       >
+        {/* The url(#gold-foil) gradient behind gold-foil-svg/-fill icons. */}
+        <GoldFoilDefs />
         <Providers>
           <Suspense fallback={null}>
             <RouteProgressBar />

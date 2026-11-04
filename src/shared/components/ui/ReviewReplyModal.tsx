@@ -131,7 +131,7 @@ export default function ReviewReplyModal({
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-3 h-3 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "fill-white/20 text-white/20"}`}
+                    className={`w-3 h-3 ${i < review.rating ? "gold-foil-fill gold-foil-svg" : "fill-white/20 text-white/20"}`}
                   />
                 ))}
                 <span className="text-xs text-text-muted ml-1">{date}</span>

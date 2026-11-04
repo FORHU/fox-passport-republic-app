@@ -38,8 +38,8 @@ export function CuratorSection({ host }: CuratorSectionProps) {
                 Visual Director
               </p>
             </div>
-            <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold bg-black/40 px-2 py-1 rounded-lg">
-              <span className="material-symbols-outlined text-[14px] fill-current">
+            <div className="flex items-center gap-1 text-gold text-xs font-bold bg-black/40 px-2 py-1 rounded-lg">
+              <span className="material-symbols-outlined gold-foil text-[14px] fill-current">
                 star
               </span>{" "}
               {host.rating}

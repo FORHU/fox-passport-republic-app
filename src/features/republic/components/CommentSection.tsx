@@ -14,6 +14,7 @@ import {
   toggleCommentLike,
 } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface CommentSectionProps {
@@ -85,7 +86,7 @@ function CommentRow({
       onEdited(comment.id, updated.content, updated.updatedAt ?? "");
       setIsEditing(false);
     } catch (err: unknown) {
-      toast.error((err as Error)?.message || "Failed to edit comment");
+      toast.error(getApiErrorMessage(err, "Could not save your comment. Try again."));
     } finally {
       setSaving(false);
     }
@@ -98,7 +99,7 @@ function CommentRow({
       await deletePostComment(postId, comment.id);
       onDeleted(comment.id);
     } catch (err: unknown) {
-      toast.error((err as Error)?.message || "Failed to delete comment");
+      toast.error(getApiErrorMessage(err, "Could not delete the comment. Try again."));
     } finally {
       setDeleting(false);
     }
@@ -152,7 +153,7 @@ function CommentRow({
                 </div>
               </div>
             ) : (
-              <p className="text-zinc-300 mt-0.5 whitespace-pre-wrap leading-relaxed">
+              <p className="text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
                 {renderUsernameMentions(comment.content)}
               </p>
             )}
@@ -298,7 +299,7 @@ export function CommentSection({
       setReplyTarget(null);
       onCommentAdded?.();
     } catch (err: unknown) {
-      setError((err as Error)?.message || "Failed to post comment");
+      setError(getApiErrorMessage(err, "Could not post your comment. Try again."));
     } finally {
       setSubmitting(false);
     }

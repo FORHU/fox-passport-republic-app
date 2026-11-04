@@ -6,6 +6,8 @@ export const DESCRIPTION_MAX = 500;
 export const LONG_DESCRIPTION_MAX = 2000;
 // Event descriptions run 100-500 words in the builder.
 export const EVENT_DESCRIPTION_MAX = 5000;
+// Posts, matching the API's feed limit.
+export const POST_MAX = 5000;
 export const QUANTITY_MAX = 100_000;
 export const PRICE_MAX = 9_999_999.99;
 
@@ -14,6 +16,8 @@ const fmt = (n: number) => n.toLocaleString("en-US");
 export const NAME_MESSAGE = `Names can be up to ${NAME_MAX} characters.`;
 export const QUANTITY_MESSAGE = `Enter a whole number from 1 to ${fmt(QUANTITY_MAX)}.`;
 export const PRICE_MESSAGE = `Enter a price from 0 to ${fmt(PRICE_MAX)} with at most 2 decimals.`;
+
+export const POST_MESSAGE = `Posts can be up to ${fmt(POST_MAX)} characters. Shorten it and try again.`;
 
 export const descriptionMessage = (max: number) =>
   `Descriptions can be up to ${fmt(max)} characters.`;
