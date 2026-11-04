@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ export type RoleType =
   | "gearFoxer"
   | "serviceFoxer"
   | "performerFoxer"
+  | "providerFoxer"
   | "investor"
   | "eventFoxer"
   | "organizer";

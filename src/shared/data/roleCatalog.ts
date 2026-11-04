@@ -26,6 +26,26 @@ const BUSINESS_DOCUMENTS =
 
 export const ROLES: RoleCatalogEntry[] = [
   {
+    type: "provider",
+    slug: "provider",
+    roleType: "providerFoxer",
+    href: "/foxer/apply?type=provider",
+    color: "var(--periwinkle)",
+    icon: "storefront",
+    title: "Provider",
+    desc: "Supply equipment, talent services, or live entertainment.",
+    responsibilities: [
+      "List equipment rentals, talent services (catering, staffing), or live entertainment.",
+      "Get booked directly by citizens, or bid on open supply slots in published events.",
+      "Message clients and manage your listings, bookings, and payouts from your dashboard.",
+    ],
+    requirements: [
+      "Your business or stage name, service/gear offerings, and experience",
+      "Your tax ID or police clearance ID number (if applicable)",
+      BUSINESS_DOCUMENTS,
+    ],
+  },
+  {
     type: "service",
     slug: "talent",
     roleType: "serviceFoxer",
