@@ -9,13 +9,23 @@ export interface ScheduleItem {
   color: string;
 }
 
+/**
+ * Whether an event's venue is settled. `missing`: no venue picked;
+ * `pending`: the venue owner hasn't answered the match request yet;
+ * `declined`: they said no. Only `confirmed` needs no warning.
+ */
+export type VenueConfirmation =
+  "confirmed" | "pending" | "declined" | "missing";
+
 export interface EventItem {
   id: number | string;
   title: string;
   date: string;
   loc: string;
   type: string;
+  /** The API's own status, lower case: draft, pending, published, rejected, archived. */
   status: string;
+  venueConfirmation: VenueConfirmation;
   booked: number | null;
   capacity: number | null;
   revenue: number | null;
@@ -142,7 +152,10 @@ export const KPI_DATA = [
 
 // Status options for different types
 export const STATUS_OPTIONS = {
-  event: ["Draft", "Published", "Ongoing", "Completed", "Cancelled"],
+  // None: an event's status comes from review (submit, approve, reject), so
+  // its badge only displays it. The old list ("Ongoing", "Completed", ...)
+  // matched no API status and changed nothing but the screen.
+  event: [] as string[],
   venue: ["draft", "pending", "available", "rejected", "archived"],
   inventory: ["available", "reserved", "unavailable"],
   service: ["active", "paused", "unavailable"],
@@ -155,6 +168,8 @@ export const STATUS_OPTIONS = {
  * must not offer these.
  */
 export const FILTER_STATUS_OPTIONS = {
+  // The API's EventTemplateStatus, in the order an event moves through it.
+  event: ["draft", "pending", "published", "rejected", "archived"],
   inventory: ["draft", "pending", ...STATUS_OPTIONS.inventory],
   service: ["draft", "pending", ...STATUS_OPTIONS.service],
 };

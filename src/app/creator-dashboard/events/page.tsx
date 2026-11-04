@@ -3,31 +3,13 @@
 import { requirePermission } from "@/shared/lib/server/auth";
 import { getEvents } from "@/shared/lib/server/data";
 import HostEventsClient from "@/features/dashboard/components/HostEventsClient";
-import { EventItem } from "@/features/dashboard/data/dashboardData";
+import { mapTemplateToEventItem } from "@/features/dashboard/mappers/hostDashboard";
 
 export default async function HostEventsPage() {
   const user = await requirePermission("template:manage");
   const events = await getEvents(user.id);
 
-  const hostEvents: EventItem[] = events.map((e: any) => ({
-    id: e.id,
-    title: e.name ?? "Untitled",
-    date: e.createdAt
-      ? new Date(e.createdAt).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "—",
-    loc: [e.targetCity, e.targetState].filter(Boolean).join(", ") || "—",
-    type: e.category ?? "other",
-    status: e.status ?? "draft",
-    booked: null,
-    capacity: e.maxAttendees ?? null,
-    revenue: null,
-    img: e.images?.[0]?.url ?? "",
-    isPublic: e.isPublic ?? false,
-  }));
+  const hostEvents = events.map(mapTemplateToEventItem);
 
   return <HostEventsClient initialEvents={hostEvents} />;
 }
