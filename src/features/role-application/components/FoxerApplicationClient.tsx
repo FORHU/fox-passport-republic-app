@@ -13,6 +13,7 @@ import {
   Music2,
   ClipboardCheck,
   MapPin,
+  Store,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -66,13 +67,20 @@ const ORGANIZER_CATEGORY_OPTIONS = [
   { value: "garden", label: "Gardens" },
 ];
 
-type ProviderType = "asset" | "service" | "performer" | "organizer";
+const PROVIDER_CATEGORY_OPTIONS = [
+  ...ASSET_CATEGORY_OPTIONS,
+  ...SERVICE_CATEGORY_OPTIONS,
+  ...PERFORMER_CATEGORY_OPTIONS,
+];
+
+type ProviderType = "provider" | "service" | "performer" | "asset" | "organizer";
 
 const PROVIDER_TABS: { type: ProviderType; label: string; color: string }[] = [
+  { type: "provider", label: "Provider", color: "var(--periwinkle)" },
+  { type: "organizer", label: "Organizer", color: "var(--periwinkle)" },
   { type: "service", label: "Talent Foxer", color: "var(--periwinkle)" },
   { type: "performer", label: "Performer", color: "var(--warning)" },
   { type: "asset", label: "Gear Provider", color: "var(--periwinkle)" },
-  { type: "organizer", label: "Organizer", color: "var(--periwinkle)" },
 ];
 
 const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
@@ -124,12 +132,31 @@ const labelsFor = (
   values.map((v) => options.find((o) => o.value === v)?.label ?? v).join(", ");
 
 export default function FoxerApplicationClient({
-  initialType = "service",
+  initialType = "provider",
 }: {
   initialType?: ProviderType;
 }) {
   const { mutate: applyRole, isPending } = useApplyRole();
   const [providerType, setProviderType] = useState<ProviderType>(initialType);
+
+  // Provider Form State — unified equipment, services & live talent
+  const [providerData, setProviderData] = useState({
+    businessName: "",
+    assetTypes: "",
+    serviceTypes: "",
+    portfolioUrls: "",
+    experience: "",
+    nbiClearanceIdNumber: "",
+    tinNumber: "",
+    validId1FileId: "",
+    nbiFileId: "",
+    tinIdFileId: "",
+    birPermitFileId: "",
+    selfieFileId: "",
+  });
+  const [providerSpecializations, setProviderSpecializations] = useState<
+    string[]
+  >([]);
 
   // Asset Form State
   const [assetData, setAssetData] = useState({
@@ -208,9 +235,15 @@ export default function FoxerApplicationClient({
       setAssetData((prev) => ({ ...prev, [field]: fileId }));
     } else if (providerType === "performer") {
       setPerformerData((prev) => ({ ...prev, [field]: fileId }));
-    } else {
+    } else if (providerType === "service") {
       setServiceData((prev) => ({ ...prev, [field]: fileId }));
+    } else {
+      setProviderData((prev) => ({ ...prev, [field]: fileId }));
     }
+  };
+
+  const handleProviderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProviderData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleAssetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,6 +264,28 @@ export default function FoxerApplicationClient({
   const DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
     nbiClearanceIdNumber: 18,
     tinNumber: 9,
+  };
+
+  const handleProviderDigitsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const { name, value } = e.target;
+    const digits = value
+      .replace(/\D/g, "")
+      .slice(0, DIGIT_FIELD_MAX_LENGTH[name]);
+    setProviderData((prev) => ({ ...prev, [name]: digits }));
+  };
+
+  const handleProviderExperienceChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const digits = e.target.value.replace(/\D/g, "");
+    if (digits === "") {
+      setProviderData((prev) => ({ ...prev, experience: "" }));
+      return;
+    }
+    const clamped = Math.min(100, Math.max(0, Number(digits)));
+    setProviderData((prev) => ({ ...prev, experience: String(clamped) }));
   };
 
   const handleServiceDigitsChange = (
@@ -281,7 +336,29 @@ export default function FoxerApplicationClient({
   };
 
   const submit = () => {
-    if (providerType === "organizer") {
+    if (providerType === "provider") {
+      applyRole({
+        roleType: "providerFoxer",
+        data: {
+          businessName: providerData.businessName.trim() || undefined,
+          assetTypes: splitList(providerData.assetTypes),
+          serviceTypes: splitList(providerData.serviceTypes),
+          portfolioUrls: splitList(providerData.portfolioUrls),
+          experience: providerData.experience
+            ? parseInt(providerData.experience, 10)
+            : undefined,
+          nbiClearanceIdNumber:
+            providerData.nbiClearanceIdNumber || undefined,
+          tinNumber: providerData.tinNumber || undefined,
+          validId1FileId: providerData.validId1FileId || undefined,
+          nbiFileId: providerData.nbiFileId || undefined,
+          tinIdFileId: providerData.tinIdFileId || undefined,
+          birPermitFileId: providerData.birPermitFileId || undefined,
+          selfieFileId: providerData.selfieFileId || undefined,
+          specializations: providerSpecializations,
+        },
+      });
+    } else if (providerType === "organizer") {
       applyRole({
         roleType: "organizer",
         data: {
@@ -337,6 +414,7 @@ export default function FoxerApplicationClient({
       ? "Upload all the required documents before continuing."
       : null;
 
+  const providerDocs = countUploaded(FOXER_KYC_DOCUMENTS, providerData);
   const orgDocs = countUploaded(ORGANIZER_KYC_DOCUMENTS, organizerData);
   const assetDocs = countUploaded(FOXER_KYC_DOCUMENTS, assetData);
   const serviceDocs = countUploaded(FOXER_KYC_DOCUMENTS, serviceData);
@@ -354,6 +432,8 @@ export default function FoxerApplicationClient({
       <Package size={32} />
     ) : providerType === "performer" ? (
       <Music2 size={32} />
+    ) : providerType === "provider" ? (
+      <Store size={32} />
     ) : (
       <Briefcase size={32} />
     );
@@ -376,6 +456,42 @@ export default function FoxerApplicationClient({
           },
           docsRow(orgDocs, ORGANIZER_KYC_DOCUMENTS.length),
         ]
+      : providerType === "provider"
+        ? [
+            {
+              label: "Business / Brand name",
+              value: providerData.businessName || "Independent",
+            },
+            {
+              label: "Equipment types",
+              value: providerData.assetTypes || "None",
+            },
+            {
+              label: "Service & talent types",
+              value: providerData.serviceTypes || "None",
+            },
+            {
+              label: "Years of experience",
+              value: providerData.experience || "Not specified",
+            },
+            {
+              label: "Portfolio links",
+              value: providerData.portfolioUrls || "None",
+            },
+            {
+              label: "NBI clearance ID",
+              value: providerData.nbiClearanceIdNumber || "None",
+            },
+            { label: "TIN number", value: providerData.tinNumber || "None" },
+            {
+              label: "Specializations",
+              value: labelsFor(
+                PROVIDER_CATEGORY_OPTIONS,
+                providerSpecializations,
+              ),
+            },
+            docsRow(providerDocs, FOXER_KYC_DOCUMENTS.length),
+          ]
       : providerType === "asset"
         ? [
             { label: "Business name", value: assetData.businessName },
@@ -498,6 +614,10 @@ export default function FoxerApplicationClient({
           <>
             Apply to be an <span style={{ color: accent }}>Organizer</span>
           </>
+        ) : providerType === "provider" ? (
+          <>
+            Apply to be a <span style={{ color: accent }}>Provider</span>
+          </>
         ) : (
           <>
             Apply to be a <span style={{ color: accent }}>Foxer</span>
@@ -507,7 +627,9 @@ export default function FoxerApplicationClient({
       subtitle={
         providerType === "organizer"
           ? "Once approved, Mayors and Event Owners can invite you to help run their venues and events."
-          : "Provide your professional details to start offering services, equipment, or performances in FoxPassport."
+          : providerType === "provider"
+            ? "Provide your details to start supplying equipment, professional talent, or live entertainment in FoxPassport."
+            : "Provide your professional details to start offering services, equipment, or performances in FoxPassport."
       }
       intro={intro}
       summary={summary}
@@ -515,7 +637,111 @@ export default function FoxerApplicationClient({
       isPending={isPending}
       onSubmit={submit}
     >
-      {providerType === "organizer" ? (
+      {providerType === "provider" ? (
+        <>
+          <WizardStep
+            label="Offerings"
+            title="Your offerings"
+            description="What you supply — equipment rentals, professional services, or live performances."
+          >
+            <IconField
+              label="Business or Brand Name (Optional)"
+              accent={accent}
+              icon={<Briefcase size={18} />}
+              type="text"
+              name="businessName"
+              value={providerData.businessName}
+              onChange={handleProviderChange}
+              placeholder="e.g. Acme Sound & Lighting, DJ Apex, etc."
+            />
+            <IconField
+              label="Equipment & Gear (Optional)"
+              hint="Comma-separated (e.g. Sound Systems, Stage Lighting, Furniture)"
+              accent={accent}
+              icon={<Package size={18} />}
+              type="text"
+              name="assetTypes"
+              value={providerData.assetTypes}
+              onChange={handleProviderChange}
+              placeholder="Sound Systems, Lighting, Props, Furniture..."
+            />
+            <IconField
+              label="Services & Live Acts (Optional)"
+              hint="Comma-separated (e.g. Photography, Catering, DJ, Band, Staffing)"
+              accent={accent}
+              icon={<Tag size={18} />}
+              type="text"
+              name="serviceTypes"
+              value={providerData.serviceTypes}
+              onChange={handleProviderChange}
+              placeholder="Photography, Catering, DJ, Live Band..."
+            />
+            <IconField
+              label="Years of Experience (Optional)"
+              accent={accent}
+              icon={<UserCircle size={18} />}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              name="experience"
+              value={providerData.experience}
+              onChange={handleProviderExperienceChange}
+              placeholder="e.g. 3"
+            />
+            <IconField
+              label="Portfolio / Website Links (Optional)"
+              accent={accent}
+              icon={<LinkIcon size={18} />}
+              type="text"
+              name="portfolioUrls"
+              value={providerData.portfolioUrls}
+              onChange={handleProviderChange}
+              placeholder="https://instagram.com/..., https://portfolio.com"
+            />
+            <SpecializationPicker
+              options={PROVIDER_CATEGORY_OPTIONS}
+              value={providerSpecializations}
+              onChange={setProviderSpecializations}
+              accentColor={accent}
+            />
+          </WizardStep>
+
+          <WizardStep
+            label="Verification"
+            title="Provider verification"
+            description="Provide your verification details to start offering on FoxPassport."
+            validate={() =>
+              docsMessage(providerDocs, FOXER_KYC_DOCUMENTS.length)
+            }
+          >
+            <IconField
+              label="TIN Number (Optional)"
+              accent={accent}
+              icon={<Hash size={18} />}
+              type="text"
+              inputMode="numeric"
+              name="tinNumber"
+              maxLength={9}
+              value={providerData.tinNumber}
+              onChange={handleProviderDigitsChange}
+              placeholder="000-000-000-000"
+            />
+            <IconField
+              label="NBI Clearance ID (Optional)"
+              accent={accent}
+              icon={<BadgeCheck size={18} />}
+              type="text"
+              inputMode="numeric"
+              name="nbiClearanceIdNumber"
+              maxLength={18}
+              value={providerData.nbiClearanceIdNumber}
+              onChange={handleProviderDigitsChange}
+              placeholder="XXXX-XXXX-XXXX"
+            />
+            <KycDocumentSection onUpload={handleFileUpload} compact />
+          </WizardStep>
+        </>
+      ) : providerType === "organizer" ? (
         <>
           <WizardStep
             label="About you"

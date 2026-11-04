@@ -15,6 +15,7 @@ const ROLE_LABELS: Record<string, string> = {
   gearFoxer: "Gear Foxer",
   serviceFoxer: "Talent Foxer",
   performerFoxer: "Performer Foxer",
+  providerFoxer: "Provider",
   investor: "Investor",
   organizer: "Organizer",
 };
