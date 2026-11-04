@@ -30,8 +30,9 @@ const VENUE_NOTES: Record<
   },
 };
 
+/** Nothing for a confirmed venue, or when the API hasn't said (null). */
 function venueNoteFor(ev: EventItem) {
-  return ev.venueConfirmation === "confirmed"
+  return ev.venueConfirmation === null || ev.venueConfirmation === "confirmed"
     ? null
     : VENUE_NOTES[ev.venueConfirmation];
 }

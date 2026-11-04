@@ -23,9 +23,10 @@ export interface EventItem {
   date: string;
   loc: string;
   type: string;
-  /** The API's own status, lower case: draft, pending, published, rejected, archived. */
+  /** The API's own status, as sent: draft, pending, published, rejected, archived. */
   status: string;
-  venueConfirmation: VenueConfirmation;
+  /** The API's own value (api#165); null until the API sends it — then no venue line. */
+  venueConfirmation: VenueConfirmation | null;
   booked: number | null;
   capacity: number | null;
   revenue: number | null;

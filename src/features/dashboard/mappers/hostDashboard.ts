@@ -2,7 +2,6 @@ import type {
   EventItem,
   VenueItem,
 } from "@/features/dashboard/data/dashboardData";
-import { venueConfirmationOf } from "@/features/dashboard/mappers/venueConfirmation";
 
 function normalizeStatus(status: unknown): string {
   const raw = String(status ?? "")
@@ -43,8 +42,11 @@ function pickImage(images: unknown): string {
  *
  * The single mapper for both the dashboard's "My Active Events" and the
  * My Events page: each used to keep its own copy, and they disagreed on the
- * date, place and type shown for the same event. `status` stays the API's own
- * lower-case value, which is what EventsSection branches on.
+ * date, place and type shown for the same event.
+ *
+ * `status` and `venueConfirmation` pass through exactly as the API sends them:
+ * the app decides neither. Until the API sends `venueConfirmation` (api#165)
+ * it is null, and EventsSection shows no venue line.
  */
 export function mapTemplateToEventItem(template: unknown): EventItem {
   const t = template as any;
@@ -60,8 +62,8 @@ export function mapTemplateToEventItem(template: unknown): EventItem {
       : "—",
     loc: [t?.targetCity, t?.targetState].filter(Boolean).join(", ") || "—",
     type: t?.category ?? "other",
-    status: String(t?.status ?? "draft").toLowerCase(),
-    venueConfirmation: venueConfirmationOf(t),
+    status: t?.status,
+    venueConfirmation: t?.venueConfirmation ?? null,
     // A template has no bookings or revenue of its own; its events do.
     booked: null,
     capacity: t?.maxAttendees ?? null,

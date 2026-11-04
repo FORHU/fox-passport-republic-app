@@ -81,6 +81,18 @@ describe("EventsSection venue warning", () => {
     expect(within(card).queryByTitle("Delete draft")).not.toBeInTheDocument();
   });
 
+  it("shows no venue line on a published event while the API doesn't say (null)", () => {
+    expectNoWarning(renderCard(event({ venueConfirmation: null })));
+  });
+
+  it("keeps draft actions but no venue line on a draft the API doesn't say about", () => {
+    const card = renderCard(
+      event({ status: "draft", venueConfirmation: null }),
+    );
+    expectNoWarning(card);
+    expect(within(card).getByTitle("Delete draft")).toBeInTheDocument();
+  });
+
   it("says the venue is still deciding on a pending event", () => {
     const card = renderCard(
       event({ status: "pending", venueConfirmation: "pending" }),
