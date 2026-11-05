@@ -485,16 +485,12 @@ function VoucherPanel({
   const [importing, setImporting] = useState(false);
 
   const handleGenerate = async () => {
-    const n = Number(count);
-    if (!n || n < 1) {
-      toast.error("Enter how many codes to generate");
-      return;
-    }
     setGenerating(true);
     try {
+      // The API checks the count (1-500) and answers with the message shown below.
       const vouchers = await generateOwnVouchers(
         promo.id,
-        n,
+        Number(count),
         prefix.trim() || undefined,
       );
       toast.success(`Generated ${vouchers.length} voucher code(s).`);
@@ -547,70 +543,61 @@ function VoucherPanel({
     }
   };
 
-  // The auto-apply voucher is a hidden system anchor, never shown or typed —
-  // see PromotionSvc.ensureAutoApplyVoucher.
-  const visibleVouchers = (promo.vouchers ?? []).filter(
-    (v) => !v.code.startsWith("AUTO-"),
-  );
-
-  if (promo.autoApply) {
-    return (
-      <div className="mt-4 pt-4 border-t border-white/5">
-        <p className="text-white/40 text-xs">
-          This applies automatically — no codes to generate or manage.
-        </p>
-        <div className="mt-3">
-          <AnalyticsPanel promotionId={promo.id} />
-        </div>
-      </div>
-    );
-  }
+  // Shown as the API sends them: it leaves out the hidden auto-apply code and
+  // decides whether codes can be added (canGenerateCodes, with its reason).
+  const vouchers = promo.vouchers ?? [];
 
   return (
     <div className="mt-4 pt-4 border-t border-white/5">
-      <div className="flex flex-wrap items-end gap-2 mb-3">
-        <div className="space-y-1">
-          <label className="text-[9px] uppercase font-bold text-white/30 tracking-widest">
-            Count
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={count}
-            onChange={(e) => setCount(e.target.value)}
-            className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-accent/40"
-          />
+      {!promo.canGenerateCodes ? (
+        <p className="text-white/40 text-xs mb-3">
+          {promo.codeGenerationBlockedReason}
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-end gap-2 mb-3">
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase font-bold text-white/30 tracking-widest">
+              Count
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={count}
+              onChange={(e) => setCount(e.target.value)}
+              className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-accent/40"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase font-bold text-white/30 tracking-widest">
+              Prefix (optional)
+            </label>
+            <input
+              type="text"
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value)}
+              placeholder="e.g. SUMMER"
+              className="w-32 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-accent/40"
+            />
+          </div>
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="px-3 py-1.5 rounded-lg bg-accent text-black font-bold text-xs hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+          >
+            <Ticket size={13} />
+            {generating ? "Generating…" : "Generate Codes"}
+          </button>
+          <button
+            onClick={() => setShowImport((s) => !s)}
+            className="px-3 py-1.5 rounded-lg bg-white/10 text-white font-bold text-xs hover:bg-white/20 flex items-center gap-1.5"
+          >
+            <Upload size={13} />
+            Import Codes
+          </button>
         </div>
-        <div className="space-y-1">
-          <label className="text-[9px] uppercase font-bold text-white/30 tracking-widest">
-            Prefix (optional)
-          </label>
-          <input
-            type="text"
-            value={prefix}
-            onChange={(e) => setPrefix(e.target.value)}
-            placeholder="e.g. SUMMER"
-            className="w-32 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-accent/40"
-          />
-        </div>
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="px-3 py-1.5 rounded-lg bg-accent text-black font-bold text-xs hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
-        >
-          <Ticket size={13} />
-          {generating ? "Generating…" : "Generate Codes"}
-        </button>
-        <button
-          onClick={() => setShowImport((s) => !s)}
-          className="px-3 py-1.5 rounded-lg bg-white/10 text-white font-bold text-xs hover:bg-white/20 flex items-center gap-1.5"
-        >
-          <Upload size={13} />
-          Import Codes
-        </button>
-      </div>
+      )}
 
-      {showImport && (
+      {promo.canGenerateCodes && showImport && (
         <div className="mb-3 space-y-2">
           <textarea
             value={importText}
@@ -633,9 +620,9 @@ function VoucherPanel({
         <AnalyticsPanel promotionId={promo.id} />
       </div>
 
-      {visibleVouchers.length > 0 ? (
+      {vouchers.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-          {visibleVouchers.map((v) => (
+          {vouchers.map((v) => (
             <div
               key={v.id}
               className={`flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg border text-[11px] font-mono ${
@@ -670,7 +657,9 @@ function VoucherPanel({
           ))}
         </div>
       ) : (
-        <p className="text-white/20 text-xs">No codes generated yet.</p>
+        promo.canGenerateCodes && (
+          <p className="text-white/20 text-xs">No codes generated yet.</p>
+        )
       )}
     </div>
   );
@@ -807,14 +796,7 @@ export default function FoxerPromotionsClient({
                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() =>
-                          setExpandedId(
-                            expandedId === promo.id ? null : promo.id,
-                          )
-                        }
-                      >
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap">
                           <h3 className="font-bold text-white text-base truncate">
                             {promo.name}
@@ -833,12 +815,7 @@ export default function FoxerPromotionsClient({
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-white/5 text-white/40 border border-white/10">
-                              {
-                                (promo.vouchers ?? []).filter(
-                                  (v) => !v.code.startsWith("AUTO-"),
-                                ).length
-                              }{" "}
-                              codes
+                              {promo.voucherCount} codes
                             </span>
                           )}
                         </div>
@@ -859,11 +836,39 @@ export default function FoxerPromotionsClient({
                               `Until ${new Date(promo.endDate).toLocaleDateString()}`}
                           </p>
                         )}
+                        {promo.canGenerateCodes && promo.voucherCount === 0 && (
+                          <p className="text-white/40 text-xs mt-2">
+                            No codes yet. Open Manage codes to generate them.
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          aria-expanded={expandedId === promo.id}
+                          aria-controls={`promo-codes-${promo.id}`}
+                          onClick={() =>
+                            setExpandedId(
+                              expandedId === promo.id ? null : promo.id,
+                            )
+                          }
+                          className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <Ticket size={13} />
+                          {promo.canGenerateCodes
+                            ? "Manage codes"
+                            : "View details"}
+                          <span
+                            className={`material-symbols-outlined text-[16px] transition-transform ${
+                              expandedId === promo.id ? "rotate-180" : ""
+                            }`}
+                          >
+                            expand_more
+                          </span>
+                        </button>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           onClick={() => handleEdit(promo)}
-                          className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover/card:opacity-100"
+                          className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-100 sm:opacity-0 sm:group-hover/card:opacity-100 focus-visible:opacity-100"
                           title="Edit promotion"
                         >
                           <span className="material-symbols-outlined text-[18px]">
@@ -873,7 +878,7 @@ export default function FoxerPromotionsClient({
                         {promo.active && (
                           <button
                             onClick={() => handleDelete(promo.id)}
-                            className="p-2 rounded-xl bg-red-500/5 text-red-400/40 hover:text-red-400 hover:bg-red-500/15 transition-all opacity-0 group-hover/card:opacity-100"
+                            className="p-2 rounded-xl bg-red-500/5 text-red-400/40 hover:text-red-400 hover:bg-red-500/15 transition-all opacity-100 sm:opacity-0 sm:group-hover/card:opacity-100 focus-visible:opacity-100"
                             title="Deactivate promotion"
                           >
                             <span className="material-symbols-outlined text-[18px]">
@@ -885,7 +890,9 @@ export default function FoxerPromotionsClient({
                     </div>
 
                     {expandedId === promo.id && (
-                      <VoucherPanel promo={promo} onChanged={load} />
+                      <div id={`promo-codes-${promo.id}`}>
+                        <VoucherPanel promo={promo} onChanged={load} />
+                      </div>
                     )}
                   </div>
                 ))}

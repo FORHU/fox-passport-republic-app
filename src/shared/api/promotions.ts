@@ -40,7 +40,14 @@ export interface Promotion {
   autoApply: boolean;
   createdAt: string;
   updatedAt: string;
+  /** The codes a person can see and hand out; the API leaves out the hidden auto-apply one. */
   vouchers?: Voucher[];
+  /** How many of those codes there are, counted by the API. */
+  voucherCount: number;
+  /** Whether codes can be generated or imported now, decided by the API. */
+  canGenerateCodes: boolean;
+  /** Why not, in words to show as is; null when codes can be added. */
+  codeGenerationBlockedReason: string | null;
 }
 
 export interface PromotionAnalytics {
