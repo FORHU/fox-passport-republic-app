@@ -40,7 +40,6 @@ import JourneyLanding from "@/features/landing/journey/JourneyLanding";
 import Link from "next/link";
 import ListingCard from "@/features/landing/components/ListingCard";
 import { SearchResultsMap } from "@/features/search/components/SearchResultsMap";
-import AuthModal from "@/features/auth/components/AuthModal";
 import GoogleAuthErrorToast from "@/features/auth/components/GoogleAuthErrorToast";
 import FacebookAuthErrorToast from "@/features/auth/components/FacebookAuthErrorToast";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
@@ -99,7 +98,8 @@ async function HomeContent({ searchParams }: HomePageProps) {
     return (
       <main className="min-h-screen bg-background bg-gradient-dark text-text-main font-body pt-28 md:pt-32 pb-20">
         <LandingHeader />
-        <AuthModal />
+        {/* No <AuthModal /> here: the root layout mounts it. A second one
+            stacked two login forms on the search results (BUG-27). */}
 
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:h-[calc(100vh-140px)]">
           <div className="lg:overflow-y-auto pr-1 md:pr-2 custom-scrollbar">

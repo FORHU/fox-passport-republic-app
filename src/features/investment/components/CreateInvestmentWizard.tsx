@@ -1131,7 +1131,7 @@ export default function CreateInvestmentWizard({
 
             <InvestmentLocationPicker
               value={form.location}
-              onChange={(loc) => setForm({ ...form, location: loc })}
+              onChange={(loc) => setForm((f) => ({ ...f, location: loc }))}
               isPhysical={true}
             />
 

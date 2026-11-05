@@ -22,6 +22,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { startSocialSignIn } from "@/shared/auth/session-api";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { PASSWORD_HINT } from "@/shared/lib/passwordPolicy";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -525,7 +526,7 @@ function SignupView({
                 display: "block",
               }}
             >
-              16+ chars · uppercase · lowercase · digit · special (@$!%*?&)
+              {PASSWORD_HINT}
             </span>
           )}
         </div>

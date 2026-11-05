@@ -12,6 +12,7 @@ import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal"
 
 import { toast } from "sonner";
 import { startSocialSignIn } from "@/shared/auth/session-api";
+import { PASSWORD_MIN } from "@/shared/lib/passwordPolicy";
 
 // Social buttons component
 const SocialButtons = () => (
@@ -109,7 +110,7 @@ export default function SignupForm() {
     } else if (formErrors.password) {
       toast.error(
         formErrors.password.message ??
-          "Password must be at least 16 characters long",
+          `Password must be at least ${PASSWORD_MIN} characters long`,
       );
     } else if (formErrors.confirmPassword) {
       toast.error(

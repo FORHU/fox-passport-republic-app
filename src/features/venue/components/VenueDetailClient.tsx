@@ -13,6 +13,7 @@ import {
   VenueReviews,
   VenueMap,
   HostBio,
+  EMPTY_HOST_BIO,
   HouseRules,
 } from "@/features/venue/components/detail";
 import { CustomExperienceBuilder } from "@/features/venue/components/detail/ExperienceBuilder";
@@ -220,9 +221,15 @@ export default function VenueDetailClient({
                     <p className="text-accent text-xs font-bold uppercase tracking-wider mb-2">
                       Venue Foxer · Space Provider
                     </p>
-                    <p className="text-sm text-text-muted leading-relaxed">
-                      &quot;{host.bio}&quot;
-                    </p>
+                    {host.bio?.trim() ? (
+                      <p className="text-sm text-text-muted leading-relaxed">
+                        &quot;{host.bio.trim()}&quot;
+                      </p>
+                    ) : (
+                      <p className="text-sm text-text-muted/70 italic">
+                        {EMPTY_HOST_BIO}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

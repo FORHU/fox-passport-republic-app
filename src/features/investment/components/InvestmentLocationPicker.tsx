@@ -79,46 +79,58 @@ export default function InvestmentLocationPicker({
     };
   }, []);
 
+  // The latest value and onChange, so async work (a reverse geocode, the map
+  // loading, Center on Me) builds on what the form holds *now*, not on the
+  // copy from the render that started it, which would undo newer edits.
+  const valueRef = useRef(value);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    valueRef.current = value;
+    onChangeRef.current = onChange;
+  }, [value, onChange]);
+  const emit = useCallback((next: LocationData) => {
+    valueRef.current = next;
+    onChangeRef.current(next);
+  }, []);
+
+  // The pin always shows the coordinates that will be saved (BUG-27).
+  useEffect(() => {
+    markerRef.current?.setLngLat([value.lng, value.lat]);
+  }, [value.lat, value.lng]);
+
   // Sync initial detected position if current value is default/empty
   const hasSyncedDetectedRef = useRef(false);
   useEffect(() => {
+    const current = valueRef.current;
     if (
       !hasSyncedDetectedRef.current &&
       isDetected &&
-      value.lat === 14.5995 &&
-      value.lng === 120.9842
+      current.lat === 14.5995 &&
+      current.lng === 120.9842
     ) {
       hasSyncedDetectedRef.current = true;
-      onChange({
-        ...value,
+      emit({
+        ...current,
         lat: detectedCoords[1],
         lng: detectedCoords[0],
-        city: detectedCity || value.city,
-        country: detectedCountry || value.country,
+        city: detectedCity || current.city,
+        country: detectedCountry || current.country,
       });
-      if (mapRef.current) {
-        mapRef.current.flyTo({
-          center: detectedCoords,
-          zoom: 12,
-          essential: true,
-        });
-        if (markerRef.current) {
-          markerRef.current.setLngLat(detectedCoords);
-        }
-      }
+      mapRef.current?.flyTo({
+        center: detectedCoords,
+        zoom: 12,
+        essential: true,
+      });
     }
-  }, [
-    isDetected,
-    detectedCoords,
-    detectedCountry,
-    detectedCity,
-    value,
-    onChange,
-  ]);
+  }, [isDetected, detectedCoords, detectedCountry, detectedCity, emit]);
 
-  // Reverse geocode a dragged pin coordinate
+  // Save a pin coordinate at once, then fill in its address if the reverse
+  // geocode succeeds. A missing token or a failed lookup still saves where
+  // the pin is: the address fields just keep what they had.
   const reverseGeocodePin = useCallback(
     async (lng: number, lat: number) => {
+      emit({ ...valueRef.current, lat, lng });
+
       const token = getEffectiveMapboxToken();
       if (!token) return;
 
@@ -152,22 +164,47 @@ export default function InvestmentLocationPicker({
           }
         }
 
-        onChange({
-          ...value,
+        const current = valueRef.current;
+        emit({
+          ...current,
           lat,
           lng,
-          address: streetAddress || value.address,
-          city: city || value.city,
-          state: state || value.state,
-          country: country || value.country,
+          address: streetAddress || current.address,
+          city: city || current.city,
+          state: state || current.state,
+          country: country || current.country,
         });
       } catch (err: unknown) {
         if ((err as Error)?.name === "AbortError") return;
         console.error("Failed to reverse geocode pin:", err);
       }
     },
-    [value, onChange],
+    [emit],
   );
+
+  // Center on Me: `locateMe` reports back through `detectedCoords` once it
+  // finishes, so move the pin and save the spot then, not before (the old
+  // handler flew to the previous position and never saved it).
+  const pendingLocateRef = useRef(false);
+  const handleCenterOnMe = () => {
+    // No geolocation: `locateMe` changes nothing, so nothing would ever report
+    // back. Use the position already detected (profile country or default).
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      const [lng, lat] = detectedCoords;
+      mapRef.current?.flyTo({ center: [lng, lat], zoom: 13, essential: true });
+      reverseGeocodePin(lng, lat);
+      return;
+    }
+    pendingLocateRef.current = true;
+    locateMe();
+  };
+  useEffect(() => {
+    if (!pendingLocateRef.current || isLocationLoading) return;
+    pendingLocateRef.current = false;
+    const [lng, lat] = detectedCoords;
+    mapRef.current?.flyTo({ center: [lng, lat], zoom: 13, essential: true });
+    reverseGeocodePin(lng, lat);
+  }, [isLocationLoading, detectedCoords, reverseGeocodePin]);
 
   // Address search with country scoping and debounced AbortController
   const handleSearch = (query: string) => {
@@ -231,29 +268,21 @@ export default function InvestmentLocationPicker({
       }
     }
 
-    onChange({
-      ...value,
+    const current = valueRef.current;
+    emit({
+      ...current,
       lat,
       lng,
       address: feature.place_name,
-      city: city || value.city,
-      state: state || value.state,
-      country: country || value.country,
+      city: city || current.city,
+      state: state || current.state,
+      country: country || current.country,
     });
 
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [lng, lat], zoom: 14, essential: true });
-      if (markerRef.current) {
-        markerRef.current.setLngLat([lng, lat]);
-      }
-    }
+    mapRef.current?.flyTo({ center: [lng, lat], zoom: 14, essential: true });
   };
 
-  const initialCenterRef = useRef<[number, number]>(
-    value.lng != null && value.lat != null
-      ? [value.lng, value.lat]
-      : detectedCoords,
-  );
+  const fallbackCenterRef = useRef<[number, number]>(detectedCoords);
   const reverseGeocodePinRef = useRef(reverseGeocodePin);
   useEffect(() => {
     reverseGeocodePinRef.current = reverseGeocodePin;
@@ -269,7 +298,11 @@ export default function InvestmentLocationPicker({
 
       mapboxgl.accessToken = getEffectiveMapboxToken();
 
-      const initialCenter = initialCenterRef.current;
+      // The map loads asynchronously: by now auto-detect or a search may
+      // have moved the saved spot, so start at the form's current value.
+      const { lat, lng } = valueRef.current;
+      const initialCenter: [number, number] =
+        lng != null && lat != null ? [lng, lat] : fallbackCenterRef.current;
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
@@ -352,18 +385,7 @@ export default function InvestmentLocationPicker({
         <button
           type="button"
           disabled={isLocationLoading}
-          onClick={() => {
-            locateMe();
-            if (mapRef.current) {
-              mapRef.current.flyTo({
-                center: detectedCoords,
-                zoom: 13,
-                essential: true,
-              });
-              if (markerRef.current)
-                markerRef.current.setLngLat(detectedCoords);
-            }
-          }}
+          onClick={handleCenterOnMe}
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors cursor-pointer disabled:opacity-60"
         >
           <span
@@ -469,6 +491,10 @@ export default function InvestmentLocationPicker({
           />
         </div>
       </div>
+      <p className="text-[11px] text-zinc-500 -mt-2">
+        Typing here only changes the address label. The pin sets the saved
+        location: search above or drag the pin to move it.
+      </p>
 
       {/* Delivery Coverage Radius Slider (for Physical Inventory) */}
       {isPhysical && (

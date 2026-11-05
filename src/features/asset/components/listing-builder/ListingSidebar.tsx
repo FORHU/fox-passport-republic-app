@@ -8,6 +8,7 @@ import {
   ListingType,
   SERVICE_UNITS,
 } from "@/shared/data/listingBuilderData";
+import { LISTING_LABELS } from "./listingLabels";
 
 import { PRICE_MAX, priceError } from "@/shared/lib/limits";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
@@ -78,7 +79,9 @@ export function ListingSidebar({
         <h3 className="font-display font-bold text-lg text-white mb-1">
           Details
         </h3>
-        <p className="text-xs text-text-muted">Define your {activeType}</p>
+        <p className="text-xs text-text-muted">
+          Define your {LISTING_LABELS[activeType].lowerNoun}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">

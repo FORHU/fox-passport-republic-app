@@ -589,6 +589,9 @@ export function VenueMap({
   );
 }
 
+/** Shown instead of a blank or `""` owner biography (BUG-27). */
+export const EMPTY_HOST_BIO = "This host hasn't added a bio yet.";
+
 interface HostBioProps {
   host: {
     name: string;
@@ -638,10 +641,12 @@ export function HostBio({ host }: HostBioProps) {
             </span>
           </div>
         )}
-        {host.description && (
+        {host.description?.trim() ? (
           <p className="text-sm text-gray-300 leading-relaxed mb-4">
-            {host.description}
+            {host.description.trim()}
           </p>
+        ) : (
+          <p className="text-sm text-gray-400 italic mb-4">{EMPTY_HOST_BIO}</p>
         )}
         <div className="flex items-center gap-4">
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">

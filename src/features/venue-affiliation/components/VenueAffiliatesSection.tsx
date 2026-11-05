@@ -16,6 +16,7 @@ import {
   revokeAffiliation,
 } from "@/features/venue-affiliation/api/venueAffiliations";
 import { fetchFoxers } from "@/shared/api/foxers";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 
 async function searchEventFoxers(query: string): Promise<PickerItem[]> {
   const items = await fetchFoxers(8, 1, "eventFoxer", query);
@@ -54,6 +55,7 @@ export function VenueAffiliatesSection({
   const [loading, setLoading] = useState(true);
   const [inviteFoxer, setInviteFoxer] = useState<PickerItem | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirm();
 
   const load = useCallback(async () => {
     try {
@@ -96,6 +98,7 @@ export function VenueAffiliatesSection({
 
   return (
     <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-surface/30 p-8">
+      {dialog}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -224,9 +227,18 @@ export function VenueAffiliatesSection({
                   {!asOrganizer && aff.status === "approved" && (
                     <button
                       disabled={busyId === aff.id}
-                      onClick={() =>
-                        withBusy(aff.id, () => revokeAffiliation(aff.id))
-                      }
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: "Revoke affiliation?",
+                          description: `${
+                            aff.eventFoxer?.name ?? "This Event Foxer"
+                          } will no longer be affiliated with this venue.`,
+                          confirmLabel: "Revoke",
+                          tone: "danger",
+                        });
+                        if (!ok) return;
+                        await withBusy(aff.id, () => revokeAffiliation(aff.id));
+                      }}
                       className="px-2.5 py-1 rounded-lg bg-white/5 text-white/50 text-[11px] font-bold disabled:opacity-50"
                     >
                       Revoke

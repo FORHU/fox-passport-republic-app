@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
+import { LISTING_LABELS } from "./listingLabels";
 import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface ListingHeaderProps {
@@ -32,18 +33,16 @@ export function ListingHeader({
   onPublish,
   myDraftsHref,
 }: ListingHeaderProps) {
-  const defaultSuccessMessage =
-    activeType === "inventory"
-      ? "Asset created successfully! Redirecting..."
-      : "Service created successfully! Redirecting...";
+  const labels = LISTING_LABELS[activeType];
+  const defaultSuccessMessage = `${labels.noun} created successfully! Redirecting...`;
   return (
     <>
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface z-20">
         <div className="flex items-center gap-4">
           <BackButton onClick={onBack} />
           <div>
-            <h2 className="font-display font-bold text-lg flex items-center gap-2 capitalize">
-              {activeType} Studio
+            <h2 className="font-display font-bold text-lg flex items-center gap-2">
+              {labels.studio}
               <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary-glow text-[9px] font-bold uppercase">
                 Creator
               </span>
@@ -54,8 +53,7 @@ export function ListingHeader({
                   activeType === "inventory" ? "bg-primary" : "bg-warning"
                 } animate-pulse`}
               />
-              {title ||
-                `New ${activeType === "inventory" ? "Item" : "Service"}`}{" "}
+              {title || `New ${labels.noun}`}{" "}
               (Draft)
             </div>
           </div>

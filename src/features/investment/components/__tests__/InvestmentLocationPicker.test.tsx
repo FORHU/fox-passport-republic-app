@@ -4,15 +4,28 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import InvestmentLocationPicker from "../InvestmentLocationPicker";
 import * as mapboxLib from "@/shared/lib/mapbox";
 
+// Mutable so a test can play the hook finishing a `locateMe()`.
+const mocks = vi.hoisted(() => ({
+  location: {
+    coords: [120.9842, 14.5995] as [number, number],
+    isLoading: false,
+    locateMe: (() => {}) as () => void,
+  },
+  markers: [] as Array<{
+    handlers: Record<string, () => void>;
+    getLngLat: { mockReturnValue: (v: { lng: number; lat: number }) => void };
+  }>,
+}));
+
 vi.mock("@/shared/hooks/useUserLocation", () => ({
   useUserLocation: () => ({
-    coords: [120.9842, 14.5995],
+    coords: mocks.location.coords,
     country: "Philippines",
     countryCode: "PH",
     city: "Manila",
     isDetected: true,
-    locateMe: vi.fn(),
-    isLoading: false,
+    locateMe: mocks.location.locateMe,
+    isLoading: mocks.location.isLoading,
   }),
 }));
 
@@ -24,11 +37,18 @@ vi.mock("mapbox-gl", () => {
     remove = vi.fn();
   }
   class MockMarker {
+    handlers: Record<string, () => void> = {};
     setLngLat = vi.fn().mockReturnThis();
     addTo = vi.fn().mockReturnThis();
-    on = vi.fn().mockReturnThis();
+    on = vi.fn((event: string, cb: () => void) => {
+      this.handlers[event] = cb;
+      return this;
+    });
     remove = vi.fn();
     getLngLat = vi.fn().mockReturnValue({ lng: 120.9842, lat: 14.5995 });
+    constructor() {
+      mocks.markers.push(this);
+    }
   }
   class MockNavigationControl {}
   class MockGeolocateControl {}
@@ -58,6 +78,139 @@ describe("InvestmentLocationPicker", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(mapboxLib, "getEffectiveMapboxToken").mockReturnValue("test-mapbox-token");
+    mocks.markers.length = 0;
+    mocks.location.coords = [120.9842, 14.5995];
+    mocks.location.isLoading = false;
+    mocks.location.locateMe = vi.fn();
+  });
+
+  /** Holds the value like the wizard does, so later edits are visible. */
+  function StatefulPicker({ onLatest }: { onLatest: (v: typeof initialValue) => void }) {
+    const [value, setValue] = React.useState(initialValue);
+    return (
+      <InvestmentLocationPicker
+        value={value}
+        onChange={(next) => {
+          setValue(next);
+          onLatest(next);
+        }}
+        isPhysical={true}
+      />
+    );
+  }
+
+  async function dragPinTo(lng: number, lat: number) {
+    await waitFor(() => expect(mocks.markers.length).toBe(1));
+    const marker = mocks.markers[0];
+    marker.getLngLat.mockReturnValue({ lng, lat });
+    React.act(() => marker.handlers.dragend());
+  }
+
+  it("saves a dragged pin's coordinates even without a geocoding token", async () => {
+    vi.spyOn(mapboxLib, "getEffectiveMapboxToken").mockReturnValue("");
+    const handleChange = vi.fn();
+    render(
+      <InvestmentLocationPicker
+        value={{ ...initialValue, lat: 10, lng: 120 }}
+        onChange={handleChange}
+        isPhysical={true}
+      />,
+    );
+
+    await dragPinTo(121.05, 14.55);
+
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        lat: 14.55,
+        lng: 121.05,
+        address: "Unit 12, Tech Center",
+      }),
+    );
+  });
+
+  it("a late reverse geocode keeps edits made while it was in flight", async () => {
+    let resolveFetch!: (v: unknown) => void;
+    global.fetch = vi.fn(
+      () => new Promise((resolve) => (resolveFetch = resolve)),
+    ) as any;
+    const onLatest = vi.fn();
+    render(<StatefulPicker onLatest={onLatest} />);
+
+    await dragPinTo(121.05, 14.55);
+    fireEvent.change(screen.getByRole("slider"), { target: { value: "50" } });
+
+    await React.act(async () => {
+      resolveFetch({
+        ok: true,
+        json: async () => ({
+          features: [
+            { place_name: "5th Ave, Taguig", place_type: ["address"], text: "5th Ave" },
+            { place_name: "Taguig", place_type: ["place"], text: "Taguig" },
+          ],
+        }),
+      });
+    });
+
+    await waitFor(() =>
+      expect(onLatest).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          lat: 14.55,
+          lng: 121.05,
+          address: "5th Ave, Taguig",
+          city: "Taguig",
+          deliveryRadiusKm: 50,
+        }),
+      ),
+    );
+  });
+
+  it("Center on Me saves the located position, not the previous one", async () => {
+    vi.spyOn(mapboxLib, "getEffectiveMapboxToken").mockReturnValue("");
+    // jsdom has no geolocation; the real hook needs it to report back.
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: { getCurrentPosition: vi.fn() },
+    });
+    const handleChange = vi.fn();
+    const props = {
+      value: { ...initialValue, lat: 10, lng: 120 },
+      onChange: handleChange,
+      isPhysical: true,
+    };
+    const { rerender } = render(<InvestmentLocationPicker {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Center on Me/i }));
+    expect(mocks.location.locateMe).toHaveBeenCalled();
+    expect(handleChange).not.toHaveBeenCalled();
+
+    // The hook finishes locating.
+    mocks.location.coords = [121.2, 14.8];
+    rerender(<InvestmentLocationPicker {...props} />);
+
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ lat: 14.8, lng: 121.2 }),
+    );
+    delete (navigator as { geolocation?: unknown }).geolocation;
+  });
+
+  it("Center on Me without geolocation saves the detected fallback at once", () => {
+    vi.spyOn(mapboxLib, "getEffectiveMapboxToken").mockReturnValue("");
+    mocks.location.coords = [121.0, 14.6];
+    const handleChange = vi.fn();
+    render(
+      <InvestmentLocationPicker
+        value={{ ...initialValue, lat: 10, lng: 120 }}
+        onChange={handleChange}
+        isPhysical={true}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Center on Me/i }));
+
+    expect(mocks.location.locateMe).not.toHaveBeenCalled();
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ lat: 14.6, lng: 121.0 }),
+    );
   });
 
   it("renders location inputs and coverage radius slider when isPhysical is true", () => {
