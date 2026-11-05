@@ -165,362 +165,367 @@ export default function MobileAdminView({
         color: "var(--color-white)",
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "64px 20px 0",
-        }}
-      >
-        <button
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open admin navigation"
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-          }}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 20, color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}
-          >
-            menu
-          </span>
-        </button>
-
-        <span
-          style={{
-            fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
-            fontSize: 16,
-            fontWeight: 700,
-            color: "var(--color-white)",
-          }}
-        >
-          Overview
-        </span>
-
+      {/* Capped and centered: below `lg` this view spans a tablet's full
+          width, where 1000px-wide rows read poorly. */}
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        {/* Header */}
         <div
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: "50%",
-            background: "#5C62D6",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            fontSize: 14,
-            fontWeight: 700,
-            color: "var(--color-white)",
+            justifyContent: "space-between",
+            padding: "64px 20px 0",
           }}
         >
-          A
-        </div>
-      </div>
-
-      {/* KPI scroll row */}
-      <div
-        className="no-scrollbar"
-        style={{
-          display: "flex",
-          gap: 12,
-          overflowX: "auto",
-          padding: "28px 20px 4px",
-        }}
-      >
-        {KPI_CARDS.map((kpi) => (
-          <div
-            key={kpi.label}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open admin navigation"
             style={{
-              flexShrink: 0,
-              width: 130,
-              background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-              borderRadius: 18,
-              padding: "16px 14px",
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
             }}
           >
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 10,
-                background: kpi.iconBg,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 12,
-              }}
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 20, color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18, color: kpi.iconColor }}
-              >
-                {kpi.icon}
-              </span>
-            </div>
-            <p
-              style={{
-                fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
-                fontSize: 20,
-                fontWeight: 700,
-                color: kpi.valueColor,
-                margin: "0 0 2px",
-              }}
-            >
-              {kpi.value}
-            </p>
-            <p
-              style={{
-                fontSize: 11,
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                margin: 0,
-              }}
-            >
-              {kpi.label}
-            </p>
-          </div>
-        ))}
-      </div>
+              menu
+            </span>
+          </button>
 
-      {/* Pending Approvals */}
-      <div style={{ padding: "28px 20px 112px" }}>
-        <p
+          <span
+            style={{
+              fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
+              fontSize: 16,
+              fontWeight: 700,
+              color: "var(--color-white)",
+            }}
+          >
+            Overview
+          </span>
+
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "#5C62D6",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--color-white)",
+            }}
+          >
+            A
+          </div>
+        </div>
+
+        {/* KPI scroll row */}
+        <div
+          className="no-scrollbar"
           style={{
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-            margin: "0 0 14px",
+            display: "flex",
+            gap: 12,
+            overflowX: "auto",
+            padding: "28px 20px 4px",
           }}
         >
-          Pending Approvals
-        </p>
-
-        {APPROVALS.length === 0 && (
-          <p
-            style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-white) 35%, transparent)", margin: 0 }}
-          >
-            Nothing waiting for review.
-          </p>
-        )}
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {APPROVALS.map((item) => (
+          {KPI_CARDS.map((kpi) => (
             <div
-              key={item.id}
+              key={kpi.label}
               style={{
+                // Grows to share the row on wider screens; on a phone the three
+                // 130px minimums overflow and the row scrolls as before.
+                flex: "1 0 130px",
                 background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
                 border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-                borderRadius: 16,
-                padding: "14px 16px",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
+                borderRadius: 18,
+                padding: "16px 14px",
               }}
             >
-              {/* Avatar */}
               <div
                 style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "50%",
-                  background: "rgba(92,98,214,0.2)",
-                  border: "1px solid rgba(92,98,214,0.3)",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  background: kpi.iconBg,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#C6C9FA",
-                  flexShrink: 0,
+                  marginBottom: 12,
                 }}
               >
-                {item.name.charAt(0)}
-              </div>
-              {/* Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "var(--color-white)",
-                    margin: "0 0 2px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 18, color: kpi.iconColor }}
                 >
-                  {item.name}
-                </p>
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                    margin: 0,
-                  }}
-                >
-                  {item.type}
-                </p>
+                  {kpi.icon}
+                </span>
               </div>
-              {/* Action buttons */}
-              <div
+              <p
                 style={{
-                  display:
-                    rejectingKey === `${item.kind}:${item.id}`
-                      ? "none"
-                      : "flex",
-                  gap: 8,
-                  flexShrink: 0,
+                  fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: kpi.valueColor,
+                  margin: "0 0 2px",
                 }}
               >
-                <button
-                  onClick={() => review(item, "approve")}
-                  disabled={busyId === `${item.kind}:${item.id}`}
-                  aria-label={`Approve ${item.name}`}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    background: "rgba(173,209,63,0.15)",
-                    border: "1px solid rgba(173,209,63,0.25)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    opacity: busyId === `${item.kind}:${item.id}` ? 0.4 : 1,
-                  }}
-                >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: "var(--accent-text)" }}
-                  >
-                    check
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    setRejectingKey(`${item.kind}:${item.id}`);
-                    setRejectReason("");
-                  }}
-                  disabled={busyId === `${item.kind}:${item.id}`}
-                  aria-label={`Reject ${item.name}`}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    background: "rgba(207,61,52,0.15)",
-                    border: "1px solid rgba(207,61,52,0.25)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    opacity: busyId === `${item.kind}:${item.id}` ? 0.4 : 1,
-                  }}
-                >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: "var(--error)" }}
-                  >
-                    close
-                  </span>
-                </button>
-              </div>
+                {kpi.value}
+              </p>
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                  margin: 0,
+                }}
+              >
+                {kpi.label}
+              </p>
+            </div>
+          ))}
+        </div>
 
-              {/* Reason field — replaces the buttons for the row being
-                  rejected, so the phone gets the same "why" the desktop modal
-                  collects instead of a canned string. */}
-              {rejectingKey === `${item.kind}:${item.id}` && (
+        {/* Pending Approvals */}
+        <div style={{ padding: "28px 20px 112px" }}>
+          <p
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              margin: "0 0 14px",
+            }}
+          >
+            Pending Approvals
+          </p>
+
+          {APPROVALS.length === 0 && (
+            <p
+              style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-white) 35%, transparent)", margin: 0 }}
+            >
+              Nothing waiting for review.
+            </p>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {APPROVALS.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                  borderRadius: 16,
+                  padding: "14px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                {/* Avatar */}
                 <div
                   style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
+                    background: "rgba(92,98,214,0.2)",
+                    border: "1px solid rgba(92,98,214,0.3)",
                     display: "flex",
-                    gap: 6,
-                    flexShrink: 0,
                     alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#C6C9FA",
+                    flexShrink: 0,
                   }}
                 >
-                  <input
-                    autoFocus
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter")
-                        review(item, "reject", rejectReason);
-                      if (e.key === "Escape") setRejectingKey(null);
-                    }}
-                    placeholder="Reason"
-                    aria-label={`Reason for rejecting ${item.name}`}
+                  {item.name.charAt(0)}
+                </div>
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
                     style={{
-                      width: 108,
-                      background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
-                      borderRadius: 10,
-                      padding: "7px 10px",
-                      fontSize: 12,
+                      fontSize: 13,
+                      fontWeight: 600,
                       color: "var(--color-white)",
-                      outline: "none",
+                      margin: "0 0 2px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
-                  />
+                  >
+                    {item.name}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                      margin: 0,
+                    }}
+                  >
+                    {item.type}
+                  </p>
+                </div>
+                {/* Action buttons */}
+                <div
+                  style={{
+                    display:
+                      rejectingKey === `${item.kind}:${item.id}`
+                        ? "none"
+                        : "flex",
+                    gap: 8,
+                    flexShrink: 0,
+                  }}
+                >
                   <button
-                    onClick={() => review(item, "reject", rejectReason)}
+                    onClick={() => review(item, "approve")}
                     disabled={busyId === `${item.kind}:${item.id}`}
-                    aria-label="Confirm rejection"
+                    aria-label={`Approve ${item.name}`}
                     style={{
                       width: 32,
                       height: 32,
                       borderRadius: "50%",
-                      background: "rgba(207,61,52,0.2)",
-                      border: "1px solid rgba(207,61,52,0.3)",
+                      background: "rgba(173,209,63,0.15)",
+                      border: "1px solid rgba(173,209,63,0.25)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
-                      flexShrink: 0,
+                      opacity: busyId === `${item.kind}:${item.id}` ? 0.4 : 1,
+                    }}
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 16, color: "var(--accent-text)" }}
+                    >
+                      check
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRejectingKey(`${item.kind}:${item.id}`);
+                      setRejectReason("");
+                    }}
+                    disabled={busyId === `${item.kind}:${item.id}`}
+                    aria-label={`Reject ${item.name}`}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "rgba(207,61,52,0.15)",
+                      border: "1px solid rgba(207,61,52,0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      opacity: busyId === `${item.kind}:${item.id}` ? 0.4 : 1,
                     }}
                   >
                     <span
                       className="material-symbols-outlined"
                       style={{ fontSize: 16, color: "var(--error)" }}
                     >
-                      send
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setRejectingKey(null)}
-                    aria-label="Cancel rejection"
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 16, color: "color-mix(in srgb, var(--color-white) 50%, transparent)" }}
-                    >
                       close
                     </span>
                   </button>
                 </div>
-              )}
-            </div>
-          ))}
+
+                {/* Reason field — replaces the buttons for the row being
+                    rejected, so the phone gets the same "why" the desktop modal
+                    collects instead of a canned string. */}
+                {rejectingKey === `${item.kind}:${item.id}` && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexShrink: 0,
+                      alignItems: "center",
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter")
+                          review(item, "reject", rejectReason);
+                        if (e.key === "Escape") setRejectingKey(null);
+                      }}
+                      placeholder="Reason"
+                      aria-label={`Reason for rejecting ${item.name}`}
+                      style={{
+                        width: 108,
+                        background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+                        border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
+                        borderRadius: 10,
+                        padding: "7px 10px",
+                        fontSize: 12,
+                        color: "var(--color-white)",
+                        outline: "none",
+                      }}
+                    />
+                    <button
+                      onClick={() => review(item, "reject", rejectReason)}
+                      disabled={busyId === `${item.kind}:${item.id}`}
+                      aria-label="Confirm rejection"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: "rgba(207,61,52,0.2)",
+                        border: "1px solid rgba(207,61,52,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 16, color: "var(--error)" }}
+                      >
+                        send
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setRejectingKey(null)}
+                      aria-label="Cancel rejection"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+                        border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 16, color: "color-mix(in srgb, var(--color-white) 50%, transparent)" }}
+                      >
+                        close
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -6,133 +6,13 @@ import { useUIStore } from "@/shared/store/useUIStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useLogout } from "@/shared/auth/useLogout";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
-import { hasPermission, type Permission } from "@/shared/lib/permissions";
-
-/**
- * Each item names the capability it needs. `admin_secretary` holds only the
- * queue permissions, so Citizens, Bookings, Categories, Disputes, Policies and
- * Settings simply do not render for them — and the API refuses those routes
- * anyway, so hiding them is courtesy rather than the control.
- */
-const NAV_ITEMS = [
-  {
-    label: "Dashboard",
-    icon: "dashboard",
-    id: "dashboard",
-    permission: "admin:access",
-  },
-  {
-    label: "Bookings",
-    icon: "confirmation_number",
-    id: "bookings",
-    permission: "bookings:read:all",
-  },
-  {
-    label: "Citizens",
-    icon: "group",
-    id: "citizens",
-    permission: "users:read",
-  },
-  {
-    label: "Events",
-    icon: "event",
-    id: "events",
-    section: "Manage",
-    permission: "queue:read",
-  },
-  {
-    // Ended with nobody checked in; an admin settles each booking.
-    label: "Needs review",
-    icon: "fact_check",
-    id: "needs-review",
-    permission: "queue:read",
-  },
-  {
-    label: "Categories",
-    icon: "category",
-    id: "categories",
-    permission: "categories:manage",
-  },
-  {
-    label: "Venues",
-    icon: "storefront",
-    id: "venues",
-    permission: "queue:read",
-  },
-  {
-    label: "Map",
-    icon: "map",
-    id: "map",
-    permission: "queue:read",
-  },
-  {
-    label: "Assets",
-    icon: "inventory_2",
-    id: "assets",
-    section: "Listings",
-    permission: "queue:read",
-  },
-  {
-    label: "Services",
-    icon: "build",
-    id: "services",
-    permission: "queue:read",
-  },
-  {
-    label: "Disputes",
-    icon: "gavel",
-    id: "disputes",
-    section: "System",
-    // What the API's dispute routes check.
-    permission: "disputes:resolve",
-  },
-  {
-    label: "Reports",
-    icon: "flag",
-    id: "reports",
-    permission: "queue:read",
-  },
-  {
-    label: "Identity",
-    icon: "verified_user",
-    id: "identity",
-    permission: "users:manage",
-  },
-  {
-    label: "Policies",
-    icon: "policy",
-    id: "policies",
-    permission: "policies:manage",
-  },
-  {
-    label: "Platform Fees",
-    icon: "payments",
-    id: "platform-fees",
-    permission: "fees:manage",
-  },
-  {
-    label: "Promotions",
-    icon: "sell",
-    id: "promotions",
-    permission: "promotions:manage",
-  },
-  {
-    label: "Settings",
-    icon: "settings",
-    id: "settings",
-    permission: "categories:manage",
-  },
-] as const satisfies readonly {
-  label: string;
-  icon: string;
-  id: string;
-  section?: string;
-  permission: Permission;
-}[];
+import { hasPermission } from "@/shared/lib/permissions";
+import { ADMIN_SECTIONS, adminSectionHref } from "@/features/admin/sections";
+import { useAdminSection } from "@/features/admin/hooks/useAdminSection";
 
 export const AdminSidebar: React.FC = () => {
-  const { sidebarOpen, setSidebarOpen, activeAdminTab, setActiveAdminTab } =
-    useUIStore();
+  const { sidebarOpen, setSidebarOpen } = useUIStore();
+  const activeSection = useAdminSection();
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -149,7 +29,7 @@ export const AdminSidebar: React.FC = () => {
     }
   };
 
-  const navItems = NAV_ITEMS.filter((item) =>
+  const navItems = ADMIN_SECTIONS.filter((item) =>
     hasPermission(user, item.permission),
   );
 
@@ -180,34 +60,33 @@ export const AdminSidebar: React.FC = () => {
         <nav className="flex-1 py-6 px-4 space-y-1 overflow-y-auto hide-scrollbar">
           {navItems.map((item) => (
             <React.Fragment key={item.id}>
-              {"section" in item && item.section && (
+              {"group" in item && item.group && (
                 <div className="px-4 pt-5 pb-1.5 text-[10px] font-bold text-white/25 uppercase tracking-widest">
-                  {item.section}
+                  {item.group}
                 </div>
               )}
-              <button
-                onClick={() => {
-                  setActiveAdminTab(item.id);
-                  // Harmless on desktop, where the drawer is always docked.
-                  setSidebarOpen(false);
-                }}
+              <Link
+                href={adminSectionHref(item.id)}
+                aria-current={activeSection === item.id ? "page" : undefined}
+                // Harmless on desktop, where the drawer is always docked.
+                onClick={() => setSidebarOpen(false)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${
-                  activeAdminTab === item.id
+                  activeSection === item.id
                     ? "text-white bg-white/10 shadow-inner"
                     : "text-text-muted hover:text-white hover:bg-white/5"
                 }`}
               >
                 <span
-                  className={`material-symbols-outlined text-[20px] ${activeAdminTab === item.id ? "text-accent" : ""}`}
+                  className={`material-symbols-outlined text-[20px] ${activeSection === item.id ? "text-accent" : ""}`}
                 >
                   {item.icon}
                 </span>
                 <span className="font-medium text-sm">{item.label}</span>
-              </button>
+              </Link>
             </React.Fragment>
           ))}
-          {/* Refunds is its own page, not a tab; it had no link at all, so
-              only someone who knew the URL could reach it. */}
+          {/* Refunds is its own page outside the console layout; it had no
+              link at all, so only someone who knew the URL could reach it. */}
           {hasPermission(user, "refunds:manage") && (
             <Link
               href="/admin/refunds"

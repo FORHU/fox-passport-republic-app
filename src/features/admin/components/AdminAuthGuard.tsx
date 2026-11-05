@@ -22,7 +22,7 @@ interface AdminAuthGuardProps {
  * `initialize()` has settled, so the store is populated before this mounts.
  *
  * What actually enforces admin access is `await requireAdmin()` at the top of
- * `app/admin/page.tsx`, off a live /profile call, and `requirePermission` on
+ * `app/admin/(console)/layout.tsx`, off a live /profile call, and `requirePermission` on
  * every admin route in the API. Nothing reaches this component without passing
  * the first of those.
  *

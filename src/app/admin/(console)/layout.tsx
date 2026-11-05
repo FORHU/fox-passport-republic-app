@@ -1,6 +1,7 @@
 ﻿import {
   getDashboardStats,
-  getAdminPendingVenues,
+  getAdminVenues,
+  type UsersPage,
   getAdminAllAssets,
   getAdminAllServices,
   getAdminEvents,
@@ -21,7 +22,19 @@ import MobileAdminView from "@/features/admin/components/MobileAdminView";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboard() {
+/**
+ * The admin console shell. Every section has its own URL (`/admin` for the
+ * dashboard, `/admin/<section>` for the rest — see `features/admin/sections`),
+ * and each of those pages is just a guard that renders nothing: the console
+ * lives here because a layout is not re-rendered when navigating between its
+ * child pages, so switching section keeps the client state and does not
+ * re-run this server fetch. `AdminContent` reads the section from the URL.
+ */
+export default async function AdminConsoleLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const user = await requireAdmin();
 
   const [
@@ -29,13 +42,15 @@ export default async function AdminDashboard() {
     venues,
     events,
     categories,
-    citizens,
+    citizensPage,
     assets,
     services,
     bookings,
   ] = await Promise.all([
     getDashboardStats(),
-    getAdminPendingVenues(),
+    // Every venue, as the Venues tab and Map list them — seeding with only the
+    // pending ones made the tab show the pending count until its refetch.
+    getAdminVenues(),
     getAdminEvents(),
     getAdminCategories(),
     // Only fetched when the viewer may read it. `admin_secretary` holds
@@ -44,7 +59,9 @@ export default async function AdminDashboard() {
     // the whole `Promise.all` and takes the console down. The role could not
     // open the page at all: the permission model was right and the page asked
     // for something it was not entitled to anyway.
-    hasPermission(user, "users:read") ? getUsers() : Promise.resolve([]),
+    hasPermission(user, "users:read")
+      ? getUsers()
+      : Promise.resolve<UsersPage>({ users: [] }),
     getAdminAllAssets(),
     getAdminAllServices(),
     // Same rule. `/bookings` scopes its results rather than refusing, so this
@@ -80,11 +97,13 @@ export default async function AdminDashboard() {
                 venues={venues}
                 events={events}
                 categories={categories}
-                citizens={citizens}
+                citizens={citizensPage.users}
+                citizensPagination={citizensPage.pagination}
                 assets={assets}
                 services={services}
                 bookings={bookings}
               />
+              {children}
 
               <footer className="mt-auto border-t border-white/5 py-8 px-4 sm:px-8 text-center text-xs text-gray-600">
                 <p>

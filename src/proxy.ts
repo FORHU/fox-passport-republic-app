@@ -29,7 +29,7 @@ import { SESSION_COOKIES } from "@/shared/auth/session-cookies";
  *
  * So a present-but-expired cookie reaches the page and is turned away there,
  * and a non-admin reaching `/admin` is redirected by `requireAdmin()` in
- * `app/admin/page.tsx` - on fresher information than this file ever had.
+ * `app/admin/(console)/layout.tsx` - on fresher information than this file ever had.
  *
  * If cryptographic verification is ever wanted here, the way to get it is
  * RS256/ES256 signing in the API, so this app can hold a public key that

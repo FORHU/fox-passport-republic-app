@@ -2,9 +2,12 @@ import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
+// The console section comes from the URL (`/admin/[section]`).
+const nav = vi.hoisted(() => ({ section: undefined as string | undefined }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => "/admin",
+  usePathname: () => (nav.section ? `/admin/${nav.section}` : "/admin"),
+  useParams: () => (nav.section ? { section: nav.section } : {}),
 }));
 vi.mock("@/shared/auth/useLogout", () => ({ useLogout: () => vi.fn() }));
 vi.mock("@/shared/components/layout/BrandLogo", () => ({
@@ -58,10 +61,10 @@ vi.mock("@/features/admin/hooks/useAdminPendingServices", () => ({
 }));
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useUIStore } from "@/shared/store/useUIStore";
 import { AdminContent } from "@/features/admin/components/AdminContent";
 import { AdminSidebar } from "@/features/admin/components/AdminSidebar";
 import { AdminHeader } from "@/features/admin/components/AdminHeader";
+import { AdminBody } from "@/features/admin/components/AdminBody";
 
 const SECRETARY = [
   "admin:access",
@@ -109,7 +112,9 @@ const renderContent = () =>
  * routes need more used to render for them and fail.
  */
 describe("admin console visibility", () => {
-  beforeEach(() => useUIStore.getState().setActiveAdminTab("dashboard"));
+  beforeEach(() => {
+    nav.section = undefined;
+  });
 
   it("hides role applications from the secretary (roles:manage)", () => {
     signIn("admin_secretary", SECRETARY);
@@ -148,9 +153,83 @@ describe("admin console visibility", () => {
     );
   });
 
+  it("links every section to its own URL and marks the current one", () => {
+    signIn("admin", ADMIN);
+    nav.section = "bookings";
+    render(<AdminSidebar />);
+    expect(screen.getByRole("link", { name: /Dashboard/ })).toHaveAttribute(
+      "href",
+      "/admin",
+    );
+    const bookings = screen.getByRole("link", { name: /Bookings/ });
+    expect(bookings).toHaveAttribute("href", "/admin/bookings");
+    expect(bookings).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: /Venues/ })).toHaveAttribute(
+      "href",
+      "/admin/venues",
+    );
+    expect(
+      screen.getByRole("link", { name: /Venues/ }),
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  it("renders the section named in the URL", () => {
+    signIn("admin", ADMIN);
+    nav.section = "venues";
+    renderContent();
+    expect(screen.getByTestId("venues")).toBeInTheDocument();
+    expect(screen.queryByTestId("kpis")).toBeNull();
+  });
+
+  it("shows Settings as not yet available rather than a placeholder", () => {
+    signIn("admin", ADMIN);
+    nav.section = "settings";
+    renderContent();
+    expect(screen.getByText("Not yet available")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Back to dashboard/ }),
+    ).toHaveAttribute("href", "/admin");
+  });
+
+  it("fills the width with the phone/tablet overview on the dashboard", () => {
+    // In the console's flex row, an overview without flex-1 shrank to its
+    // content's width: a narrow column beside empty space below lg.
+    render(
+      <AdminBody
+        overview={<div data-testid="overview" />}
+        content={<div data-testid="content" />}
+      />,
+    );
+    expect(screen.getByTestId("overview").parentElement).toHaveClass(
+      "lg:hidden",
+      "flex-1",
+      "min-w-0",
+    );
+    expect(screen.getByTestId("content").parentElement).toHaveClass(
+      "hidden",
+      "lg:flex",
+      "flex-1",
+      "min-w-0",
+    );
+  });
+
+  it("shows the section content full width off the dashboard", () => {
+    nav.section = "citizens";
+    render(
+      <AdminBody
+        overview={<div data-testid="overview" />}
+        content={<div data-testid="content" />}
+      />,
+    );
+    expect(screen.queryByTestId("overview")).toBeNull();
+    const wrapper = screen.getByTestId("content").parentElement;
+    expect(wrapper).toHaveClass("flex", "flex-1", "min-w-0");
+    expect(wrapper).not.toHaveClass("hidden");
+  });
+
   it("titles every tab instead of falling back to Dashboard", () => {
     signIn("admin", ADMIN);
-    useUIStore.getState().setActiveAdminTab("platform-fees");
+    nav.section = "platform-fees";
     render(<AdminHeader />);
     expect(
       screen.getByRole("heading", { name: "Platform Fees" }),

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React from "react";
-import { useUIStore } from "@/shared/store/useUIStore";
+import { useAdminSection } from "@/features/admin/hooks/useAdminSection";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { hasPermission } from "@/shared/lib/permissions";
 import {
@@ -26,6 +26,8 @@ import {
 } from "@/features/admin/components";
 import { useAdminData } from "@/features/admin/hooks/useAdminData";
 import { useAdminPendingVenues } from "@/features/admin/hooks/useAdminPendingVenues";
+import type { CitizensPagination } from "@/features/admin/hooks/useAdminCitizens";
+import { SettingsComingSoon } from "@/features/admin/components/SettingsComingSoon";
 import { useAdminPendingAssets } from "@/features/admin/hooks/useAdminPendingAssets";
 import { useAdminPendingServices } from "@/features/admin/hooks/useAdminPendingServices";
 
@@ -35,6 +37,7 @@ interface Props {
   events: any[];
   categories: any[];
   citizens: any[];
+  citizensPagination?: CitizensPagination;
   assets: any[];
   services: any[];
   bookings: {
@@ -50,11 +53,14 @@ export const AdminContent: React.FC<Props> = ({
   events: initialEvents,
   categories: initialCategories,
   citizens: initialCitizens,
+  citizensPagination: initialCitizensPagination,
   assets: initialAssets,
   services: initialServices,
   bookings: initialBookings,
 }) => {
-  const activeTab = useUIStore((s) => s.activeAdminTab);
+  // The section comes from the URL (`/admin/[section]`); this component lives
+  // in the console layout, so it stays mounted while the section changes.
+  const activeTab = useAdminSection();
   const user = useAuthStore((s) => s.user);
 
   // Only the active tab is rendered, so only the active tab fetches. Every one
@@ -146,7 +152,10 @@ export const AdminContent: React.FC<Props> = ({
       )}
 
       {activeTab === "citizens" && (
-        <AdminCitizenTable initialCitizens={initialCitizens} />
+        <AdminCitizenTable
+          initialCitizens={initialCitizens}
+          initialPagination={initialCitizensPagination}
+        />
       )}
 
       {activeTab === "events" && (
@@ -190,19 +199,7 @@ export const AdminContent: React.FC<Props> = ({
 
       {activeTab === "promotions" && <AdminPromotions />}
 
-      {activeTab === "settings" && (
-        <div className="glass-card rounded-[2rem] p-12 border border-white/5 flex flex-col items-center gap-4 text-center">
-          <span className="material-symbols-outlined text-[56px] text-white/20">
-            settings
-          </span>
-          <h2 className="text-2xl font-display font-bold text-white">
-            Settings
-          </h2>
-          <p className="text-text-muted max-w-sm">
-            Platform configuration and system settings will be available here.
-          </p>
-        </div>
-      )}
+      {activeTab === "settings" && <SettingsComingSoon />}
     </div>
   );
 };

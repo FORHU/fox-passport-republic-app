@@ -50,7 +50,8 @@ const ROLE_PAGES: [route: string, guard: RegExp][] = [
   ["foxer/affiliations", /requirePermission\("template:manage"/],
   ["foxer/marketplace-requests", /requireAnyPermission/],
   ["foxer/create-investment", ROLE_GUARD],
-  ["admin", /requireAdmin/],
+  ["admin/(console)", /requireAdmin/],
+  ["admin/(console)/[section]", /requireAdmin/],
   ["admin/refunds", /requirePermission\("refunds:manage"/],
 ];
 
