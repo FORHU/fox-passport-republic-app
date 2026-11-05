@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -5,6 +6,7 @@ import {
   createEventCheckout,
   cancelEvent,
 } from "@/features/event/api/checkout";
+import { getRewardsWallet } from "@/shared/api/rewards";
 import type { Id } from "@/shared/lib/api-types";
 import type { CheckoutErrorResponse } from "@/shared/types/payment";
 import { formatCurrency } from "@/shared/lib/currency";
@@ -72,4 +74,28 @@ export const useCancelEventMutation = (eventId: Id) => {
       toast.error(error?.response?.data?.message || "Could not cancel event.");
     },
   });
+};
+
+export const useAvailableCoinVouchers = () => {
+  const query = useQuery({
+    queryKey: ["rewards", "wallet"],
+    queryFn: getRewardsWallet,
+    staleTime: 1000 * 30,
+  });
+
+  const codes = useMemo(() => {
+    if (!query.data?.history) return [];
+    const set = new Set<string>();
+    for (const h of query.data.history) {
+      if (h.type === "REDEMPTION") {
+        const match = h.action.match(/\((RWD-[A-Z0-9]+)\)/i);
+        if (match && match[1]) {
+          set.add(match[1]);
+        }
+      }
+    }
+    return Array.from(set);
+  }, [query.data]);
+
+  return { codes, isLoading: query.isLoading };
 };
