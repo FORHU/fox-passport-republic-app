@@ -12,6 +12,7 @@ export const CREATOR_ROLE_TYPES: readonly RoleType[] = [
   "serviceFoxer",
   // Their payouts and Stripe onboarding live on the creator dashboard.
   "performerFoxer",
+  "providerFoxer",
   // Invitations and the teams they help run live on the dashboard.
   "organizer",
   // Partnerships, investments and payouts live on the dashboard too —

@@ -12,6 +12,7 @@ export type RoleType =
   | "gearFoxer"
   | "serviceFoxer"
   | "performerFoxer"
+  | "providerFoxer"
   | "investor"
   | "organizer";
 

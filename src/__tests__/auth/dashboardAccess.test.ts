@@ -12,6 +12,7 @@ describe("canAccessCreatorDashboard", () => {
   it.each([
     "venueFoxer",
     "eventFoxer",
+    "providerFoxer",
     "performerFoxer",
     "investor",
     "organizer",

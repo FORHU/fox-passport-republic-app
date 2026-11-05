@@ -21,7 +21,9 @@ export default async function FoxerApplicationPage({
         ? "performer"
         : type === "organizer"
           ? "organizer"
-          : "service";
+          : type === "service"
+            ? "service"
+            : "provider";
   // One responsive form for every screen size. There used to be a separate
   // phone version that never submitted anything.
   return <FoxerApplicationClient initialType={initialType} />;

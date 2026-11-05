@@ -55,15 +55,19 @@ export const ROLE_DEFS: RoleDef[] = [
     labelFor: (roleTypes) =>
       singleFoxerRoleLabel(roleTypes) === "venueFoxer"
         ? "Venue Foxer Console"
-        : isInvestorOnly(roleTypes)
-          ? "Investor Dashboard"
-          : "Creator Dashboard",
+        : singleFoxerRoleLabel(roleTypes) === "providerFoxer"
+          ? "Provider Console"
+          : isInvestorOnly(roleTypes)
+            ? "Investor Dashboard"
+            : "Creator Dashboard",
     descriptionFor: (roleTypes) =>
       singleFoxerRoleLabel(roleTypes) === "venueFoxer"
         ? "Venue listing & space manager"
-        : isInvestorOnly(roleTypes)
-          ? "Partnerships, investments & payouts"
-          : "Manage your venues & events",
+        : singleFoxerRoleLabel(roleTypes) === "providerFoxer"
+          ? "Manage your gear, services & bookings"
+          : isInvestorOnly(roleTypes)
+            ? "Partnerships, investments & payouts"
+            : "Manage your venues & events",
   },
   {
     key: "investor",
