@@ -18,6 +18,12 @@ import { usernameSchema } from "@/shared/lib/schema";
 import { countryOfPhone, phoneSchema, splitPhone } from "@/shared/lib/phone";
 import { fetchCountries, type GeoCountry } from "@/shared/api/geo";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import {
+  PASSWORD_HINT,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
+  passwordPolicyError,
+} from "@/shared/lib/passwordPolicy";
 
 export type SettingsSection = "profile" | "privacy" | "security" | "danger";
 
@@ -241,8 +247,9 @@ export default function ProfileSettingsClient({
       setFormError("New passwords do not match");
       return;
     }
-    if (newPassword.length < 6) {
-      setFormError("New password must be at least 6 characters");
+    const policyError = passwordPolicyError(newPassword);
+    if (policyError) {
+      setFormError(policyError);
       return;
     }
     setIsSaving(true);
@@ -576,7 +583,7 @@ export default function ProfileSettingsClient({
                   Change Password
                 </h2>
                 <p className="text-sm text-white/40">
-                  Choose a strong password of at least 6 characters.
+                  Choose a strong password: {PASSWORD_HINT}.
                 </p>
               </div>
 
@@ -598,7 +605,8 @@ export default function ProfileSettingsClient({
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    minLength={6}
+                    minLength={PASSWORD_MIN}
+                    maxLength={PASSWORD_MAX}
                     className="input-field"
                   />
                 </Field>

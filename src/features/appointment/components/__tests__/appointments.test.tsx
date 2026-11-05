@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement, type ReactElement } from "react";
 import { TeamPanel } from "@/features/appointment/components/TeamPanel";
@@ -177,14 +177,44 @@ describe("TeamPanel", () => {
     expect(screen.getByRole("button", { name: "Withdraw Sam" })).toBeTruthy();
   });
 
-  it("removes someone from the team", async () => {
+  it("removes someone from the team once confirmed", async () => {
     api.fetchTeam.mockResolvedValue([member({ id: "a1" })]);
     api.removeFromTeam.mockResolvedValue(undefined);
     renderWithQuery(createElement(TeamPanel, { target: venue }));
 
     fireEvent.click(await screen.findByRole("button", { name: "Remove Ben" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(api.removeFromTeam).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Remove" }));
     await waitFor(() =>
       expect(api.removeFromTeam).toHaveBeenCalledWith(venue, "a1"),
+    );
+  });
+
+  it("keeps someone on the team when the removal is cancelled", async () => {
+    api.fetchTeam.mockResolvedValue([member({ id: "a1" })]);
+    renderWithQuery(createElement(TeamPanel, { target: venue }));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Remove Ben" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(api.removeFromTeam).not.toHaveBeenCalled();
+  });
+
+  it("asks before withdrawing an invitation", async () => {
+    api.fetchTeam.mockResolvedValue([
+      member({ id: "a2", state: "invited", user: person("Sam") }),
+    ]);
+    api.removeFromTeam.mockResolvedValue(undefined);
+    renderWithQuery(createElement(TeamPanel, { target: venue }));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Withdraw Sam" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Withdraw invitation?")).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Withdraw" }));
+    await waitFor(() =>
+      expect(api.removeFromTeam).toHaveBeenCalledWith(venue, "a2"),
     );
   });
 

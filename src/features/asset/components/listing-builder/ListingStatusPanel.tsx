@@ -5,6 +5,7 @@ import {
   CategoryItem,
   ListingType,
 } from "@/features/asset/data/listingBuilderData";
+import { LISTING_LABELS } from "./listingLabels";
 
 import { Money } from "@/shared/components/ui/Money";
 
@@ -66,7 +67,9 @@ export function ListingStatusPanel({
         <div className="space-y-4">
           <div className="flex justify-between text-sm">
             <span className="text-text-muted">Type</span>
-            <span className="text-white capitalize">{activeType}</span>
+            <span className="text-white">
+              {LISTING_LABELS[activeType].noun}
+            </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-text-muted">Category</span>

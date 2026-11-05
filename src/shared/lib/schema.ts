@@ -7,6 +7,7 @@ import {
   priceField,
   quantityField,
 } from "./limits";
+import { passwordSchema } from "./passwordPolicy";
 
 // --- PROFILE FIELD SCHEMAS ---
 // Kept in step with the API's PUT /profile validation (profile.controller.ts).
@@ -35,16 +36,7 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 export const signupSchema = z
   .object({
     email: z.email("Invalid email address"),
-    password: z
-      .string()
-      .min(16, "Password must be at least 16 characters")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/\d/, "Password must contain at least one digit")
-      .regex(
-        /[@$!%*?&]/,
-        "Password must contain at least one special character",
-      ),
+    password: passwordSchema,
     confirmPassword: z.string(),
     username: usernameSchema,
     name: nameField("Name is required").regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
@@ -67,12 +59,7 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export const resetPasswordSchema = z
   .object({
     otpCode: z.string().length(6, "Code must be 6 digits"),
-    newPassword: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/\d/, "Password must contain at least one digit"),
+    newPassword: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

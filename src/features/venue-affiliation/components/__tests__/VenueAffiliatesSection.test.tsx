@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createElement } from "react";
 import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
 
@@ -89,5 +89,38 @@ describe("VenueAffiliatesSection as an Organizer", () => {
     expect(screen.getByText("foxer-picker")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Revoke" })).toBeTruthy();
+  });
+});
+
+describe("Revoking an affiliation", () => {
+  const approved = () => [
+    { ...application("a3", "Lito", null), status: "approved" },
+  ];
+
+  it("asks first and revokes only once confirmed", async () => {
+    api.fetchVenueAffiliates.mockResolvedValue(approved());
+    api.revokeAffiliation.mockResolvedValue(undefined);
+    render(createElement(VenueAffiliatesSection, { venueId: "v1" }));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Revoke" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Revoke affiliation?")).toBeTruthy();
+    expect(api.revokeAffiliation).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Revoke" }));
+    await waitFor(() =>
+      expect(api.revokeAffiliation).toHaveBeenCalledWith("a3"),
+    );
+  });
+
+  it("does nothing when cancelled", async () => {
+    api.fetchVenueAffiliates.mockResolvedValue(approved());
+    render(createElement(VenueAffiliatesSection, { venueId: "v1" }));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Revoke" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(api.revokeAffiliation).not.toHaveBeenCalled();
   });
 });
