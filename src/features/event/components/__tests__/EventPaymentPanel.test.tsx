@@ -38,6 +38,11 @@ describe("EventPaymentPanel", () => {
       mutate: mockCancelEvent,
       isPending: false,
     });
+
+    (eventHooks.useAvailableCoinVouchers as any).mockReturnValue({
+      codes: ["RWD-COIN20-XYZ"],
+      isLoading: false,
+    });
   });
 
   it("loads and displays payment summary", () => {

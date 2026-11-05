@@ -29,15 +29,16 @@ import { PassportSidebarContent } from "./passport/PassportSidebarContent";
 import { PassportMatchesTab } from "./passport/PassportMatchesTab";
 import { PassportProgressTab } from "./passport/PassportProgressTab";
 import { PassportStampsTab } from "./passport/PassportStampsTab";
+import { PassportRewardsTab } from "./passport/PassportRewardsTab";
 
 interface PassportClientProps {
   user: any;
 }
 
 export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<"progress" | "stamps" | "matches">(
-    "matches",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "progress" | "stamps" | "matches" | "rewards"
+  >("matches");
   const [clientInboxOffset, setClientInboxOffset] = useState(0);
   const [clientInboxAll, setClientInboxAll] = useState<ClientMatchRequest[]>(
     [],
@@ -254,7 +255,9 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             </div>
 
             <AnimatePresence mode="wait">
-              {activeTab === "matches" ? (
+              {activeTab === "rewards" ? (
+                <PassportRewardsTab />
+              ) : activeTab === "matches" ? (
                 <PassportMatchesTab
                   user={user}
                   isEventFoxer={isEventFoxer}
