@@ -1,18 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-
-interface CategorySummary {
-  name: string;
-  count: number;
-  isEventCategory: boolean;
-  sources: {
-    assets: number;
-    venues: number;
-    services: number;
-    events: number;
-  };
-}
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { hasPermission } from "@/shared/lib/permissions";
+import type { CategorySummary } from "../types/category";
+import { CategoryModal } from "./CategoryModal";
 
 interface CategoriesTableProps {
   categories: CategorySummary[];
@@ -85,6 +77,11 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
 }) => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "event" | "listing">("all");
+  // `undefined`: closed; `null`: creating; a row: editing it.
+  const [editing, setEditing] = useState<CategorySummary | null | undefined>();
+  const user = useAuthStore((s) => s.user);
+  // The API refuses writes without it too; this only hides what would fail.
+  const canManage = hasPermission(user, "categories:manage");
 
   if (isLoading) {
     return (
@@ -94,10 +91,12 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
     );
   }
 
+  const displayName = (cat: CategorySummary) => cat.label || fmtName(cat.name);
+
   const filtered = categories.filter((cat) => {
     const matchSearch =
       cat.name.toLowerCase().includes(search.toLowerCase()) ||
-      fmtName(cat.name).toLowerCase().includes(search.toLowerCase());
+      displayName(cat).toLowerCase().includes(search.toLowerCase());
     const matchFilter =
       filter === "all"
         ? true
@@ -157,6 +156,16 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
               className="bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-accent/50 w-44"
             />
           </div>
+          {canManage && (
+            <button
+              type="button"
+              onClick={() => setEditing(null)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent text-black text-xs font-bold hover:opacity-90 transition-all active:scale-[0.98]"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              New category
+            </button>
+          )}
         </div>
       </div>
 
@@ -195,9 +204,10 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
                 "Used in Assets",
                 "Used in Services",
                 "Total",
+                ...(canManage ? [""] : []),
               ].map((h) => (
                 <th
-                  key={h}
+                  key={h || "actions"}
                   className="py-3 px-5 text-[10px] uppercase tracking-widest text-white/30 font-bold whitespace-nowrap"
                 >
                   {h}
@@ -209,7 +219,7 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={canManage ? 8 : 7}
                   className="py-16 text-center text-white/20 text-sm"
                 >
                   No categories match your filter.
@@ -217,10 +227,10 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
               </tr>
             ) : (
               filtered.map((cat) => {
-                const icon = CATEGORY_ICONS[cat.name] ?? "label";
+                const icon = cat.icon || CATEGORY_ICONS[cat.name] || "label";
                 return (
                   <tr
-                    key={cat.name}
+                    key={cat.id ?? cat.name}
                     className="border-b border-white/5 hover:bg-white/2 transition-colors group"
                   >
                     {/* Name */}
@@ -235,11 +245,16 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
                         </div>
                         <div>
                           <p className="font-bold text-white text-xs">
-                            {fmtName(cat.name)}
+                            {displayName(cat)}
                           </p>
                           <p className="text-[10px] text-white/30 font-mono">
                             {cat.name}
                           </p>
+                          {cat.description && (
+                            <p className="text-[10px] text-white/40 max-w-56 truncate">
+                              {cat.description}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -281,6 +296,23 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
                         {cat.count || "—"}
                       </span>
                     </td>
+                    {canManage && (
+                      <td className="py-3 px-5 text-right">
+                        {/* A value with no catalog row has nothing to edit. */}
+                        {cat.id && (
+                          <button
+                            type="button"
+                            onClick={() => setEditing(cat)}
+                            aria-label={`Edit ${displayName(cat)}`}
+                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              edit
+                            </span>
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })
@@ -288,6 +320,13 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({
           </tbody>
         </table>
       </div>
+
+      {canManage && editing !== undefined && (
+        <CategoryModal
+          category={editing}
+          onClose={() => setEditing(undefined)}
+        />
+      )}
     </div>
   );
 };

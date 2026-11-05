@@ -5,7 +5,7 @@
   getAdminAllAssets,
   getAdminAllServices,
   getAdminEvents,
-  getCategories,
+  getAdminCategories,
   getUsers,
   getAllBookings,
 } from "@/shared/lib/server/data";
@@ -52,7 +52,7 @@ export default async function AdminConsoleLayout({
     // pending ones made the tab show the pending count until its refetch.
     getAdminVenues(),
     getAdminEvents(),
-    getCategories(),
+    getAdminCategories(),
     // Only fetched when the viewer may read it. `admin_secretary` holds
     // `admin:access` and `queue:read` but not `users:read`, so this call 403s
     // for them — and `serverFetch` throws on a non-ok response, which rejects

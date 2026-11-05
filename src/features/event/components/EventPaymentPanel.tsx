@@ -9,6 +9,7 @@ import {
   useEventPaymentSummary,
   useEventCheckoutMutation,
   useCancelEventMutation,
+  useAvailableCoinVouchers,
 } from "@/features/event/hooks/useEventCheckout";
 
 export interface EventPaymentPanelProps {
@@ -30,6 +31,8 @@ export function EventPaymentPanel({
   // provider (venue/gear/talent), plus at most one platform-wide code — the
   // backend matches each typed code to whichever line item it's scoped to.
   const [appliedVouchers, setAppliedVouchers] = useState<string[]>([]);
+
+  const { codes: availableCoinVouchers = [] } = useAvailableCoinVouchers();
 
   const {
     data: summary,
@@ -166,9 +169,14 @@ export function EventPaymentPanel({
           </div>
 
           {summary.discountAmount > 0 && (
-            <div className="flex justify-between text-sm text-green-400">
-              <span>Discount</span>
-              <span>-{formatCurrency(summary.discountAmount)}</span>
+            <div className="space-y-0.5">
+              <div className="flex justify-between text-sm text-green-400">
+                <span>Voucher Discount</span>
+                <span>-{formatCurrency(summary.discountAmount)}</span>
+              </div>
+              <p className="text-[10px] text-white/40">
+                Platform fee discount applied • Foxer payout is 100% preserved.
+              </p>
             </div>
           )}
 
@@ -185,6 +193,33 @@ export function EventPaymentPanel({
           </div>
 
           <div className="mb-6 space-y-2">
+            {availableCoinVouchers.filter((v) => !appliedVouchers.includes(v)).length > 0 && (
+              <div className="mb-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                <span className="text-[11px] text-white/50 block mb-1.5 font-medium">
+                  Your redeemed Coin Vouchers:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {availableCoinVouchers
+                    .filter((v) => !appliedVouchers.includes(v))
+                    .map((code) => (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => {
+                          setAppliedVouchers((prev) => [...prev, code]);
+                        }}
+                        className="text-xs font-mono bg-accent/10 border border-accent/20 hover:bg-accent/20 text-accent px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Click to apply to this booking"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">
+                          add
+                        </span>
+                        {code}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
             {appliedVouchers.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {appliedVouchers.map((code) => (
