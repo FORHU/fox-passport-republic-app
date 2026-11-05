@@ -23,6 +23,7 @@ import { ComposePostModal } from "@/features/republic/components/ComposePostModa
 import { FeedSortMenu } from "@/features/republic/components/FeedSortMenu";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
+import { usePostStatsStore } from "@/features/republic/store/usePostStatsStore";
 import { RepublicLeftSidebar } from "@/features/republic/components/RepublicLeftSidebar";
 import { RepublicRightSidebar } from "@/features/republic/components/RepublicRightSidebar";
 import { RepublicMobileControlBar } from "@/features/republic/components/RepublicMobileControlBar";
@@ -84,8 +85,10 @@ function RepublicFeedContent() {
     const postId = searchParams.get("postId");
     if (!postId) return;
     let cancelled = false;
+    const requestedAt = Date.now();
     getPostById(postId)
       .then((post) => {
+        usePostStatsStore.getState().syncFromServer([post], requestedAt);
         if (!cancelled) setActivePost(post);
       })
       .catch((err) => {
@@ -133,20 +136,26 @@ function RepublicFeedContent() {
   // last-loaded post flows straight into the next batch. Coming back to the
   // feed (or to a tab already visited) paints the cached pages at once
   // instead of a spinner. `staleTime: 0` still refetches behind them on
-  // every visit, since PostCard keeps reactions, saves and edits in its own
-  // state rather than in this cache.
+  // every visit, since PostCard keeps saves and edits in its own state rather
+  // than in this cache. Like and comment counts live in usePostStatsStore:
+  // each fetched page is pushed there, so cards already on screen (and the
+  // detail modal) pick up the fresh counts (BUG-25).
   const term = search.trim();
   const feedQueryKey = ["feed", activeTab, term, mode];
   const feedQuery = useInfiniteQuery({
     queryKey: feedQueryKey,
-    queryFn: ({ pageParam }) =>
-      getFeed({
+    queryFn: async ({ pageParam }) => {
+      const requestedAt = Date.now();
+      const page = await getFeed({
         tab: activeTab,
         search: term.length > 0 ? term : undefined,
         cursor: pageParam,
         limit: 10,
         mode,
-      }),
+      });
+      usePostStatsStore.getState().syncFromServer(page.data, requestedAt);
+      return page;
+    },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 0,
