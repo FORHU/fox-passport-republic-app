@@ -19,20 +19,22 @@ interface CitizensQueryResult {
 
 /**
  * Server-paginated + server-searched citizen directory. `initialData` (the
- * server-rendered first page) only seeds the cache entry for the default
- * page/limit/no-search key, so switching tabs to it paints immediately; any
- * other page/search combination fetches fresh.
+ * server-rendered first page) and its `initialPagination` only seed the cache
+ * entry for the default page/limit/no-search key, so switching to it paints
+ * immediately with the real total; any other page/search combination fetches
+ * fresh. The API matches the search against name, email, username and role.
  */
 export const useAdminCitizens = (
   page: number,
   search: string,
   initialData?: any[],
   limit: number = DEFAULT_LIMIT,
+  initialPagination?: CitizensPagination,
 ) => {
   const isDefaultKey = page === 1 && limit === DEFAULT_LIMIT && !search;
   const seedData: CitizensQueryResult | undefined =
     isDefaultKey && initialData
-      ? { citizens: initialData, pagination: undefined }
+      ? { citizens: initialData, pagination: initialPagination }
       : undefined;
 
   const { data, isLoading, isFetching, error, refetch } =

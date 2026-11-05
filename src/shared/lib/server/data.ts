@@ -318,6 +318,22 @@ export async function getVenues() {
   }
 }
 
+/**
+ * Every venue, in every status — the list the admin Venues tab and Map show.
+ * Left in the API's own shape (`mayor`, `images`), exactly what their client
+ * refetch (`useAdminData("venues")`) returns, so the first render and every
+ * poll after it agree.
+ */
+export async function getAdminVenues() {
+  try {
+    const body = await serverFetch("/admin/venues");
+    return extractList(body);
+  } catch (error) {
+    console.error("Failed to fetch admin venues:", error);
+    return [];
+  }
+}
+
 export async function getAdminPendingVenues() {
   try {
     const body = await serverFetch("/admin/venues/pending");
@@ -412,13 +428,24 @@ export async function getCategories() {
   }
 }
 
-export async function getUsers() {
+export interface UsersPage {
+  users: any[];
+  /** `undefined` when the request failed, so callers fall back to a refetch. */
+  pagination?: { page: number; limit: number; total: number; totalPages: number };
+}
+
+/**
+ * The first page of the user directory, with the API's pagination so the
+ * admin Citizens header shows the real total from the first render rather
+ * than the length of the page.
+ */
+export async function getUsers(): Promise<UsersPage> {
   try {
     const body = await serverFetch("/users");
-    return extractList(body);
+    return { users: extractList(body), pagination: body?.pagination };
   } catch (error) {
     console.error("Failed to fetch users:", error);
-    return [];
+    return { users: [] };
   }
 }
 

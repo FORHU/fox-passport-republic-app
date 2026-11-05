@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useUIStore } from "@/shared/store/useUIStore";
+import { useAdminSection } from "@/features/admin/hooks/useAdminSection";
 
 /**
  * Decides which admin body a phone sees.
@@ -10,7 +10,7 @@ import { useUIStore } from "@/shared/store/useUIStore";
  * dashboard behind `hidden lg:flex`, so a phone could reach nothing but the
  * overview — the sidebar's own nav links had no content to show.
  *
- * Now the mobile overview is only the *dashboard* tab. Pick anything else from
+ * Now the mobile overview is only the *dashboard* section. Pick anything else from
  * the drawer and the real `AdminContent` renders, which already handles narrow
  * widths (its tables scroll inside themselves).
  *
@@ -24,13 +24,22 @@ export function AdminBody({
   overview: ReactNode;
   content: ReactNode;
 }) {
-  const activeAdminTab = useUIStore((s) => s.activeAdminTab);
-  const showOverview = activeAdminTab === "dashboard";
+  const showOverview = useAdminSection() === "dashboard";
 
   return (
     <>
-      {showOverview && <div className="lg:hidden">{overview}</div>}
-      <div className={showOverview ? "hidden lg:flex flex-1" : "flex flex-1"}>
+      {/* `flex-1`: this sits in the console's flex row, and without it the
+          overview shrank to its content's width, leaving a narrow column
+          beside empty space on tablets. `min-w-0` lets wide tables scroll
+          inside themselves instead of widening the page. */}
+      {showOverview && (
+        <div className="lg:hidden flex-1 min-w-0">{overview}</div>
+      )}
+      <div
+        className={
+          showOverview ? "hidden lg:flex flex-1 min-w-0" : "flex flex-1 min-w-0"
+        }
+      >
         {content}
       </div>
     </>

@@ -3,6 +3,8 @@
 import React from "react";
 import { useUIStore } from "@/shared/store/useUIStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { getAdminSection } from "@/features/admin/sections";
+import { useAdminSection } from "@/features/admin/hooks/useAdminSection";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 
 function getGreeting() {
@@ -13,32 +15,13 @@ function getGreeting() {
 }
 
 export const AdminHeader: React.FC = () => {
-  const { toggleSidebar, activeAdminTab } = useUIStore();
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const activeSection = useAdminSection();
   const user = useAuthStore((s) => s.user);
 
   const firstName = user?.name?.split(" ")[0] ?? "Admin";
 
-  const TAB_LABELS: Record<string, string> = {
-    dashboard: "Dashboard Overview",
-    bookings: "All Bookings",
-    citizens: "Citizen Management",
-    events: "Event Templates",
-    "needs-review": "Needs Review",
-    categories: "Categories",
-    venues: "Venues",
-    map: "Map",
-    assets: "Assets & Gear",
-    services: "Services",
-    disputes: "Disputes",
-    reports: "Reports",
-    identity: "Identity Checks",
-    policies: "Policies",
-    "platform-fees": "Platform Fees",
-    promotions: "Promotions",
-    settings: "Settings",
-  };
-
-  const pageTitle = TAB_LABELS[activeAdminTab] ?? "Dashboard";
+  const pageTitle = getAdminSection(activeSection)?.title ?? "Dashboard";
 
   return (
     <header className="h-24 flex items-center justify-between px-8 z-40 sticky top-0 bg-background/80 backdrop-blur-md border-b border-white/5">
@@ -61,19 +44,6 @@ export const AdminHeader: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="relative hidden md:block">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">
-            search
-          </span>
-          <input
-            className="bg-white/5 border border-white/10 rounded-full pl-10 pr-4 py-2.5 text-sm text-white focus:ring-1 focus:ring-accent focus:border-accent transition-all w-56 placeholder-gray-500"
-            placeholder="Search…"
-            type="text"
-            readOnly
-            onClick={() => {}}
-          />
-        </div>
-
         <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs text-white/50">
           <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
           Live

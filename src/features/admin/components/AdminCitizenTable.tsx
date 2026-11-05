@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAdminCitizens } from "@/features/admin/hooks/useAdminCitizens";
+import {
+  useAdminCitizens,
+  type CitizensPagination,
+} from "@/features/admin/hooks/useAdminCitizens";
 import { RoleAssignmentControls } from "@/features/admin/components/RoleAssignmentControls";
 
 interface CitizenTableProps {
   initialCitizens?: any[];
+  initialPagination?: CitizensPagination;
 }
 
 // systemRole: 'user' | 'admin'
@@ -94,6 +98,7 @@ function fmt(date: string) {
 
 export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
   initialCitizens,
+  initialPagination,
 }) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
@@ -114,7 +119,18 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
     page,
     search,
     initialCitizens,
+    undefined,
+    initialPagination,
   );
+
+  const query = search.trim();
+  // Typed but not yet applied (debounce), or applied and still loading.
+  const searching = searchInput !== search || (isFetching && query !== "");
+  const clearSearch = () => {
+    setSearchInput("");
+    setSearch("");
+    setPage(1);
+  };
 
   if (isLoading) {
     return (
@@ -151,11 +167,20 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
             search
           </span>
           <input
+            type="search"
+            aria-label="Search citizens"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name or email…"
-            className="bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-accent/50 w-56"
+            placeholder="Search by name, email, username, or role…"
+            className="bg-white/5 border border-white/10 rounded-xl pl-9 pr-9 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-accent/50 w-64"
           />
+          {searching && (
+            <span
+              role="status"
+              aria-label="Searching"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full border-2 border-accent border-t-transparent animate-spin"
+            />
+          )}
         </div>
       </div>
 
@@ -188,7 +213,20 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                   colSpan={6}
                   className="py-16 text-center text-white/20 text-sm"
                 >
-                  No citizens found.
+                  {query ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <span>No citizens match &ldquo;{query}&rdquo;.</span>
+                      <button
+                        type="button"
+                        onClick={clearSearch}
+                        className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs font-bold hover:text-white hover:bg-white/10 transition-all"
+                      >
+                        Clear search
+                      </button>
+                    </div>
+                  ) : (
+                    "No citizens found."
+                  )}
                 </td>
               </tr>
             ) : (

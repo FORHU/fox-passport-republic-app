@@ -135,7 +135,7 @@ describe("the gates are expressed as capabilities", () => {
  * them rendered a page. Found by signing in as the role for the first time.
  */
 describe("the admin page asks only for what the viewer may read", () => {
-  const page = read("src/app/admin/page.tsx");
+  const page = read("src/app/admin/(console)/layout.tsx");
 
   it.each([
     ["getUsers", "users:read"],
