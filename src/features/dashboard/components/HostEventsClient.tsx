@@ -7,7 +7,7 @@ import {
   EventsSection,
 } from "@/features/dashboard/components";
 import RequireAuth from "@/shared/auth/RequireAuth";
-import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
+import { FILTER_STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
@@ -53,12 +53,6 @@ export default function HostEventsClient({
       return statusOk && searchOk;
     });
   }, [events, searchQuery, status]);
-
-  const handleStatusChange = (id: number | string, nextStatus: string) => {
-    setEvents((prev) =>
-      prev.map((ev) => (ev.id === id ? { ...ev, status: nextStatus } : ev)),
-    );
-  };
 
   const handleEdit = (id: number | string) => {
     router.push(`/creator-dashboard/events/${id}/edit`);
@@ -131,7 +125,7 @@ export default function HostEventsClient({
                     onChange={setStatus}
                     options={[
                       { value: "all", label: "All Status" },
-                      ...STATUS_OPTIONS.event.map((s) => ({
+                      ...FILTER_STATUS_OPTIONS.event.map((s) => ({
                         value: s,
                         label: s,
                       })),
@@ -144,7 +138,6 @@ export default function HostEventsClient({
 
             <EventsSection
               events={filteredEvents}
-              onStatusChange={handleStatusChange}
               onDelete={handleDelete}
               showViewAllLink={false}
               onEdit={handleEdit}

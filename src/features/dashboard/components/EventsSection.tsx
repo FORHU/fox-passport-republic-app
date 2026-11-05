@@ -3,7 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { EventItem } from "@/features/dashboard/data/dashboardData";
+import {
+  EventItem,
+  VenueConfirmation,
+} from "@/features/dashboard/data/dashboardData";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
@@ -11,9 +14,36 @@ import { PaginationBar } from "./PaginationBar";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
 
+/** What the card says when the venue isn't settled; nothing when it is. */
+const VENUE_NOTES: Record<
+  Exclude<VenueConfirmation, "confirmed">,
+  { text: string; className: string }
+> = {
+  missing: { text: "No venue confirmed yet", className: "text-yellow-400" },
+  pending: {
+    text: "Waiting for the venue to confirm",
+    className: "text-yellow-400",
+  },
+  declined: {
+    text: "Venue declined, choose another",
+    className: "text-red-400",
+  },
+};
+
+/** Nothing for a confirmed venue, or when the API hasn't said (null). */
+function venueNoteFor(ev: EventItem) {
+  return ev.venueConfirmation === null || ev.venueConfirmation === "confirmed"
+    ? null
+    : VENUE_NOTES[ev.venueConfirmation];
+}
+
+function bookedPercent(ev: EventItem): number {
+  if (ev.booked == null || !ev.capacity) return 0;
+  return Math.min(100, (ev.booked / ev.capacity) * 100);
+}
+
 interface EventsSectionProps {
   events: EventItem[];
-  onStatusChange: (id: number | string, status: string) => void;
   onDelete?: (id: number | string) => void;
   showViewAllLink?: boolean;
   viewAllHref?: string;
@@ -25,7 +55,6 @@ interface EventsSectionProps {
 
 export function EventsSection({
   events,
-  onStatusChange,
   onDelete,
   showViewAllLink = true,
   viewAllHref = "/creator-dashboard/events",
@@ -58,183 +87,203 @@ export function EventsSection({
       </div>
       <div className="space-y-4">
         {events.length > 0 ? (
-          events.map((ev) => (
-            <div
-              key={ev.id}
-              className={`bg-surface border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
-                ev.status === "Ongoing"
-                  ? "border-l-green-500"
-                  : "border-l-yellow-500"
-              } ${onEdit ? "cursor-pointer" : ""}`}
-              onClick={() => onEdit?.(ev.id)}
-              role={onEdit ? "button" : undefined}
-              tabIndex={onEdit ? 0 : undefined}
-              onKeyDown={(e) => {
-                if (!onEdit) return;
-                if (e.key === "Enter" || e.key === " ") onEdit(ev.id);
-              }}
-            >
-              <div className="flex flex-col sm:flex-row gap-5">
-                <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
-                  <Image
-                    fill
-                    src={ev.img || assetUrl("herobackground.jpg")}
-                    alt=""
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        assetUrl("herobackground.jpg");
-                    }}
-                  />
-                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">
-                    {ev.type}
-                  </div>
-                </div>
-                <div className="flex-1 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">{ev.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-white/50">
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">
-                            calendar_today
-                          </span>
-                          {ev.date}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">
-                            location_on
-                          </span>
-                          {ev.loc}
-                        </span>
-                      </div>
-                    </div>
-                    <StatusBadge
-                      currentStatus={ev.status}
-                      type="event"
-                      onStatusChange={(s) => onStatusChange(ev.id, s)}
+          events.map((ev) => {
+            const venueNote = venueNoteFor(ev);
+            return (
+              <div
+                key={ev.id}
+                className={`bg-surface border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
+                  ev.status === "published"
+                    ? "border-l-green-500"
+                    : "border-l-yellow-500"
+                } ${onEdit ? "cursor-pointer" : ""}`}
+                onClick={() => onEdit?.(ev.id)}
+                role={onEdit ? "button" : undefined}
+                tabIndex={onEdit ? 0 : undefined}
+                onKeyDown={(e) => {
+                  if (!onEdit) return;
+                  if (e.key === "Enter" || e.key === " ") onEdit(ev.id);
+                }}
+              >
+                <div className="flex flex-col sm:flex-row gap-5">
+                  <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
+                    <Image
+                      fill
+                      src={ev.img || assetUrl("herobackground.jpg")}
+                      alt=""
+                      className="object-cover group-hover:scale-110 transition-transform duration-700"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          assetUrl("herobackground.jpg");
+                      }}
                     />
-                  </div>
-                  {ev.status === "Ongoing" ? (
-                    <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
-                      <div>
-                        <div className="text-[10px] text-white/40 uppercase mb-1">
-                          Booked
-                        </div>
-                        <div className="text-sm font-bold">
-                          {ev.booked}
-                          <span className="text-white/40 font-normal">
-                            /{ev.capacity}
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-white/10 rounded-full mt-1">
-                          <div
-                            className="h-full bg-accent rounded-full"
-                            style={{
-                              width: `${(ev.booked! / ev.capacity!) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-white/40 uppercase">
-                          Revenue
-                        </div>
-                        <div className="text-sm font-bold">
-                          {ev.revenue != null ? (
-                            <Money amount={ev.revenue} />
-                          ) : (
-                            "—"
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <button
-                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            edit
-                          </span>
-                        </button>
-                        <button
-                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-accent hover:text-black flex items-center justify-center"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            bar_chart
-                          </span>
-                        </button>
-                      </div>
+                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">
+                      {ev.type}
                     </div>
-                  ) : (
-                    <div className="mt-4 flex justify-between items-center border-t border-white/5 pt-4">
-                      <div className="flex items-center gap-2 text-yellow-400">
-                        <span className="material-symbols-outlined text-[18px]">
-                          warning
-                        </span>
-                        <span className="text-xs">
-                          Missing venue confirmation
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {confirmDeleteId === ev.id ? (
-                          <>
-                            <span className="text-xs text-white/50">
-                              Delete this draft?
+                  </div>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">{ev.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-white/50">
+                          <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">
+                              calendar_today
                             </span>
-                            <button
-                              className="px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete?.(ev.id);
-                                setConfirmDeleteId(null);
+                            {ev.date}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">
+                              location_on
+                            </span>
+                            {ev.loc}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Display only: an event's status is set by review. */}
+                      <StatusBadge currentStatus={ev.status} type="event" />
+                    </div>
+                    {ev.status === "published" && (
+                      <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
+                        <div>
+                          <div className="text-[10px] text-white/40 uppercase mb-1">
+                            Booked
+                          </div>
+                          <div className="text-sm font-bold">
+                            {ev.booked ?? "—"}
+                            <span className="text-white/40 font-normal">
+                              /{ev.capacity ?? "—"}
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-white/10 rounded-full mt-1">
+                            <div
+                              className="h-full bg-accent rounded-full"
+                              style={{
+                                // Unknown counts draw an empty bar, not NaN%.
+                                width: `${bookedPercent(ev)}%`,
                               }}
-                            >
-                              Yes, delete
-                            </button>
-                            <button
-                              className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfirmDeleteId(null);
-                              }}
-                            >
-                              Cancel
-                            </button>
-                          </>
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-white/40 uppercase">
+                            Revenue
+                          </div>
+                          <div className="text-sm font-bold">
+                            {ev.revenue != null ? (
+                              <Money amount={ev.revenue} />
+                            ) : (
+                              "—"
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          {/* Never seen before BUG-20 (no event was ever
+                              "Ongoing"): it did nothing, and a stats button
+                              that did nothing beside it is gone. */}
+                          <button
+                            aria-label="Edit event"
+                            className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit?.(ev.id);
+                            }}
+                          >
+                            <span className="material-symbols-outlined text-[18px]">
+                              edit
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {(venueNote ||
+                      ev.status === "draft" ||
+                      ev.status === "rejected") && (
+                      <div className="mt-4 flex justify-between items-center gap-3 border-t border-white/5 pt-4">
+                        {venueNote ? (
+                          <div
+                            className={`flex items-center gap-2 ${venueNote.className}`}
+                          >
+                            <span className="material-symbols-outlined text-[18px]">
+                              warning
+                            </span>
+                            <span className="text-xs">{venueNote.text}</span>
+                          </div>
                         ) : (
-                          <>
-                            <button
-                              className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400"
-                              title="Delete draft"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfirmDeleteId(ev.id);
-                              }}
-                            >
-                              <span className="material-symbols-outlined text-[16px]">
-                                delete
-                              </span>
-                            </button>
-                            <button
-                              className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEdit?.(ev.id);
-                              }}
-                            >
-                              Continue Editing
-                            </button>
-                          </>
+                          <span />
+                        )}
+                        {ev.status === "rejected" && (
+                          <button
+                            className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit?.(ev.id);
+                            }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {ev.status === "draft" && (
+                          <div className="flex items-center gap-2">
+                            {confirmDeleteId === ev.id ? (
+                              <>
+                                <span className="text-xs text-white/50">
+                                  Delete this draft?
+                                </span>
+                                <button
+                                  className="px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete?.(ev.id);
+                                    setConfirmDeleteId(null);
+                                  }}
+                                >
+                                  Yes, delete
+                                </button>
+                                <button
+                                  className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setConfirmDeleteId(null);
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400"
+                                  title="Delete draft"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setConfirmDeleteId(ev.id);
+                                  }}
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">
+                                    delete
+                                  </span>
+                                </button>
+                                <button
+                                  className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit?.(ev.id);
+                                  }}
+                                >
+                                  Continue Editing
+                                </button>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <EmptyState type="events" href="/foxer/create-event" />
         )}

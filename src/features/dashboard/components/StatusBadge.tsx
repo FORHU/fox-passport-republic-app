@@ -9,7 +9,8 @@ import {
 interface StatusBadgeProps {
   currentStatus: string;
   type: StatusType;
-  onStatusChange: (status: string) => void;
+  /** Leave out to only display the status: no menu, nothing to click. */
+  onStatusChange?: (status: string) => void;
   className?: string;
 }
 
@@ -71,6 +72,21 @@ export function StatusBadge({
   const shouldPulse = ["published", "ongoing", "active", "available"].includes(
     lowerCurrent,
   );
+
+  // Nothing to change it to, or nobody listening: a label, not a menu that
+  // only pretends to save.
+  if (!onStatusChange || options.length === 0) {
+    return (
+      <span
+        className={`px-3 py-1.5 rounded-full text-xs font-bold border inline-flex items-center gap-2 ${getBadgeClasses(currentStatus)} ${className}`}
+      >
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${getDotColor(currentStatus)} ${shouldPulse ? "animate-pulse" : ""}`}
+        />
+        {formatStatus(currentStatus)}
+      </span>
+    );
+  }
 
   return (
     <div className={`relative ${className}`} ref={ref}>
