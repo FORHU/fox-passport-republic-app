@@ -412,6 +412,21 @@ export async function getCategories() {
   }
 }
 
+/**
+ * The admin's view of the category catalog: every category, including listing
+ * categories nothing uses yet, and never cached (admin dashboards stay dynamic,
+ * and an edit must show on the next load).
+ */
+export async function getAdminCategories() {
+  try {
+    const body = await serverFetch("/categories", { includeEmpty: "true" });
+    return extractList(body);
+  } catch (error) {
+    console.error("Failed to fetch admin categories:", error);
+    return [];
+  }
+}
+
 export async function getUsers() {
   try {
     const body = await serverFetch("/users");

@@ -128,6 +128,72 @@ export default function MobilePassportView({ user }: Props) {
         {/* Passport booklet card */}
         <PassportBookletCard user={user} level={level} citizenNo={citizenNo} />
 
+        {/* Rewards & Wallet Card */}
+        <Link
+          href="/passport/rewards"
+          style={{
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderRadius: 24,
+            background: "color-mix(in srgb, var(--color-white) 5%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: "rgba(196,232,90,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--accent-text)",
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 20 }}
+              >
+                monetization_on
+              </span>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  margin: 0,
+                  color: "var(--color-white)",
+                }}
+              >
+                Rewards & Wallet
+              </p>
+              <p
+                style={{
+                  fontSize: 11,
+                  margin: "2px 0 0",
+                  color:
+                    "color-mix(in srgb, var(--color-white) 45%, transparent)",
+                }}
+              >
+                Redeem coins for booking vouchers
+              </p>
+            </div>
+          </div>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 18, color: "var(--accent-text)" }}
+          >
+            chevron_right
+          </span>
+        </Link>
+
         {/* Stamps Collected */}
         <div>
           <p
