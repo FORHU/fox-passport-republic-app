@@ -32,7 +32,7 @@ import {
 } from "@/features/dashboard/mappers/listings";
 import { useHostData } from "@/features/dashboard/hooks/useHostData";
 import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
-import type { EventItem } from "@/features/dashboard/data/dashboardData";
+import { mapTemplateToEventItem } from "@/features/dashboard/mappers/hostDashboard";
 import StripeConnectSection from "@/features/dashboard/components/StripeConnectSection";
 import { OrganizingSection } from "@/features/appointment/components/OrganizingSection";
 import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
@@ -43,7 +43,6 @@ import {
   TourReplayButton,
 } from "@/shared/components/ui/ProductTour";
 import { CREATOR_TOUR_KEY, creatorTourSteps } from "./creatorTour";
-import { assetUrl } from "@/shared/lib/assets";
 
 interface HostDashboardClientProps {
   initialData: {
@@ -51,47 +50,6 @@ interface HostDashboardClientProps {
     venues: unknown[];
     inventory: unknown[];
     services: unknown[];
-  };
-}
-
-const FALLBACK_IMG = assetUrl("herobackground.jpg");
-
-function pickImage(images: unknown[]): string {
-  if (!Array.isArray(images) || images.length === 0) return FALLBACK_IMG;
-  const primary =
-    (
-      images as {
-        isPrimary?: boolean;
-        isThumbnail?: boolean;
-        url?: string;
-        imageUrl?: string;
-      }[]
-    ).find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
-  if (!primary) return FALLBACK_IMG;
-  const url =
-    typeof primary === "string"
-      ? primary
-      : (primary as { url?: string; imageUrl?: string })?.url ||
-        (primary as { imageUrl?: string })?.imageUrl;
-  return url || FALLBACK_IMG;
-}
-
-function mapEvent(e: unknown): EventItem {
-  const ev = e as any;
-  return {
-    id: ev?.id,
-    title: (ev?.title as string) || (ev?.name as string) || "Untitled Event",
-    date: (ev?.startDate as string) || (ev?.date as string) || "—",
-    loc:
-      (ev?.location as string) ||
-      [ev?.city, ev?.country].filter(Boolean).join(", ") ||
-      "Location TBD",
-    type: (ev?.type as string) || (ev?.eventType as string) || "Event",
-    status: (ev?.status as string) || "draft",
-    booked: (ev?.bookedCount ?? ev?.booked) as number | null,
-    capacity: (ev?.capacity as number | null) ?? null,
-    revenue: ev?.revenue ? Number(ev.revenue) : null,
-    img: pickImage((ev?.images ?? ev?.gallery ?? []) as unknown[]),
   };
 }
 
@@ -227,7 +185,7 @@ export default function HostDashboardClient({
   );
 
   const events = (rawEvents ?? [])
-    .map(mapEvent)
+    .map(mapTemplateToEventItem)
     .filter((ev) => !deletedEventIds.has(String(ev.id)));
   const venues = rawVenues ?? [];
   const inventory = (rawAssets ?? []).map(mapBackendAssetToInventoryItem);
@@ -324,7 +282,6 @@ export default function HostDashboardClient({
                 <div data-tour="host-events">
                   <EventsSection
                     events={events}
-                    onStatusChange={() => {}}
                     onDelete={handleDeleteEvent}
                     onEdit={(id) =>
                       router.push(`/creator-dashboard/events/${id}/edit`)

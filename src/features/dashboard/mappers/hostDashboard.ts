@@ -3,18 +3,6 @@ import type {
   VenueItem,
 } from "@/features/dashboard/data/dashboardData";
 
-function formatDate(value: unknown): string {
-  if (!value) return "Date TBD";
-  const d =
-    value instanceof Date
-      ? value
-      : typeof value === "string" || typeof value === "number"
-        ? new Date(value)
-        : null;
-  if (!d || Number.isNaN(d.getTime())) return "Date TBD";
-  return d.toLocaleDateString();
-}
-
 function normalizeStatus(status: unknown): string {
   const raw = String(status ?? "")
     .trim()
@@ -31,39 +19,58 @@ function normalizeStatus(status: unknown): string {
     .join(" ");
 }
 
-export function mapBackendEventToEventItem(event: unknown): EventItem {
-  const ev = event as any;
-  const status = normalizeStatus(ev?.status);
-  const type = String(ev?.eventType ?? ev?.type ?? "")
-    .trim()
-    .toUpperCase();
+type ImageLike = {
+  isPrimary?: boolean;
+  isThumbnail?: boolean;
+  url?: string;
+  imageUrl?: string;
+};
 
-  const totalPrice = ev?.totalPrice ?? ev?.total_price;
-  const revenue = totalPrice ? Number(totalPrice) : null;
+function pickImage(images: unknown): string {
+  if (!Array.isArray(images) || images.length === 0) return "";
+  const list = images as (ImageLike | string | null)[];
+  const primary =
+    list.find(
+      (i) => typeof i === "object" && (i?.isPrimary || i?.isThumbnail),
+    ) ?? list[0];
+  if (typeof primary === "string") return primary;
+  return primary?.url || primary?.imageUrl || "";
+}
 
-  const img =
-    ev?.image ??
-    ev?.images?.[0]?.imageUrl ??
-    ev?.images?.[0]?.url ??
-    "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=2072";
-
+/**
+ * One event template from `GET /event-templates` as a Creator Studio card.
+ *
+ * The single mapper for both the dashboard's "My Active Events" and the
+ * My Events page: each used to keep its own copy, and they disagreed on the
+ * date, place and type shown for the same event.
+ *
+ * `status` and `venueConfirmation` pass through exactly as the API sends them:
+ * the app decides neither. Until the API sends `venueConfirmation` (api#165)
+ * it is null, and EventsSection shows no venue line.
+ */
+export function mapTemplateToEventItem(template: unknown): EventItem {
+  const t = template as any;
   return {
-    id: ev?.id,
-    title: ev?.name ?? ev?.title ?? "Untitled Event",
-    date: formatDate(ev?.startDatetime ?? ev?.start_datetime ?? ev?.date),
-    loc:
-      ev?.venue?.name ??
-      ev?.venueName ??
-      (ev?.venue?.city
-        ? `${ev.venue.city}, ${ev.venue.country || "PH"}`
-        : "Venue TBD"),
-    type: type || "EVENT",
-    status,
-    // UI in the dashboard currently uses `0` for booked
-    booked: 0,
-    capacity: ev?.maxAttendees ?? ev?.capacity ?? 100,
-    revenue,
-    img,
+    id: t?.id,
+    title: t?.name ?? t?.title ?? "Untitled",
+    date: t?.createdAt
+      ? new Date(t.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "—",
+    loc: [t?.targetCity, t?.targetState].filter(Boolean).join(", ") || "—",
+    type: t?.category ?? "other",
+    status: t?.status,
+    venueConfirmation: t?.venueConfirmation ?? null,
+    // A template has no bookings or revenue of its own; its events do.
+    booked: null,
+    capacity: t?.maxAttendees ?? null,
+    revenue: null,
+    // Empty when there is none: EventsSection supplies the fallback picture.
+    img: pickImage(t?.images ?? t?.gallery),
+    isPublic: t?.isPublic ?? false,
   };
 }
 
