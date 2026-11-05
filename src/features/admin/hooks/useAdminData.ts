@@ -39,7 +39,8 @@ export const useAdminData = (
             endpoint = "/admin/events";
             break;
           case "categories":
-            endpoint = "/categories";
+            // The whole catalog, including categories nothing uses yet.
+            endpoint = "/categories?includeEmpty=true";
             break;
           case "stats":
             endpoint = "/admin/stats";
