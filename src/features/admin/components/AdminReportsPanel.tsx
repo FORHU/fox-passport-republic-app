@@ -5,13 +5,14 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
 import { pollWhileVisible } from "@/shared/lib/realtime";
-import { useUIStore } from "@/shared/store/useUIStore";
+import { useRouter } from "next/navigation";
+import { adminSectionHref, type AdminSectionId } from "@/features/admin/sections";
 
 // Taking real action on a report's target (unpublishing a venue, suspending
 // an account) still only happens through that target's own existing
 // endpoint — resolving a report here only records the decision (dismissed /
 // actioned) and an optional note, it never touches the target itself.
-const TARGET_ADMIN_TAB: Record<Report["targetType"], string | null> = {
+const TARGET_ADMIN_TAB: Record<Report["targetType"], AdminSectionId | null> = {
   venue: "venues",
   user: "citizens",
   post: null, // no moderation surface exists for feed posts yet
@@ -84,7 +85,7 @@ export default function AdminReportsPanel() {
   const [page, setPage] = useState(1);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [resolutionNote, setResolutionNote] = useState("");
-  const setActiveAdminTab = useUIStore((s) => s.setActiveAdminTab);
+  const router = useRouter();
   const qc = useQueryClient();
 
   const copyTargetId = async (targetId: string) => {
@@ -342,7 +343,9 @@ export default function AdminReportsPanel() {
                     <button
                       type="button"
                       onClick={() =>
-                        setActiveAdminTab(TARGET_ADMIN_TAB[report.targetType]!)
+                        router.push(
+                          adminSectionHref(TARGET_ADMIN_TAB[report.targetType]!),
+                        )
                       }
                       className="mt-3 flex items-center gap-1.5 ml-auto px-3 py-1.5 rounded-full bg-accent/10 border border-accent/30 text-accent text-[11px] font-bold hover:bg-accent/20 transition-all"
                     >

@@ -91,6 +91,19 @@ function statusIcon(status: string) {
   return "draft";
 }
 
+/**
+ * The venue's Mayor (its owner). The API sends `mayor` / `mayorId`; the older
+ * normalized shape used `host` / `hostId`. Reading only `host` showed every
+ * venue from a client refetch as "Unknown Owner".
+ */
+function venueMayor(venue: any): { id?: string; name?: string } | null {
+  return venue.mayor ?? venue.host ?? null;
+}
+
+function venueMayorId(venue: any): string | null {
+  return venue.mayorId ?? venue.hostId ?? venueMayor(venue)?.id ?? null;
+}
+
 function extractImageUrl(img: any): string | null {
   if (!img) return null;
   if (typeof img === "string") return img;
@@ -325,7 +338,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
             <thead>
               <tr className="border-b border-white/5 text-text-muted text-[10px] uppercase tracking-[0.2em] bg-black/20">
                 <th className="p-6 font-bold">Venue</th>
-                <th className="p-6 font-bold">Owner</th>
+                <th className="p-6 font-bold">Mayor</th>
                 <th className="p-6 font-bold">Location</th>
                 <th className="p-6 font-bold">Review</th>
                 <th className="p-6 font-bold text-right">Update Status</th>
@@ -415,11 +428,13 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                         <td className="p-6">
                           <div className="flex flex-col">
                             <span className="font-bold text-white/90">
-                              {venue.host?.name ?? "Unknown Owner"}
+                              {venueMayor(venue)?.name ?? "—"}
                             </span>
-                            <span className="text-[10px] text-white/30 font-mono tracking-tighter">
-                              ID: {venue.hostId?.slice(0, 8)}…
-                            </span>
+                            {venueMayorId(venue) && (
+                              <span className="text-[10px] text-white/30 font-mono tracking-tighter">
+                                ID: {venueMayorId(venue)!.slice(0, 8)}…
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="p-6">
