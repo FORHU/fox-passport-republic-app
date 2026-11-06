@@ -14,6 +14,9 @@ interface LocationMapProps {
    * read-only shape instead of just a center marker. */
   boundary?: [number, number][] | null;
   className?: string;
+  /** `lat`/`lng` is only an area's center (e.g. a geocoded city), not the
+   * real spot: show the area without a pin, zoomed out a little. */
+  approximate?: boolean;
 }
 
 export function LocationMap({
@@ -21,19 +24,24 @@ export function LocationMap({
   lng,
   boundary,
   className = "h-80 w-full rounded-2xl overflow-hidden",
+  approximate = false,
 }: LocationMapProps) {
   const hasBoundary = Array.isArray(boundary) && boundary.length >= 3;
 
   const markers: MapMarkerItem[] = useMemo(
-    () => [
-      {
-        id: "location-pin",
-        lng,
-        lat,
-        element: typeof window !== "undefined" ? createPinElement() : undefined,
-      },
-    ],
-    [lng, lat],
+    () =>
+      approximate
+        ? []
+        : [
+            {
+              id: "location-pin",
+              lng,
+              lat,
+              element:
+                typeof window !== "undefined" ? createPinElement() : undefined,
+            },
+          ],
+    [lng, lat, approximate],
   );
 
   // `fit` only on first load — after a dark/light switch the layers need
@@ -118,7 +126,7 @@ export function LocationMap({
   return (
     <MapBoxView
       center={[lng, lat]}
-      zoom={hasBoundary ? 13 : 12}
+      zoom={hasBoundary ? 13 : approximate ? 11 : 12}
       markers={markers}
       className={className}
       onMapReady={handleMapReady}
