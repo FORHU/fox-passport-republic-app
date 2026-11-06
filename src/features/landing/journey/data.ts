@@ -284,7 +284,7 @@ export function eventLocationCollection(locations: LandingEventLocation[]) {
 export interface Photo {
   src: string;
   /** What the photo shows, for screen readers. */
-  alt?: string;
+  alt: string;
   credit: { author: string; license: string; url: string };
 }
 

@@ -55,6 +55,10 @@ const eslintConfig = defineConfig([
       "react-hooks/preserve-manual-memoization": "off",
       "react-hooks/immutability": "warn",
       "react-hooks/exhaustive-deps": "off",
+      // Missing alt must fail CI (lint warnings don't). alt="" stays valid
+      // for decorative images.
+      "jsx-a11y/alt-text": ["error", { elements: ["img"], img: ["Image"] }],
+      "jsx-a11y/img-redundant-alt": "error",
     },
   },
 ]);

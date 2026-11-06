@@ -24,7 +24,10 @@ function Avatar({
 function AvatarImage({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: Omit<React.ComponentProps<typeof AvatarPrimitive.Image>, "alt"> & {
+  /** The person's or business's name; "" only when a visible name sits beside it. */
+  alt: string;
+}) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"

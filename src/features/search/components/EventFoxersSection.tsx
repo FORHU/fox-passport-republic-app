@@ -96,7 +96,7 @@ function VenueCarousel({ images, name }: { images: string[]; name: string }) {
           >
             <Image
               src={img}
-              alt={`${name}'s venue, photo ${idx + 1}`}
+              alt={`${name}'s venue (${idx + 1} of ${images.length})`}
               fill
               sizes="144px"
               className="object-cover"
@@ -274,7 +274,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               >
                 <Image
                   src={img}
-                  alt={`Work by ${foxer.name}, ${idx + 1}`}
+                  alt={`Work by ${foxer.name} (${idx + 1} of ${portfolioImages.length})`}
                   fill
                   sizes="120px"
                   className="object-cover"
