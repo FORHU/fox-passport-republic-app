@@ -298,6 +298,17 @@ export default function PrivacyPolicyPage() {
             authentication. We do not use intrusive third-party cross-site
             advertising trackers.
           </p>
+          <p>
+            For the full list of cookies and browser storage we use, and how to
+            manage them, see our{" "}
+            <Link
+              href="/cookies"
+              className="text-accent font-semibold underline hover:text-accent-hover"
+            >
+              Cookie Policy
+            </Link>
+            .
+          </p>
         </Section>
 
         {/* Section 6: Data Retention & Deletion */}

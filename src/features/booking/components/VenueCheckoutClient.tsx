@@ -684,7 +684,7 @@ export default function VenueCheckoutClient() {
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="/privacy"
+                href="/cookies"
               >
                 Cookies
               </a>
