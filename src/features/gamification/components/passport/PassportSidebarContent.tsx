@@ -27,8 +27,8 @@ export interface PassportSidebarContentProps {
   setExpandedPath: (p: string | null) => void;
   perkTab: "unlocked" | "locked";
   setPerkTab: (t: "unlocked" | "locked") => void;
-  activeTab: "progress" | "stamps" | "matches" | "rewards";
-  setActiveTab: (t: "progress" | "stamps" | "matches" | "rewards") => void;
+  activeTab: "progress" | "stamps" | "matches" | "rewards" | "achievements";
+  setActiveTab: (t: "progress" | "stamps" | "matches" | "rewards" | "achievements") => void;
   earnedPerkKeys: string[];
   onTabSelect: () => void;
 }
@@ -333,6 +333,18 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
       </div>
 
       <div className="mt-auto pt-4 flex flex-col gap-2">
+        <button
+          onClick={() => {
+            setActiveTab("achievements");
+            onTabSelect();
+          }}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "achievements" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            military_tech
+          </span>{" "}
+          Achievements
+        </button>
         <button
           onClick={() => {
             setActiveTab("rewards");
