@@ -3,8 +3,17 @@
 import React from "react";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getReviewsByListing, postReviewReply } from "@/shared/api/reviews";
-import type { Review, ReviewReply } from "@/shared/types/review";
+import {
+  getReviewsByListing,
+  postReviewReply,
+  toggleHelpfulVote,
+} from "@/shared/api/reviews";
+import type {
+  Review,
+  ReviewReply,
+  ReviewSort,
+  ReviewSubRatingAverages,
+} from "@/shared/types/review";
 import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -254,14 +263,60 @@ export function VenueReviews({
 }: VenueReviewsProps) {
   const user = useAuthStore((s) => s.user);
   const currentUserId = user?.id;
+  const queryClient = useQueryClient();
+  const [sort, setSort] = React.useState<ReviewSort>("most_helpful");
+  const [votedIds, setVotedIds] = React.useState<Record<string, boolean>>({});
+
   const { data, isLoading } = useQuery({
-    queryKey: ["venue-reviews", venueId],
-    queryFn: () => getReviewsByListing(venueId),
+    queryKey: ["venue-reviews", venueId, sort],
+    queryFn: () => getReviewsByListing(venueId, sort),
     enabled: !!venueId,
     staleTime: 1000 * 60 * 5,
   });
 
+  const helpfulMutation = useMutation({
+    mutationFn: (reviewId: string) => toggleHelpfulVote(reviewId),
+    onSuccess: (res, reviewId) => {
+      setVotedIds((prev) => ({ ...prev, [reviewId]: res.helpful }));
+      queryClient.setQueryData(
+        ["venue-reviews", venueId, sort],
+        (
+          old:
+            | {
+                reviews: Review[];
+                ratingDistribution: Record<string, string>;
+                subRatingAverages?: ReviewSubRatingAverages;
+              }
+            | undefined,
+        ) => {
+          if (!old) return old;
+          return {
+            ...old,
+            reviews: old.reviews.map((r) =>
+              r.id === reviewId ? { ...r, helpfulCount: res.helpfulCount } : r,
+            ),
+          };
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: ["venue-reviews", venueId] });
+      if (res.helpful && res.xpAwarded > 0) {
+        toast.success(`Marked as helpful! Author earned +${res.xpAwarded} XP.`);
+      } else if (res.helpful) {
+        toast.success("Marked as helpful!");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(
+        err?.response?.data?.message || "Failed to update helpful vote",
+      );
+    },
+  });
+
   const serverReviews: Review[] = data?.reviews ?? [];
+  const subRatingAverages = data?.subRatingAverages;
+  const hasSubRatings =
+    subRatingAverages &&
+    Object.values(subRatingAverages).some((v) => typeof v === "number");
   const reviews: Review[] = serverReviews.map((r) => {
     const all = [...(r.replies ?? []), ...getLocalRepliesFor(r.id)];
     const seen = new Set<string>();
@@ -352,6 +407,72 @@ export function VenueReviews({
         ))}
       </div>
 
+      {hasSubRatings && (
+        <div
+          data-testid="subrating-averages"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+        >
+          {[
+            { label: "Quality", val: subRatingAverages?.quality },
+            { label: "Communication", val: subRatingAverages?.communication },
+            { label: "Value", val: subRatingAverages?.value },
+            { label: "Punctuality", val: subRatingAverages?.punctuality },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="glass-panel rounded-xl p-4 border border-white/5 flex flex-col justify-between"
+            >
+              <span className="text-xs text-text-muted font-medium">
+                {item.label}
+              </span>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="material-symbols-outlined text-base text-accent">
+                  star
+                </span>
+                <span className="text-lg font-display font-bold text-white">
+                  {typeof item.val === "number" ? item.val.toFixed(1) : "—"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {reviews.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            Sort reviews
+          </span>
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Sort reviews"
+          >
+            {(
+              [
+                { id: "most_helpful", label: "Most helpful" },
+                { id: "recent", label: "Recent" },
+                { id: "highest", label: "Highest" },
+                { id: "lowest", label: "Lowest" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setSort(opt.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors border ${
+                  sort === opt.id
+                    ? "bg-accent text-black border-accent"
+                    : "bg-white/5 text-white/70 border-white/10 hover:text-white"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="grid md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
@@ -428,6 +549,33 @@ export function VenueReviews({
                   {review.comment}
                 </p>
 
+                {/* Individual Sub-Ratings Pills */}
+                {(review.quality ||
+                  review.communication ||
+                  review.value ||
+                  review.punctuality) && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {[
+                      { label: "Quality", val: review.quality },
+                      { label: "Communication", val: review.communication },
+                      { label: "Value", val: review.value },
+                      { label: "Punctuality", val: review.punctuality },
+                    ]
+                      .filter((sub) => typeof sub.val === "number")
+                      .map((sub) => (
+                        <span
+                          key={sub.label}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/80"
+                        >
+                          <span className="text-text-muted">{sub.label}:</span>
+                          <span className="font-bold text-accent">
+                            {sub.val}/5
+                          </span>
+                        </span>
+                      ))}
+                  </div>
+                )}
+
                 {/* Replies — show max 2 inline, full list in modal */}
                 {review.replies && review.replies.length > 0 && (
                   <div className="mt-4 space-y-3 border-t border-white/5 pt-4">
@@ -473,32 +621,59 @@ export function VenueReviews({
                   </div>
                 )}
 
-                {/* Reply button / form */}
-                {canReply && replyOpenId === review.id && (
-                  <>
-                    <ReviewReplyForm
-                      reviewId={review.id}
-                      venueId={venueId}
-                      onClose={() => setReplyOpenId(null)}
-                    />
-                  </>
-                )}
-                {canReply && replyOpenId !== review.id && (
+                {/* Action bar: Helpful vote + Reply + Show More */}
+                <div className="mt-4 flex flex-wrap items-center gap-3">
                   <button
-                    onClick={() => setReplyOpenId(review.id)}
-                    className="mt-3 text-xs font-bold text-accent hover:text-white transition-colors"
+                    type="button"
+                    disabled={
+                      !currentUserId ||
+                      currentUserId === review.userId ||
+                      helpfulMutation.isPending
+                    }
+                    onClick={() => helpfulMutation.mutate(review.id)}
+                    aria-label={`Helpful (${review.helpfulCount ?? 0})`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      votedIds[review.id]
+                        ? "bg-accent/20 text-accent border-accent/40"
+                        : "bg-white/5 text-white/70 border-white/10 hover:text-white"
+                    }`}
                   >
-                    Reply
+                    <span className="material-symbols-outlined text-[14px]">
+                      thumb_up
+                    </span>
+                    <span>
+                      Helpful
+                      {(review.helpfulCount ?? 0) > 0
+                        ? ` (${review.helpfulCount})`
+                        : ""}
+                    </span>
                   </button>
-                )}
 
-                {/* Modal trigger */}
-                <button
-                  onClick={() => setReplyModalReviewId(review.id)}
-                  className="mt-3 ml-3 text-xs text-white/40 hover:text-white transition-colors"
-                >
-                  Show More
-                </button>
+                  {canReply && replyOpenId !== review.id && (
+                    <button
+                      onClick={() => setReplyOpenId(review.id)}
+                      className="text-xs font-bold text-accent hover:text-white transition-colors"
+                    >
+                      Reply
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setReplyModalReviewId(review.id)}
+                    className="text-xs text-white/40 hover:text-white transition-colors"
+                  >
+                    Show More
+                  </button>
+                </div>
+
+                {/* Reply form */}
+                {canReply && replyOpenId === review.id && (
+                  <ReviewReplyForm
+                    reviewId={review.id}
+                    venueId={venueId}
+                    onClose={() => setReplyOpenId(null)}
+                  />
+                )}
               </div>
             );
           })}
@@ -570,7 +745,8 @@ export function VenueMap({
           <div
             className="absolute inset-0 opacity-20"
             style={{
-              backgroundImage: "radial-gradient(var(--color-white) 1px, transparent 1px)",
+              backgroundImage:
+                "radial-gradient(var(--color-white) 1px, transparent 1px)",
               backgroundSize: "20px 20px",
             }}
           />
