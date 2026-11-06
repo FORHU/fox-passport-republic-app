@@ -84,6 +84,7 @@ const nextConfig = {
       { source: '/mayor/create-venue',        destination: '/venue-foxer/create-venue',               permanent: true },
       { source: '/user/rewards',              destination: '/passport/rewards',                      permanent: true },
       { source: '/rewards',                   destination: '/passport/rewards',                      permanent: true },
+      { source: '/passport',                  destination: '/user/passport',                         permanent: true },
     ];
   },
 
