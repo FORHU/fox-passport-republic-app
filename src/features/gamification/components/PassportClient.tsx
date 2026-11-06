@@ -31,15 +31,31 @@ import { PassportProgressTab } from "./passport/PassportProgressTab";
 import { PassportStampsTab } from "./passport/PassportStampsTab";
 import { PassportRewardsTab } from "./passport/PassportRewardsTab";
 import { AchievementsView } from "./achievements/AchievementsView";
+import { LeaderboardView } from "./leaderboard/LeaderboardView";
 
 interface PassportClientProps {
   user: any;
+  initialTab?:
+    | "progress"
+    | "stamps"
+    | "matches"
+    | "rewards"
+    | "achievements"
+    | "leaderboard";
 }
 
-export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
+export const PassportClient: React.FC<PassportClientProps> = ({
+  user,
+  initialTab,
+}) => {
   const [activeTab, setActiveTab] = useState<
-    "progress" | "stamps" | "matches" | "rewards" | "achievements"
-  >("matches");
+    | "progress"
+    | "stamps"
+    | "matches"
+    | "rewards"
+    | "achievements"
+    | "leaderboard"
+  >(initialTab ?? "matches");
   const [clientInboxOffset, setClientInboxOffset] = useState(0);
   const [clientInboxAll, setClientInboxAll] = useState<ClientMatchRequest[]>(
     [],
@@ -205,26 +221,30 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
-                  {activeTab === "achievements"
-                    ? "Civic & Foxer Milestones"
-                    : activeTab === "rewards"
-                      ? "Citizen Rewards & Wallet"
-                      : activeTab === "matches"
-                        ? "Match Status & Inquiries"
-                        : activeTab === "progress"
-                          ? "Citizenship Journey"
-                          : "Verified Event Stamps"}
+                  {activeTab === "leaderboard"
+                    ? "Republic Leaderboards"
+                    : activeTab === "achievements"
+                      ? "Civic & Foxer Milestones"
+                      : activeTab === "rewards"
+                        ? "Citizen Rewards & Wallet"
+                        : activeTab === "matches"
+                          ? "Match Status & Inquiries"
+                          : activeTab === "progress"
+                            ? "Citizenship Journey"
+                            : "Verified Event Stamps"}
                 </h1>
                 <p className="text-xs text-white/40 mt-1">
-                  {activeTab === "achievements"
-                    ? "Track multi-tier milestones, earn XP and Coins, and unlock exclusive achievement badges"
-                    : activeTab === "rewards"
-                      ? "Manage your FoxPassport Coins, ledger history, and discount vouchers"
-                      : activeTab === "matches"
-                        ? "Track and manage all your collaboration requests"
-                        : activeTab === "progress"
-                          ? "Track your XP, civic ranks, and milestone rewards"
-                          : "Verified passport records of events and experiences attended"}
+                  {activeTab === "leaderboard"
+                    ? "Explore top citizens and Foxers across the Republic, seasonal rankings, and city standings"
+                    : activeTab === "achievements"
+                      ? "Track multi-tier milestones, earn XP and Coins, and unlock exclusive achievement badges"
+                      : activeTab === "rewards"
+                        ? "Manage your FoxPassport Coins, ledger history, and discount vouchers"
+                        : activeTab === "matches"
+                          ? "Track and manage all your collaboration requests"
+                          : activeTab === "progress"
+                            ? "Track your XP, civic ranks, and milestone rewards"
+                            : "Verified passport records of events and experiences attended"}
                 </p>
               </div>
 
@@ -264,7 +284,9 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             </div>
 
             <AnimatePresence mode="wait">
-              {activeTab === "achievements" ? (
+              {activeTab === "leaderboard" ? (
+                <LeaderboardView />
+              ) : activeTab === "achievements" ? (
                 <AchievementsView />
               ) : activeTab === "rewards" ? (
                 <PassportRewardsTab />

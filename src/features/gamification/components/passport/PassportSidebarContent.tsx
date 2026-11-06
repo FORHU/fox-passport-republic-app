@@ -4,7 +4,10 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatXP, calculateLevelFromXP } from "@/features/gamification/lib/gamification";
+import {
+  formatXP,
+  calculateLevelFromXP,
+} from "@/features/gamification/lib/gamification";
 import { UserPath } from "@/features/gamification/types/gamification";
 import { RankBadge } from "@/features/gamification/components/RankBadge";
 import {
@@ -27,8 +30,22 @@ export interface PassportSidebarContentProps {
   setExpandedPath: (p: string | null) => void;
   perkTab: "unlocked" | "locked";
   setPerkTab: (t: "unlocked" | "locked") => void;
-  activeTab: "progress" | "stamps" | "matches" | "rewards" | "achievements";
-  setActiveTab: (t: "progress" | "stamps" | "matches" | "rewards" | "achievements") => void;
+  activeTab:
+    | "progress"
+    | "stamps"
+    | "matches"
+    | "rewards"
+    | "achievements"
+    | "leaderboard";
+  setActiveTab: (
+    t:
+      | "progress"
+      | "stamps"
+      | "matches"
+      | "rewards"
+      | "achievements"
+      | "leaderboard",
+  ) => void;
   earnedPerkKeys: string[];
   onTabSelect: () => void;
 }
@@ -116,12 +133,12 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                     : p === "performerFoxer"
                       ? "Performer Foxer"
                       : p === "venueFoxer"
-                      ? "Venue Foxer"
-                      : p === "investor"
-                        ? "Investor"
-                        : p === "organizer"
-                          ? "Organizer"
-                          : p,
+                        ? "Venue Foxer"
+                        : p === "investor"
+                          ? "Investor"
+                          : p === "organizer"
+                            ? "Organizer"
+                            : p,
             )
             .join(" · ") || "Citizen"}
         </p>
@@ -139,9 +156,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         <div className="space-y-2">
           <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
             <span>Mastery XP</span>
-            <span className="text-accent font-mono">
-              {formatXP(totalXP)}
-            </span>
+            <span className="text-accent font-mono">{formatXP(totalXP)}</span>
           </div>
           <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div
@@ -207,7 +222,9 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                         >
                           <div
                             className="h-5 w-5 rounded-md flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `color-mix(in srgb, ${color} 9%, transparent)` }}
+                            style={{
+                              backgroundColor: `color-mix(in srgb, ${color} 9%, transparent)`,
+                            }}
                           >
                             <div
                               className="h-1.5 w-1.5 rounded-full"
@@ -236,7 +253,10 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                                 style={
                                   perkTab === "unlocked"
                                     ? { backgroundColor: color, color: "#000" }
-                                    : { color: "color-mix(in srgb, var(--color-white) 30%, transparent)" }
+                                    : {
+                                        color:
+                                          "color-mix(in srgb, var(--color-white) 30%, transparent)",
+                                      }
                                 }
                               >
                                 Active
@@ -333,6 +353,18 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
       </div>
 
       <div className="mt-auto pt-4 flex flex-col gap-2">
+        <button
+          onClick={() => {
+            setActiveTab("leaderboard");
+            onTabSelect();
+          }}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "leaderboard" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            leaderboard
+          </span>{" "}
+          Leaderboard
+        </button>
         <button
           onClick={() => {
             setActiveTab("achievements");
