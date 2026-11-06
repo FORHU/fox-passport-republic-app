@@ -11,6 +11,10 @@ interface SubmitReviewParams {
   comment: string;
   targetId: string;
   targetType: string;
+  quality?: number | null;
+  communication?: number | null;
+  value?: number | null;
+  punctuality?: number | null;
 }
 
 export function useSubmitReview() {

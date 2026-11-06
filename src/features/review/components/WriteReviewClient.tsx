@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { Star, Calendar } from "lucide-react";
@@ -17,6 +17,10 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [quality, setQuality] = useState<number>(0);
+  const [communication, setCommunication] = useState<number>(0);
+  const [value, setValue] = useState<number>(0);
+  const [punctuality, setPunctuality] = useState<number>(0);
 
   const eventName = booking.event?.name || booking.venueName || "Venue Booking";
   const targetId =
@@ -42,6 +46,10 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
       comment: comment.trim(),
       targetId,
       targetType,
+      ...(quality > 0 ? { quality } : {}),
+      ...(communication > 0 ? { communication } : {}),
+      ...(value > 0 ? { value } : {}),
+      ...(punctuality > 0 ? { punctuality } : {}),
     });
   };
 
@@ -130,6 +138,70 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                   {rating} star{rating !== 1 ? "s" : ""}
                 </p>
               )}
+            </div>
+
+            {/* Optional Sub-Ratings */}
+            <div className="mb-8">
+              <h3 className="text-sm font-bold text-white/80 uppercase tracking-wider mb-4">
+                Category Breakdown (Optional)
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  {
+                    label: "Quality",
+                    value: quality,
+                    setter: setQuality,
+                    testId: "subrating-quality",
+                  },
+                  {
+                    label: "Communication",
+                    value: communication,
+                    setter: setCommunication,
+                    testId: "subrating-communication",
+                  },
+                  {
+                    label: "Value",
+                    value: value,
+                    setter: setValue,
+                    testId: "subrating-value",
+                  },
+                  {
+                    label: "Punctuality",
+                    value: punctuality,
+                    setter: setPunctuality,
+                    testId: "subrating-punctuality",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    data-testid={item.testId}
+                    className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+                  >
+                    <span className="text-sm font-semibold text-white">
+                      {item.label}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-label={`${item.label} ${s} stars`}
+                          onClick={() => item.setter(item.value === s ? 0 : s)}
+                          className="focus:outline-none transition-transform hover:scale-110"
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              s <= item.value
+                                ? "gold-foil-fill gold-foil-svg"
+                                : "text-white/20"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="h-px bg-white/10 w-full mb-8" />
