@@ -97,6 +97,9 @@ jobs:
       # Next.js reads .env.production for a production build and ignores names
       # like .env.staging. Writing the wrong filename is how the UK admin
       # shipped a bundle with localhost:3001 compiled into it.
+      #
+      # NEXT_PUBLIC_DISABLE_INDEXING=true makes this dev build noindex in its
+      # HTML and headers (src/shared/lib/seo.ts).
       - name: Write web env file
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -128,6 +131,7 @@ jobs:
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
           NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
           NEXT_PUBLIC_ASSETS_URL=${NEXT_PUBLIC_ASSETS_URL}
+          NEXT_PUBLIC_DISABLE_INDEXING=true
           ENVEOF
 
       - name: Build and push image
@@ -163,6 +167,7 @@ jobs:
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
           NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
           NEXT_PUBLIC_ASSETS_URL=${NEXT_PUBLIC_ASSETS_URL}
+          NEXT_PUBLIC_DISABLE_INDEXING=true
           ENVEOF
 
           aws ssm put-parameter \
