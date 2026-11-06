@@ -30,6 +30,7 @@ import { PassportMatchesTab } from "./passport/PassportMatchesTab";
 import { PassportProgressTab } from "./passport/PassportProgressTab";
 import { PassportStampsTab } from "./passport/PassportStampsTab";
 import { PassportRewardsTab } from "./passport/PassportRewardsTab";
+import { AchievementsView } from "./achievements/AchievementsView";
 
 interface PassportClientProps {
   user: any;
@@ -37,7 +38,7 @@ interface PassportClientProps {
 
 export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<
-    "progress" | "stamps" | "matches" | "rewards"
+    "progress" | "stamps" | "matches" | "rewards" | "achievements"
   >("matches");
   const [clientInboxOffset, setClientInboxOffset] = useState(0);
   const [clientInboxAll, setClientInboxAll] = useState<ClientMatchRequest[]>(
@@ -204,18 +205,26 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
-                  {activeTab === "matches"
-                    ? "Match Status & Inquiries"
-                    : activeTab === "progress"
-                      ? "Citizenship Journey"
-                      : "Verified Event Stamps"}
+                  {activeTab === "achievements"
+                    ? "Civic & Foxer Milestones"
+                    : activeTab === "rewards"
+                      ? "Citizen Rewards & Wallet"
+                      : activeTab === "matches"
+                        ? "Match Status & Inquiries"
+                        : activeTab === "progress"
+                          ? "Citizenship Journey"
+                          : "Verified Event Stamps"}
                 </h1>
                 <p className="text-xs text-white/40 mt-1">
-                  {activeTab === "matches"
-                    ? "Track and manage all your collaboration requests"
-                    : activeTab === "progress"
-                      ? "Track your XP, civic ranks, and milestone rewards"
-                      : "Verified passport records of events and experiences attended"}
+                  {activeTab === "achievements"
+                    ? "Track multi-tier milestones, earn XP and Coins, and unlock exclusive achievement badges"
+                    : activeTab === "rewards"
+                      ? "Manage your FoxPassport Coins, ledger history, and discount vouchers"
+                      : activeTab === "matches"
+                        ? "Track and manage all your collaboration requests"
+                        : activeTab === "progress"
+                          ? "Track your XP, civic ranks, and milestone rewards"
+                          : "Verified passport records of events and experiences attended"}
                 </p>
               </div>
 
@@ -255,7 +264,9 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             </div>
 
             <AnimatePresence mode="wait">
-              {activeTab === "rewards" ? (
+              {activeTab === "achievements" ? (
+                <AchievementsView />
+              ) : activeTab === "rewards" ? (
                 <PassportRewardsTab />
               ) : activeTab === "matches" ? (
                 <PassportMatchesTab

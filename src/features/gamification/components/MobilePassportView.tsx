@@ -194,6 +194,72 @@ export default function MobilePassportView({ user }: Props) {
           </span>
         </Link>
 
+        {/* Milestone Achievements Card */}
+        <Link
+          href="/passport/achievements"
+          style={{
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderRadius: 24,
+            background: "color-mix(in srgb, var(--color-white) 5%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: "rgba(0,210,255,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#00D2FF",
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 20 }}
+              >
+                military_tech
+              </span>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  margin: 0,
+                  color: "var(--color-white)",
+                }}
+              >
+                Achievements
+              </p>
+              <p
+                style={{
+                  fontSize: 11,
+                  margin: "2px 0 0",
+                  color:
+                    "color-mix(in srgb, var(--color-white) 45%, transparent)",
+                }}
+              >
+                Milestone goals, tier badges, and XP
+              </p>
+            </div>
+          </div>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 18, color: "var(--accent-text)" }}
+          >
+            chevron_right
+          </span>
+        </Link>
+
         {/* Stamps Collected */}
         <div>
           <p

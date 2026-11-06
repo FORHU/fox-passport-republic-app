@@ -82,6 +82,11 @@ const nextConfig = {
       { source: '/mayor',                     destination: '/creator-dashboard/venues',               permanent: true },
       { source: '/mayor/apply',               destination: '/venue-foxer/apply',                      permanent: true },
       { source: '/mayor/create-venue',        destination: '/venue-foxer/create-venue',               permanent: true },
+      { source: '/user/rewards',              destination: '/passport/rewards',                      permanent: true },
+      { source: '/rewards',                   destination: '/passport/rewards',                      permanent: true },
+      { source: '/passport',                  destination: '/user/passport',                         permanent: true },
+      { source: '/user/achievements',         destination: '/passport/achievements',                 permanent: true },
+      { source: '/achievements',              destination: '/passport/achievements',                 permanent: true },
     ];
   },
 
