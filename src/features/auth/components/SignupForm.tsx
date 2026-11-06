@@ -1,21 +1,26 @@
 "use client";
 
 import React from "react";
-import { useForm, SubmitHandler, FieldErrors } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Check } from "lucide-react";
 
 import { useSignup } from "@/features/auth/hooks/useAuth";
-import { signupSchema, SignupFormData } from "@/shared/lib/schema";
+import {
+  signupSchema,
+  SignupFormData,
+  FIX_HIGHLIGHTED_FIELDS,
+} from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
 import { PasswordVisibilityToggle } from "@/features/auth/components/PasswordVisibilityToggle";
 import { TextField } from "@/shared/components/ui/TextField";
+import { FieldError } from "@/shared/components/ui/FieldError";
 
 import { toast } from "sonner";
 import { startSocialSignIn } from "@/shared/auth/session-api";
-import { PASSWORD_MIN } from "@/shared/lib/passwordPolicy";
+import { PASSWORD_HINT } from "@/shared/lib/passwordPolicy";
 
 // Social buttons component
 const SocialButtons = () => (
@@ -86,21 +91,24 @@ export default function SignupForm() {
   const { toggleView } = useAuthStore();
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
   const [hasReadCharter, setHasReadCharter] = React.useState(false);
   const termsId = React.useId();
+  const termsErrorId = `${termsId}-error`;
   const [charterTab, setCharterTab] = React.useState<
     "terms" | "privacy" | null
   >(null);
 
   const {
     register,
+    control,
     handleSubmit,
+    setValue,
     formState: { errors },
     reset,
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     mode: "onChange",
+    defaultValues: { acceptedTerms: false },
   });
 
   React.useEffect(() => {
@@ -110,20 +118,10 @@ export default function SignupForm() {
   const onSignup: SubmitHandler<SignupFormData> = (data) =>
     signupMutation.mutate(data);
 
-  const onInvalid = (formErrors: FieldErrors<SignupFormData>) => {
-    if (formErrors.email) {
-      toast.error(formErrors.email.message ?? "Invalid email address");
-    } else if (formErrors.password) {
-      toast.error(
-        formErrors.password.message ??
-          `Password must be at least ${PASSWORD_MIN} characters long`,
-      );
-    } else if (formErrors.confirmPassword) {
-      toast.error(
-        formErrors.confirmPassword.message ?? "Passwords do not match",
-      );
-    }
-  };
+  // The inline errors carry the detail; react-hook-form focuses the first
+  // invalid field. One toast id, so repeated submits don't stack toasts.
+  const onInvalid = () =>
+    toast.error(FIX_HIGHLIGHTED_FIELDS, { id: "signup-invalid" });
 
   return (
     <div className="animate-in fade-in slide-in-from-left-8 duration-300">
@@ -146,7 +144,13 @@ export default function SignupForm() {
         <div className="grow border-t border-white/10"></div>
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit(onSignup, onInvalid)}>
+      {/* noValidate: the browser's own checks (the required checkbox, the
+          email format) would cancel the submit before zod shows any error. */}
+      <form
+        className="space-y-4"
+        noValidate
+        onSubmit={handleSubmit(onSignup, onInvalid)}
+      >
         <TextField
           {...register("name")}
           label="FULL NAME"
@@ -184,6 +188,7 @@ export default function SignupForm() {
           type={showPassword ? "text" : "password"}
           autoComplete="new-password"
           required
+          hint={PASSWORD_HINT}
           error={errors.password?.message}
           trailing={
             <PasswordVisibilityToggle
@@ -209,57 +214,79 @@ export default function SignupForm() {
           }
         />
 
-        {/* Terms */}
-        <div className="flex items-center gap-3 pt-2">
-          <div className="relative flex h-5 w-5 shrink-0 items-center">
-            <input
-              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-accent checked:bg-accent transition-all hover:border-accent/50"
-              id={termsId}
-              type="checkbox"
-              checked={agreedToTerms}
-              onChange={(e) => {
-                // Reading the charter is mandatory before it can be
-                // checked; unchecking never needs that gate.
-                if (e.target.checked && !hasReadCharter) {
-                  setCharterTab("terms");
-                  return;
-                }
-                setAgreedToTerms(e.target.checked);
-              }}
-              required
-            />
-            <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-black opacity-0 transition-opacity peer-checked:opacity-100">
-              <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
-            </span>
-          </div>
-          <label
-            className="text-xs text-gray-400 cursor-pointer select-none"
-            htmlFor={termsId}
-          >
-            I agree to the{" "}
-            <button
-              type="button"
-              onClick={() => setCharterTab("terms")}
-              className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
-            >
-              Terms of Service
-            </button>{" "}
-            &{" "}
-            <button
-              type="button"
-              onClick={() => setCharterTab("privacy")}
-              className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
-            >
-              Privacy Policy
-            </button>
-          </label>
-        </div>
+        {/* Terms: part of the schema, so its error shows with the others */}
+        <Controller
+          control={control}
+          name="acceptedTerms"
+          render={({ field, fieldState }) => (
+            <div className="pt-2">
+              <div className="flex items-center gap-3">
+                <div className="relative flex h-5 w-5 shrink-0 items-center">
+                  <input
+                    ref={field.ref}
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-accent checked:bg-accent transition-all hover:border-accent/50 aria-[invalid=true]:border-red-400"
+                    id={termsId}
+                    type="checkbox"
+                    checked={field.value === true}
+                    aria-required="true"
+                    aria-invalid={fieldState.error ? true : undefined}
+                    aria-describedby={
+                      fieldState.error ? termsErrorId : undefined
+                    }
+                    onChange={(e) => {
+                      // Reading the charter is mandatory before it can be
+                      // checked; unchecking never needs that gate.
+                      if (e.target.checked && !hasReadCharter) {
+                        setCharterTab("terms");
+                        return;
+                      }
+                      field.onChange(e.target.checked);
+                    }}
+                  />
+                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
+                  </span>
+                </div>
+                <label
+                  className="text-xs text-gray-400 cursor-pointer select-none"
+                  htmlFor={termsId}
+                >
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setCharterTab("terms")}
+                    className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
+                  >
+                    Terms of Service
+                  </button>{" "}
+                  &{" "}
+                  <button
+                    type="button"
+                    onClick={() => setCharterTab("privacy")}
+                    className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
+                  >
+                    Privacy Policy
+                  </button>
+                </label>
+              </div>
+              <FieldError
+                id={termsErrorId}
+                message={fieldState.error?.message}
+                className="mt-1.5 ml-1"
+              />
+            </div>
+          )}
+        />
 
         {charterTab && (
           <TermsPrivacyModal
             initialTab={charterTab}
             onClose={() => setCharterTab(null)}
-            onAccept={() => setAgreedToTerms(true)}
+            onAccept={() =>
+              setValue("acceptedTerms", true, { shouldValidate: true })
+            }
             onBothRead={() => setHasReadCharter(true)}
           />
         )}

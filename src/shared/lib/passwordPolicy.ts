@@ -18,7 +18,8 @@ const RULES: ReadonlyArray<{ test: RegExp; message: string }> = [
   },
 ];
 
-export const PASSWORD_HINT = `${PASSWORD_MIN}+ chars · uppercase · lowercase · digit · special character`;
+/** Shown under new-password fields before submit, so the rules are known up front. */
+export const PASSWORD_HINT = `Minimum ${PASSWORD_MIN} characters, with an uppercase letter, a lowercase letter, a number and a special character`;
 
 /** The first rule a password breaks, or `null` when it meets the policy. */
 export function passwordPolicyError(password: string): string | null {
@@ -38,3 +39,7 @@ export const passwordSchema = RULES.reduce(
     .min(PASSWORD_MIN, `Password must be at least ${PASSWORD_MIN} characters`)
     .max(PASSWORD_MAX, `Password must be at most ${PASSWORD_MAX} characters`),
 );
+
+/** `passwordSchema` for a form field: an empty value says it is required. */
+export const requiredPassword = (requiredMessage: string) =>
+  z.string().min(1, requiredMessage).pipe(passwordSchema);
