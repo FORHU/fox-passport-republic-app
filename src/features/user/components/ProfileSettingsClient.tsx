@@ -583,7 +583,7 @@ export default function ProfileSettingsClient({
                   Change Password
                 </h2>
                 <p className="text-sm text-white/40">
-                  Choose a strong password: {PASSWORD_HINT}.
+                  Choose a strong password. {PASSWORD_HINT}.
                 </p>
               </div>
 

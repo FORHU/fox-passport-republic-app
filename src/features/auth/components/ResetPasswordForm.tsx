@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
 import { TextField } from "@/shared/components/ui/TextField";
+import { PASSWORD_HINT } from "@/shared/lib/passwordPolicy";
 
 export default function ResetPasswordForm() {
   const resetPasswordMutation = useResetPassword();
@@ -77,6 +78,7 @@ export default function ResetPasswordForm() {
           type="password"
           autoComplete="new-password"
           required
+          hint={PASSWORD_HINT}
           error={errors.newPassword?.message}
         />
 

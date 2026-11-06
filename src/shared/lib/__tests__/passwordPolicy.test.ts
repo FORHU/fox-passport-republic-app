@@ -43,6 +43,7 @@ describe("password policy (BUG-27): 12–128 chars, all four character types", (
         confirmPassword: weak,
         username: "valid_user",
         name: "Ana",
+        acceptedTerms: true,
       }).success,
     ).toBe(false);
     expect(
@@ -60,5 +61,33 @@ describe("password policy (BUG-27): 12–128 chars, all four character types", (
         confirmPassword: strong,
       }).success,
     ).toBe(true);
+  });
+
+  const confirmIssues = (newPassword: string, confirmPassword: string) =>
+    resetPasswordSchema
+      .safeParse({ otpCode: "", newPassword, confirmPassword })
+      .error?.issues.filter((i) => i.path[0] === "confirmPassword")
+      .map((i) => i.message);
+
+  it("reset: an empty password or confirm says it is required", () => {
+    const parsed = resetPasswordSchema.safeParse({
+      otpCode: "123456",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    const messages = parsed.error?.issues.map((i) => i.message);
+    expect(messages).toEqual([
+      "New password is required",
+      "Confirm your password",
+    ]);
+  });
+
+  it("reset: a mismatch shows even while other fields are invalid", () => {
+    const strong = ofLength(PASSWORD_MIN);
+    // otpCode is empty, so the object already has an issue.
+    expect(confirmIssues(strong, `${strong}x`)).toEqual([
+      "Passwords do not match",
+    ]);
+    expect(confirmIssues(strong, strong)).toEqual([]);
   });
 });
