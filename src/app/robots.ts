@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { indexingDisabled } from "@/shared/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = (
@@ -53,6 +54,8 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    // A hidden build keeps `Allow` (crawlers must fetch pages to see their
+    // noindex) but stops pointing them at production's sitemap.
+    ...(indexingDisabled ? {} : { sitemap: `${baseUrl}/sitemap.xml` }),
   };
 }

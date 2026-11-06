@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIES } from "@/shared/auth/session-cookies";
+import { indexingDisabled, isNonProductionHost } from "@/shared/lib/seo";
 
 /**
  * Navigation guard. Runs before pages are rendered.
@@ -56,33 +57,11 @@ const PROTECTED_ROUTES = [
   "/messages",
 ];
 
-// dev.foxpassport.com (staging), Vercel previews and localhost answer
-// `noindex`, so search engines never list their seed data or treat them as
-// duplicates of foxpassport.com. A deny-list, not an allow-list: behind a
-// reverse proxy that rewrites Host, an allow-list would noindex production.
-// robots.txt must stay crawlable there: a crawler has to fetch a page to see
-// this header.
-function isNonProductionHost(request: NextRequest): boolean {
-  const host = (
-    request.headers.get("x-forwarded-host") ??
-    request.headers.get("host") ??
-    ""
-  )
-    .split(",")[0]
-    .trim()
-    .split(":")[0]
-    .toLowerCase();
-  return (
-    host === "dev.foxpassport.com" ||
-    host.endsWith(".vercel.app") ||
-    host === "localhost" ||
-    host === "127.0.0.1"
-  );
-}
-
+// Non-production answers `noindex`: a build with the flag set, or a known
+// non-production host (see `shared/lib/seo.ts`).
 export default async function proxy(request: NextRequest) {
   const response = await guard(request);
-  if (isNonProductionHost(request)) {
+  if (indexingDisabled || isNonProductionHost(request.headers)) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   return response;
@@ -136,9 +115,10 @@ export const config = {
      * Match all request paths except for the ones starting with:
      * - api (API routes)
      * - _next/static (static files)
-     * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * `_next/image` is matched on purpose: optimized images need the
+     * noindex header too. `guard()` passes them straight through.
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|favicon.ico).*)",
   ],
 };

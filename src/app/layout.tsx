@@ -19,6 +19,7 @@ import Providers from "@/shared/providers";
 import WebsiteJsonLd from "@/shared/components/seo/WebsiteJsonLd";
 import { THEME_INIT_SCRIPT } from "@/shared/lib/theme";
 import { assetUrl } from "@/shared/lib/assets";
+import { indexingDisabled, robotsMetadata } from "@/shared/lib/seo";
 
 const appUrl = (
   process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
@@ -58,17 +59,7 @@ export const metadata: Metadata = {
       "FoxPassport returns the power of Happiness & Experience to You. Discover curated events, unique venues, and local experiences.",
     images: [assetUrl("foxonlylogo.png")],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  robots: robotsMetadata(indexingDisabled),
 };
 
 export const viewport: Viewport = {
