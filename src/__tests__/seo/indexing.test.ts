@@ -55,17 +55,18 @@ describe("indexing flag", () => {
     async (flag) => {
       const { indexingDisabled, robots } = await load(flag);
       expect(indexingDisabled).toBe(false);
-      expect(robots().sitemap).toBe("https://foxpassport.com/sitemap.xml");
+      const txt = robots();
+      expect(txt.sitemap).toBe("https://foxpassport.com/sitemap.xml");
+      const [rule] = [txt.rules].flat();
+      expect(rule.allow).toContain("/");
+      expect(rule.disallow).toContain("/admin/");
     },
   );
 
-  it("hides the site and drops the Sitemap line when the flag is true", async () => {
+  it("blocks all crawling and drops the Sitemap line when the flag is true", async () => {
     const { indexingDisabled, robots } = await load("true");
     expect(indexingDisabled).toBe(true);
-    const txt = robots();
-    expect(txt.sitemap).toBeUndefined();
-    // Still crawlable: a crawler must fetch a page to read its noindex.
-    expect(JSON.stringify(txt.rules)).toContain('"allow":["/"');
+    expect(robots()).toEqual({ rules: { userAgent: "*", disallow: "/" } });
   });
 });
 

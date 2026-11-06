@@ -2,6 +2,12 @@ import type { MetadataRoute } from "next";
 import { indexingDisabled } from "@/shared/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
+  // A hidden build (dev/staging) blocks all crawling, and its pages also
+  // answer noindex. No sitemap: it would point crawlers at production.
+  if (indexingDisabled) {
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
+
   const baseUrl = (
     process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
   ).replace(/\/+$/, "");
@@ -54,8 +60,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    // A hidden build keeps `Allow` (crawlers must fetch pages to see their
-    // noindex) but stops pointing them at production's sitemap.
-    ...(indexingDisabled ? {} : { sitemap: `${baseUrl}/sitemap.xml` }),
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
