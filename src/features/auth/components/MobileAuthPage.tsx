@@ -23,6 +23,7 @@ import { startSocialSignIn } from "@/shared/auth/session-api";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 import { BackButton } from "@/shared/components/ui/BackButton";
 import { PASSWORD_HINT } from "@/shared/lib/passwordPolicy";
+import { IconButton } from "@/shared/components/ui/IconButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,14 +48,132 @@ const FIELD_ERR: React.CSSProperties = {
   border: "1px solid rgba(207,61,52,0.6)",
 };
 
-function FieldError({ msg }: { msg?: string }) {
+function FieldError({ id, msg }: { id?: string; msg?: string }) {
   if (!msg) return null;
   return (
     <span
+      id={id}
+      role="alert"
       style={{ fontSize: 10, color: "var(--error)", marginTop: 3, display: "block" }}
     >
       {msg}
     </span>
+  );
+}
+
+const LABEL: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  display: "block",
+  marginBottom: 6,
+};
+
+type MobileFieldProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "required" | "style"
+> & {
+  label: string;
+  /** Keeps the label for screen readers only (the placeholder-style fields). */
+  labelHidden?: boolean;
+  error?: string;
+  hint?: React.ReactNode;
+  required?: boolean;
+  trailing?: React.ReactNode;
+  inputStyle?: React.CSSProperties;
+};
+
+/**
+ * A field whose label is linked by a generated id, with `aria-required`, and
+ * with the hint or error announced alongside it. The error also announces
+ * itself when it appears.
+ */
+const MobileField = React.forwardRef<HTMLInputElement, MobileFieldProps>(
+  function MobileField(
+    { label, labelHidden, error, hint, required, trailing, inputStyle, ...props },
+    ref,
+  ) {
+    const id = React.useId();
+    const hintId = hint && !error ? `${id}-hint` : undefined;
+    const errorId = error ? `${id}-error` : undefined;
+    const input = (
+      <input
+        ref={ref}
+        id={id}
+        aria-required={required || undefined}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={[hintId, errorId].filter(Boolean).join(" ") || undefined}
+        style={{
+          ...(error ? FIELD_ERR : FIELD),
+          ...(trailing ? { paddingRight: 48 } : null),
+          ...inputStyle,
+        }}
+        {...props}
+      />
+    );
+    return (
+      <div>
+        <label
+          htmlFor={id}
+          className={labelHidden ? "sr-only" : undefined}
+          style={labelHidden ? undefined : LABEL}
+        >
+          {label}
+        </label>
+        {trailing ? (
+          <div style={{ position: "relative" }}>
+            {input}
+            {trailing}
+          </div>
+        ) : (
+          input
+        )}
+        {error ? (
+          <FieldError id={errorId} msg={error} />
+        ) : hint ? (
+          <span
+            id={hintId}
+            style={{
+              fontSize: 10,
+              color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
+              marginTop: 4,
+              display: "block",
+            }}
+          >
+            {hint}
+          </span>
+        ) : null}
+      </div>
+    );
+  },
+);
+
+/** The show/hide toggle in a password field: one name, with aria-pressed for its state. */
+function PwToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+  return (
+    <IconButton
+      label="Show password"
+      pressed={shown}
+      onClick={onToggle}
+      style={{
+        position: "absolute",
+        right: 14,
+        top: "50%",
+        transform: "translateY(-50%)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+        lineHeight: 0,
+      }}
+      icon={
+        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+          {shown ? "visibility_off" : "visibility"}
+        </span>
+      }
+    />
   );
 }
 
@@ -197,54 +316,28 @@ function LoginView({
           marginBottom: 12,
         }}
       >
-        <div>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="Email address"
-            style={errors.email ? FIELD_ERR : FIELD}
-            autoComplete="email"
-          />
-          <FieldError msg={errors.email?.message} />
-        </div>
+        <MobileField
+          {...register("email")}
+          label="Email address"
+          labelHidden
+          type="email"
+          placeholder="Email address"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
-        <div>
-          <div style={{ position: "relative" }}>
-            <input
-              {...register("password")}
-              type={showPw ? "text" : "password"}
-              placeholder="Password"
-              style={{
-                ...(errors.password ? FIELD_ERR : FIELD),
-                paddingRight: 48,
-              }}
-              autoComplete="current-password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPw((p) => !p)}
-              style={{
-                position: "absolute",
-                right: 14,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                lineHeight: 0,
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                {showPw ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          <FieldError msg={errors.password?.message} />
-        </div>
+        <MobileField
+          {...register("password")}
+          label="Password"
+          labelHidden
+          type={showPw ? "text" : "password"}
+          placeholder="Password"
+          autoComplete="current-password"
+          required
+          error={errors.password?.message}
+          trailing={<PwToggle shown={showPw} onToggle={() => setShowPw((p) => !p)} />}
+        />
 
         <div
           style={{ display: "flex", justifyContent: "flex-end", marginTop: -4 }}
@@ -395,141 +488,47 @@ function SignupView({
           marginBottom: 12,
         }}
       >
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Full Name
-          </label>
-          <input
-            {...register("name")}
-            type="text"
-            placeholder="e.g. Fox Mulder"
-            style={errors.name ? FIELD_ERR : FIELD}
-            autoComplete="name"
-          />
-          <FieldError msg={errors.name?.message} />
-        </div>
+        <MobileField
+          {...register("name")}
+          label="Full Name"
+          type="text"
+          placeholder="e.g. Fox Mulder"
+          autoComplete="name"
+          required
+          error={errors.name?.message}
+        />
 
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Email Address
-          </label>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="name@example.com"
-            style={errors.email ? FIELD_ERR : FIELD}
-            autoComplete="email"
-          />
-          <FieldError msg={errors.email?.message} />
-        </div>
+        <MobileField
+          {...register("email")}
+          label="Email Address"
+          type="email"
+          placeholder="name@example.com"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Username
-          </label>
-          <input
-            {...register("username")}
-            type="text"
-            placeholder="fox_mulder"
-            style={errors.username ? FIELD_ERR : FIELD}
-            autoComplete="username"
-          />
-          <FieldError msg={errors.username?.message} />
-        </div>
+        <MobileField
+          {...register("username")}
+          label="Username"
+          type="text"
+          placeholder="fox_mulder"
+          autoComplete="username"
+          required
+          error={errors.username?.message}
+        />
 
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Password
-          </label>
-          <div style={{ position: "relative" }}>
-            <input
-              {...register("password")}
-              type={showPw ? "text" : "password"}
-              placeholder="Min. 16 characters"
-              style={{
-                ...(errors.password ? FIELD_ERR : FIELD),
-                paddingRight: 48,
-              }}
-              autoComplete="new-password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPw((p) => !p)}
-              style={{
-                position: "absolute",
-                right: 14,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                lineHeight: 0,
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                {showPw ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          {errors.password ? (
-            <FieldError msg={errors.password.message} />
-          ) : (
-            <span
-              style={{
-                fontSize: 10,
-                color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
-                marginTop: 4,
-                display: "block",
-              }}
-            >
-              {PASSWORD_HINT}
-            </span>
-          )}
-        </div>
+        <MobileField
+          {...register("password")}
+          label="Password"
+          type={showPw ? "text" : "password"}
+          placeholder="Min. 16 characters"
+          autoComplete="new-password"
+          required
+          error={errors.password?.message}
+          hint={PASSWORD_HINT}
+          trailing={<PwToggle shown={showPw} onToggle={() => setShowPw((p) => !p)} />}
+        />
 
         {/* Terms */}
         <label
@@ -778,13 +777,15 @@ function ForgotView({ onBack }: { onBack: () => void }) {
           onSubmit={handleSend}
           style={{ display: "flex", flexDirection: "column", gap: 12 }}
         >
-          <input
+          <MobileField
+            label="Email address"
+            labelHidden
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
-            style={FIELD}
             autoComplete="email"
+            required
           />
           <button
             type="submit"
@@ -884,17 +885,20 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
         onSubmit={handleVerify}
         style={{ display: "flex", flexDirection: "column", gap: 12 }}
       >
-        <input
+        <MobileField
+          label="Verification code"
+          labelHidden
           type="text"
           inputMode="numeric"
+          autoComplete="one-time-code"
           maxLength={6}
           value={otp}
           onChange={(e) =>
             setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
           }
           placeholder="000000"
-          style={{
-            ...FIELD,
+          required
+          inputStyle={{
             fontSize: 24,
             fontWeight: 700,
             textAlign: "center",

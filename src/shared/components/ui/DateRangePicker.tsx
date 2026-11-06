@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import { createPortal } from "react-dom";
 
 export function diffDays(start: string, end: string): number {
@@ -236,6 +236,8 @@ export default function DateRangePicker({
    *  inside the selected range — e.g. a venue's booked/blocked days. */
   disabledDates?: Set<string>;
 }) {
+  const fieldId = useId();
+  const errorId = `${fieldId}-error`;
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -309,52 +311,87 @@ export default function DateRangePicker({
         }
       >
         <div className="space-y-2">
-          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+          <label
+            htmlFor={`${fieldId}-start`}
+            className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+          >
             {startLabel}
           </label>
           <div className="relative" ref={triggerRef}>
             <input
+              id={`${fieldId}-start`}
               type="text"
+              aria-invalid={errors?.dates ? true : undefined}
+              aria-describedby={errors?.dates ? errorId : undefined}
               value={localStart}
               placeholder="Select date"
               onChange={(e) => setLocalStart(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onStartChange)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
-            <span
+            <button
+              type="button"
               onClick={openCalendar}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
+              aria-label="Open calendar"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer"
             >
-              calendar_today
-            </span>
+              <span
+                aria-hidden="true"
+                className="material-symbols-outlined text-[18px]"
+              >
+                calendar_today
+              </span>
+            </button>
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+          <label
+            htmlFor={`${fieldId}-end`}
+            className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+          >
             {endLabel}
           </label>
           <div className="relative">
             <input
+              id={`${fieldId}-end`}
               type="text"
+              aria-invalid={errors?.dates ? true : undefined}
+              aria-describedby={errors?.dates ? errorId : undefined}
               value={localEnd}
               placeholder="Select date"
               onChange={(e) => setLocalEnd(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onEndChange)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
-            <span
+            <button
+              type="button"
               onClick={openCalendar}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
+              aria-label="Open calendar"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer"
             >
-              calendar_today
-            </span>
+              <span
+                aria-hidden="true"
+                className="material-symbols-outlined text-[18px]"
+              >
+                calendar_today
+              </span>
+            </button>
           </div>
         </div>
       </div>
 
       {errors?.dates && (
-        <p className="text-xs text-red-400 mt-3 flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[13px]">error</span>
+        <p
+          id={errorId}
+          role="alert"
+          className="text-xs text-red-400 mt-3 flex items-center gap-1.5"
+        >
+          <span
+            aria-hidden="true"
+            className="material-symbols-outlined text-[13px]"
+          >
+            error
+          </span>
           {errors.dates}
         </p>
       )}

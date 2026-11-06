@@ -10,6 +10,8 @@ import {
   ForgotPasswordFormData,
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
+import { TextField } from "@/shared/components/ui/TextField";
 
 export default function ForgotPasswordForm() {
   const forgotPasswordMutation = useForgotPassword();
@@ -36,31 +38,25 @@ export default function ForgotPasswordForm() {
   return (
     <div className="animate-in fade-in slide-in-from-right-8 duration-300">
       <div className="text-center mb-5 sm:mb-8">
-        <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+        <AuthDialogTitle className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
           Forgot your password?
-        </h2>
+        </AuthDialogTitle>
         <p className="text-gray-400 text-sm">
           Enter your email and we&apos;ll send you a reset code.
         </p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        <div className="group">
-          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1">
-            EMAIL ADDRESS
-          </label>
-          <input
-            {...register("email")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
-            placeholder="name@example.com"
-            type="email"
-          />
-          {errors.email && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.email.message}
-            </span>
-          )}
-        </div>
+        <TextField
+          {...register("email")}
+          label="EMAIL ADDRESS"
+          labelClassName="block text-xs font-bold text-white/70 mb-1.5 ml-1"
+          placeholder="name@example.com"
+          type="email"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
         <button
           type="submit"
@@ -68,7 +64,10 @@ export default function ForgotPasswordForm() {
           className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {forgotPasswordMutation.isPending ? (
-            <Loader2 className="animate-spin w-5 h-5" />
+            <>
+              <Loader2 aria-hidden="true" className="animate-spin w-5 h-5" />
+              <span className="sr-only">Sending…</span>
+            </>
           ) : (
             "Send Reset Code"
           )}
@@ -77,6 +76,7 @@ export default function ForgotPasswordForm() {
 
       <div className="text-center mt-6">
         <button
+          type="button"
           onClick={() => setView("login")}
           className="text-sm font-bold text-white hover:text-accent transition-colors"
         >

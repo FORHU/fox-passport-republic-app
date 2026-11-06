@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { createBookingEditRequest } from "@/features/booking/api/bookings";
 import type { BookingEditRequest } from "@/features/booking/types/booking.types";
@@ -41,6 +41,7 @@ export default function RequestBookingEditModal({
   // A direct-venue Booking has a real end date too, same as an Asset
   // booking — only a Service booking's end date is optional/absent.
   const showEndDate = bookingType === "asset" || bookingType === "booking";
+  const fieldId = useId();
   const [quantityOrGuests, setQuantityOrGuests] = useState(
     currentQuantityOrGuestCount,
   );
@@ -147,10 +148,10 @@ export default function RequestBookingEditModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
+              <label htmlFor={`${fieldId}-start`} className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
                 {showEndDate ? "Start Date" : "Date"}
               </label>
-              <input
+              <input id={`${fieldId}-start`}
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -159,10 +160,10 @@ export default function RequestBookingEditModal({
             </div>
             {showEndDate && (
               <div>
-                <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
+                <label htmlFor={`${fieldId}-end`} className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
                   End Date
                 </label>
-                <input
+                <input id={`${fieldId}-end`}
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
@@ -173,10 +174,10 @@ export default function RequestBookingEditModal({
           </div>
 
           <div>
-            <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
+            <label htmlFor={`${fieldId}-reason`} className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
               Reason (optional)
             </label>
-            <textarea
+            <textarea id={`${fieldId}-reason`}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}

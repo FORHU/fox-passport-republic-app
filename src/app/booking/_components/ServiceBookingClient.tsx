@@ -1,7 +1,7 @@
 "use client";
 
 import PageLoader from "@/shared/components/ui/PageLoader";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,7 @@ export default function ServiceBookingClient({
   const service: BackendService | null = serviceQuery.data ?? null;
   // Only the first load shows the spinner — a revisit renders from cache.
   const isLoading = serviceQuery.isPending;
+  const fieldId = useId();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ dates?: string; location?: string }>(
     {},
@@ -454,9 +455,10 @@ export default function ServiceBookingClient({
                 {/* Availability Calendar */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold">
+                    {/* Names the calendar below, not a single field. */}
+                    <p className="text-xs uppercase tracking-widest text-text-muted font-bold">
                       Event Date(s)
-                    </label>
+                    </p>
                     {bookingDates.length > 0 && (
                       <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">
@@ -550,13 +552,17 @@ export default function ServiceBookingClient({
 
                 {/* Call Time */}
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                  <label
+                    htmlFor={`${fieldId}-calltime`}
+                    className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+                  >
                     Call Time
                     <span className="ml-2 text-[10px] text-text-muted normal-case font-normal">
                       (arrival & setup readiness)
                     </span>
                   </label>
                   <input
+                    id={`${fieldId}-calltime`}
                     type="time"
                     value={callTime}
                     onChange={(e) => setCallTime(e.target.value)}
@@ -612,11 +618,16 @@ export default function ServiceBookingClient({
                     </div>
                   )}
                   <div className="space-y-3">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                    <p
+                      id={`${fieldId}-guests`}
+                      className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+                    >
                       Expected Guests
-                    </label>
+                    </p>
                     <div className="flex items-center justify-between bg-black/20 p-3 rounded-2xl border border-white/5">
                       <button
+                        type="button"
+                        aria-label="Decrease guests by 10"
                         onClick={() =>
                           setGuestCount(Math.max(1, guestCount - 10))
                         }
@@ -626,7 +637,11 @@ export default function ServiceBookingClient({
                           remove
                         </span>
                       </button>
-                      <div className="text-center">
+                      <div
+                        className="text-center"
+                        role="status"
+                        aria-labelledby={`${fieldId}-guests`}
+                      >
                         <span className="text-2xl font-bold font-display text-white">
                           {guestCount}
                         </span>
@@ -635,6 +650,8 @@ export default function ServiceBookingClient({
                         </span>
                       </div>
                       <button
+                        type="button"
+                        aria-label="Increase guests by 10"
                         onClick={() => setGuestCount(guestCount + 10)}
                         className="h-11 w-11 rounded-xl bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
                       >
@@ -658,10 +675,14 @@ export default function ServiceBookingClient({
                   </h3>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                  <label
+                    htmlFor={`${fieldId}-location`}
+                    className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+                  >
                     Event Location / Venue
                   </label>
                   <input
+                    id={`${fieldId}-location`}
                     type="text"
                     placeholder="Street, Barangay, City or Venue Name"
                     value={eventLocation}
@@ -682,10 +703,14 @@ export default function ServiceBookingClient({
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                  <label
+                    htmlFor={`${fieldId}-brief`}
+                    className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+                  >
                     Project Brief / Special Requests
                   </label>
                   <textarea
+                    id={`${fieldId}-brief`}
                     placeholder="Set style, song requests, vibe direction, dietary restrictions, specific requirements…"
                     value={projectNotes}
                     onChange={(e) => setProjectNotes(e.target.value)}
@@ -781,6 +806,7 @@ export default function ServiceBookingClient({
                     {!autoApplied && (
                       <div className="flex gap-2">
                         <input
+                          aria-label="Voucher code"
                           type="text"
                           placeholder="Voucher code"
                           value={voucherCodeInput}

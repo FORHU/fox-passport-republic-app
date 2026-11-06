@@ -128,6 +128,7 @@ export function LocationSearchControl({
         <Globe2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 pointer-events-none" />
         <input
           type="text"
+          aria-label="Search location"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}

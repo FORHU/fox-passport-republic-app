@@ -1,7 +1,9 @@
-﻿"use client";
+"use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { IconButton } from "@/shared/components/ui/IconButton";
 import LoginForm from "@/features/auth/components/LoginForm";
 import SignupForm from "@/features/auth/components/SignupForm";
 import ForgotPasswordForm from "@/features/auth/components/ForgotPasswordForm";
@@ -55,76 +57,127 @@ function BookingAside({ summary }: { summary: BookingSummary }) {
   );
 }
 
+/** The first field of the current view, else its first button. */
+function firstControl(root: HTMLElement | null) {
+  return root?.querySelector<HTMLElement>(
+    "input:not([type=hidden]):not([disabled]), button:not([disabled])",
+  );
+}
+
 export default function AuthModal() {
   const { isOpen, view, close, bookingSummary } = useAuthStore();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  // The popup is opened from ~20 places (header, booking, follow…), none of
+  // them a Radix Trigger, so Radix can't return focus by itself. Remember
+  // whatever had focus when it opened and give focus back on close.
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
+  // Switching view (log in ↔ sign up ↔ forgot) unmounts the focused button,
+  // which would drop focus to <body>. Move it to the new view's first field.
+  const previousView = useRef(view);
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+    if (!isOpen) return;
+    if (previousView.current !== view) {
+      firstControl(formRef.current)?.focus();
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+    previousView.current = view;
+  }, [isOpen, view]);
 
   return (
-    // Safe centring: a card taller than the screen (sign-up on a short laptop)
-    // aligns to the top and scrolls, instead of overflowing out of reach above.
-    <div
-      className="fixed inset-0 z-100 flex items-center-safe justify-center px-4 py-6 overflow-y-auto"
-      role="dialog"
-      aria-modal="true"
+    <DialogPrimitive.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) close();
+      }}
     >
-      <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
-        onClick={close}
-      ></div>
-
-      <div
-        className={`relative w-full transform transition-all ${
-          bookingSummary ? "max-w-4xl" : "max-w-xl"
-        }`}
-      >
-        {/* Background Blobs */}
-        <div className="absolute -top-20 -left-20 w-56 h-56 bg-accent rounded-full blur-[100px] opacity-20 animate-pulse-slow pointer-events-none"></div>
-        <div
-          className="absolute -bottom-20 -right-20 w-56 h-56 bg-accent rounded-full blur-[100px] opacity-10 animate-pulse-slow pointer-events-none"
-          style={{ animationDelay: "1.5s" }}
-        ></div>
-
-        <div className="glass-card relative rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
-          <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-white/5 to-transparent pointer-events-none"></div>
-
-          <div
-            className={
-              bookingSummary ? "relative lg:grid lg:grid-cols-[320px_1fr]" : ""
-            }
+      <DialogPrimitive.Portal>
+        {/* Safe centring: a card taller than the screen (sign-up on a short
+            laptop) aligns to the top and scrolls, instead of overflowing out
+            of reach above. */}
+        <DialogPrimitive.Overlay className="fixed inset-0 z-100 flex items-center-safe justify-center px-4 py-6 overflow-y-auto bg-black/80 backdrop-blur-md">
+          <DialogPrimitive.Content
+            ref={contentRef}
+            // Radix hides the rest of the page from screen readers; this says
+            // so explicitly as well.
+            aria-modal="true"
+            aria-describedby={undefined}
+            onOpenAutoFocus={(event) => {
+              // Radix hasn't moved focus yet, so this is still the opener.
+              returnFocusRef.current =
+                document.activeElement instanceof HTMLElement
+                  ? document.activeElement
+                  : null;
+              event.preventDefault();
+              (firstControl(formRef.current) ?? contentRef.current)?.focus();
+            }}
+            onCloseAutoFocus={(event) => {
+              const opener = returnFocusRef.current;
+              returnFocusRef.current = null;
+              if (opener?.isConnected) {
+                event.preventDefault();
+                opener.focus();
+              }
+            }}
+            onInteractOutside={(event) => {
+              // A click on a toast ("Invalid email…") must not close the form.
+              const target = event.target as Element | null;
+              if (target?.closest?.("[data-sonner-toaster]")) {
+                event.preventDefault();
+              }
+            }}
+            className={`relative w-full transform transition-all focus:outline-none ${
+              bookingSummary ? "max-w-4xl" : "max-w-xl"
+            }`}
           >
-            {bookingSummary && <BookingAside summary={bookingSummary} />}
-            <div className="relative p-5 sm:p-8">
-              <button
-                onClick={close}
-                aria-label="Close"
-                className="absolute top-6 right-6 h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all hover:rotate-90 z-20"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  close
-                </span>
-              </button>
+            {/* Background Blobs */}
+            <div
+              aria-hidden="true"
+              className="absolute -top-20 -left-20 w-56 h-56 bg-accent rounded-full blur-[100px] opacity-20 animate-pulse-slow pointer-events-none"
+            ></div>
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-20 -right-20 w-56 h-56 bg-accent rounded-full blur-[100px] opacity-10 animate-pulse-slow pointer-events-none"
+              style={{ animationDelay: "1.5s" }}
+            ></div>
 
-              {view === "login" && <LoginForm />}
-              {view === "signup" && <SignupForm />}
-              {view === "forgot-password" && <ForgotPasswordForm />}
-              {view === "reset-password" && <ResetPasswordForm />}
-              {view === "verify-email" && <VerifyEmailForm />}
+            <div className="glass-card relative rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
+              <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-white/5 to-transparent pointer-events-none"></div>
+
+              <div
+                className={
+                  bookingSummary
+                    ? "relative lg:grid lg:grid-cols-[320px_1fr]"
+                    : ""
+                }
+              >
+                {bookingSummary && <BookingAside summary={bookingSummary} />}
+                <div className="relative p-5 sm:p-8">
+                  <DialogPrimitive.Close asChild>
+                    <IconButton
+                      label="Close"
+                      className="absolute top-6 right-6 h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all hover:rotate-90 z-20"
+                      icon={
+                        <span className="material-symbols-outlined text-[18px]">
+                          close
+                        </span>
+                      }
+                    />
+                  </DialogPrimitive.Close>
+
+                  <div ref={formRef}>
+                    {view === "login" && <LoginForm />}
+                    {view === "signup" && <SignupForm />}
+                    {view === "forgot-password" && <ForgotPasswordForm />}
+                    {view === "reset-password" && <ResetPasswordForm />}
+                    {view === "verify-email" && <VerifyEmailForm />}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Overlay>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

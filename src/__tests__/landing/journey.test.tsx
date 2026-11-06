@@ -919,9 +919,9 @@ describe("HeroSearch", () => {
     push.mockClear();
     const user = userEvent.setup();
     render(<HeroSearch />);
-    await user.click(screen.getByRole("combobox", { name: "Type of event" }));
+    await user.click(screen.getByRole("combobox", { name: "What, type of event" }));
     await user.click(screen.getByRole("option", { name: /Wedding/ }));
-    await user.type(screen.getByLabelText("City"), " Cebu ");
+    await user.type(screen.getByLabelText("Where, city"), " Cebu ");
     await user.click(screen.getByRole("button", { name: "Find events" }));
     expect(push).toHaveBeenCalledTimes(1);
     const url = new URL(push.mock.calls[0][0], "http://x");
@@ -935,7 +935,7 @@ describe("HeroSearch", () => {
     push.mockClear();
     const user = userEvent.setup();
     render(<HeroSearch />);
-    await user.click(screen.getByRole("button", { name: "Date" }));
+    await user.click(screen.getByRole("button", { name: /^When, / }));
     // The last day of the month shown is never in the past.
     const days = screen
       .getAllByRole("button", { pressed: false })
@@ -957,7 +957,7 @@ describe("HeroSearch", () => {
   it("will not let a day in the past be picked", async () => {
     const user = userEvent.setup();
     render(<HeroSearch />);
-    await user.click(screen.getByRole("button", { name: "Date" }));
+    await user.click(screen.getByRole("button", { name: /^When, / }));
     await user.click(screen.getByRole("button", { name: "Previous month" }));
     const days = screen
       .getAllByRole("button")

@@ -9,6 +9,9 @@ import { useLogin } from "@/features/auth/hooks/useAuth";
 import { loginSchema, LoginFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { startSocialSignIn } from "@/shared/auth/session-api";
+import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
+import { PasswordVisibilityToggle } from "@/features/auth/components/PasswordVisibilityToggle";
+import { TextField } from "@/shared/components/ui/TextField";
 
 import { toast } from "sonner";
 
@@ -25,6 +28,7 @@ const SocialButtons = () => (
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
       <svg
+        aria-hidden="true"
         className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"
         fill="none"
         viewBox="0 0 24 24"
@@ -58,6 +62,7 @@ const SocialButtons = () => (
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
     >
       <svg
+        aria-hidden="true"
         className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"
         fill="currentColor"
         viewBox="0 0 24 24"
@@ -111,13 +116,16 @@ export default function LoginForm() {
       {/* Header */}
       <div className="text-center mb-5 sm:mb-8">
         <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-accent text-black rotate-3 hover:rotate-12 transition-transform duration-500">
-          <span className="material-symbols-outlined text-[24px] sm:text-[32px]">
+          <span
+            aria-hidden="true"
+            className="material-symbols-outlined text-[24px] sm:text-[32px]"
+          >
             waving_hand
           </span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2 tracking-tight">
+        <AuthDialogTitle className="text-2xl sm:text-3xl font-display font-bold text-white mb-2 tracking-tight">
           Vibe <span className="text-accent">Check In</span>
-        </h2>
+        </AuthDialogTitle>
         <p className="text-gray-400 text-sm">
           Unlock your core memories. Enter the portal.
         </p>
@@ -140,66 +148,43 @@ export default function LoginForm() {
         className="space-y-3 sm:space-y-4"
         onSubmit={handleSubmit(onLogin, onInvalid)}
       >
-        {/* Email Field */}
-        <div className="space-y-1">
-          <label className="sr-only" htmlFor="email">
-            Email
-          </label>
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-accent transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
-                mail
-              </span>
-            </div>
-            <input
-              {...register("email")}
-              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-accent focus:ring-1 focus:ring-accent text-sm transition-all hover:border-white/20 outline-none"
-              id="email"
-              placeholder="foxer@example.com"
-              type="email"
-            />
-          </div>
-          {errors.email && (
-            <span className="text-xs text-red-500 pl-1">
-              {errors.email.message}
-            </span>
-          )}
-        </div>
+        <TextField
+          {...register("email")}
+          label="Email"
+          labelHidden
+          className="space-y-1"
+          inputClassName="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-accent focus:ring-1 focus:ring-accent text-sm transition-all hover:border-white/20 outline-none"
+          leading={
+            <span className="material-symbols-outlined text-[20px]">mail</span>
+          }
+          placeholder="foxer@example.com"
+          type="email"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
-        {/* Password Field */}
-        <div className="space-y-1">
-          <label className="sr-only" htmlFor="password">
-            Password
-          </label>
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-accent transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
-                lock
-              </span>
-            </div>
-            <input
-              {...register("password")}
-              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-12 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-accent focus:ring-1 focus:ring-accent text-sm transition-all hover:border-white/20 outline-none"
-              id="password"
-              placeholder="••••••••"
-              type={showPassword ? "text" : "password"}
+        <TextField
+          {...register("password")}
+          label="Password"
+          labelHidden
+          className="space-y-1"
+          inputClassName="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-accent focus:ring-1 focus:ring-accent text-sm transition-all hover:border-white/20 outline-none"
+          leading={
+            <span className="material-symbols-outlined text-[20px]">lock</span>
+          }
+          placeholder="••••••••"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          required
+          error={errors.password?.message}
+          trailing={
+            <PasswordVisibilityToggle
+              visible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {showPassword ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          {errors.password && (
-            <span className="text-xs text-red-500 pl-1">
-              {errors.password.message}
-            </span>
-          )}
-        </div>
+          }
+        />
 
         {/* Remember Me & Forgot Password */}
         <div className="flex items-center justify-between">
@@ -229,14 +214,17 @@ export default function LoginForm() {
         >
           {loginMutation.isPending ? (
             <span className="relative z-10 flex items-center justify-center gap-2">
-              <Loader2 className="animate-spin w-5 h-5" />
+              <Loader2 aria-hidden="true" className="animate-spin w-5 h-5" />
               Processing...
             </span>
           ) : (
             <>
               <span className="relative z-10 flex items-center justify-center gap-2">
                 Log In
-                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1"
+                >
                   arrow_forward
                 </span>
               </span>
@@ -251,6 +239,7 @@ export default function LoginForm() {
         <p className="text-sm text-gray-400">
           New to FoxPassport?{" "}
           <button
+            type="button"
             onClick={toggleView}
             className="font-bold text-white hover:text-accent transition-colors relative inline-block group"
           >

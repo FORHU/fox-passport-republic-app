@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
@@ -67,6 +67,7 @@ export function CascadingLocationFields({
   className = "grid grid-cols-1 sm:grid-cols-3 gap-4",
   labelClassName,
 }: CascadingLocationFieldsProps) {
+  const fieldId = useId();
   const [locating, setLocating] = useState(false);
 
   const countries = useQuery({
@@ -173,8 +174,16 @@ export function CascadingLocationFields({
     <div className="space-y-3">
       <div className={className}>
         <div>
-          <label className={labelClass}>Country</label>
+          <label
+            id={`${fieldId}-country-label`}
+            htmlFor={`${fieldId}-country`}
+            className={labelClass}
+          >
+            Country
+          </label>
           <SearchableDropdown
+            id={`${fieldId}-country`}
+            labelId={`${fieldId}-country-label`}
             value={country?.name ?? value.country}
             options={countries.data?.map((c) => c.name)}
             placeholder={countries.isPending ? "Loading…" : "Select country…"}
@@ -190,8 +199,16 @@ export function CascadingLocationFields({
 
         {withState && (
           <div>
-            <label className={labelClass}>State / Province</label>
+            <label
+              id={`${fieldId}-state-label`}
+              htmlFor={`${fieldId}-state`}
+              className={labelClass}
+            >
+              State / Province
+            </label>
             <SearchableDropdown
+              id={`${fieldId}-state`}
+              labelId={`${fieldId}-state-label`}
               key={countryCode ?? "no-country"}
               value={value.state}
               options={states.data?.map((s) => s.name)}
@@ -215,8 +232,16 @@ export function CascadingLocationFields({
         )}
 
         <div>
-          <label className={labelClass}>City</label>
+          <label
+            id={`${fieldId}-city-label`}
+            htmlFor={`${fieldId}-city`}
+            className={labelClass}
+          >
+            City
+          </label>
           <SearchableDropdown
+            id={`${fieldId}-city`}
+            labelId={`${fieldId}-city-label`}
             key={`${countryCode ?? ""}-${cityScope}`}
             value={value.city}
             options={cities.data ?? []}

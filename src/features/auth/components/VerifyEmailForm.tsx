@@ -7,6 +7,8 @@ import { Loader2 } from "lucide-react";
 import { useVerifyEmail, useResendOtp } from "@/features/auth/hooks/useAuth";
 import { verifyEmailSchema, VerifyEmailFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
+import { TextField } from "@/shared/components/ui/TextField";
 
 export default function VerifyEmailForm() {
   const verifyEmailMutation = useVerifyEmail();
@@ -45,9 +47,9 @@ export default function VerifyEmailForm() {
   return (
     <div className="animate-in fade-in slide-in-from-right-8 duration-300">
       <div className="text-center mb-5 sm:mb-8">
-        <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+        <AuthDialogTitle className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
           Verify your email
-        </h2>
+        </AuthDialogTitle>
         <p className="text-gray-400 text-sm">
           We sent a 6-digit code to{" "}
           <span className="text-white font-bold">{pendingEmail}</span>
@@ -55,25 +57,19 @@ export default function VerifyEmailForm() {
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        <div className="group">
-          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1">
-            VERIFICATION CODE
-          </label>
-          <input
-            {...register("otpCode")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
-            placeholder="------"
-            maxLength={6}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            type="text"
-          />
-          {errors.otpCode && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.otpCode.message}
-            </span>
-          )}
-        </div>
+        <TextField
+          {...register("otpCode")}
+          label="VERIFICATION CODE"
+          labelClassName="block text-xs font-bold text-white/70 mb-1.5 ml-1"
+          inputClassName="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
+          placeholder="------"
+          maxLength={6}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          type="text"
+          required
+          error={errors.otpCode?.message}
+        />
 
         <button
           type="submit"
@@ -81,7 +77,10 @@ export default function VerifyEmailForm() {
           className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {verifyEmailMutation.isPending ? (
-            <Loader2 className="animate-spin w-5 h-5" />
+            <>
+              <Loader2 aria-hidden="true" className="animate-spin w-5 h-5" />
+              <span className="sr-only">Verifying…</span>
+            </>
           ) : (
             "Verify Email"
           )}
@@ -90,6 +89,7 @@ export default function VerifyEmailForm() {
 
       <div className="text-center mt-6 space-y-2">
         <button
+          type="button"
           onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
           disabled={resendMutation.isPending}
           className="text-sm font-bold text-accent hover:underline transition-colors block w-full"
@@ -97,6 +97,7 @@ export default function VerifyEmailForm() {
           {resendMutation.isPending ? "Sending..." : "Resend code"}
         </button>
         <button
+          type="button"
           onClick={() => setView("login")}
           className="text-sm font-bold text-white/60 hover:text-white transition-colors"
         >

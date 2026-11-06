@@ -136,11 +136,15 @@ export default function LandingHeader({
                   /search) actually integrates it via the `search` prop. */}
               {search && (
                 <div className="relative flex-1 min-w-0 sm:max-w-55 md:max-w-xs">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[16px] pointer-events-none">
+                  <span
+                    aria-hidden="true"
+                    className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[16px] pointer-events-none"
+                  >
                     search
                   </span>
                   <input
                     type="text"
+                    aria-label={search.placeholder ?? "Search"}
                     value={search.value}
                     onChange={(e) => search.onChange(e.target.value)}
                     placeholder={search.placeholder ?? "Search anything..."}
