@@ -4,8 +4,9 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatXP } from "@/features/gamification/lib/gamification";
+import { formatXP, calculateLevelFromXP } from "@/features/gamification/lib/gamification";
 import { UserPath } from "@/features/gamification/types/gamification";
+import { RankBadge } from "@/features/gamification/components/RankBadge";
 import {
   PATH_SHORT,
   PATH_COLORS,
@@ -124,6 +125,14 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             )
             .join(" · ") || "Citizen"}
         </p>
+        <div className="mt-3 flex items-center justify-center">
+          <RankBadge
+            level={calculateLevelFromXP(totalXP).level}
+            size={28}
+            showTitle={true}
+            isCitizen={true}
+          />
+        </div>
       </div>
 
       <div className="space-y-5 grow">

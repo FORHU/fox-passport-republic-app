@@ -16,5 +16,6 @@ export {
   CalendarWidget,
   CreatorProfile,
 } from "./SidebarWidgets";
+export { FoxerReputationCard } from "./FoxerReputationCard";
 
 export { default as StripeConnectSection } from "./StripeConnectSection";

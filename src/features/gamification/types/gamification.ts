@@ -84,9 +84,122 @@ export interface UserGamification {
   };
 }
 
-// XP calculation constants
-export const XP_PER_LEVEL = 1000;
-export const XP_MULTIPLIER = 1.15; // XP required increases by 15% per level
+// Level curve (requirements/xp-and-coins.md, section 4.1)
+export const XP_PER_LEVEL = 250;
+export const XP_MULTIPLIER = 1.12;
+export const XP_COST_CAP_LEVEL = 25;
+
+export interface RankInfo {
+  tier: number;
+  level: number;
+  citizenTitle: string;
+  foxerTitle: string;
+  rarity: BadgeRarity;
+  color: string;
+  svgPath: string;
+}
+
+export const RANK_LADDER: readonly RankInfo[] = [
+  {
+    tier: 1,
+    level: 1,
+    citizenTitle: "Newcomer",
+    foxerTitle: "Rookie",
+    rarity: "Common",
+    color: "#A9ADBA",
+    svgPath: "/badges/rank-1-newcomer.svg",
+  },
+  {
+    tier: 2,
+    level: 3,
+    citizenTitle: "Wanderer",
+    foxerTitle: "Regular",
+    rarity: "Common",
+    color: "#A9ADBA",
+    svgPath: "/badges/rank-2-wanderer.svg",
+  },
+  {
+    tier: 3,
+    level: 5,
+    citizenTitle: "Explorer",
+    foxerTitle: "Pro",
+    rarity: "Uncommon",
+    color: "#4ADE80",
+    svgPath: "/badges/rank-3-explorer.svg",
+  },
+  {
+    tier: 4,
+    level: 10,
+    citizenTitle: "Trailblazer",
+    foxerTitle: "Veteran",
+    rarity: "Uncommon",
+    color: "#4ADE80",
+    svgPath: "/badges/rank-4-trailblazer.svg",
+  },
+  {
+    tier: 5,
+    level: 15,
+    citizenTitle: "Voyager",
+    foxerTitle: "Headliner",
+    rarity: "Rare",
+    color: "#00D2FF",
+    svgPath: "/badges/rank-5-voyager.svg",
+  },
+  {
+    tier: 6,
+    level: 20,
+    citizenTitle: "Adventurer",
+    foxerTitle: "Maestro",
+    rarity: "Rare",
+    color: "#00D2FF",
+    svgPath: "/badges/rank-6-adventurer.svg",
+  },
+  {
+    tier: 7,
+    level: 30,
+    citizenTitle: "Pioneer",
+    foxerTitle: "Icon",
+    rarity: "Epic",
+    color: "#E879F9",
+    svgPath: "/badges/rank-7-pioneer.svg",
+  },
+  {
+    tier: 8,
+    level: 40,
+    citizenTitle: "Vanguard",
+    foxerTitle: "Luminary",
+    rarity: "Epic",
+    color: "#E879F9",
+    svgPath: "/badges/rank-8-vanguard.svg",
+  },
+  {
+    tier: 9,
+    level: 50,
+    citizenTitle: "Legend",
+    foxerTitle: "Legend",
+    rarity: "Legendary",
+    color: "#CCFF00",
+    svgPath: "/badges/rank-9-legend.svg",
+  },
+] as const;
+
+export function getRankInfo(
+  level: number,
+  isCitizen = true,
+): RankInfo & { title: string } {
+  let matched = RANK_LADDER[0];
+  for (const r of RANK_LADDER) {
+    if (level >= r.level) {
+      matched = r;
+    } else {
+      break;
+    }
+  }
+  return {
+    ...matched,
+    title: isCitizen ? matched.citizenTitle : matched.foxerTitle,
+  };
+}
 
 // Path level labels based on level ranges
 export const PATH_LABELS = {
