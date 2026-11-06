@@ -6,6 +6,7 @@ import { FeedPost } from "@/features/republic/types";
 import { getSavedPosts } from "@/shared/api/feed";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
+import { usePostStatsStore } from "@/features/republic/store/usePostStatsStore";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { SharePostModal } from "@/features/messages/components/SharePostModal";
 import { BackButton } from "@/shared/components/ui/BackButton";
@@ -20,7 +21,9 @@ export default function SavedPostsPage() {
   const fetchSaved = useCallback(async (cursor?: string) => {
     try {
       if (!cursor) setLoading(true);
+      const requestedAt = Date.now();
       const res = await getSavedPosts({ limit: 10, cursor });
+      usePostStatsStore.getState().syncFromServer(res.data, requestedAt);
       if (cursor) {
         setPosts((prev) => [...prev, ...res.data]);
       } else {
