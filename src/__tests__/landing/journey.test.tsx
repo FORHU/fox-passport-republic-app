@@ -978,6 +978,7 @@ describe("HeroSearch", () => {
 describe("Lightbox", () => {
   const photos = [0, 1, 2].map((i) => ({
     src: `/p${i}.jpg`,
+    alt: `Street scene ${i}`,
     credit: {
       author: `Author ${i}`,
       license: "CC BY 2.0",

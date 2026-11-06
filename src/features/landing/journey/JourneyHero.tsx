@@ -1574,7 +1574,7 @@ export function StopCard({
                 <img
                   key={p.src}
                   src={p.src}
-                  alt={i === active ? (p.alt ?? "") : ""}
+                  alt={i === active ? p.alt : ""}
                   loading="lazy"
                   decoding="async"
                   draggable={false}
