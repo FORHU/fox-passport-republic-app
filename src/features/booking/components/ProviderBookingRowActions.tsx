@@ -138,6 +138,7 @@ export default function ProviderBookingRowActions({
       {showCancelPrompt && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 w-56">
           <textarea
+            aria-label="Reason for cancelling"
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
             placeholder="Why are you cancelling?"

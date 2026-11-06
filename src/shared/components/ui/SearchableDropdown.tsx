@@ -16,6 +16,13 @@ interface SearchableDropdownProps {
   /** Offer what was typed as a value of its own when nothing matches it —
    * for lists that can't be complete (e.g. every town in a country). */
   allowCustom?: boolean;
+  /** The trigger's id, so a `<label htmlFor>` can point at it. */
+  id?: string;
+  /**
+   * The visible label's id. The trigger is then named "label, value"
+   * (e.g. "Country, Philippines") instead of by its value alone.
+   */
+  labelId?: string;
 }
 
 export default function SearchableDropdown({
@@ -27,6 +34,8 @@ export default function SearchableDropdown({
   searchPlaceholder,
   disabled = false,
   allowCustom = false,
+  id,
+  labelId,
   onChange,
 }: SearchableDropdownProps & { onChange: (val: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -149,14 +158,22 @@ export default function SearchableDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
+        id={id}
+        aria-labelledby={labelId && id ? `${labelId} ${id}-value` : undefined}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         disabled={disabled}
         onClick={() => !disabled && setOpen((o) => !o)}
         className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-accent/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        <span className={value ? "text-white" : "text-white/30"}>
+        <span
+          id={id ? `${id}-value` : undefined}
+          className={value ? "text-white" : "text-white/30"}
+        >
           {value || placeholder}
         </span>
         <span
+          aria-hidden="true"
           className={`material-symbols-outlined text-[18px] text-white/40 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
@@ -182,6 +199,7 @@ export default function SearchableDropdown({
                 <input
                   autoFocus
                   type="text"
+                  aria-label={searchPlaceholder}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={searchPlaceholder}

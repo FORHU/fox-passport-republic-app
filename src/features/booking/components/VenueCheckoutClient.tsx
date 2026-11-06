@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -39,6 +39,7 @@ export default function VenueCheckoutClient() {
   const { currency, format } = useCurrency();
   const confirmed = useRef(false);
 
+  const fieldId = useId();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
@@ -383,10 +384,10 @@ export default function VenueCheckoutClient() {
                     </h2>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                        <label htmlFor={`${fieldId}-email`} className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
                           Email
                         </label>
-                        <input
+                        <input id={`${fieldId}-email`} autoComplete="email"
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10"
                           placeholder="hello@foxer.com"
                           type="email"
@@ -395,10 +396,10 @@ export default function VenueCheckoutClient() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                        <label htmlFor={`${fieldId}-mobile`} className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
                           Mobile Number
                         </label>
-                        <input
+                        <input id={`${fieldId}-mobile`} autoComplete="tel"
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10"
                           placeholder="+63 900 000 0000"
                           type="tel"
@@ -525,10 +526,10 @@ export default function VenueCheckoutClient() {
                     </h2>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                        <label htmlFor={`${fieldId}-email2`} className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
                           Email
                         </label>
-                        <input
+                        <input id={`${fieldId}-email2`} autoComplete="email"
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                           placeholder="hello@foxer.com"
                           type="email"
@@ -537,10 +538,10 @@ export default function VenueCheckoutClient() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                        <label htmlFor={`${fieldId}-mobile2`} className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
                           Mobile Number
                         </label>
-                        <input
+                        <input id={`${fieldId}-mobile2`} autoComplete="tel"
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                           placeholder="+63 900 000 0000"
                           type="tel"

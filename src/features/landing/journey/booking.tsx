@@ -92,7 +92,8 @@ function KindPicker({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
-        aria-label="Type of event"
+        // The name starts with the visible label "What" (WCAG 2.5.3).
+        aria-label="What, type of event"
         onClick={() => setOpen((o) => !o)}
         onKeyDown={onKeyDown}
         className={`${FIELD} flex cursor-pointer items-center justify-between gap-2 text-left`}
@@ -229,7 +230,9 @@ function DatePicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={listId}
-        aria-label="Date"
+        // Visible label first (WCAG 2.5.3), then the chosen date, which an
+        // aria-label would otherwise hide.
+        aria-label={`When, ${shown}`}
         onClick={() => setOpen((o) => !o)}
         className={`${FIELD} flex cursor-pointer items-center justify-between gap-2 text-left`}
       >
@@ -288,6 +291,11 @@ function DatePicker({
                   type="button"
                   disabled={past}
                   aria-pressed={on}
+                  aria-label={new Intl.DateTimeFormat(undefined, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  }).format(new Date(year, month, d))}
                   onClick={() => pick(key)}
                   className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-sm transition-colors ${
                     on
@@ -371,7 +379,7 @@ export function HeroSearch({
             onChange={(e) => setWhere(e.target.value)}
             placeholder="Any city"
             className={FIELD}
-            aria-label="City"
+            aria-label="Where, city"
           />
         </label>
         <div className="block rounded-xl border-white/10 px-4 py-2.5 hover:bg-white/5 sm:rounded-full sm:border-l">

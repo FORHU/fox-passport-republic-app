@@ -1,10 +1,18 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { cn } from "@/shared/lib/utils";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputBaseProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: string;
   iconPosition?: "left" | "right";
 }
+
+/**
+ * An input must be named: by `aria-label`, by `aria-labelledby`, or by an `id`
+ * that a `<label htmlFor>` points at. For a field with a visible label, error
+ * and hint, use `TextField` instead.
+ */
+export type InputProps = InputBaseProps &
+  ({ "aria-label": string } | { "aria-labelledby": string } | { id: string });
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, icon, iconPosition = "left", ...props }, ref) => {
@@ -13,7 +21,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative group">
           {iconPosition === "left" && (
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-accent transition-colors">
-              <span className="material-symbols-outlined">{icon}</span>
+              <span aria-hidden="true" className="material-symbols-outlined">
+                {icon}
+              </span>
             </div>
           )}
           <input
@@ -29,7 +39,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
           {iconPosition === "right" && (
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-accent transition-colors">
-              <span className="material-symbols-outlined">{icon}</span>
+              <span aria-hidden="true" className="material-symbols-outlined">
+                {icon}
+              </span>
             </div>
           )}
         </div>

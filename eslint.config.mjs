@@ -30,6 +30,35 @@ if (reactHooksConfig) {
   });
 }
 
+// jsx-a11y's recommended options: inputs and textareas are covered by
+// label-has-associated-control, so only buttons, links, cells and the like are
+// checked here. Depth 3 reaches text inside a button's nested spans.
+const a11yControlLabel = {
+  ignoreElements: [
+    "audio",
+    "canvas",
+    "embed",
+    "input",
+    "textarea",
+    "tr",
+    "video",
+  ],
+  ignoreRoles: [
+    "grid",
+    "listbox",
+    "menu",
+    "menubar",
+    "radiogroup",
+    "row",
+    "tablist",
+    "toolbar",
+    "tree",
+    "treegrid",
+  ],
+  includeRoles: ["alert", "dialog"],
+  depth: 3,
+};
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -55,6 +84,32 @@ const eslintConfig = defineConfig([
       "react-hooks/preserve-manual-memoization": "off",
       "react-hooks/immutability": "warn",
       "react-hooks/exhaustive-deps": "off",
+    },
+  },
+  // Form labels and control names (screen readers). A ratchet: errors, which
+  // fail CI, in the folders already fixed; warnings everywhere else until the
+  // remaining admin/dashboard forms are fixed too.
+  {
+    files: ["src/**/*.{jsx,tsx}"],
+    rules: {
+      "jsx-a11y/label-has-associated-control": "warn",
+      "jsx-a11y/control-has-associated-label": ["warn", a11yControlLabel],
+    },
+  },
+  {
+    files: [
+      "src/features/auth/**/*.{jsx,tsx}",
+      "src/app/auth/**/*.{jsx,tsx}",
+      "src/features/booking/**/*.{jsx,tsx}",
+      "src/app/booking/**/*.{jsx,tsx}",
+      "src/app/checkout/**/*.{jsx,tsx}",
+      "src/features/landing/**/*.{jsx,tsx}",
+      "src/app/search/**/*.{jsx,tsx}",
+      "src/shared/components/ui/**/*.{jsx,tsx}",
+    ],
+    rules: {
+      "jsx-a11y/label-has-associated-control": "error",
+      "jsx-a11y/control-has-associated-label": ["error", a11yControlLabel],
     },
   },
 ]);

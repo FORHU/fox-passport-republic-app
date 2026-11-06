@@ -1,7 +1,7 @@
 "use client";
 
 import PageLoader from "@/shared/components/ui/PageLoader";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,6 +45,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
   const availabilityQuery = useAssetAvailability(assetId);
   const bookedRanges = availabilityQuery.data?.bookedRanges ?? NO_RANGES;
   const totalQty = availabilityQuery.data?.totalQty ?? 0;
+  const fieldId = useId();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ dates?: string; address?: string }>(
     {},
@@ -610,10 +611,15 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
 
                 {fulfillment === "delivery" ? (
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                    <label
+                      htmlFor={`${fieldId}-address`}
+                      className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+                    >
                       Delivery Address
                     </label>
                     <input
+                      id={`${fieldId}-address`}
+                      autoComplete="street-address"
                       type="text"
                       placeholder="Full address for delivery (Street, Barangay, City)"
                       value={deliveryAddress}
@@ -647,10 +653,14 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                  <label
+                    htmlFor={`${fieldId}-notes`}
+                    className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+                  >
                     Additional Notes
                   </label>
                   <textarea
+                    id={`${fieldId}-notes`}
                     placeholder="Gate codes, loading dock instructions, setup help needed, condition checks…"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -734,6 +744,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                     {!autoApplied && (
                       <div className="flex gap-2">
                         <input
+                          aria-label="Voucher code"
                           type="text"
                           placeholder="Voucher code"
                           value={voucherCodeInput}

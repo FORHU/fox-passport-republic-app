@@ -312,9 +312,10 @@ export default function BookingConfigurationClient({
                     {/* Date picker */}
                     <div className="mb-6">
                       <div className="flex items-center justify-between mb-3">
-                        <label className="text-xs uppercase tracking-widest text-text-muted font-bold">
+                        {/* Names the calendar below, not a single field. */}
+                        <p className="text-xs uppercase tracking-widest text-text-muted font-bold">
                           Event Date(s)
-                        </label>
+                        </p>
                         {startDate && endDate && (
                           <span className="text-xs font-bold text-accent flex items-center gap-1">
                             <span className="material-symbols-outlined text-[14px]">
@@ -397,6 +398,8 @@ export default function BookingConfigurationClient({
                       </div>
                       <div className="flex items-center gap-3 sm:gap-4 bg-surface rounded-full p-1 border border-white/10 self-center sm:self-auto">
                         <button
+                          type="button"
+                          aria-label="Decrease guests"
                           onClick={() => setGuests(Math.max(1, guests - 1))}
                           className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-surface-highlight text-white hover:bg-white/10 flex items-center justify-center transition-colors"
                         >
@@ -406,6 +409,7 @@ export default function BookingConfigurationClient({
                         </button>
                         <input
                           type="number"
+                          aria-label="Total guests"
                           min={1}
                           inputMode="numeric"
                           value={guests}
@@ -420,6 +424,8 @@ export default function BookingConfigurationClient({
                           className="text-lg sm:text-xl font-bold font-display w-10 sm:w-12 text-center text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <button
+                          type="button"
+                          aria-label="Increase guests"
                           onClick={() => setGuests(guests + 1)}
                           className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
                         >
@@ -581,6 +587,7 @@ export default function BookingConfigurationClient({
                       </h3>
                     </div>
                     <textarea
+                      aria-label="Special requests"
                       className="w-full bg-black/20 border border-white/10 rounded-2xl p-3 sm:p-4 text-sm sm:text-base text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-24 sm:h-32 outline-none"
                       placeholder="Celebrating a birthday? Allergies? Let the organizer know..."
                     ></textarea>

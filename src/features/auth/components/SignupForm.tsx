@@ -9,6 +9,9 @@ import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
+import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
+import { PasswordVisibilityToggle } from "@/features/auth/components/PasswordVisibilityToggle";
+import { TextField } from "@/shared/components/ui/TextField";
 
 import { toast } from "sonner";
 import { startSocialSignIn } from "@/shared/auth/session-api";
@@ -27,6 +30,7 @@ const SocialButtons = () => (
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
       <svg
+        aria-hidden="true"
         className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"
         fill="none"
         viewBox="0 0 24 24"
@@ -60,6 +64,7 @@ const SocialButtons = () => (
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
     >
       <svg
+        aria-hidden="true"
         className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"
         fill="currentColor"
         viewBox="0 0 24 24"
@@ -83,6 +88,7 @@ export default function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [agreedToTerms, setAgreedToTerms] = React.useState(false);
   const [hasReadCharter, setHasReadCharter] = React.useState(false);
+  const termsId = React.useId();
   const [charterTab, setCharterTab] = React.useState<
     "terms" | "privacy" | null
   >(null);
@@ -122,9 +128,9 @@ export default function SignupForm() {
   return (
     <div className="animate-in fade-in slide-in-from-left-8 duration-300">
       <div className="text-center mb-5 sm:mb-8">
-        <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+        <AuthDialogTitle className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
           Join the <span className="text-gradient-lime">Hype</span>
-        </h2>
+        </AuthDialogTitle>
         <p className="text-gray-400 text-sm">
           Unlock exclusive events and meet your crew.
         </p>
@@ -141,131 +147,74 @@ export default function SignupForm() {
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSignup, onInvalid)}>
-        {/* Full Name */}
-        <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
-            FULL NAME
-          </label>
-          <input
-            {...register("name")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
-            placeholder="e.g. Fox Mulder"
-            type="text"
-            autoComplete="name"
-          />
-          {errors.name && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.name.message}
-            </span>
-          )}
-        </div>
+        <TextField
+          {...register("name")}
+          label="FULL NAME"
+          placeholder="e.g. Fox Mulder"
+          type="text"
+          autoComplete="name"
+          required
+          error={errors.name?.message}
+        />
 
-        {/* Email Address */}
-        <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
-            EMAIL ADDRESS
-          </label>
-          <input
-            {...register("email")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
-            placeholder="name@example.com"
-            type="email"
-            autoComplete="email"
-          />
-          {errors.email && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.email.message}
-            </span>
-          )}
-        </div>
+        <TextField
+          {...register("email")}
+          label="EMAIL ADDRESS"
+          placeholder="name@example.com"
+          type="email"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
-        {/* Username */}
-        <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
-            USERNAME
-          </label>
-          <input
-            {...register("username")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
-            placeholder="fox_mulder"
-            type="text"
-            autoComplete="off"
-          />
-          {errors.username && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.username.message}
-            </span>
-          )}
-        </div>
+        <TextField
+          {...register("username")}
+          label="USERNAME"
+          placeholder="fox_mulder"
+          type="text"
+          autoComplete="username"
+          required
+          error={errors.username?.message}
+        />
 
-        {/* Password */}
-        <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
-            PASSWORD
-          </label>
-          <div className="relative">
-            <input
-              {...register("password")}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
-              placeholder="••••••••"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
+        <TextField
+          {...register("password")}
+          label="PASSWORD"
+          placeholder="••••••••"
+          type={showPassword ? "text" : "password"}
+          autoComplete="new-password"
+          required
+          error={errors.password?.message}
+          trailing={
+            <PasswordVisibilityToggle
+              visible={showPassword}
+              onToggle={() => setShowPassword((prev) => !prev)}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
-              tabIndex={-1}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {showPassword ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          {errors.password && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.password.message}
-            </span>
-          )}
-        </div>
+          }
+        />
 
-        {/* Confirm Password */}
-        <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
-            CONFIRM PASSWORD
-          </label>
-          <div className="relative">
-            <input
-              {...register("confirmPassword")}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
-              placeholder="••••••••"
-              type={showConfirmPassword ? "text" : "password"}
-              autoComplete="new-password"
+        <TextField
+          {...register("confirmPassword")}
+          label="CONFIRM PASSWORD"
+          placeholder="••••••••"
+          type={showConfirmPassword ? "text" : "password"}
+          autoComplete="new-password"
+          required
+          error={errors.confirmPassword?.message}
+          trailing={
+            <PasswordVisibilityToggle
+              visible={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword((prev) => !prev)}
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
-              tabIndex={-1}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {showConfirmPassword ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          {errors.confirmPassword && (
-            <span className="text-xs text-red-500 ml-1">
-              {errors.confirmPassword.message}
-            </span>
-          )}
-        </div>
+          }
+        />
 
         {/* Terms */}
         <div className="flex items-center gap-3 pt-2">
           <div className="relative flex h-5 w-5 shrink-0 items-center">
             <input
               className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-accent checked:bg-accent transition-all hover:border-accent/50"
-              id="terms"
+              id={termsId}
               type="checkbox"
               checked={agreedToTerms}
               onChange={(e) => {
@@ -285,7 +234,7 @@ export default function SignupForm() {
           </div>
           <label
             className="text-xs text-gray-400 cursor-pointer select-none"
-            htmlFor="terms"
+            htmlFor={termsId}
           >
             I agree to the{" "}
             <button
@@ -316,19 +265,24 @@ export default function SignupForm() {
         )}
 
         {/* Submit Button */}
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={signupMutation.isPending}
           className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
         >
           {signupMutation.isPending ? (
-            <Loader2 className="animate-spin w-5 h-5" />
+            <>
+              <Loader2 aria-hidden="true" className="animate-spin w-5 h-5" />
+              <span className="sr-only">Signing up…</span>
+            </>
           ) : (
             <>
               <span className="relative z-10 flex items-center justify-center gap-2">
                 Sign Up
-                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform"
+                >
                   arrow_forward
                 </span>
               </span>
@@ -343,6 +297,7 @@ export default function SignupForm() {
         <p className="text-sm text-gray-400">
           Already have an account?{" "}
           <button
+            type="button"
             onClick={toggleView}
             className="font-bold text-white hover:text-accent transition-colors relative inline-block group"
           >

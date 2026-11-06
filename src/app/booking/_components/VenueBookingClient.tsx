@@ -452,6 +452,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
               {/* Special Requests */}
               <FormSection icon="edit_note" title="Special Requests">
                 <textarea
+                  aria-label="Special requests"
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none"
@@ -568,6 +569,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       ) : (
                         <div className="flex gap-2">
                           <input
+                          aria-label="Voucher code"
                             type="text"
                             value={voucherCodeInput}
                             onChange={(e) => {
