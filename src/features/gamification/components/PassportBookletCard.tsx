@@ -2,6 +2,7 @@
 
 import React from "react";
 import { getPathLabel } from "@/features/gamification/lib/gamification";
+import { RankBadge } from "@/features/gamification/components/RankBadge";
 
 interface PassportBookletCardProps {
   user: any;
@@ -146,29 +147,32 @@ export default function PassportBookletCard({
             background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
           }}
         />
-        <div className="flex flex-col items-end">
-          <span
-            className="font-display"
-            style={{
-              fontSize: 26,
-              fontWeight: 700,
-              color: "var(--accent-text)",
-              lineHeight: 1,
-            }}
-          >
-            Lvl {level}
-          </span>
-          <span
-            style={{
-              fontSize: 9,
-              color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginTop: 2,
-            }}
-          >
-            {tierLabel}
-          </span>
+        <div className="flex items-center gap-3">
+          <RankBadge level={level} size={36} isCitizen={true} />
+          <div className="flex flex-col items-end">
+            <span
+              className="font-display"
+              style={{
+                fontSize: 26,
+                fontWeight: 700,
+                color: "var(--accent-text)",
+                lineHeight: 1,
+              }}
+            >
+              Lvl {level}
+            </span>
+            <span
+              style={{
+                fontSize: 9,
+                color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                marginTop: 2,
+              }}
+            >
+              {tierLabel}
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRewardsWallet } from "@/features/gamification/hooks/useRewards";
 import { RewardsStoreModal } from "./RewardsStoreModal";
+import { RankBadge } from "@/features/gamification/components/RankBadge";
 import type { WalletHistoryItem } from "@/shared/api/rewards";
 
 export const RewardsWalletView: React.FC = () => {
@@ -136,9 +137,7 @@ export const RewardsWalletView: React.FC = () => {
         <div className="glass-card p-6 rounded-3xl border border-white/10 relative overflow-hidden">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-white/50 mb-3">
             <span>Mastery Rank</span>
-            <span className="material-symbols-outlined text-purple-400 text-xl">
-              military_tech
-            </span>
+            <RankBadge level={wallet.level} size={32} isCitizen={true} />
           </div>
           <div className="text-2xl font-display font-bold text-white mb-1">
             {wallet.rank || "Explorer"}

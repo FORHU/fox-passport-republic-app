@@ -19,6 +19,7 @@ import {
   isPerformerService,
   CalendarWidget,
   CreatorProfile,
+  FoxerReputationCard,
   CREATOR_DASHBOARD_BG,
 } from "@/features/dashboard/components";
 import { PendingRequests } from "./OccupancySection";
@@ -423,6 +424,11 @@ export default function HostDashboardClient({
                 {access.canReceivePayouts && (
                   <div data-tour="host-payouts">
                     <StripeConnectSection />
+                  </div>
+                )}
+                {access.hasListings && (
+                  <div data-tour="host-reputation">
+                    <FoxerReputationCard />
                   </div>
                 )}
                 <div data-tour="host-calendar">
