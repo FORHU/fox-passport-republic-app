@@ -1,5 +1,9 @@
-import { redirect } from "next/navigation";
+export const dynamic = "force-dynamic";
 
-export default function UserAchievementsPage() {
+import { redirect } from "next/navigation";
+import { requireAuth } from "@/shared/lib/server/auth";
+
+export default async function UserAchievementsPage() {
+  await requireAuth();
   redirect("/passport/achievements");
 }
