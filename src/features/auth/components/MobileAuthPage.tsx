@@ -32,7 +32,8 @@ import { IconButton } from "@/shared/components/ui/IconButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type View = "login" | "signup" | "forgot" | "reset" | "verify";
+export type MobileAuthView = "login" | "signup" | "forgot" | "reset" | "verify";
+type View = MobileAuthView;
 
 // ─── Shared atoms ─────────────────────────────────────────────────────────────
 
@@ -1136,8 +1137,12 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
 
 // ─── Root Component ───────────────────────────────────────────────────────────
 
-export default function MobileAuthPage() {
-  const [view, setView] = useState<View>("login");
+export default function MobileAuthPage({
+  initialView = "login",
+}: {
+  initialView?: View;
+}) {
+  const [view, setView] = useState<View>(initialView);
 
   return (
     <div
@@ -1171,27 +1176,8 @@ export default function MobileAuthPage() {
           margin: "0 auto",
         }}
       >
-        {/* Logo */}
-        <div
-          style={{
-            paddingTop: 68,
-            display: "flex",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-              fontSize: 15,
-              fontWeight: 700,
-              color: "var(--color-white)",
-              letterSpacing: "-0.3px",
-            }}
-          >
-            FoxPassport
-          </span>
-        </div>
+        {/* Room for the page's fixed site header, which carries the logo. */}
+        <div aria-hidden="true" style={{ paddingTop: 84, flexShrink: 0 }} />
 
         {/* View content */}
         {view === "login" && (
