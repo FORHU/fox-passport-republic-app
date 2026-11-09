@@ -73,6 +73,12 @@ export default function LandingFooter() {
             >
               Terms
             </a>
+            <a
+              className="text-[10px] text-gray-500 hover:text-white font-medium transition-colors"
+              href="/cookies"
+            >
+              Cookies
+            </a>
           </div>
         </div>
       </div>

@@ -470,7 +470,7 @@ export function EventDetailView({
                 </a>
                 <a
                   className="text-xs text-gray-500 hover:text-white transition-colors"
-                  href="/privacy"
+                  href="/cookies"
                 >
                   Cookies
                 </a>
