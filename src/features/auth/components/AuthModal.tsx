@@ -4,11 +4,8 @@ import React, { useEffect, useRef } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { IconButton } from "@/shared/components/ui/IconButton";
-import LoginForm from "@/features/auth/components/LoginForm";
-import SignupForm from "@/features/auth/components/SignupForm";
-import ForgotPasswordForm from "@/features/auth/components/ForgotPasswordForm";
-import ResetPasswordForm from "@/features/auth/components/ResetPasswordForm";
-import VerifyEmailForm from "@/features/auth/components/VerifyEmailForm";
+import AuthFormView from "@/features/auth/components/AuthFormView";
+import { AuthInDialogContext } from "@/features/auth/components/AuthDialogTitle";
 import { Money } from "@/shared/components/ui/Money";
 import type { BookingSummary } from "@/shared/auth/useAuthStore";
 
@@ -166,11 +163,9 @@ export default function AuthModal() {
                   </DialogPrimitive.Close>
 
                   <div ref={formRef}>
-                    {view === "login" && <LoginForm />}
-                    {view === "signup" && <SignupForm />}
-                    {view === "forgot-password" && <ForgotPasswordForm />}
-                    {view === "reset-password" && <ResetPasswordForm />}
-                    {view === "verify-email" && <VerifyEmailForm />}
+                    <AuthInDialogContext.Provider value={true}>
+                      <AuthFormView />
+                    </AuthInDialogContext.Provider>
                   </div>
                 </div>
               </div>
