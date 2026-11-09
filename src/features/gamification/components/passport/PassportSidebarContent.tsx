@@ -126,19 +126,15 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             .map((p) =>
               p === "eventFoxer"
                 ? "Event Foxer"
-                : p === "gearFoxer"
-                  ? "Gear Foxer"
-                  : p === "serviceFoxer"
-                    ? "Talent Foxer"
-                    : p === "performerFoxer"
-                      ? "Performer Foxer"
-                      : p === "venueFoxer"
-                        ? "Venue Foxer"
-                        : p === "investor"
-                          ? "Investor"
-                          : p === "organizer"
-                            ? "Organizer"
-                            : p,
+                : p === "providerFoxer"
+                  ? "Provider"
+                  : p === "venueFoxer"
+                    ? "Venue Foxer"
+                    : p === "investor"
+                      ? "Investor"
+                      : p === "organizer"
+                        ? "Organizer"
+                        : p,
             )
             .join(" · ") || "Citizen"}
         </p>

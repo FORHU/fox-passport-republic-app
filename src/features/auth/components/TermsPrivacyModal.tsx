@@ -296,8 +296,7 @@ function TermsContent() {
           &ldquo;us&rdquo;) operates a marketplace and social platform
           connecting Citizens booking venues, gear, and services with
           Foxers &mdash; independent hosts registered under one or more
-          roles: Venue Foxer, Event Foxer, Gear Foxer, Service Foxer, or
-          Investor. By creating an account you agree to these Terms,
+          roles: Venue Foxer, Event Foxer, Provider, Organizer, or Investor. By creating an account you agree to these Terms,
           regardless of which role you hold.
         </p>
       </Clause>

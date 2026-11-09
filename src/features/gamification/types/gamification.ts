@@ -2,13 +2,11 @@
 
 export type UserPath =
   | "user"
-  | "gearFoxer"
-  | "serviceFoxer"
-  | "performerFoxer"
   | "eventFoxer"
   | "venueFoxer"
   | "investor"
-  | "organizer";
+  | "organizer"
+  | "providerFoxer";
 
 export type BadgeRarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
 
@@ -210,21 +208,7 @@ export const PATH_LABELS = {
     15: "Trailblazer",
     20: "VIP Explorer",
   },
-  gearFoxer: {
-    1: "Starter Foxer",
-    5: "Social Butterfly",
-    10: "Event Curator",
-    15: "Master Foxer",
-    20: "Elite Foxer",
-  },
-  serviceFoxer: {
-    1: "Starter Foxer",
-    5: "Social Butterfly",
-    10: "Event Curator",
-    15: "Master Foxer",
-    20: "Elite Foxer",
-  },
-  performerFoxer: {
+  providerFoxer: {
     1: "Starter Foxer",
     5: "Social Butterfly",
     10: "Event Curator",
@@ -274,9 +258,7 @@ export const BADGE_COLORS: Record<BadgeRarity, string> = {
 // Path colors
 export const PATH_COLORS: Record<UserPath, string> = {
   user: "#ADD13F", // Green
-  gearFoxer: "#D99A26", // Orange
-  serviceFoxer: "#D99A26", // Orange
-  performerFoxer: "#D99A26", // Amber
+  providerFoxer: "#D99A26", // Orange
   eventFoxer: "#5C62D6", // Blue
   venueFoxer: "#A3A8F5", // Purple
   investor: "#E8B54D", // Yellow

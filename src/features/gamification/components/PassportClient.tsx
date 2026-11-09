@@ -76,7 +76,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
   const roleTypes: string[] = user?.roleType ?? [];
   const isEventFoxer = roleTypes.includes("eventFoxer");
   const isProvider = roleTypes.some((r) =>
-    ["gearFoxer", "serviceFoxer", "performerFoxer", "venueFoxer"].includes(r),
+    ["providerFoxer", "venueFoxer"].includes(r),
   );
 
   const { data: leaderboard = [], isLoading: leaderboardLoading } =
@@ -103,9 +103,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
   const roleToPath = (role: string): UserPath | null => {
     if (role === "eventFoxer") return "eventFoxer";
     if (role === "venueFoxer") return "venueFoxer";
-    if (role === "gearFoxer") return "gearFoxer";
-    if (role === "serviceFoxer") return "serviceFoxer";
-    if (role === "performerFoxer") return "performerFoxer";
+    if (role === "providerFoxer") return "providerFoxer";
     if (role === "organizer") return "organizer";
     return null;
   };

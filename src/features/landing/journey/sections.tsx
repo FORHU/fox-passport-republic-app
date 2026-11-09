@@ -15,9 +15,7 @@ import { Arrow } from "./Arrow";
 const ZONE: Record<string, string> = {
   event: "Whole plan",
   venue: "1 · Room",
-  performer: "2 · Stage",
-  talent: "3 · Bar",
-  gear: "4 · Sound",
+  provider: "2–4 · Supply",
   organizer: "5 · Door",
   partner: "Backing",
 };

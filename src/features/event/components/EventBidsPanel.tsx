@@ -14,7 +14,7 @@ const STATUS_STYLE: Record<BidStatus, string> = {
 };
 
 /**
- * An Event's bids from Talent and Gear Foxers. Whoever may see them - the
+ * An Event's bids from Providers. Whoever may see them - the
  * Owner and their Organizers - may reject one; accepting sets the agreed
  * price, so only the Owner gets that button (ADR 0005). The api enforces
  * both; `canAccept` only hides a button that would be refused.
@@ -49,7 +49,7 @@ export function EventBidsPanel({
     return (
       <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
         <Gavel className="w-6 h-6 mx-auto mb-2 text-white/30" />
-        No bids yet. Talent and Gear Foxers can bid on this event&apos;s open
+        No bids yet. Providers can bid on this event&apos;s open
         slots.
       </div>
     );

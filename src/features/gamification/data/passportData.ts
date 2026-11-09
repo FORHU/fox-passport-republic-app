@@ -2,9 +2,6 @@ export const PATH_SHORT: Record<string, string> = {
   user: "Citizen",
   eventFoxer: "Event",
   venueFoxer: "Venue",
-  gearFoxer: "Gear",
-  serviceFoxer: "Service",
-  performerFoxer: "Performer",
   organizer: "Organizer",
 };
 
@@ -12,9 +9,6 @@ export const PATH_COLORS: Record<string, string> = {
   user: "#C4E85A",
   eventFoxer: "#5C62D6",
   venueFoxer: "#A3A8F5",
-  gearFoxer: "#D99A26",
-  serviceFoxer: "#ADD13F",
-  performerFoxer: "#D99A26",
   organizer: "#A3A8F5",
 };
 
@@ -38,15 +32,10 @@ export const PATH_PERKS: Record<string, { level: number; perk: string }[]> = {
     { level: 8, perk: "venue_spotlight" },
     { level: 15, perk: "mayor_verified" },
   ],
-  gearFoxer: [
-    { level: 1, perk: "gear_verified" },
+  providerFoxer: [
+    { level: 1, perk: "provider_verified" },
     { level: 3, perk: "lower_fees" },
-    { level: 8, perk: "gear_featured" },
-  ],
-  serviceFoxer: [
-    { level: 1, perk: "service_verified" },
-    { level: 3, perk: "service_lower_fees" },
-    { level: 8, perk: "service_featured" },
+    { level: 8, perk: "provider_featured" },
   ],
 };
 
@@ -115,9 +104,9 @@ export const PERK_META: Record<
     desc: "Highest tier venue authority",
     icon: "verified_user",
   },
-  gear_verified: {
-    title: "Gear Verified",
-    desc: "Exclusive gear provider status",
+  provider_verified: {
+    title: "Provider Verified",
+    desc: "Exclusive provider status",
     icon: "verified",
   },
   lower_fees: {
@@ -125,24 +114,9 @@ export const PERK_META: Record<
     desc: "5% lower commission on bookings",
     icon: "percent",
   },
-  gear_featured: {
-    title: "Gear Featured",
-    desc: "Priority in equipment listings",
-    icon: "star",
-  },
-  service_verified: {
-    title: "Service Verified",
-    desc: "Exclusive service provider status",
-    icon: "verified",
-  },
-  service_lower_fees: {
-    title: "Lower Fees",
-    desc: "5% lower commission on bookings",
-    icon: "percent",
-  },
-  service_featured: {
-    title: "Service Featured",
-    desc: "Priority in service listings",
+  provider_featured: {
+    title: "Provider Featured",
+    desc: "Priority in gear, service and performer listings",
     icon: "star",
   },
 };

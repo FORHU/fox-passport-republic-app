@@ -37,9 +37,7 @@ function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes("eventFoxer")) return "Event Foxer";
   if (roles.includes("venueFoxer")) return "Venue Foxer";
-  if (roles.includes("gearFoxer")) return "Gear Foxer";
-  if (roles.includes("serviceFoxer")) return "Talent Foxer";
-  if (roles.includes("performerFoxer")) return "Performer Foxer";
+  if (roles.includes("providerFoxer")) return "Provider";
   if (roles.includes("investor")) return "Partner Foxer";
   return "Foxer";
 }
@@ -140,17 +138,20 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
     : FALLBACK_AVATAR;
 
   const isHost = foxer.roleType?.includes("eventFoxer");
-  const isGearFoxer = foxer.roleType?.includes("gearFoxer");
   const isVenueFoxer = foxer.roleType?.includes("venueFoxer");
   const roleLabel = getRoleLabel(foxer);
   const location = [foxer.city, foxer.state].filter(Boolean).join(", ");
 
   const hasAssets = (foxer.assets?.length ?? 0) > 0;
+  // A Provider may list gear, services or both; show the gear view when they
+  // have gear listed, the services view otherwise.
+  const showsGear =
+    (foxer.roleType?.includes("providerFoxer") ?? false) && hasAssets;
 
   // Tags: categories for hosts/gear, service tags for talent
   const allTags = isHost
     ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))]
-    : isGearFoxer
+    : showsGear
       ? [...new Set((foxer.assets ?? []).map((a) => a.category))]
       : [...new Set(foxer.services.flatMap((s) => s.tags))];
 
@@ -159,14 +160,14 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
       ? allTags
       : isHost
         ? (foxer.eventTemplates ?? []).map((t) => t.name)
-        : isGearFoxer
+        : showsGear
           ? (foxer.assets ?? []).map((a) => a.name)
           : foxer.services.map((s) => s.name);
 
   const bio = isHost
     ? (foxer.eventTemplates?.[0]?.description ??
       "This Event Foxer has not added a bio yet.")
-    : isGearFoxer && hasAssets
+    : showsGear
       ? (foxer.assets?.[0]?.description ??
         "This foxer has not added a bio yet.")
       : (foxer.services[0]?.description ??
@@ -177,17 +178,17 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
       ? (foxer.eventTemplates ?? []).flatMap((t) =>
           t.images.map((img) => img.url),
         )
-      : isGearFoxer
+      : showsGear
         ? (foxer.assets ?? []).flatMap((a) => a.images.map((img) => img.url))
         : foxer.services.flatMap((s) => s.images.map((img) => img.url))
   ).slice(0, 6);
 
   const primaryCount = isHost
     ? (foxer.eventTemplates?.length ?? 0)
-    : isGearFoxer
+    : showsGear
       ? (foxer.assets?.length ?? 0)
       : foxer.services.length;
-  const primaryLabel = isHost ? "Events" : isGearFoxer ? "Gear" : "Services";
+  const primaryLabel = isHost ? "Events" : showsGear ? "Gear" : "Services";
   const secondaryCount = allTags.length;
   const secondaryLabel = isHost ? "Categories" : "Skills";
 
@@ -313,9 +314,6 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
                 (() => {
                   const ROLE_LABELS: Record<string, string> = {
                     eventFoxer: "Event Foxer",
-                    serviceFoxer: "Talent Foxer",
-                    performerFoxer: "Performer Foxer",
-                    gearFoxer: "Gear Foxer",
                     venueFoxer: "Venue Foxer",
                   };
                   const grouped = (foxer.foxerSpecializations ?? []).reduce<
@@ -531,8 +529,8 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
                 </motion.section>
               )}
 
-              {/* GearFoxer: show assets */}
-              {isGearFoxer && (foxer.assets?.length ?? 0) > 0 && (
+              {/* Provider with gear: show assets */}
+              {showsGear && (foxer.assets?.length ?? 0) > 0 && (
                 <motion.section
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -594,8 +592,8 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
                 </motion.section>
               )}
 
-              {/* ServiceFoxer: show services */}
-              {!isHost && !isGearFoxer && foxer.services.length > 0 && (
+              {/* Provider with services: show services */}
+              {!isHost && !showsGear && foxer.services.length > 0 && (
                 <motion.section
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}

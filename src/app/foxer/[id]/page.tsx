@@ -13,9 +13,7 @@ function getFoxerRoleLabel(roleType?: string[]): string {
   const roles = roleType ?? [];
   if (roles.includes("eventFoxer")) return "Event Foxer";
   if (roles.includes("venueFoxer")) return "Venue Foxer";
-  if (roles.includes("gearFoxer")) return "Equipment Foxer";
-  if (roles.includes("serviceFoxer")) return "Talent Foxer";
-  if (roles.includes("performerFoxer")) return "Performer Foxer";
+  if (roles.includes("providerFoxer")) return "Provider";
   if (roles.includes("investor")) return "Partner Foxer";
   return "Foxer";
 }

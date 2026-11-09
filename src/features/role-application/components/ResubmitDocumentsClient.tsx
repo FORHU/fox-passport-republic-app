@@ -12,9 +12,6 @@ import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  gearFoxer: "Gear Foxer",
-  serviceFoxer: "Talent Foxer",
-  performerFoxer: "Performer Foxer",
   providerFoxer: "Provider",
   investor: "Investor",
   organizer: "Organizer",

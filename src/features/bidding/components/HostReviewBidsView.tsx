@@ -32,7 +32,7 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
     try {
       setProcessingId(bidId);
       await acceptBid(bidId);
-      toast.success("Talent Foxer accepted and added to event roster!");
+      toast.success("Provider accepted and added to event roster!");
       fetchBids();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to accept bid");
@@ -48,7 +48,7 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
       <div>
         <h3 className="text-xl font-bold">Talent Applications</h3>
         <p className="text-white/60">
-          Review and accept Talent Foxers who have applied to your event.
+          Review and accept Providers who have applied to your event.
         </p>
       </div>
 

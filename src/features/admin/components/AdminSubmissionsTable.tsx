@@ -62,9 +62,7 @@ interface RoleApplication {
   user: { id: string; name: string; email: string };
   venueFoxerApplication?: ApplicationData;
   eventFoxerApplication?: ApplicationData;
-  gearFoxerApplication?: ApplicationData;
-  serviceFoxerApplication?: ApplicationData;
-  performerFoxerApplication?: ApplicationData;
+  providerFoxerApplication?: ApplicationData;
   investorApplication?: ApplicationData;
   organizerApplication?: ApplicationData;
 }
@@ -72,9 +70,7 @@ interface RoleApplication {
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  gearFoxer: "Gear Foxer",
-  serviceFoxer: "Talent Foxer",
-  performerFoxer: "Performer Foxer",
+  providerFoxer: "Provider",
   investor: "Investor",
   organizer: "Organizer",
 };
@@ -104,9 +100,7 @@ function getAppData(app: RoleApplication): ApplicationData | null {
   return (
     app.venueFoxerApplication ??
     app.eventFoxerApplication ??
-    app.gearFoxerApplication ??
-    app.serviceFoxerApplication ??
-    app.performerFoxerApplication ??
+    app.providerFoxerApplication ??
     app.investorApplication ??
     app.organizerApplication ??
     null

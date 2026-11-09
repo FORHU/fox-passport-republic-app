@@ -59,7 +59,7 @@ const mockFoxerData: FoxerLeaderboardResponse = {
       position: 1,
       name: "Metro Audio Pro",
       avatarUrl: null,
-      role: "gearFoxer",
+      role: "providerFoxer",
       city: "Manila",
       starRating: 4.95,
       reviewCount: 42,

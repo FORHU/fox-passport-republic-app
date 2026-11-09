@@ -17,9 +17,6 @@ export type SystemRole = (typeof SYSTEM_ROLES)[number];
 export const ROLE_TYPES = [
   "venueFoxer",
   "eventFoxer",
-  "gearFoxer",
-  "serviceFoxer",
-  "performerFoxer",
   "providerFoxer",
   "investor",
   "organizer",
@@ -37,9 +34,6 @@ export type RoleType = (typeof ROLE_TYPES)[number];
 export const FOXER_ROLES: readonly RoleType[] = [
   "venueFoxer",
   "eventFoxer",
-  "gearFoxer",
-  "serviceFoxer",
-  "performerFoxer",
   "providerFoxer",
 ];
 
@@ -71,9 +65,6 @@ export function isFoxer(
 export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
   venueFoxer: { label: "Venue Foxer", color: "#A9AFBB" },
   eventFoxer: { label: "Event Foxer", color: "#A9AFBB" },
-  gearFoxer: { label: "Gear Foxer", color: "#A9AFBB" },
-  serviceFoxer: { label: "Talent Foxer", color: "#A9AFBB" },
-  performerFoxer: { label: "Performer Foxer", color: "#A9AFBB" },
   providerFoxer: { label: "Provider", color: "#A9AFBB" },
   investor: { label: "Partner Foxer", color: "#A9AFBB" },
   organizer: { label: "Organizer", color: "#A9AFBB" },

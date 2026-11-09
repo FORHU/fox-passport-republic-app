@@ -139,44 +139,44 @@ export function RoleGettingStarted({
         payoutStep,
       ],
     });
-  if (access.canManageInventory)
+  // One Provider tab covering whichever of gear, services and performances
+  // this person can list.
+  const providerSteps: Step[] = [
+    ...(access.canManageInventory
+      ? [
+          {
+            label: "List your first item",
+            detail: "Sound, lighting, furniture — with stock and a daily rate.",
+            href: "/foxer/create-listing",
+            done: totals.assets > 0,
+          },
+        ]
+      : []),
+    ...(access.canManageServices
+      ? [
+          {
+            label: "List your first service",
+            detail: "Catering, design, staffing — your packages and pricing.",
+            href: "/foxer/create-service",
+            done: totals.services > 0,
+          },
+        ]
+      : []),
+    ...(access.canManagePerformers
+      ? [
+          {
+            label: "List your first performance",
+            detail: "Photography, DJ sets, live music, hosting and more.",
+            href: "/foxer/create-service?type=performer",
+            done: totals.services > 0,
+          },
+        ]
+      : []),
+  ];
+  if (providerSteps.length > 0)
     checklists.push({
-      role: "gearFoxer",
-      steps: [
-        {
-          label: "List your first item",
-          detail: "Sound, lighting, furniture — with stock and a daily rate.",
-          href: "/foxer/create-listing",
-          done: totals.assets > 0,
-        },
-        payoutStep,
-      ],
-    });
-  if (access.canManageServices)
-    checklists.push({
-      role: "serviceFoxer",
-      steps: [
-        {
-          label: "List your first service",
-          detail: "Catering, design, staffing — your packages and pricing.",
-          href: "/foxer/create-service",
-          done: totals.services > 0,
-        },
-        payoutStep,
-      ],
-    });
-  if (access.canManagePerformers)
-    checklists.push({
-      role: "performerFoxer",
-      steps: [
-        {
-          label: "List your first performance",
-          detail: "Photography, DJ sets, live music, hosting and more.",
-          href: "/foxer/create-service?type=performer",
-          done: totals.services > 0,
-        },
-        payoutStep,
-      ],
+      role: "providerFoxer",
+      steps: [...providerSteps, payoutStep],
     });
   if (isOrganizer)
     checklists.push({

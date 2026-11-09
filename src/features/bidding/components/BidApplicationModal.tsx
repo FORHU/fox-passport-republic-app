@@ -8,7 +8,7 @@ interface BidApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  services: any[]; // The Talent Foxer's own services
+  services: any[]; // The Provider's own services
 }
 
 export const BidApplicationModal: React.FC<BidApplicationModalProps> = ({

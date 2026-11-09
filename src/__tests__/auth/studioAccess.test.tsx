@@ -45,8 +45,8 @@ describe("an Investor opening a Studio by URL", () => {
     [
       "/foxer/create-service",
       () => ServiceStudioLayout({ children: studio() }),
-      "Service Studio is for Talent or Performer Foxers",
-      "/foxer/apply?type=service",
+      "Service Studio is for Providers",
+      "/foxer/apply?type=provider",
     ],
     [
       "/venue-foxer/create-venue",
@@ -57,15 +57,15 @@ describe("an Investor opening a Studio by URL", () => {
     [
       "/foxer/create-listing",
       () => ListingBuilder({ searchParams: Promise.resolve({}) }),
-      "Gear Studio is for Gear Foxers",
-      "/foxer/apply?type=asset",
+      "Gear Studio is for Providers",
+      "/foxer/apply?type=provider",
     ],
     [
       "/foxer/create-listing?type=service",
       () =>
         ListingBuilder({ searchParams: Promise.resolve({ type: "service" }) }),
-      "Service Studio is for Talent or Performer Foxers",
-      "/foxer/apply?type=service",
+      "Service Studio is for Providers",
+      "/foxer/apply?type=provider",
     ],
   ])(
     "%s shows access denied, with a way to apply",
@@ -89,7 +89,7 @@ describe("someone with the role", () => {
     expect(screen.getByText("studio page")).toBeTruthy();
   });
 
-  it("opens the Service Studio as a Performer Foxer", async () => {
+  it("opens the Service Studio with performer:manage alone", async () => {
     as(["performer:manage"]);
     await show(ServiceStudioLayout({ children: studio() }));
     expect(screen.getByText("studio page")).toBeTruthy();
@@ -101,7 +101,7 @@ describe("someone with the role", () => {
     expect(screen.getByText("venue builder")).toBeTruthy();
   });
 
-  it("opens the gear builder as a Gear Foxer, but not the service one", async () => {
+  it("opens the gear builder with asset:manage alone, but not the service one", async () => {
     as(["asset:manage"]);
     await show(
       ListingBuilder({ searchParams: Promise.resolve({ type: "inventory" }) }),

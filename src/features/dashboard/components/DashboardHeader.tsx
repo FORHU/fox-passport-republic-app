@@ -55,9 +55,12 @@ export function DashboardHeader({
   if (access.isMayor) roleLabels.push("Venue Foxer");
   // From the event permission: isHost (booking:check-in) is held by admins too.
   if (access.canManageEvents) roleLabels.push("Event Foxer");
-  if (access.canManageInventory) roleLabels.push("Gear Foxer");
-  if (access.canManageServices) roleLabels.push("Talent Foxer");
-  if (access.canManagePerformers) roleLabels.push("Performer Foxer");
+  if (
+    access.canManageInventory ||
+    access.canManageServices ||
+    access.canManagePerformers
+  )
+    roleLabels.push("Provider");
   if (roleType.includes("investor")) roleLabels.push("Partner Foxer");
   if (roleType.includes("organizer")) roleLabels.push("Organizer");
 
@@ -314,9 +317,8 @@ export function WelcomeBanner({
       icon: "inventory_2",
       iconColor: "text-purple-400",
       allowed: access.canManageInventory,
-      requiredRole: "Gear Foxer",
-      // The role's own application, as the Studios link (roleCatalog).
-      applyHref: "/foxer/apply?type=asset",
+      requiredRole: "Provider",
+      applyHref: "/foxer/apply?type=provider",
       onClick: onNavigateToCreateInventory,
     },
     {
@@ -324,8 +326,8 @@ export function WelcomeBanner({
       icon: "design_services",
       iconColor: "text-yellow-400",
       allowed: access.canManageServices,
-      requiredRole: "Talent Foxer",
-      applyHref: "/foxer/apply?type=service",
+      requiredRole: "Provider",
+      applyHref: "/foxer/apply?type=provider",
       onClick: onNavigateToCreateService,
     },
     {
@@ -333,8 +335,8 @@ export function WelcomeBanner({
       icon: "theater_comedy",
       iconColor: "text-amber-500",
       allowed: access.canManagePerformers,
-      requiredRole: "Performer Foxer",
-      applyHref: "/foxer/apply?type=performer",
+      requiredRole: "Provider",
+      applyHref: "/foxer/apply?type=provider",
       onClick: onNavigateToCreatePerformerService || onNavigateToCreateService,
     },
   ];

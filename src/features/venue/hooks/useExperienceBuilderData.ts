@@ -94,7 +94,7 @@ const ASSET_CAT_TO_TAB: Record<string, string> = {
 // --- Fetchers -----------------------------------------------------------------
 
 async function fetchFoxers(): Promise<LiveFoxer[]> {
-  const res = await api.get("/users/foxers?roleType=serviceFoxer,gearFoxer");
+  const res = await api.get("/users/foxers?roleType=providerFoxer");
   const users: ApiUser[] = Array.isArray(res.data)
     ? res.data
     : (res.data?.data ?? []);
@@ -106,9 +106,7 @@ async function fetchFoxers(): Promise<LiveFoxer[]> {
     return {
       id: u.id,
       name: u.name || u.username || "Foxer",
-      role: u.roleType?.includes("serviceFoxer")
-        ? "Talent Foxer"
-        : "Equipment Foxer",
+      role: "Provider",
       fee,
       rating: 0,
       avatar:
