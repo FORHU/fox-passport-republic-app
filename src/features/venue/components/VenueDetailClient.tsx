@@ -25,6 +25,7 @@ import { signInThen } from "@/shared/auth/returnTo";
 import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
 import { venueRateUnit } from "../helpers/rateUnit";
+import { useVenueReviewSummary } from "../hooks/useVenueReviewSummary";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -49,6 +50,9 @@ export default function VenueDetailClient({
   const store = useVenueDetailStore();
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  // The venue payload has no rating or review count, so read them from its
+  // reviews; `undefined` while loading.
+  const reviewSummary = useVenueReviewSummary(venue.id);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -143,6 +147,7 @@ export default function VenueDetailClient({
 
       <VenueNavHeader
         title={venue.title}
+        venueId={String(venue.id)}
         onBack={handleBack}
         onProposePartnership={handleProposePartnership}
         onEdit={
@@ -188,8 +193,8 @@ export default function VenueDetailClient({
         <div className="max-w-7xl mx-auto">
           <VenueHero
             title={venue.title}
-            rating={venue.rating || 0}
-            reviews={venue.reviews || 0}
+            rating={reviewSummary?.average ?? null}
+            reviews={reviewSummary?.count}
             location={venue.location}
             province={venue.province}
           />
@@ -490,8 +495,8 @@ export default function VenueDetailClient({
                 venueId={venue.id}
                 price={venuePrice}
                 billingRate={venue.billingRate}
-                rating={venue.rating || 0}
-                reviews={venue.reviews || 0}
+                rating={reviewSummary?.average ?? null}
+                reviews={reviewSummary?.count}
                 capacity={venue.capacity?.toString() || "0"}
                 onContactOwner={handleContactOwner}
                 onCustomExperience={() => setIsCustomBookingOpen(true)}
@@ -513,14 +518,22 @@ export default function VenueDetailClient({
               / {rateUnit}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-white/70">
-            <span className="material-symbols-outlined text-[13px] gold-foil fill-current">
-              star
-            </span>
-            <span>{venue.rating || 0}</span>
-            <span>·</span>
-            <span>{venue.reviews || 0} reviews</span>
-          </div>
+          {reviewSummary &&
+            (reviewSummary.count > 0 ? (
+              <div className="flex items-center gap-1 text-[11px] text-white/70">
+                <span className="material-symbols-outlined text-[13px] gold-foil fill-current">
+                  star
+                </span>
+                <span>{reviewSummary.average ?? 0}</span>
+                <span>·</span>
+                <span>
+                  {reviewSummary.count}{" "}
+                  {reviewSummary.count === 1 ? "review" : "reviews"}
+                </span>
+              </div>
+            ) : (
+              <div className="text-[11px] text-white/70">New</div>
+            ))}
         </div>
 
         <div className="flex items-center gap-2">
