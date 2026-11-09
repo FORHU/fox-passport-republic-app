@@ -51,7 +51,7 @@ export default function ResetPasswordForm() {
         </AuthDialogTitle>
         <p className="text-gray-400 text-sm">
           We sent a 6-digit code to{" "}
-          <span className="text-white font-bold">{pendingEmail}</span>
+          <span className="text-white font-bold">{pendingEmail}</span>.
         </p>
       </div>
 
