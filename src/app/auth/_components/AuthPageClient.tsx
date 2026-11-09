@@ -10,12 +10,16 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 type StoreView = ReturnType<typeof useAuthStore.getState>["view"];
 
-/** The phone layout's screen for a store view (it has no reset step). */
+/**
+ * The phone layout's screen for a store view. Its reset step reads the email
+ * from the store's `pendingEmail`, and sends the visitor back to "forgot" if
+ * there is none when they submit.
+ */
 const MOBILE_VIEW: Record<StoreView, MobileAuthView> = {
   login: "login",
   signup: "signup",
   "forgot-password": "forgot",
-  "reset-password": "forgot",
+  "reset-password": "reset",
   "verify-email": "verify",
 };
 

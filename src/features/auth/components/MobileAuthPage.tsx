@@ -32,7 +32,7 @@ import { IconButton } from "@/shared/components/ui/IconButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type MobileAuthView = "login" | "signup" | "forgot" | "verify";
+export type MobileAuthView = "login" | "signup" | "forgot" | "reset" | "verify";
 type View = MobileAuthView;
 
 // ─── Shared atoms ─────────────────────────────────────────────────────────────
