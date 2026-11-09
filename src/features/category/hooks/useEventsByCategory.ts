@@ -2,10 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import api from "@/shared/lib/axios";
-import type { Event, EventsApiResponse } from "@/shared/types/event";
+import type { EventTemplate } from "@/shared/api/event-templates";
+
+// /event-templates/browse lists packages (templates), not booked events.
+interface BrowseTemplatesResponse {
+  success: boolean;
+  data: EventTemplate[];
+}
 
 interface UseEventsByCategoryReturn {
-  events: Event[];
+  events: EventTemplate[];
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -14,7 +20,7 @@ interface UseEventsByCategoryReturn {
 export function useEventsByCategory(
   categoryName: string | null,
 ): UseEventsByCategoryReturn {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +37,7 @@ export function useEventsByCategory(
       // Same public endpoint as the server fetch (getEventsByCategory in
       // shared/lib/server/data.ts). There is no /events/by-category route; the
       // API ignores a `category` that isn't one (e.g. "all") and lists every one.
-      const response = await api.get<EventsApiResponse>(
+      const response = await api.get<BrowseTemplatesResponse>(
         "/event-templates/browse",
         { params: { category: categoryName } },
       );

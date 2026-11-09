@@ -18,7 +18,6 @@ export {
   VenueReviews,
   VenueMap,
   HostBio,
-  EMPTY_HOST_BIO,
   HouseRules,
 } from "./VenueExtras";
 export { CustomExperienceBuilder } from "./ExperienceBuilder";

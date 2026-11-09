@@ -3,13 +3,25 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, MapPin } from "lucide-react";
-import { Event } from "@/features/event/types/event";
+import { Heart, MapPin } from "lucide-react";
+import type { EventTemplate } from "@/shared/api/event-templates";
 import { addFavorite, removeFavoriteByListing } from "@/shared/api/favorites";
 import { Money } from "@/shared/components/ui/Money";
 
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
+
 interface EventCardProps {
-  event: Event;
+  /** A package from /event-templates/browse, which is what the Categories page lists. */
+  event: EventTemplate;
+}
+
+/** The template's own city and state, else the city of a venue it uses. */
+function templateLocation(event: EventTemplate): string {
+  const target = [event.targetCity, event.targetState]
+    .filter(Boolean)
+    .join(", ");
+  return target || event.templateVenues?.[0]?.venue?.city || "Location TBD";
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
@@ -36,40 +48,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     }
   };
 
-  const primaryImage =
-    event.images.find((img) => img.isPrimary) || event.images[0];
-  const imageUrl =
-    primaryImage?.imageUrl ||
-    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
-
-  const averageRating =
-    event.reviews && event.reviews.length > 0
-      ? (
-          event.reviews.reduce((sum, r) => sum + r.rating, 0) /
-          event.reviews.length
-        ).toFixed(2)
-      : null;
-
-  const price =
-    event.pricing && event.pricing.length > 0
-      ? parseFloat(event.pricing[0].basePrice)
-      : null;
-
-  const currency =
-    event.pricing && event.pricing.length > 0
-      ? event.pricing[0].currency
-      : "PHP";
-
-  const location = event.details
-    ? `${event.details.city}, ${event.details.state}`
-    : "Location TBD";
+  const imageUrl = event.images?.find((img) => img.url)?.url || FALLBACK_IMAGE;
+  const location = templateLocation(event);
+  const price = event.estimatedTotal ?? 0;
 
   return (
-    <Link href={`/venues/${event.id}`} className="group cursor-pointer block">
+    <Link href={`/event/${event.id}`} className="group cursor-pointer block">
       <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
         <Image
           src={imageUrl}
-          alt={event.title}
+          alt={event.name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -89,33 +77,25 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
       </div>
 
       <div className="space-y-1">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 line-clamp-1 group-hover:text-pink-600 transition-colors">
-            {event.title}
-          </h3>
-          {averageRating && (
-            <div className="flex items-center gap-1 shrink-0">
-              <Star className="w-4 h-4 fill-current text-gray-900" />
-              <span className="text-sm text-gray-900">{averageRating}</span>
-            </div>
-          )}
-        </div>
+        <h3 className="font-semibold text-white line-clamp-1 group-hover:text-accent transition-colors">
+          {event.name}
+        </h3>
 
         {event.category && (
-          <p className="text-sm text-gray-500">{event.category.name}</p>
+          <p className="text-sm text-gray-400 capitalize">{event.category}</p>
         )}
 
-        <div className="flex items-center gap-1 text-sm text-gray-500">
+        <div className="flex items-center gap-1 text-sm text-gray-400">
           <MapPin className="w-3 h-3" />
           <span className="line-clamp-1">{location}</span>
         </div>
 
-        {price !== null && (
-          <p className="text-gray-900">
+        {price > 0 && (
+          <p className="text-white">
             <span className="font-semibold">
-              <Money amount={price} from={currency} />
+              <Money amount={price} />
             </span>
-            <span className="text-gray-500 text-sm"> / event</span>
+            <span className="text-gray-400 text-sm"> est.</span>
           </p>
         )}
       </div>

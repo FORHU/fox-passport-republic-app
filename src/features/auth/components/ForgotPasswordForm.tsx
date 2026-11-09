@@ -4,7 +4,10 @@ import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useForgotPassword } from "@/features/auth/hooks/useAuth";
+import {
+  forgotPasswordErrorMessage,
+  useForgotPassword,
+} from "@/features/auth/hooks/useAuth";
 import {
   forgotPasswordSchema,
   ForgotPasswordFormData,
@@ -21,6 +24,7 @@ export default function ForgotPasswordForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -31,6 +35,10 @@ export default function ForgotPasswordForm() {
       onSuccess: () => {
         setPendingEmail(data.email);
         setView("reset-password");
+      },
+      // Same text as the toast; the form stays so the email can be fixed.
+      onError: (error) => {
+        setError("email", { message: forgotPasswordErrorMessage(error) });
       },
     });
   };

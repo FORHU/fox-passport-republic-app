@@ -81,7 +81,13 @@ function CategoriesContent({
     );
   }, [type, displayCategories]);
 
-  const displayTitle = currentCategory ? currentCategory.name : type;
+  // "all" is the fallback type, not a category, so it has no name to show.
+  const isAll = type === "all";
+  const displayTitle = currentCategory
+    ? currentCategory.name
+    : isAll
+      ? "All"
+      : type;
 
   // --- VIEW: SPECIFIC CATEGORY (Legacy/Type Filter) ---
   if (type) {
@@ -99,7 +105,9 @@ function CategoriesContent({
                   {displayTitle}
                 </h1>
                 <p className="text-gray-400 text-sm mt-1">
-                  Explore the best {displayTitle?.toLowerCase()} experiences
+                  {isAll
+                    ? "Explore the best experiences"
+                    : `Explore the best ${displayTitle?.toLowerCase()} experiences`}
                 </p>
               </div>
             </div>

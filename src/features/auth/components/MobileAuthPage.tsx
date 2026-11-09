@@ -9,14 +9,18 @@ import {
   useLogin,
   useSignup,
   useForgotPassword,
+  useResetPassword,
   useVerifyEmail,
   useResendOtp,
+  forgotPasswordErrorMessage,
 } from "@/features/auth/hooks/useAuth";
 import {
   loginSchema,
   LoginFormData,
   signupSchema,
   SignupFormData,
+  resetPasswordSchema,
+  ResetPasswordFormData,
   FIX_HIGHLIGHTED_FIELDS,
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -720,16 +724,71 @@ function SignupView({
 
 // ─── Forgot Password View ─────────────────────────────────────────────────────
 
-function ForgotView({ onBack }: { onBack: () => void }) {
+const EYEBROW: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 800,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: "var(--accent-text)",
+  marginBottom: 8,
+};
+
+const HEADLINE: React.CSSProperties = {
+  fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
+  fontSize: 27,
+  fontWeight: 700,
+  color: "var(--color-white)",
+  lineHeight: 1.2,
+  marginBottom: 8,
+};
+
+const BODY: React.CSSProperties = {
+  fontSize: 12,
+  color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+  marginBottom: 24,
+};
+
+const primaryButton = (disabled: boolean): React.CSSProperties => ({
+  background: "#C4E85A",
+  color: "#000",
+  fontSize: 14,
+  fontWeight: 800,
+  borderRadius: 16,
+  padding: "14px 0",
+  border: "none",
+  cursor: disabled ? "not-allowed" : "pointer",
+  opacity: disabled ? 0.7 : 1,
+  boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
+});
+
+function ForgotView({
+  onBack,
+  onSent,
+}: {
+  onBack: () => void;
+  onSent: () => void;
+}) {
   const forgotMutation = useForgotPassword();
+  const setPendingEmail = useAuthStore((s) => s.setPendingEmail);
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string>();
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    forgotMutation.mutate(email, { onSuccess: () => setSent(true) });
+    const address = email.trim();
+    if (!address) return;
+    setError(undefined);
+    forgotMutation.mutate(address, {
+      onSuccess: () => {
+        setPendingEmail(address);
+        onSent();
+      },
+      // Same text as the toast; the form stays so the email can be fixed.
+      onError: (err) => setError(forgotPasswordErrorMessage(err)),
+    });
   };
+
+  const disabled = forgotMutation.isPending || !email.trim();
 
   return (
     <div style={{ marginTop: "auto", padding: "0 24px 44px" }}>
@@ -740,123 +799,198 @@ function ForgotView({ onBack }: { onBack: () => void }) {
         className="mb-7 self-start"
       />
 
-      <p
-        style={{
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: "0.16em",
-          textTransform: "uppercase",
-          color: "var(--accent-text)",
-          marginBottom: 8,
-        }}
-      >
-        Reset Password
-      </p>
-      <h1
-        style={{
-          fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-          fontSize: 27,
-          fontWeight: 700,
-          color: "var(--color-white)",
-          lineHeight: 1.2,
-          marginBottom: 8,
-        }}
-      >
+      <p style={EYEBROW}>Reset Password</p>
+      <h1 style={HEADLINE}>
         Forgot your
         <br />
         password?
       </h1>
-      <p
-        style={{
-          fontSize: 12,
-          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-          marginBottom: 24,
-        }}
+      <p style={BODY}>Enter your email and we&apos;ll send a reset code.</p>
+
+      <form
+        onSubmit={handleSend}
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
       >
-        Enter your email and we&apos;ll send a reset code.
+        <MobileField
+          label="Email address"
+          labelHidden
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError(undefined);
+          }}
+          placeholder="Email address"
+          autoComplete="email"
+          required
+          error={error}
+        />
+        <button type="submit" disabled={disabled} style={primaryButton(disabled)}>
+          {forgotMutation.isPending ? "Sending…" : "Send Reset Code"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ─── Reset Password View ──────────────────────────────────────────────────────
+
+function ResetView({
+  onBack,
+  onDone,
+}: {
+  onBack: () => void;
+  onDone: () => void;
+}) {
+  const pendingEmail = useAuthStore((s) => s.pendingEmail);
+  const resetMutation = useResetPassword();
+  const resendMutation = useForgotPassword();
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { otpCode: "", newPassword: "", confirmPassword: "" },
+  });
+
+  const onSubmit = (data: ResetPasswordFormData) => {
+    if (!pendingEmail) {
+      onBack();
+      return;
+    }
+    resetMutation.mutate(
+      {
+        email: pendingEmail,
+        otpCode: data.otpCode,
+        newPassword: data.newPassword,
+      },
+      { onSuccess: () => onDone() },
+    );
+  };
+
+  return (
+    <div style={{ marginTop: "auto", padding: "0 24px 44px" }}>
+      <BackButton
+        variant="label"
+        label="Back"
+        onClick={onBack}
+        className="mb-7 self-start"
+      />
+
+      <p style={EYEBROW}>Reset Password</p>
+      <h1 style={HEADLINE}>
+        Enter your
+        <br />
+        reset code
+      </h1>
+      <p style={BODY}>
+        We sent a 6-digit code to{" "}
+        <strong style={{ color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}>
+          {pendingEmail}
+        </strong>
+        .
       </p>
 
-      {sent ? (
-        <div
-          style={{
-            background: "rgba(196,232,90,0.08)",
-            border: "1px solid rgba(196,232,90,0.25)",
-            borderRadius: 16,
-            padding: "20px 18px",
-            textAlign: "center",
-          }}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <Controller
+          control={control}
+          name="otpCode"
+          render={({ field }) => (
+            <MobileField
+              label="Reset code"
+              labelHidden
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              name={field.name}
+              ref={field.ref}
+              value={field.value}
+              onBlur={field.onBlur}
+              onChange={(e) =>
+                field.onChange(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              placeholder="000000"
+              required
+              error={errors.otpCode?.message}
+              inputStyle={{
+                fontSize: 24,
+                fontWeight: 700,
+                textAlign: "center",
+                letterSpacing: "0.3em",
+              }}
+            />
+          )}
+        />
+
+        <MobileField
+          {...register("newPassword")}
+          label="New password"
+          type={showPw ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={errors.newPassword?.message}
+          hint={PASSWORD_HINT}
+          trailing={<PwToggle shown={showPw} onToggle={() => setShowPw((p) => !p)} />}
+        />
+
+        <MobileField
+          {...register("confirmPassword")}
+          label="Confirm new password"
+          type={showConfirmPw ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={errors.confirmPassword?.message}
+          trailing={
+            <PwToggle
+              shown={showConfirmPw}
+              onToggle={() => setShowConfirmPw((p) => !p)}
+            />
+          }
+        />
+
+        <button
+          type="submit"
+          disabled={resetMutation.isPending}
+          style={primaryButton(resetMutation.isPending)}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 32,
-              color: "var(--accent-text)",
-              display: "block",
-              marginBottom: 10,
-            }}
-          >
-            mark_email_read
-          </span>
-          <p
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: "var(--color-white)",
-              marginBottom: 6,
-            }}
-          >
-            Check your inbox
-          </p>
-          <p
-            style={{
-              fontSize: 12,
-              color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
-              lineHeight: 1.5,
-            }}
-          >
-            We sent a reset code to{" "}
-            <strong style={{ color: "var(--color-white)" }}>{email}</strong>. Check your spam
-            folder if you don&apos;t see it.
-          </p>
-        </div>
-      ) : (
-        <form
-          onSubmit={handleSend}
-          style={{ display: "flex", flexDirection: "column", gap: 12 }}
-        >
-          <MobileField
-            label="Email address"
-            labelHidden
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            autoComplete="email"
-            required
-          />
+          {resetMutation.isPending ? "Resetting…" : "Reset Password"}
+        </button>
+      </form>
+
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 35%, transparent)" }}>
+          Didn&apos;t receive it?{" "}
           <button
-            type="submit"
-            disabled={forgotMutation.isPending || !email.trim()}
+            type="button"
+            onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
+            disabled={resendMutation.isPending || !pendingEmail}
             style={{
-              background: "#C4E85A",
-              color: "#000",
-              fontSize: 14,
-              fontWeight: 800,
-              borderRadius: 16,
-              padding: "14px 0",
+              color: "var(--accent-text)",
+              fontWeight: 700,
+              background: "none",
               border: "none",
-              cursor:
-                forgotMutation.isPending || !email.trim()
-                  ? "not-allowed"
-                  : "pointer",
-              opacity: forgotMutation.isPending || !email.trim() ? 0.7 : 1,
-              boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
+              cursor: "pointer",
+              fontSize: 12,
+              padding: 0,
+              opacity: resendMutation.isPending ? 0.5 : 1,
             }}
           >
-            {forgotMutation.isPending ? "Sending…" : "Send Reset Code"}
+            {resendMutation.isPending ? "Sending…" : "Resend code"}
           </button>
-        </form>
-      )}
+        </p>
+      </div>
     </div>
   );
 }
@@ -1058,7 +1192,18 @@ export default function MobileAuthPage({
             onSignedUp={() => setView("verify")}
           />
         )}
-        {view === "forgot" && <ForgotView onBack={() => setView("login")} />}
+        {view === "forgot" && (
+          <ForgotView
+            onBack={() => setView("login")}
+            onSent={() => setView("reset")}
+          />
+        )}
+        {view === "reset" && (
+          <ResetView
+            onBack={() => setView("forgot")}
+            onDone={() => setView("login")}
+          />
+        )}
         {view === "verify" && (
           <VerifyView onVerified={() => setView("login")} />
         )}

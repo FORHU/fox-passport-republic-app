@@ -26,6 +26,7 @@ import {
   ViewportBounds,
 } from "@/features/venue/api/venues";
 import { Money } from "@/shared/components/ui/Money";
+import { venueRateUnit } from "@/features/venue/helpers/rateUnit";
 import { assetUrl } from "@/shared/lib/assets";
 import { BackButton } from "@/shared/components/ui/BackButton";
 
@@ -63,6 +64,7 @@ interface ListVenue extends MapVenue {
   image: string;
   location: string;
   price: number;
+  billingRate?: string;
   rating: number;
   reviews: number;
   capacity: number;
@@ -177,7 +179,7 @@ function VenueListCard({
             <p className="text-sm font-bold text-white">
               <Money amount={venue.price} />
               <span className="text-[10px] font-normal text-white/40">
-                /night
+                /{venueRateUnit(venue.billingRate)}
               </span>
             </p>
             <Link
@@ -314,7 +316,9 @@ function VenueDetailCard({
         <div className="flex items-center justify-between pt-2 border-t border-white/10">
           <p className="text-base font-bold text-white">
             <Money amount={venue.price} />
-            <span className="text-xs font-normal text-white/40">/night</span>
+            <span className="text-xs font-normal text-white/40">
+              /{venueRateUnit(venue.billingRate)}
+            </span>
           </p>
           <Link
             href={`/venues/${venue.id}`}
@@ -406,6 +410,7 @@ export function VenuesMapPageClient({
       image: resolvedImg,
       location: v.loc ?? v.location ?? "",
       price: Number(v.price) || 0,
+      billingRate: v.billingRate ?? undefined,
       rating: Number(v.rating) || 0,
       reviews: Number(v.reviews) || 0,
       capacity: Number(v.guestCount ?? v.capacity) || 0,

@@ -219,19 +219,33 @@ export const useSignup = () => {
   });
 };
 
+/** The API's 404 message when no account has this email (app#257). */
+export const NO_ACCOUNT_MESSAGE =
+  "No account found with this email. Please double-check your email and try again.";
+
+/** What the code screen says too, so the toast and the screen agree. */
+export const resetCodeSentMessage = (email: string) =>
+  `We sent a 6-digit code to ${email}.`;
+
+/**
+ * The toast's text for a failed reset request. The forgot-password forms show
+ * the same string beside the email field.
+ */
+export const forgotPasswordErrorMessage = (error: any): string =>
+  error?.response?.data?.message ||
+  (error?.response?.status === 404
+    ? NO_ACCOUNT_MESSAGE
+    : "Failed to send reset code. Please try again.");
+
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: realForgotPassword,
-    onSuccess: (data) => {
-      toast.success(
-        data.message || "If an account exists, a reset code has been sent.",
-      );
+    // The API checks the account first: success means a code was sent.
+    onSuccess: (_data, email) => {
+      toast.success(resetCodeSentMessage(email));
     },
     onError: (error: any) => {
-      const msg =
-        error.response?.data?.message ||
-        "Failed to send reset code. Please try again.";
-      toast.error(msg);
+      toast.error(forgotPasswordErrorMessage(error));
     },
   });
 };
