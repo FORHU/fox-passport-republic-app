@@ -76,6 +76,26 @@ function isPublicCitizenProfile(pathname: string): boolean {
   return !!match && !USER_PAGES.has(match[1]);
 }
 
+// `/foxer/<id>` is a Foxer's public profile, which robots.txt invites crawlers
+// to index. Only that one segment: `/foxer` itself and its fixed pages (the
+// application forms, studios and dashboards) stay signed-in, each guarded by
+// its own page or layout.
+const FOXER_PAGES = new Set([
+  "affiliations",
+  "apply",
+  "apply-investor",
+  "create-event",
+  "create-investment",
+  "create-listing",
+  "create-service",
+  "marketplace-requests",
+  "resubmit",
+]);
+function isPublicFoxerProfile(pathname: string): boolean {
+  const match = /^\/foxer\/([^/]+)\/?$/.exec(pathname);
+  return !!match && !FOXER_PAGES.has(match[1]);
+}
+
 async function guard(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -83,7 +103,11 @@ async function guard(request: NextRequest) {
     pathname.startsWith(route),
   );
 
-  if (!isProtectedRoute || isPublicCitizenProfile(pathname)) {
+  if (
+    !isProtectedRoute ||
+    isPublicCitizenProfile(pathname) ||
+    isPublicFoxerProfile(pathname)
+  ) {
     return NextResponse.next();
   }
 

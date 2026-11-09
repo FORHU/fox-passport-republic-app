@@ -117,11 +117,17 @@ describe("every protected route tree guards itself", () => {
     .map((entry) => entry.trim().replace(/^"|"$/g, ""))
     .filter(Boolean);
 
-  const GUARDS = /requireAuth|requireAdmin|requireHost|RequireAuth/;
+  // `requirePermission`, `requireAnyPermission` and `studioAccessDenied` each
+  // start with `requireAuth`, so a page that calls one is guarded.
+  const GUARDS =
+    /requireAuth|requireAdmin|requireHost|RequireAuth|requirePermission|requireAnyPermission|studioAccessDenied/;
 
   // Pages inside a protected tree that are public by decision, each matched
   // by an exception in proxy.ts (and pinned by proxyPublicProfiles.test.ts).
-  const PUBLIC_PAGES = [join("user", "[id]", "page.tsx")];
+  const PUBLIC_PAGES = [
+    join("user", "[id]", "page.tsx"),
+    join("foxer", "[id]", "page.tsx"),
+  ];
 
   it("reads the route list out of the middleware", () => {
     expect(routes.length).toBeGreaterThan(0);

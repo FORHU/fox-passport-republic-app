@@ -91,7 +91,16 @@ function SkeletonProfile() {
   );
 }
 
-const FoxerProfile: React.FC = () => {
+interface FoxerProfileProps {
+  /**
+   * The profile the page already fetched on the server. Seeding the query with
+   * it puts the profile itself in the server HTML, not a loading skeleton, so a
+   * crawler (or anyone on a slow phone) sees the content without running JS.
+   */
+  initialFoxer?: Foxer;
+}
+
+const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
@@ -104,6 +113,7 @@ const FoxerProfile: React.FC = () => {
     queryFn: () => fetchFoxerById(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
+    initialData: initialFoxer,
   });
 
   if (isLoading) return <SkeletonProfile />;

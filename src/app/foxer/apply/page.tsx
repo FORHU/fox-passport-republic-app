@@ -1,6 +1,7 @@
 import React from "react";
 import FoxerApplicationClient from "@/features/role-application/components/FoxerApplicationClient";
 import { Metadata } from "next";
+import { requireAuth } from "@/shared/lib/server/auth";
 
 export const metadata: Metadata = {
   title: "Apply to be a Foxer",
@@ -13,6 +14,8 @@ export default async function FoxerApplicationPage({
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
+  // Signed in, not a Foxer yet: this form is how someone becomes one.
+  await requireAuth();
   const { type } = await searchParams;
   const initialType =
     type === "asset"

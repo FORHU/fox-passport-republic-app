@@ -1,6 +1,7 @@
 import React from "react";
 import ResubmitDocumentsClient from "@/features/role-application/components/ResubmitDocumentsClient";
 import { Metadata } from "next";
+import { requireAuth } from "@/shared/lib/server/auth";
 
 export const metadata: Metadata = {
   title: "Fix Application Documents",
@@ -12,6 +13,7 @@ export default async function ResubmitDocumentsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAuth();
   const { id } = await params;
   return <ResubmitDocumentsClient requestId={id} />;
 }
