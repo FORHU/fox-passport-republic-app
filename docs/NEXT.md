@@ -777,11 +777,11 @@ invisible to admins).
       won't get one, so a phone browser is the only way to reach admin on a
       phone. And it is only the dashboard tab now (`AdminBody`); every other tab
       already renders the real `AdminContent` at phone width.
-- [ ] **Foxer profiles (`/foxer/<id>`): public, or out of the sitemap?** They
-      are signed-in only by design (`app/foxer/layout.tsx` and `proxy.ts`), yet
-      the sitemap lists them, robots allows them and they carry JSON-LD and a
-      canonical, so a crawler gets a redirect to sign-in. Make them public as
-      `/user/<id>` was (#174), or drop them from the sitemap and robots.
+- [x] **Foxer profiles (`/foxer/<id>`): public, or out of the sitemap?**
+      **Public, 9 Nov (#266).** `proxy.ts` lets `/foxer/<id>` through as it does
+      `/user/<id>`; the tree-wide `app/foxer/layout.tsx` guard is gone and each
+      other `/foxer` page guards itself. The profile is server-rendered from
+      the page's own fetch, so crawlers get the content, not a skeleton.
 - [ ] **Organizers and capacity, (a) or (b).** (a) package-level Appointments
       with their own permission, or (b) Organizers may change a booked Event's
       guest count. Organizers seeing a package's History waits on this.
