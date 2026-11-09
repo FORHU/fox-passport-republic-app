@@ -45,14 +45,16 @@ function PackageCard({ pkg, date }: { pkg: LandingEvent; date?: string }) {
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface transition-colors hover:border-accent/50">
-      <div className="aspect-[4/3] bg-white/5">
+      {/* The photo is absolutely positioned so its own proportions can't
+          stretch the box: every card's photo is 4:3, cropped to fill. */}
+      <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-white/5">
         {photo && (
           <img
             src={photo}
             alt=""
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         )}
       </div>
