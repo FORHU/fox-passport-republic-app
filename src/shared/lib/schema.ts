@@ -7,7 +7,7 @@ import {
   priceField,
   quantityField,
 } from "./limits";
-import { passwordSchema } from "./passwordPolicy";
+import { requiredPassword } from "./passwordPolicy";
 
 // --- PROFILE FIELD SCHEMAS ---
 // Kept in step with the API's PUT /profile validation (profile.controller.ts).
@@ -33,19 +33,42 @@ export const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
+export const CONFIRM_PASSWORD_REQUIRED = "Confirm your password";
+export const PASSWORDS_DO_NOT_MATCH = "Passwords do not match";
+export const TERMS_REQUIRED = "You must accept the Terms and Privacy Policy";
+/** The one toast after a failed sign-up submit; the fields carry the detail. */
+export const FIX_HIGHLIGHTED_FIELDS = "Please fix the highlighted fields";
+
+/**
+ * "Passwords do not match" on `confirmPassword`. `when` lets it run even while
+ * other fields are invalid (zod skips object refinements otherwise, so an
+ * empty-form submit used to show nothing here), and skips an empty confirm,
+ * which `min(1)` already reports.
+ */
+const confirmMismatchIssue = {
+  message: PASSWORDS_DO_NOT_MATCH,
+  path: ["confirmPassword"],
+  when: ({ value }: { value: unknown }) => {
+    const confirm = (value as { confirmPassword?: unknown } | undefined)
+      ?.confirmPassword;
+    return typeof confirm === "string" && confirm.length > 0;
+  },
+};
+
 export const signupSchema = z
   .object({
-    email: z.email("Invalid email address"),
-    password: passwordSchema,
-    confirmPassword: z.string(),
-    username: usernameSchema,
-    name: nameField("Name is required").regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .pipe(z.email("Enter a valid email address")),
+    password: requiredPassword("Password is required"),
+    confirmPassword: z.string().min(1, CONFIRM_PASSWORD_REQUIRED),
+    username: z.string().min(1, "Username is required").pipe(usernameSchema),
+    name: nameField("Full name is required").regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
     mobileNumber: z.string().optional(),
+    acceptedTerms: z.boolean().refine((v) => v === true, TERMS_REQUIRED),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  .refine((d) => d.password === d.confirmPassword, confirmMismatchIssue);
 
 export type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -59,13 +82,10 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export const resetPasswordSchema = z
   .object({
     otpCode: z.string().length(6, "Code must be 6 digits"),
-    newPassword: passwordSchema,
-    confirmPassword: z.string(),
+    newPassword: requiredPassword("New password is required"),
+    confirmPassword: z.string().min(1, CONFIRM_PASSWORD_REQUIRED),
   })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  .refine((d) => d.newPassword === d.confirmPassword, confirmMismatchIssue);
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
