@@ -141,6 +141,7 @@ export default function VenueDetailClient({
 
       <VenueNavHeader
         title={venue.title}
+        venueId={String(venue.id)}
         onBack={handleBack}
         onProposePartnership={handleProposePartnership}
         onEdit={

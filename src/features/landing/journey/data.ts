@@ -95,6 +95,34 @@ export function useVenues(limit = 80) {
   return data ?? [];
 }
 
+/**
+ * How many venues are on the map: the API's own total for a whole-world
+ * viewport, the same query and count `/venues/map` shows. `useVenues` can't
+ * give this — it is capped at its limit and filtered on the client.
+ */
+export function useVenueCount() {
+  const { data } = useQuery({
+    queryKey: ["landing", "venues", "count"],
+    queryFn: async () => {
+      const res = await api.get("/venues", {
+        params: {
+          north: 90,
+          south: -90,
+          east: 180,
+          west: -180,
+          page: 1,
+          limit: 1,
+          lightweight: true,
+        },
+      });
+      const total = res.data?.total;
+      return typeof total === "number" ? total : null;
+    },
+    staleTime: TEN_MINUTES,
+  });
+  return data ?? null;
+}
+
 const normalizePlace = (value: string) =>
   value
     .normalize("NFD")
