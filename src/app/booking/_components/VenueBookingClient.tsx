@@ -28,6 +28,7 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { venueRateUnit } from "@/features/venue/helpers/rateUnit";
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
@@ -107,14 +108,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const subtotal = baseAmount + overageAmount;
   const serviceFee = platformFee ?? 0;
   const total = Math.max(0, subtotal + serviceFee - voucherDiscount);
-  const rateUnit =
-    venue?.billingRate === "hourly"
-      ? "hr"
-      : venue?.billingRate === "weekly"
-        ? "week"
-        : venue?.billingRate === "monthly"
-          ? "month"
-          : "day";
+  const rateUnit = venueRateUnit(venue?.billingRate);
 
   const imageUrl =
     venue?.images?.[0]?.url ?? venue?.images?.[0]?.imageUrl ?? null;

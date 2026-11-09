@@ -24,6 +24,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
 import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
+import { venueRateUnit } from "../helpers/rateUnit";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -61,6 +62,7 @@ export default function VenueDetailClient({
   // to a single `price` number and `images` down to `string[]`. Reading the
   // typed fields directly silently produced ₱0 and broken <img> tags.
   const venuePrice = Number((venue as any).price || 0);
+  const rateUnit = venueRateUnit(venue.billingRate);
 
   const { user } = useAuthStore();
   // Signed out, sign in and come back here: an investor then gets the modal,
@@ -150,7 +152,7 @@ export default function VenueDetailClient({
         }
       />
 
-      {/* Mobile sticky bottom bar — design: "From ₱X/night  [Book Now]" */}
+      {/* Mobile sticky bottom bar — design: "From ₱X/day  [Book Now]" */}
       {venuePrice > 0 && (
         <div
           className="lg:hidden fixed bottom-5 left-4 right-4 z-40 flex items-center justify-between px-5 py-3 rounded-2xl"
@@ -167,7 +169,9 @@ export default function VenueDetailClient({
             </p>
             <p className="text-xl font-display font-bold text-accent">
               <Money amount={venuePrice} />
-              <span className="text-xs text-white/40 font-normal">/night</span>
+              <span className="text-xs text-white/40 font-normal">
+                /{rateUnit}
+              </span>
             </p>
           </div>
           <button
@@ -506,7 +510,7 @@ export default function VenueDetailClient({
               <Money amount={venuePrice} />
             </span>
             <span className="text-xs text-text-muted">
-              / {venue.billingRate === "hour" ? "hr" : "day"}
+              / {rateUnit}
             </span>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-white/70">

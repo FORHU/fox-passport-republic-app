@@ -126,6 +126,16 @@ interface VenueGalleryGridProps {
   onOpenGallery: (index: number) => void;
 }
 
+// Cell spans in the 4×2 grid by photo count, so fewer than five photos still
+// fill it: the first is the main photo, the rest share the right half.
+const GALLERY_SPANS: Record<number, string[]> = {
+  1: ["col-span-4 row-span-2"],
+  2: ["col-span-2 row-span-2", "col-span-2 row-span-2"],
+  3: ["col-span-2 row-span-2", "col-span-2", "col-span-2"],
+  4: ["col-span-2 row-span-2", "col-span-2", "", ""],
+  5: ["col-span-2 row-span-2", "", "", "", ""],
+};
+
 export function VenueGalleryGrid({
   images,
   onOpenGallery,
@@ -136,6 +146,8 @@ export function VenueGalleryGrid({
       : [
           "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
         ];
+  const gridImages = displayImages.slice(0, 5);
+  const spans = GALLERY_SPANS[gridImages.length];
 
   return (
     <div className="relative mb-8 sm:mb-12">
@@ -166,27 +178,17 @@ export function VenueGalleryGrid({
 
       {/* Tablet & Desktop Bento Grid (hidden on <md) */}
       <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[380px] lg:h-[480px] rounded-3xl overflow-hidden relative">
-        <div
-          className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden"
-          onClick={() => onOpenGallery(0)}
-        >
-          <img
-            src={displayImages[0]}
-            className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-110 transition-all duration-500"
-            alt="Main"
-          />
-          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-        </div>
-        {displayImages.slice(1, 5).map((img, idx) => (
+        {gridImages.map((img, idx) => (
           <div
             key={idx}
-            className="relative cursor-pointer group overflow-hidden"
-            onClick={() => onOpenGallery(idx + 1)}
+            data-testid="gallery-cell"
+            className={`${spans[idx]} relative cursor-pointer group overflow-hidden`}
+            onClick={() => onOpenGallery(idx)}
           >
             <img
               src={img}
               className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-110 transition-all duration-500"
-              alt={`View ${idx + 1}`}
+              alt={idx === 0 ? "Main" : `View ${idx}`}
             />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
           </div>
