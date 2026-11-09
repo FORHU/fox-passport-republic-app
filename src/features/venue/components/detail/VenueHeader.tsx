@@ -144,8 +144,9 @@ export function VenueNavHeader({
 
 interface VenueHeroProps {
   title: string;
-  rating: number;
-  reviews: number;
+  rating: number | null;
+  /** Review count; `undefined` while it loads (no rating shown), 0 shows "New". */
+  reviews?: number;
   location: string;
   province: string;
 }
@@ -163,16 +164,21 @@ export function VenueHero({
         {title}
       </h1>
       <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted">
-        <div className="flex items-center gap-1 font-bold text-white">
-          <span className="material-symbols-outlined text-[18px] fill-current text-white">
-            star
-          </span>
-          {rating}
-          <span className="text-text-muted font-normal underline decoration-dotted cursor-pointer ml-1">
-            {reviews} reviews
-          </span>
-        </div>
-        <span>·</span>
+        {reviews !== undefined &&
+          (reviews > 0 ? (
+            <div className="flex items-center gap-1 font-bold text-white">
+              <span className="material-symbols-outlined text-[18px] fill-current text-white">
+                star
+              </span>
+              {rating ?? 0}
+              <span className="text-text-muted font-normal underline decoration-dotted cursor-pointer ml-1">
+                {reviews} {reviews === 1 ? "review" : "reviews"}
+              </span>
+            </div>
+          ) : (
+            <span className="font-bold text-white">New</span>
+          ))}
+        {reviews !== undefined && <span>·</span>}
         <span className="flex items-center gap-1 text-white underline decoration-dotted cursor-pointer">
           {joinPlace(location, province)}
         </span>

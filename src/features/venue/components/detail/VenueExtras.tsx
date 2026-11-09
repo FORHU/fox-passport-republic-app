@@ -19,6 +19,7 @@ import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import { joinPlace } from "@/shared/lib/place";
+import { useVenueReviewSummary } from "@/features/venue/hooks/useVenueReviewSummary";
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -342,15 +343,14 @@ export function VenueReviews({
     });
   }
 
-  const avgRating = reviews.length
-    ? Number(
-        (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        ).toFixed(1),
-      )
-    : fallbackRating;
-
-  const displayTotal = reviews.length || fallbackTotal;
+  // Whether the venue is rated comes from the review count, never from the
+  // rating: a real review of 0 is still a rating, while no reviews is "New".
+  // The summary ignores the sort, so changing it doesn't blank the header.
+  const summary = useVenueReviewSummary(venueId);
+  const displayTotal = summary ? summary.count : fallbackTotal;
+  const hasReviews = displayTotal > 0;
+  const avgRating = summary ? (summary.average ?? 0) : fallbackRating;
+  const summaryLoading = !summary && !!venueId;
   const [showAll, setShowAll] = React.useState(false);
 
   const [replyOpenId, setReplyOpenId] = React.useState<string | null>(null);
@@ -371,41 +371,52 @@ export function VenueReviews({
 
   return (
     <div id="reviews">
-      <div className="flex items-center gap-2 mb-8">
-        <span className="material-symbols-outlined text-4xl text-white fill-current">
-          star
-        </span>
-        <h2 className="text-5xl font-display font-bold text-white">
-          {avgRating}
-        </h2>
-        <div className="flex flex-col justify-center h-full ml-4 pl-4 border-l border-white/10">
-          <span className="text-lg font-bold text-white leading-none">
-            Guest favorite
+      {hasReviews ? (
+        <div className="flex items-center gap-2 mb-8">
+          <span className="material-symbols-outlined text-4xl text-white fill-current">
+            star
           </span>
-          <p className="text-sm text-text-muted mt-1">
-            {displayTotal} {displayTotal === 1 ? "review" : "reviews"}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-10">
-        {ratingBars.map((row) => (
-          <div key={row.stars} className="flex items-center gap-3">
-            <span className="text-sm font-bold text-white w-3">
-              {row.stars}
+          <h2 className="text-5xl font-display font-bold text-white">
+            {avgRating}
+          </h2>
+          <div className="flex flex-col justify-center h-full ml-4 pl-4 border-l border-white/10">
+            <span className="text-lg font-bold text-white leading-none">
+              Guest favorite
             </span>
-            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-accent rounded-full"
-                style={{ width: row.count }}
-              />
-            </div>
-            <span className="text-xs font-medium text-text-muted w-8 text-right">
-              {row.count}
-            </span>
+            <p className="text-sm text-text-muted mt-1">
+              {displayTotal} {displayTotal === 1 ? "review" : "reviews"}
+            </p>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : !summaryLoading ? (
+        <div className="flex items-center gap-2 mb-8">
+          <h2 className="text-5xl font-display font-bold text-white">New</h2>
+          <div className="flex flex-col justify-center h-full ml-4 pl-4 border-l border-white/10">
+            <p className="text-sm text-text-muted">No reviews yet</p>
+          </div>
+        </div>
+      ) : null}
+
+      {hasReviews && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-10">
+          {ratingBars.map((row) => (
+            <div key={row.stars} className="flex items-center gap-3">
+              <span className="text-sm font-bold text-white w-3">
+                {row.stars}
+              </span>
+              <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent rounded-full"
+                  style={{ width: row.count }}
+                />
+              </div>
+              <span className="text-xs font-medium text-text-muted w-8 text-right">
+                {row.count}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {hasSubRatings && (
         <div
