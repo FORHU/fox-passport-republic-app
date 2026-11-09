@@ -4,6 +4,9 @@
  * opened before the application form. Keep `responsibilities` and
  * `requirements` in step with the real flows (docs/ROLE_FLOWS.md) and the
  * application forms under features/role-application.
+ *
+ * Gear, Talent and Performer Foxer were folded into Provider (providerFoxer)
+ * and removed (API ADR 0008).
  */
 export interface RoleCatalogEntry {
   type: string;
@@ -42,66 +45,6 @@ export const ROLES: RoleCatalogEntry[] = [
     requirements: [
       "Your business or stage name, service/gear offerings, and experience",
       "Your tax ID or police clearance ID number (if applicable)",
-      BUSINESS_DOCUMENTS,
-    ],
-  },
-  {
-    type: "service",
-    slug: "talent",
-    roleType: "serviceFoxer",
-    href: "/foxer/apply?type=service",
-    color: "var(--periwinkle)",
-    icon: "design_services",
-    title: "Talent Foxer",
-    desc: "Offer catering, design, staffing, and professional services.",
-    responsibilities: [
-      "List services like catering, event design, and staffing, with your own packages and pricing.",
-      "Get booked directly by citizens, or bid on open service slots in published events.",
-      "Message clients and manage your bookings and payouts from your dashboard.",
-    ],
-    requirements: [
-      "Your service types, years of experience, and portfolio links",
-      "Your police clearance ID number",
-      BUSINESS_DOCUMENTS,
-    ],
-  },
-  {
-    type: "performer",
-    slug: "performer",
-    roleType: "performerFoxer",
-    href: "/foxer/apply?type=performer",
-    color: "var(--warning)",
-    icon: "theater_comedy",
-    title: "Performer Foxer",
-    desc: "Offer photography, DJ, live music, hosting, and more.",
-    responsibilities: [
-      "List performances like photography, videography, DJ sets, live music, and hosting.",
-      "Get booked directly by citizens, or bid on open performer slots in published events.",
-      "Message clients and manage your bookings and payouts from your dashboard.",
-    ],
-    requirements: [
-      "Your performer types, years of experience, and portfolio or demo reel links",
-      "Your police clearance ID number",
-      BUSINESS_DOCUMENTS,
-    ],
-  },
-  {
-    type: "asset",
-    slug: "gear",
-    roleType: "gearFoxer",
-    href: "/foxer/apply?type=asset",
-    color: "var(--periwinkle)",
-    icon: "inventory_2",
-    title: "Gear Foxer",
-    desc: "Rent out sound systems, lighting, furniture, and event equipment.",
-    responsibilities: [
-      "List sound systems, lighting, furniture, and other event equipment for rent.",
-      "Get booked directly by citizens, or bid on open equipment slots in published events.",
-      "Track rentals and payouts from your dashboard. New listings are reviewed before they go live.",
-    ],
-    requirements: [
-      "Your business name and the equipment types you rent out",
-      "Your tax ID number",
       BUSINESS_DOCUMENTS,
     ],
   },

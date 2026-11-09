@@ -104,7 +104,7 @@ describe("creator dashboard sections", () => {
 describe("the dashboard's mobile bar", () => {
   it("keeps every section reachable through More", () => {
     signIn({
-      roleType: ["venueFoxer", "eventFoxer", "gearFoxer"],
+      roleType: ["venueFoxer", "eventFoxer", "providerFoxer"],
       permissions: [
         "venue:manage",
         "template:manage",

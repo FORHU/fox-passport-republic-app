@@ -6,14 +6,7 @@ import api from "@/shared/lib/axios";
 import { useRouter } from "next/navigation";
 
 export type RoleType =
-  | "venueFoxer"
-  | "gearFoxer"
-  | "serviceFoxer"
-  | "performerFoxer"
-  | "providerFoxer"
-  | "investor"
-  | "eventFoxer"
-  | "organizer";
+  "venueFoxer" | "providerFoxer" | "investor" | "eventFoxer" | "organizer";
 
 interface ApplyRolePayload {
   roleType: RoleType;

@@ -64,6 +64,12 @@ const nextConfig = {
 
   async redirects() {
     return [
+      // Gear, Talent and Performer Foxer were folded into Provider.
+      ...["gear", "talent", "performer"].map((slug) => ({
+        source: `/earn/${slug}`,
+        destination: "/earn/provider",
+        permanent: true,
+      })),
       { source: "/host", destination: "/creator-dashboard", permanent: true },
       {
         source: "/host/apply",

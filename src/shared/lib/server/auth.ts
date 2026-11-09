@@ -86,9 +86,9 @@ export async function requireAnyPermission(
  * before the Foxer rename, compared against `systemRole`, which can only ever
  * be `user` or `admin` — so that branch never matched anything.
  *
- * `performerFoxer` and `investor` were missing from this list even after
- * both gained real dashboard content (a payout ledger, Stripe Connect
- * onboarding) — a performerFoxer or investor hit the redirect below and
+ * The performer role (since folded into `providerFoxer`) and `investor` were
+ * missing from this list even after both gained real dashboard content (a
+ * payout ledger, Stripe Connect onboarding) — such a user hit the redirect below and
  * could never reach `/creator-dashboard/earnings` or `/stripe-onboard` at
  * all, despite the API granting both roles `payouts:onboard`. Every RoleType
  * in ROLE_TYPES (shared/constants/roles.ts) belongs here now.

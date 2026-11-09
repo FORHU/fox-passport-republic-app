@@ -17,16 +17,9 @@ export default async function FoxerApplicationPage({
   // Signed in, not a Foxer yet: this form is how someone becomes one.
   await requireAuth();
   const { type } = await searchParams;
-  const initialType =
-    type === "asset"
-      ? "asset"
-      : type === "performer"
-        ? "performer"
-        : type === "organizer"
-          ? "organizer"
-          : type === "service"
-            ? "service"
-            : "provider";
+  // Gear, Talent and Performer applications were folded into Provider; old
+  // ?type=asset|service|performer links open the Provider form.
+  const initialType = type === "organizer" ? "organizer" : "provider";
   // One responsive form for every screen size. There used to be a separate
   // phone version that never submitted anything.
   return <FoxerApplicationClient initialType={initialType} />;

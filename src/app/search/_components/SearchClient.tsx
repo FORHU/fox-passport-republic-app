@@ -420,8 +420,8 @@ export default function SearchClient() {
           </h1>
           <p className="mt-3 text-base leading-relaxed text-white/70">
             The people who supply events. Event Foxers plan and run the whole
-            night, Gear Foxers rent out equipment, and Talent Foxers cover
-            catering, design, staffing and performances.
+            night, and Providers rent out equipment and cover catering,
+            design, staffing and performances.
           </p>
           <div role="search" className="relative mt-6">
             <label htmlFor="foxer-search" className="sr-only">

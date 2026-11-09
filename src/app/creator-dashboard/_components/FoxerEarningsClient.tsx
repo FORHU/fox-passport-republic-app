@@ -72,12 +72,7 @@ const STATUS_CFG: Record<
 // three would just be an empty "No bookings yet" even once they're actively
 // getting paid — their real payout record is the ledger below, which reads
 // from the role-agnostic `/payouts/me` instead.
-const BOOKING_PAYOUT_ROLES = [
-  "gearFoxer",
-  "serviceFoxer",
-  "performerFoxer",
-  "providerFoxer",
-];
+const BOOKING_PAYOUT_ROLES = ["providerFoxer"];
 const NO_PAYOUTS: Payout[] = [];
 const NO_TOTALS = { paid: 0, pending: 0 };
 

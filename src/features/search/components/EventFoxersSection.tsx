@@ -33,9 +33,7 @@ function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
 function getPrimaryRole(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes("eventFoxer")) return "eventFoxer";
-  if (roles.includes("gearFoxer")) return "gearFoxer";
-  if (roles.includes("serviceFoxer")) return "serviceFoxer";
-  if (roles.includes("performerFoxer")) return "performerFoxer";
+  if (roles.includes("providerFoxer")) return "providerFoxer";
   return "";
 }
 
@@ -44,17 +42,9 @@ const ROLE_META: Record<string, { label: string; description: string }> = {
     label: "Event Foxer",
     description: "Plans and runs your whole event, from venue to crew.",
   },
-  gearFoxer: {
-    label: "Gear Foxer",
-    description: "Rents out equipment: sound, lighting and décor.",
-  },
-  serviceFoxer: {
-    label: "Talent Foxer",
-    description: "Provides catering, design and staffing.",
-  },
-  performerFoxer: {
-    label: "Performer Foxer",
-    description: "Photography, DJs, live music and hosts.",
+  providerFoxer: {
+    label: "Provider",
+    description: "Equipment, catering, design, staffing and performers.",
   },
   venueFoxer: {
     label: "Venue Foxer",
