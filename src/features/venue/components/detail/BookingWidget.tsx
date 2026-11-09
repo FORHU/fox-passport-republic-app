@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 import { Money } from "@/shared/components/ui/Money";
+import { venueRateUnit } from "@/features/venue/helpers/rateUnit";
 
 interface VenueBookingWidgetProps {
   venueId: string;
@@ -21,7 +22,7 @@ interface VenueBookingWidgetProps {
 export function BookingWidget({
   venueId,
   price,
-  billingRate = "day",
+  billingRate,
   rating,
   reviews,
   capacity,
@@ -31,7 +32,7 @@ export function BookingWidget({
 }: VenueBookingWidgetProps) {
   const router = useRouter();
 
-  const rateLabel = billingRate === "hour" ? "hr" : "day";
+  const rateLabel = venueRateUnit(billingRate);
 
   return (
     <div className="relative lg:top-8 w-full max-w-lg mx-auto lg:max-w-none">
