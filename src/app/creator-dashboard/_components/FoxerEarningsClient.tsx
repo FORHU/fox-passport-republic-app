@@ -12,6 +12,7 @@ import {
   type Payout,
 } from "@/features/dashboard/api/payouts";
 import { useMyPayouts } from "@/features/dashboard/hooks/useMyPayouts";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 import { formatCurrency } from "@/shared/lib/currency";
 
 type Booking = Record<string, unknown>;
@@ -193,12 +194,21 @@ export default function FoxerEarningsClient() {
                     {card.label}
                   </p>
                 </div>
-                <p
-                  className={`text-2xl font-display font-bold ${card.color} mb-0.5`}
-                >
-                  {formatCurrency(card.amount)}
-                </p>
-                <p className="text-xs text-white/30">{card.desc}</p>
+                {loading ? (
+                  <SkeletonGroup label={`Loading ${card.label}`}>
+                    <Skeleton className="mb-1.5 h-7 w-28" />
+                    <Skeleton className="h-3 w-16" />
+                  </SkeletonGroup>
+                ) : (
+                  <>
+                    <p
+                      className={`text-2xl font-display font-bold ${card.color} mb-0.5`}
+                    >
+                      {formatCurrency(card.amount)}
+                    </p>
+                    <p className="text-xs text-white/30">{card.desc}</p>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -301,17 +311,25 @@ export default function FoxerEarningsClient() {
             <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1">
               Paid Out
             </p>
-            <p className="text-xl font-display font-bold text-green-400">
-              {formatCurrency(payoutTotals.paid)}
-            </p>
+            {payoutsLoading ? (
+              <Skeleton className="h-7 w-24" />
+            ) : (
+              <p className="text-xl font-display font-bold text-green-400">
+                {formatCurrency(payoutTotals.paid)}
+              </p>
+            )}
           </div>
           <div className="glass-panel rounded-2xl p-4 border border-white/10">
             <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1">
               Pending
             </p>
-            <p className="text-xl font-display font-bold text-yellow-400">
-              {formatCurrency(payoutTotals.pending)}
-            </p>
+            {payoutsLoading ? (
+              <Skeleton className="h-7 w-24" />
+            ) : (
+              <p className="text-xl font-display font-bold text-yellow-400">
+                {formatCurrency(payoutTotals.pending)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -375,9 +393,11 @@ export default function FoxerEarningsClient() {
               list_alt
             </span>
             Your Bookings
-            <span className="text-white/30 font-normal normal-case tracking-normal">
-              ({allBookings.length})
-            </span>
+            {!loading && (
+              <span className="text-white/30 font-normal normal-case tracking-normal">
+                ({allBookings.length})
+              </span>
+            )}
           </h3>
 
           {loading ? (

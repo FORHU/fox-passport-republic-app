@@ -29,6 +29,7 @@ import { PassportSidebarContent } from "./passport/PassportSidebarContent";
 import { PassportMatchesTab } from "./passport/PassportMatchesTab";
 import { PassportProgressTab } from "./passport/PassportProgressTab";
 import { PassportStampsTab } from "./passport/PassportStampsTab";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 import { PassportRewardsTab } from "./passport/PassportRewardsTab";
 import { AchievementsView } from "./achievements/AchievementsView";
 import { LeaderboardView } from "./leaderboard/LeaderboardView";
@@ -71,6 +72,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
     badges: allBadges,
     stamps,
     perks: earnedPerkKeys,
+    isLoading: passportLoading,
   } = useMyPassport();
 
   const roleTypes: string[] = user?.roleType ?? [];
@@ -184,6 +186,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               earnedPerkKeys={earnedPerkKeys}
+              loading={passportLoading}
               onTabSelect={() => {}}
             />
           </aside>
@@ -207,6 +210,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               earnedPerkKeys={earnedPerkKeys}
+              loading={passportLoading}
               onTabSelect={() => setMobileNavOpen(false)}
             />
           </SheetContent>
@@ -306,6 +310,16 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                   leaderboard={leaderboard}
                   leaderboardLoading={leaderboardLoading}
                 />
+              ) : passportLoading ? (
+                <SkeletonGroup
+                  key="passport-loading"
+                  label="Loading passport"
+                  className="bg-white/2 border border-white/5 rounded-[3rem] p-8 min-h-[500px] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 content-start"
+                >
+                  {Array.from({ length: 8 }, (_, i) => (
+                    <Skeleton key={i} className="aspect-square rounded-full" />
+                  ))}
+                </SkeletonGroup>
               ) : activeTab === "progress" ? (
                 <PassportProgressTab
                   filteredPaths={filteredPaths}

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { SectionHeader } from "./SectionHeader";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 
 interface SavedVibe {
   id: number;
@@ -14,6 +15,8 @@ interface SavedVibe {
 
 interface UserSavedVibesProps {
   savedVibes: SavedVibe[];
+  /** First load: draw rows instead of "Nothing saved yet". */
+  loading?: boolean;
   className?: string;
 }
 
@@ -21,6 +24,7 @@ const PAGE_SIZE = 4;
 
 export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({
   savedVibes,
+  loading = false,
   className = "",
 }) => {
   const [requestedPage, setRequestedPage] = useState(0);
@@ -49,7 +53,19 @@ export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({
       />
 
       <div className="glass-panel rounded-3xl p-5 flex flex-col flex-1 h-full">
-        {savedVibes.length === 0 ? (
+        {loading ? (
+          <SkeletonGroup label="Loading saved items" className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex gap-4 p-2">
+                <Skeleton className="h-16 w-16 shrink-0 rounded-xl" />
+                <div className="flex-1 space-y-2 py-1">
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </SkeletonGroup>
+        ) : savedVibes.length === 0 ? (
           <div className="flex flex-col items-center justify-center flex-1 py-8 text-center">
             <span
               className="material-symbols-outlined text-4xl text-white/20 mb-3"

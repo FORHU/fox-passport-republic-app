@@ -246,4 +246,17 @@ describe("CreateInvestmentWizard", () => {
     });
     expect(createInvestment).not.toHaveBeenCalled();
   });
+
+  it("edit mode shows no empty form while the hub loads", async () => {
+    render(<CreateInvestmentWizard editId="inv-9" />);
+
+    // Nothing to type into yet: the loaded hub would overwrite it.
+    expect(
+      screen.getByRole("status", { name: "Loading equipment hub" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Equipment / Tool Name *")).toBeNull();
+
+    expect(await screen.findByDisplayValue("Banquet Chairs")).toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Loading equipment hub" })).toBeNull();
+  });
 });

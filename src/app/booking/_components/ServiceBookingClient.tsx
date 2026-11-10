@@ -65,10 +65,8 @@ export default function ServiceBookingClient({
     );
     return () => clearTimeout(timer);
   }, [eventLocation]);
-  const { data: availability } = useServiceAvailability(
-    serviceId,
-    availabilityLocation,
-  );
+  const { data: availability, isLoading: availabilityLoading } =
+    useServiceAvailability(serviceId, availabilityLocation);
   const providerBookedDates = availability?.bookedDates ?? NO_DATES;
   const travelBlockedDates = availability?.travelBlockedDates ?? NO_DATES;
   const bookedDates = useMemo(
@@ -486,6 +484,7 @@ export default function ServiceBookingClient({
                         setErrors((e) => ({ ...e, dates: undefined }));
                     }}
                     bookedDates={bookedDates}
+                    loading={availabilityLoading}
                     accent="orange"
                   />
                   {errors.dates && (

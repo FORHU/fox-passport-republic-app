@@ -126,7 +126,12 @@ export default function MobilePassportView({ user }: Props) {
         }}
       >
         {/* Passport booklet card */}
-        <PassportBookletCard user={user} level={level} citizenNo={citizenNo} />
+        <PassportBookletCard
+          user={user}
+          level={level}
+          citizenNo={citizenNo}
+          loading={isLoading}
+        />
 
         {/* Rewards & Wallet Card */}
         <Link

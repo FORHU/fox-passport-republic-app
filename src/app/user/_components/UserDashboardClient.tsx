@@ -72,6 +72,7 @@ function UserDashboardContent({
     walletBalance,
     recentTransactions,
     savedVibes,
+    savedLoading,
     upcomingEvents,
     isLoading,
   } = useUserDashboard();
@@ -130,7 +131,7 @@ function UserDashboardContent({
               data-tour="user-wallet"
               className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 content-start"
             >
-              <UserSavedVibes savedVibes={savedVibes} />
+              <UserSavedVibes savedVibes={savedVibes} loading={savedLoading} />
               <UserWallet
                 walletBalance={walletBalance}
                 recentTransactions={recentTransactions}

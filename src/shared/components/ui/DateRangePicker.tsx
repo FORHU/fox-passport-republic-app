@@ -53,6 +53,7 @@ function CompactDatePicker({
   onEndChange,
   onDone,
   disabledDates,
+  loading = false,
 }: {
   startValue: string;
   endValue: string;
@@ -62,6 +63,8 @@ function CompactDatePicker({
   /** Dates (YYYY-MM-DD) that can't be picked as either endpoint — e.g. a
    *  venue's already-booked or manually blocked days. */
   disabledDates?: Set<string>;
+  /** The disabled dates are still loading: nothing can be picked yet. */
+  loading?: boolean;
 }) {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -108,7 +111,7 @@ function CompactDatePicker({
   };
 
   const handleClick = (ds: string) => {
-    if (ds < todayStr) return;
+    if (loading || ds < todayStr) return;
     if (disabledDates?.has(ds)) return;
     if (!startValue || (startValue && endValue)) {
       onStartChange(ds);
@@ -164,7 +167,15 @@ function CompactDatePicker({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px">
+      {loading && (
+        <p role="status" className="text-center text-[10px] text-white/50 mb-1">
+          Checking availability…
+        </p>
+      )}
+      <div
+        aria-busy={loading || undefined}
+        className={`grid grid-cols-7 gap-px ${loading ? "animate-pulse opacity-40 motion-reduce:animate-none" : ""}`}
+      >
         {cells.map((day, i) => {
           if (day === null) return <div key={`e-${i}`} className="h-8" />;
           const ds = toDateStr(viewYear, viewMonth, day);
@@ -178,7 +189,7 @@ function CompactDatePicker({
             <button
               key={ds}
               onClick={() => handleClick(ds)}
-              disabled={disabledCell}
+              disabled={loading || disabledCell}
               title={unavailable ? "Not available on this date" : undefined}
               className={[
                 "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center relative",
@@ -222,6 +233,7 @@ export default function DateRangePicker({
   showSummary = true,
   stacked = false,
   disabledDates,
+  loading = false,
 }: {
   startDate: string;
   endDate: string;
@@ -235,6 +247,8 @@ export default function DateRangePicker({
   /** Dates (YYYY-MM-DD) that can't be picked as either endpoint or fall
    *  inside the selected range — e.g. a venue's booked/blocked days. */
   disabledDates?: Set<string>;
+  /** `disabledDates` is still loading: the calendar can't be picked from yet. */
+  loading?: boolean;
 }) {
   const fieldId = useId();
   const errorId = `${fieldId}-error`;
@@ -421,6 +435,7 @@ export default function DateRangePicker({
                 onEndChange={handleCalendarEnd}
                 onDone={() => setCalendarOpen(false)}
                 disabledDates={disabledDates}
+                loading={loading}
               />
             </div>
           </>,

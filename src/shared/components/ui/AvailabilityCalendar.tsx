@@ -37,6 +37,11 @@ export interface AvailabilityCalendarSingleProps {
   onChange: (date: string) => void;
   bookedDates: string[];
   accent?: "orange" | "purple" | "lime";
+  /**
+   * Booked dates are still loading. Days can't be picked until they arrive,
+   * so a booked day never shows (or gets chosen) as free.
+   */
+  loading?: boolean;
 }
 
 // ── Multi-date mode (services — pick any number of individual dates) ──────────
@@ -46,6 +51,11 @@ export interface AvailabilityCalendarMultiProps {
   onChange: (dates: string[]) => void;
   bookedDates: string[];
   accent?: "orange" | "purple" | "lime";
+  /**
+   * Booked dates are still loading. Days can't be picked until they arrive,
+   * so a booked day never shows (or gets chosen) as free.
+   */
+  loading?: boolean;
 }
 
 // ── Date-range mode (assets) ─────────────────────────────────────────────────
@@ -59,6 +69,11 @@ export interface AvailabilityCalendarRangeProps {
   totalQty: number;
   requestedQty: number;
   accent?: "orange" | "purple" | "lime";
+  /**
+   * Booked dates are still loading. Days can't be picked until they arrive,
+   * so a booked day never shows (or gets chosen) as free.
+   */
+  loading?: boolean;
 }
 
 export type AvailabilityCalendarProps =
@@ -126,8 +141,10 @@ export default function AvailabilityCalendar(props: AvailabilityCalendarProps) {
     } else setViewMonth((m) => m + 1);
   };
 
+  const loading = props.loading ?? false;
+
   const handleClick = (ds: string) => {
-    if (ds < todayStr || unavailableSet.has(ds)) return;
+    if (loading || ds < todayStr || unavailableSet.has(ds)) return;
 
     if (props.mode === "single") {
       props.onChange(ds);
@@ -217,7 +234,10 @@ export default function AvailabilityCalendar(props: AvailabilityCalendarProps) {
       </div>
 
       {/* Day grid */}
-      <div className="grid grid-cols-7 gap-y-2">
+      <div
+        aria-busy={loading || undefined}
+        className={`grid grid-cols-7 gap-y-2 ${loading ? "animate-pulse opacity-40 motion-reduce:animate-none" : ""}`}
+      >
         {cells.map((day, i) => {
           if (day === null) return <div key={`e-${i}`} className="h-14" />;
           const ds = toDateStr(viewYear, viewMonth, day);
@@ -233,7 +253,7 @@ export default function AvailabilityCalendar(props: AvailabilityCalendarProps) {
             <button
               key={ds}
               onClick={() => handleClick(ds)}
-              disabled={past || unavail}
+              disabled={loading || past || unavail}
               className={[
                 "relative h-14 w-full text-sm font-bold transition-all flex items-center justify-center",
                 inRange ? "bg-white/5" : "",
@@ -279,6 +299,14 @@ export default function AvailabilityCalendar(props: AvailabilityCalendarProps) {
           <span className="h-2.5 w-2.5 rounded-sm bg-white/5 ring-1 ring-white/30" />
           <span className="text-[10px] text-white/35 font-medium">Today</span>
         </div>
+        {loading && (
+          <span
+            role="status"
+            className="ml-auto text-[10px] text-white/50 font-medium"
+          >
+            Checking availability…
+          </span>
+        )}
       </div>
 
       {/* Mode hints */}
