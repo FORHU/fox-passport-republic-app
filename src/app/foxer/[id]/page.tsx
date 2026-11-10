@@ -13,9 +13,7 @@ function getFoxerRoleLabel(roleType?: string[]): string {
   const roles = roleType ?? [];
   if (roles.includes("eventFoxer")) return "Event Foxer";
   if (roles.includes("venueFoxer")) return "Venue Foxer";
-  if (roles.includes("gearFoxer")) return "Equipment Foxer";
-  if (roles.includes("serviceFoxer")) return "Talent Foxer";
-  if (roles.includes("performerFoxer")) return "Performer Foxer";
+  if (roles.includes("providerFoxer")) return "Provider";
   if (roles.includes("investor")) return "Partner Foxer";
   return "Foxer";
 }
@@ -64,6 +62,11 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * A Foxer's profile is public: anyone can open a shared link, and it can be
+ * indexed (robots.txt allows `/foxer/`). `proxy.ts` lets `/foxer/<id>` through;
+ * the other `/foxer` pages are signed-in and guard themselves.
+ */
 export default async function FoxerProfilePage({
   params,
 }: FoxerProfilePageProps) {
@@ -86,7 +89,7 @@ export default async function FoxerProfilePage({
           state: foxer.state ?? undefined,
         }}
       />
-      <FoxerProfile />
+      <FoxerProfile initialFoxer={foxer} />
     </>
   );
 }

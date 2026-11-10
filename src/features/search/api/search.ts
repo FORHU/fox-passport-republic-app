@@ -88,7 +88,7 @@ export async function fetchGearFoxers(
 ): Promise<SectionResult<ProviderRow>> {
   const params: Record<string, any> = { page, limit };
   if (filters?.city) params.city = filters.city;
-  // Equipment Foxer specializations are keyed by asset category (e.g. "sound_system"),
+  // Provider gear specializations are keyed by asset category (e.g. "sound_system"),
   // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
@@ -107,7 +107,7 @@ export async function fetchServiceFoxers(
 ): Promise<SectionResult<ProviderRow>> {
   const params: Record<string, any> = { page, limit };
   if (filters?.city) params.city = filters.city;
-  // Talent Foxer specializations are keyed by service category (e.g. "catering"),
+  // Provider service specializations are keyed by service category (e.g. "catering"),
   // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;

@@ -44,7 +44,7 @@ export function EventGallery({
           <div className="flex-1 relative flex items-center justify-center p-4">
             <img
               src={images[activeImageIndex]}
-              alt="Gallery Preview"
+              alt={`${eventName} (${activeImageIndex + 1} of ${images.length})`}
               className="max-h-[80vh] max-w-full object-contain shadow-2xl rounded-lg"
             />
             <button
@@ -84,7 +84,11 @@ export function EventGallery({
             <img
               src={images[0]}
               className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-              alt="Main Event"
+              alt={
+                images.length > 1
+                  ? `${eventName} (1 of ${images.length})`
+                  : eventName
+              }
             />
           </div>
           {thumbs.map((img, idx) => (
@@ -99,7 +103,7 @@ export function EventGallery({
               <img
                 src={img}
                 className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-                alt={`View ${idx + 1}`}
+                alt={`${eventName} (${idx + 2} of ${images.length})`}
               />
               {idx === 3 && images.length > 5 && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

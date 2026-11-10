@@ -18,6 +18,12 @@ import { usernameSchema } from "@/shared/lib/schema";
 import { countryOfPhone, phoneSchema, splitPhone } from "@/shared/lib/phone";
 import { fetchCountries, type GeoCountry } from "@/shared/api/geo";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import {
+  PASSWORD_HINT,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
+  passwordPolicyError,
+} from "@/shared/lib/passwordPolicy";
 
 export type SettingsSection = "profile" | "privacy" | "security" | "danger";
 
@@ -241,8 +247,9 @@ export default function ProfileSettingsClient({
       setFormError("New passwords do not match");
       return;
     }
-    if (newPassword.length < 6) {
-      setFormError("New password must be at least 6 characters");
+    const policyError = passwordPolicyError(newPassword);
+    if (policyError) {
+      setFormError(policyError);
       return;
     }
     setIsSaving(true);
@@ -299,18 +306,7 @@ export default function ProfileSettingsClient({
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
         <div className="mx-auto max-w-6xl px-4 h-20 flex items-center gap-4">
-          {/* On a phone this page is reached from the settings menu, so back
-              goes there; on desktop that menu doesn't exist. */}
-          <BackButton
-            href="/user/settings"
-            label="Back to settings"
-            className="lg:hidden"
-          />
-          <BackButton
-            href="/user"
-            label="Back to profile"
-            className="hidden lg:inline-flex"
-          />
+          <BackButton href="/user" label="Back to profile" />
           <div className="min-w-0">
             <h1 className="text-xl font-display font-bold">Account Settings</h1>
             <p className="text-xs text-white/40 truncate">
@@ -576,7 +572,7 @@ export default function ProfileSettingsClient({
                   Change Password
                 </h2>
                 <p className="text-sm text-white/40">
-                  Choose a strong password of at least 6 characters.
+                  Choose a strong password. {PASSWORD_HINT}.
                 </p>
               </div>
 
@@ -598,7 +594,8 @@ export default function ProfileSettingsClient({
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    minLength={6}
+                    minLength={PASSWORD_MIN}
+                    maxLength={PASSWORD_MAX}
                     className="input-field"
                   />
                 </Field>

@@ -4,8 +4,12 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatXP } from "@/features/gamification/lib/gamification";
+import {
+  formatXP,
+  calculateLevelFromXP,
+} from "@/features/gamification/lib/gamification";
 import { UserPath } from "@/features/gamification/types/gamification";
+import { RankBadge } from "@/features/gamification/components/RankBadge";
 import {
   PATH_SHORT,
   PATH_COLORS,
@@ -14,6 +18,7 @@ import {
 } from "@/features/gamification/data/passportData";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 
 export interface PassportSidebarContentProps {
   user: any;
@@ -26,9 +31,25 @@ export interface PassportSidebarContentProps {
   setExpandedPath: (p: string | null) => void;
   perkTab: "unlocked" | "locked";
   setPerkTab: (t: "unlocked" | "locked") => void;
-  activeTab: "progress" | "stamps" | "matches" | "rewards";
-  setActiveTab: (t: "progress" | "stamps" | "matches" | "rewards") => void;
+  activeTab:
+    | "progress"
+    | "stamps"
+    | "matches"
+    | "rewards"
+    | "achievements"
+    | "leaderboard";
+  setActiveTab: (
+    t:
+      | "progress"
+      | "stamps"
+      | "matches"
+      | "rewards"
+      | "achievements"
+      | "leaderboard",
+  ) => void;
   earnedPerkKeys: string[];
+  /** The passport is still loading: the level, XP and perks aren't known yet. */
+  loading?: boolean;
   onTabSelect: () => void;
 }
 
@@ -46,6 +67,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
   activeTab,
   setActiveTab,
   earnedPerkKeys,
+  loading = false,
   onTabSelect,
 }) => {
   const router = useRouter();
@@ -108,31 +130,41 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             .map((p) =>
               p === "eventFoxer"
                 ? "Event Foxer"
-                : p === "gearFoxer"
-                  ? "Gear Foxer"
-                  : p === "serviceFoxer"
-                    ? "Talent Foxer"
-                    : p === "performerFoxer"
-                      ? "Performer Foxer"
-                      : p === "venueFoxer"
-                      ? "Venue Foxer"
-                      : p === "investor"
-                        ? "Investor"
-                        : p === "organizer"
-                          ? "Organizer"
-                          : p,
+                : p === "providerFoxer"
+                  ? "Provider"
+                  : p === "venueFoxer"
+                    ? "Venue Foxer"
+                    : p === "investor"
+                      ? "Investor"
+                      : p === "organizer"
+                        ? "Organizer"
+                        : p,
             )
             .join(" · ") || "Citizen"}
         </p>
+        <div className="mt-3 flex items-center justify-center">
+          {loading ? (
+            <Skeleton className="h-7 w-32 rounded-full" />
+          ) : (
+            <RankBadge
+              level={calculateLevelFromXP(totalXP).level}
+              size={28}
+              showTitle={true}
+              isCitizen={true}
+            />
+          )}
+        </div>
       </div>
 
       <div className="space-y-5 grow">
         <div className="space-y-2">
           <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
             <span>Mastery XP</span>
-            <span className="text-accent font-mono">
-              {formatXP(totalXP)}
-            </span>
+            {loading ? (
+              <Skeleton className="h-3 w-12" />
+            ) : (
+              <span className="text-accent font-mono">{formatXP(totalXP)}</span>
+            )}
           </div>
           <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div
@@ -145,6 +177,13 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         </div>
 
         {(() => {
+          if (loading) {
+            return (
+              <SkeletonGroup label="Loading perks">
+                <Skeleton className="h-32 w-full rounded-2xl" />
+              </SkeletonGroup>
+            );
+          }
           const pathPerkData = activePathTypes.map((path) => {
             const perks = (PATH_PERKS[path] ?? [])
               .map(({ level, perk }) => ({
@@ -198,7 +237,9 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                         >
                           <div
                             className="h-5 w-5 rounded-md flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `color-mix(in srgb, ${color} 9%, transparent)` }}
+                            style={{
+                              backgroundColor: `color-mix(in srgb, ${color} 9%, transparent)`,
+                            }}
                           >
                             <div
                               className="h-1.5 w-1.5 rounded-full"
@@ -227,7 +268,10 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                                 style={
                                   perkTab === "unlocked"
                                     ? { backgroundColor: color, color: "#000" }
-                                    : { color: "color-mix(in srgb, var(--color-white) 30%, transparent)" }
+                                    : {
+                                        color:
+                                          "color-mix(in srgb, var(--color-white) 30%, transparent)",
+                                      }
                                 }
                               >
                                 Active
@@ -324,6 +368,30 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
       </div>
 
       <div className="mt-auto pt-4 flex flex-col gap-2">
+        <button
+          onClick={() => {
+            setActiveTab("leaderboard");
+            onTabSelect();
+          }}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "leaderboard" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            leaderboard
+          </span>{" "}
+          Leaderboard
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("achievements");
+            onTabSelect();
+          }}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "achievements" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            military_tech
+          </span>{" "}
+          Achievements
+        </button>
         <button
           onClick={() => {
             setActiveTab("rewards");

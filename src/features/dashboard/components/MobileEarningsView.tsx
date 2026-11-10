@@ -9,6 +9,7 @@ import { useMyPayouts } from "../hooks/useMyPayouts";
 import { PAYOUT_SOURCE_LABEL, type Payout } from "../api/payouts";
 import { formatCurrency } from "@/shared/lib/currency";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 
 const NO_PAYOUTS: Payout[] = [];
 const NO_TOTALS = { paid: 0, pending: 0 };
@@ -165,7 +166,9 @@ export default function MobileEarningsView() {
             Paid out so far:{" "}
             {payoutsLoading ? "—" : formatCurrency(totals.paid)}
           </p>
-          {!payoutsReady && (
+          {stripeLoading ? (
+            <Skeleton className="h-12 w-full rounded-2xl" />
+          ) : !payoutsReady && (
             <Link
               href="/creator-dashboard/stripe-onboard"
               style={{
@@ -209,6 +212,13 @@ export default function MobileEarningsView() {
             marginBottom: 24,
           }}
         >
+          {stripeLoading && (
+            <SkeletonGroup label="Loading payout setup" className="flex flex-col gap-2">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+              ))}
+            </SkeletonGroup>
+          )}
           {checklist.map((item) => (
             <div
               key={item.title}

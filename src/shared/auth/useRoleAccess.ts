@@ -33,7 +33,7 @@ export interface RoleAccess {
  * from the server-issued `permissions` list, never from role names.
  *
  * This used to read `roleType` and `systemRole` directly, which got three
- * things wrong (roles-and-spaces.md §4): a Equipment Foxer and a Talent Foxer
+ * things wrong (roles-and-spaces.md §4): a Provider with only gear and one with only services
  * were cross-granted each other's UI through a shared `isFoxer` flag, an
  * admin saw every provider section unlocked even though the API withholds
  * `venue:manage` / `asset:manage` / `service:manage` / `template:manage` from
@@ -62,8 +62,8 @@ export function useRoleAccess(): RoleAccess {
     isAdmin: canAccessAdmin(user),
     isMayor: canManageVenues,
     isHost,
-    // isFoxer covers all three provider roles so a pure performerFoxer
-    // is not invisible on the dashboard
+    // isFoxer covers every Provider capability so a Provider who only lists
+    // performances is not invisible on the dashboard
     isFoxer: canManageInventory || canManageServices || canManagePerformers,
     hasListings:
       canManageVenues ||

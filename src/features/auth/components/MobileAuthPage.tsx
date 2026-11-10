@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
@@ -9,23 +9,31 @@ import {
   useLogin,
   useSignup,
   useForgotPassword,
+  useResetPassword,
   useVerifyEmail,
   useResendOtp,
+  forgotPasswordErrorMessage,
 } from "@/features/auth/hooks/useAuth";
 import {
   loginSchema,
   LoginFormData,
   signupSchema,
   SignupFormData,
+  resetPasswordSchema,
+  ResetPasswordFormData,
+  FIX_HIGHLIGHTED_FIELDS,
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { startSocialSignIn } from "@/shared/auth/session-api";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { PASSWORD_HINT } from "@/shared/lib/passwordPolicy";
+import { IconButton } from "@/shared/components/ui/IconButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type View = "login" | "signup" | "forgot" | "verify";
+export type MobileAuthView = "login" | "signup" | "forgot" | "reset" | "verify";
+type View = MobileAuthView;
 
 // ─── Shared atoms ─────────────────────────────────────────────────────────────
 
@@ -46,14 +54,132 @@ const FIELD_ERR: React.CSSProperties = {
   border: "1px solid rgba(207,61,52,0.6)",
 };
 
-function FieldError({ msg }: { msg?: string }) {
+function FieldError({ id, msg }: { id?: string; msg?: string }) {
   if (!msg) return null;
   return (
     <span
+      id={id}
+      role="alert"
       style={{ fontSize: 10, color: "var(--error)", marginTop: 3, display: "block" }}
     >
       {msg}
     </span>
+  );
+}
+
+const LABEL: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  display: "block",
+  marginBottom: 6,
+};
+
+type MobileFieldProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "required" | "style"
+> & {
+  label: string;
+  /** Keeps the label for screen readers only (the placeholder-style fields). */
+  labelHidden?: boolean;
+  error?: string;
+  hint?: React.ReactNode;
+  required?: boolean;
+  trailing?: React.ReactNode;
+  inputStyle?: React.CSSProperties;
+};
+
+/**
+ * A field whose label is linked by a generated id, with `aria-required`, and
+ * with the hint or error announced alongside it. The error also announces
+ * itself when it appears.
+ */
+const MobileField = React.forwardRef<HTMLInputElement, MobileFieldProps>(
+  function MobileField(
+    { label, labelHidden, error, hint, required, trailing, inputStyle, ...props },
+    ref,
+  ) {
+    const id = React.useId();
+    const hintId = hint ? `${id}-hint` : undefined;
+    const errorId = error ? `${id}-error` : undefined;
+    const input = (
+      <input
+        ref={ref}
+        id={id}
+        aria-required={required || undefined}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={[hintId, errorId].filter(Boolean).join(" ") || undefined}
+        style={{
+          ...(error ? FIELD_ERR : FIELD),
+          ...(trailing ? { paddingRight: 48 } : null),
+          ...inputStyle,
+        }}
+        {...props}
+      />
+    );
+    return (
+      <div>
+        <label
+          htmlFor={id}
+          className={labelHidden ? "sr-only" : undefined}
+          style={labelHidden ? undefined : LABEL}
+        >
+          {label}
+        </label>
+        {trailing ? (
+          <div style={{ position: "relative" }}>
+            {input}
+            {trailing}
+          </div>
+        ) : (
+          input
+        )}
+        {/* The hint stays put when an error appears; the error is red. */}
+        {hint && (
+          <span
+            id={hintId}
+            style={{
+              fontSize: 10,
+              color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
+              marginTop: 4,
+              display: "block",
+            }}
+          >
+            {hint}
+          </span>
+        )}
+        <FieldError id={errorId} msg={error} />
+      </div>
+    );
+  },
+);
+
+/** The show/hide toggle in a password field: one name, with aria-pressed for its state. */
+function PwToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+  return (
+    <IconButton
+      label="Show password"
+      pressed={shown}
+      onClick={onToggle}
+      style={{
+        position: "absolute",
+        right: 14,
+        top: "50%",
+        transform: "translateY(-50%)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+        lineHeight: 0,
+      }}
+      icon={
+        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+          {shown ? "visibility_off" : "visibility"}
+        </span>
+      }
+    />
   );
 }
 
@@ -196,54 +322,28 @@ function LoginView({
           marginBottom: 12,
         }}
       >
-        <div>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="Email address"
-            style={errors.email ? FIELD_ERR : FIELD}
-            autoComplete="email"
-          />
-          <FieldError msg={errors.email?.message} />
-        </div>
+        <MobileField
+          {...register("email")}
+          label="Email address"
+          labelHidden
+          type="email"
+          placeholder="Email address"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
-        <div>
-          <div style={{ position: "relative" }}>
-            <input
-              {...register("password")}
-              type={showPw ? "text" : "password"}
-              placeholder="Password"
-              style={{
-                ...(errors.password ? FIELD_ERR : FIELD),
-                paddingRight: 48,
-              }}
-              autoComplete="current-password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPw((p) => !p)}
-              style={{
-                position: "absolute",
-                right: 14,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                lineHeight: 0,
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                {showPw ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          <FieldError msg={errors.password?.message} />
-        </div>
+        <MobileField
+          {...register("password")}
+          label="Password"
+          labelHidden
+          type={showPw ? "text" : "password"}
+          placeholder="Password"
+          autoComplete="current-password"
+          required
+          error={errors.password?.message}
+          trailing={<PwToggle shown={showPw} onToggle={() => setShowPw((p) => !p)} />}
+        />
 
         <div
           style={{ display: "flex", justifyContent: "flex-end", marginTop: -4 }}
@@ -328,24 +428,33 @@ function SignupView({
 }) {
   const signupMutation = useSignup();
   const [showPw, setShowPw] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [hasReadCharter, setHasReadCharter] = useState(false);
   const [charterTab, setCharterTab] = useState<"terms" | "privacy" | null>(
     null,
   );
+  const termsErrorId = `${React.useId()}-terms-error`;
 
   const {
     register,
+    control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     mode: "onSubmit",
+    defaultValues: { acceptedTerms: false },
   });
 
   const onSubmit = (data: SignupFormData) => {
     signupMutation.mutate(data, { onSuccess: () => onSignedUp() });
   };
+
+  // The inline errors carry the detail; react-hook-form focuses the first
+  // invalid field. One toast id, so repeated submits don't stack toasts.
+  const onInvalid = () =>
+    toast.error(FIX_HIGHLIGHTED_FIELDS, { id: "signup-invalid" });
 
   return (
     <div style={{ flex: 1, overflowY: "auto", padding: "24px 24px 44px" }}>
@@ -385,8 +494,11 @@ function SignupView({
         Unlock exclusive events and meet your crew.
       </p>
 
+      {/* noValidate: the browser's own checks (the required checkbox, the
+          email format) would cancel the submit before zod shows any error. */}
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
         style={{
           display: "flex",
           flexDirection: "column",
@@ -394,227 +506,166 @@ function SignupView({
           marginBottom: 12,
         }}
       >
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Full Name
-          </label>
-          <input
-            {...register("name")}
-            type="text"
-            placeholder="e.g. Fox Mulder"
-            style={errors.name ? FIELD_ERR : FIELD}
-            autoComplete="name"
-          />
-          <FieldError msg={errors.name?.message} />
-        </div>
+        <MobileField
+          {...register("name")}
+          label="Full Name"
+          type="text"
+          placeholder="e.g. Fox Mulder"
+          autoComplete="name"
+          required
+          error={errors.name?.message}
+        />
 
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Email Address
-          </label>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="name@example.com"
-            style={errors.email ? FIELD_ERR : FIELD}
-            autoComplete="email"
-          />
-          <FieldError msg={errors.email?.message} />
-        </div>
+        <MobileField
+          {...register("email")}
+          label="Email Address"
+          type="email"
+          placeholder="name@example.com"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+        />
 
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Username
-          </label>
-          <input
-            {...register("username")}
-            type="text"
-            placeholder="fox_mulder"
-            style={errors.username ? FIELD_ERR : FIELD}
-            autoComplete="username"
-          />
-          <FieldError msg={errors.username?.message} />
-        </div>
+        <MobileField
+          {...register("username")}
+          label="Username"
+          type="text"
+          placeholder="fox_mulder"
+          autoComplete="username"
+          required
+          error={errors.username?.message}
+        />
 
-        <div>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
-            Password
-          </label>
-          <div style={{ position: "relative" }}>
-            <input
-              {...register("password")}
-              type={showPw ? "text" : "password"}
-              placeholder="Min. 16 characters"
-              style={{
-                ...(errors.password ? FIELD_ERR : FIELD),
-                paddingRight: 48,
-              }}
-              autoComplete="new-password"
+        <MobileField
+          {...register("password")}
+          label="Password"
+          type={showPw ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={errors.password?.message}
+          hint={PASSWORD_HINT}
+          trailing={<PwToggle shown={showPw} onToggle={() => setShowPw((p) => !p)} />}
+        />
+
+        <MobileField
+          {...register("confirmPassword")}
+          label="Confirm Password"
+          type={showConfirmPw ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={errors.confirmPassword?.message}
+          trailing={
+            <PwToggle
+              shown={showConfirmPw}
+              onToggle={() => setShowConfirmPw((p) => !p)}
             />
-            <button
-              type="button"
-              onClick={() => setShowPw((p) => !p)}
-              style={{
-                position: "absolute",
-                right: 14,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                lineHeight: 0,
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                {showPw ? "visibility_off" : "visibility"}
-              </span>
-            </button>
-          </div>
-          {errors.password ? (
-            <FieldError msg={errors.password.message} />
-          ) : (
-            <span
-              style={{
-                fontSize: 10,
-                color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
-                marginTop: 4,
-                display: "block",
-              }}
-            >
-              16+ chars · uppercase · lowercase · digit · special (@$!%*?&)
-            </span>
-          )}
-        </div>
+          }
+        />
 
-        {/* Terms */}
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            cursor: "pointer",
-            marginTop: 4,
-          }}
-        >
-          <input
-            type="checkbox"
-            required
-            checked={agreedToTerms}
-            onChange={(e) => {
-              // Reading the charter is mandatory before it can be checked;
-              // unchecking never needs that gate.
-              if (e.target.checked && !hasReadCharter) {
-                setCharterTab("terms");
-                return;
-              }
-              setAgreedToTerms(e.target.checked);
-            }}
-            style={{
-              accentColor: "#C4E85A",
-              width: 16,
-              height: 16,
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              fontSize: 11,
-              color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
-              lineHeight: 1.5,
-            }}
-          >
-            I agree to the{" "}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setCharterTab("terms");
-              }}
-              style={{
-                color: "var(--accent-text)",
-                fontWeight: 700,
-                background: "none",
-                border: "none",
-                padding: 0,
-                font: "inherit",
-                cursor: "pointer",
-              }}
-            >
-              Terms of Service
-            </button>{" "}
-            &{" "}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setCharterTab("privacy");
-              }}
-              style={{
-                color: "var(--accent-text)",
-                fontWeight: 700,
-                background: "none",
-                border: "none",
-                padding: 0,
-                font: "inherit",
-                cursor: "pointer",
-              }}
-            >
-              Privacy Policy
-            </button>
-          </span>
-        </label>
+        {/* Terms: part of the schema, so its error shows with the others */}
+        <Controller
+          control={control}
+          name="acceptedTerms"
+          render={({ field, fieldState }) => (
+            <div>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                  marginTop: 4,
+                }}
+              >
+                <input
+                  ref={field.ref}
+                  name={field.name}
+                  onBlur={field.onBlur}
+                  type="checkbox"
+                  checked={field.value === true}
+                  aria-required="true"
+                  aria-invalid={fieldState.error ? true : undefined}
+                  aria-describedby={fieldState.error ? termsErrorId : undefined}
+                  onChange={(e) => {
+                    // Reading the charter is mandatory before it can be checked;
+                    // unchecking never needs that gate.
+                    if (e.target.checked && !hasReadCharter) {
+                      setCharterTab("terms");
+                      return;
+                    }
+                    field.onChange(e.target.checked);
+                  }}
+                  style={{
+                    accentColor: "#C4E85A",
+                    width: 16,
+                    height: 16,
+                    flexShrink: 0,
+                    outline: fieldState.error ? "1px solid var(--error)" : undefined,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCharterTab("terms");
+                    }}
+                    style={{
+                      color: "var(--accent-text)",
+                      fontWeight: 700,
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      font: "inherit",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Terms of Service
+                  </button>{" "}
+                  &{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCharterTab("privacy");
+                    }}
+                    style={{
+                      color: "var(--accent-text)",
+                      fontWeight: 700,
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      font: "inherit",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Privacy Policy
+                  </button>
+                </span>
+              </label>
+              <FieldError id={termsErrorId} msg={fieldState.error?.message} />
+            </div>
+          )}
+        />
 
         {charterTab && (
           <TermsPrivacyModal
             initialTab={charterTab}
             onClose={() => setCharterTab(null)}
-            onAccept={() => setAgreedToTerms(true)}
+            onAccept={() =>
+              setValue("acceptedTerms", true, { shouldValidate: true })
+            }
             onBothRead={() => setHasReadCharter(true)}
           />
         )}
@@ -673,16 +724,71 @@ function SignupView({
 
 // ─── Forgot Password View ─────────────────────────────────────────────────────
 
-function ForgotView({ onBack }: { onBack: () => void }) {
+const EYEBROW: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 800,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: "var(--accent-text)",
+  marginBottom: 8,
+};
+
+const HEADLINE: React.CSSProperties = {
+  fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
+  fontSize: 27,
+  fontWeight: 700,
+  color: "var(--color-white)",
+  lineHeight: 1.2,
+  marginBottom: 8,
+};
+
+const BODY: React.CSSProperties = {
+  fontSize: 12,
+  color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+  marginBottom: 24,
+};
+
+const primaryButton = (disabled: boolean): React.CSSProperties => ({
+  background: "#C4E85A",
+  color: "#000",
+  fontSize: 14,
+  fontWeight: 800,
+  borderRadius: 16,
+  padding: "14px 0",
+  border: "none",
+  cursor: disabled ? "not-allowed" : "pointer",
+  opacity: disabled ? 0.7 : 1,
+  boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
+});
+
+function ForgotView({
+  onBack,
+  onSent,
+}: {
+  onBack: () => void;
+  onSent: () => void;
+}) {
   const forgotMutation = useForgotPassword();
+  const setPendingEmail = useAuthStore((s) => s.setPendingEmail);
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string>();
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    forgotMutation.mutate(email, { onSuccess: () => setSent(true) });
+    const address = email.trim();
+    if (!address) return;
+    setError(undefined);
+    forgotMutation.mutate(address, {
+      onSuccess: () => {
+        setPendingEmail(address);
+        onSent();
+      },
+      // Same text as the toast; the form stays so the email can be fixed.
+      onError: (err) => setError(forgotPasswordErrorMessage(err)),
+    });
   };
+
+  const disabled = forgotMutation.isPending || !email.trim();
 
   return (
     <div style={{ marginTop: "auto", padding: "0 24px 44px" }}>
@@ -693,121 +799,198 @@ function ForgotView({ onBack }: { onBack: () => void }) {
         className="mb-7 self-start"
       />
 
-      <p
-        style={{
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: "0.16em",
-          textTransform: "uppercase",
-          color: "var(--accent-text)",
-          marginBottom: 8,
-        }}
-      >
-        Reset Password
-      </p>
-      <h1
-        style={{
-          fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-          fontSize: 27,
-          fontWeight: 700,
-          color: "var(--color-white)",
-          lineHeight: 1.2,
-          marginBottom: 8,
-        }}
-      >
+      <p style={EYEBROW}>Reset Password</p>
+      <h1 style={HEADLINE}>
         Forgot your
         <br />
         password?
       </h1>
-      <p
-        style={{
-          fontSize: 12,
-          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-          marginBottom: 24,
-        }}
+      <p style={BODY}>Enter your email and we&apos;ll send a reset code.</p>
+
+      <form
+        onSubmit={handleSend}
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
       >
-        Enter your email and we&apos;ll send a reset code.
+        <MobileField
+          label="Email address"
+          labelHidden
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError(undefined);
+          }}
+          placeholder="Email address"
+          autoComplete="email"
+          required
+          error={error}
+        />
+        <button type="submit" disabled={disabled} style={primaryButton(disabled)}>
+          {forgotMutation.isPending ? "Sending…" : "Send Reset Code"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ─── Reset Password View ──────────────────────────────────────────────────────
+
+function ResetView({
+  onBack,
+  onDone,
+}: {
+  onBack: () => void;
+  onDone: () => void;
+}) {
+  const pendingEmail = useAuthStore((s) => s.pendingEmail);
+  const resetMutation = useResetPassword();
+  const resendMutation = useForgotPassword();
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { otpCode: "", newPassword: "", confirmPassword: "" },
+  });
+
+  const onSubmit = (data: ResetPasswordFormData) => {
+    if (!pendingEmail) {
+      onBack();
+      return;
+    }
+    resetMutation.mutate(
+      {
+        email: pendingEmail,
+        otpCode: data.otpCode,
+        newPassword: data.newPassword,
+      },
+      { onSuccess: () => onDone() },
+    );
+  };
+
+  return (
+    <div style={{ marginTop: "auto", padding: "0 24px 44px" }}>
+      <BackButton
+        variant="label"
+        label="Back"
+        onClick={onBack}
+        className="mb-7 self-start"
+      />
+
+      <p style={EYEBROW}>Reset Password</p>
+      <h1 style={HEADLINE}>
+        Enter your
+        <br />
+        reset code
+      </h1>
+      <p style={BODY}>
+        We sent a 6-digit code to{" "}
+        <strong style={{ color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}>
+          {pendingEmail}
+        </strong>
+        .
       </p>
 
-      {sent ? (
-        <div
-          style={{
-            background: "rgba(196,232,90,0.08)",
-            border: "1px solid rgba(196,232,90,0.25)",
-            borderRadius: 16,
-            padding: "20px 18px",
-            textAlign: "center",
-          }}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <Controller
+          control={control}
+          name="otpCode"
+          render={({ field }) => (
+            <MobileField
+              label="Reset code"
+              labelHidden
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              name={field.name}
+              ref={field.ref}
+              value={field.value}
+              onBlur={field.onBlur}
+              onChange={(e) =>
+                field.onChange(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              placeholder="000000"
+              required
+              error={errors.otpCode?.message}
+              inputStyle={{
+                fontSize: 24,
+                fontWeight: 700,
+                textAlign: "center",
+                letterSpacing: "0.3em",
+              }}
+            />
+          )}
+        />
+
+        <MobileField
+          {...register("newPassword")}
+          label="New password"
+          type={showPw ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={errors.newPassword?.message}
+          hint={PASSWORD_HINT}
+          trailing={<PwToggle shown={showPw} onToggle={() => setShowPw((p) => !p)} />}
+        />
+
+        <MobileField
+          {...register("confirmPassword")}
+          label="Confirm new password"
+          type={showConfirmPw ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={errors.confirmPassword?.message}
+          trailing={
+            <PwToggle
+              shown={showConfirmPw}
+              onToggle={() => setShowConfirmPw((p) => !p)}
+            />
+          }
+        />
+
+        <button
+          type="submit"
+          disabled={resetMutation.isPending}
+          style={primaryButton(resetMutation.isPending)}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 32,
-              color: "var(--accent-text)",
-              display: "block",
-              marginBottom: 10,
-            }}
-          >
-            mark_email_read
-          </span>
-          <p
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: "var(--color-white)",
-              marginBottom: 6,
-            }}
-          >
-            Check your inbox
-          </p>
-          <p
-            style={{
-              fontSize: 12,
-              color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
-              lineHeight: 1.5,
-            }}
-          >
-            We sent a reset code to{" "}
-            <strong style={{ color: "var(--color-white)" }}>{email}</strong>. Check your spam
-            folder if you don&apos;t see it.
-          </p>
-        </div>
-      ) : (
-        <form
-          onSubmit={handleSend}
-          style={{ display: "flex", flexDirection: "column", gap: 12 }}
-        >
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            style={FIELD}
-            autoComplete="email"
-          />
+          {resetMutation.isPending ? "Resetting…" : "Reset Password"}
+        </button>
+      </form>
+
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 35%, transparent)" }}>
+          Didn&apos;t receive it?{" "}
           <button
-            type="submit"
-            disabled={forgotMutation.isPending || !email.trim()}
+            type="button"
+            onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
+            disabled={resendMutation.isPending || !pendingEmail}
             style={{
-              background: "#C4E85A",
-              color: "#000",
-              fontSize: 14,
-              fontWeight: 800,
-              borderRadius: 16,
-              padding: "14px 0",
+              color: "var(--accent-text)",
+              fontWeight: 700,
+              background: "none",
               border: "none",
-              cursor:
-                forgotMutation.isPending || !email.trim()
-                  ? "not-allowed"
-                  : "pointer",
-              opacity: forgotMutation.isPending || !email.trim() ? 0.7 : 1,
-              boxShadow: "0 4px 20px rgba(196,232,90,0.3)",
+              cursor: "pointer",
+              fontSize: 12,
+              padding: 0,
+              opacity: resendMutation.isPending ? 0.5 : 1,
             }}
           >
-            {forgotMutation.isPending ? "Sending…" : "Send Reset Code"}
+            {resendMutation.isPending ? "Sending…" : "Resend code"}
           </button>
-        </form>
-      )}
+        </p>
+      </div>
     </div>
   );
 }
@@ -883,17 +1066,20 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
         onSubmit={handleVerify}
         style={{ display: "flex", flexDirection: "column", gap: 12 }}
       >
-        <input
+        <MobileField
+          label="Verification code"
+          labelHidden
           type="text"
           inputMode="numeric"
+          autoComplete="one-time-code"
           maxLength={6}
           value={otp}
           onChange={(e) =>
             setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
           }
           placeholder="000000"
-          style={{
-            ...FIELD,
+          required
+          inputStyle={{
             fontSize: 24,
             fontWeight: 700,
             textAlign: "center",
@@ -951,8 +1137,12 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
 
 // ─── Root Component ───────────────────────────────────────────────────────────
 
-export default function MobileAuthPage() {
-  const [view, setView] = useState<View>("login");
+export default function MobileAuthPage({
+  initialView = "login",
+}: {
+  initialView?: View;
+}) {
+  const [view, setView] = useState<View>(initialView);
 
   return (
     <div
@@ -986,27 +1176,8 @@ export default function MobileAuthPage() {
           margin: "0 auto",
         }}
       >
-        {/* Logo */}
-        <div
-          style={{
-            paddingTop: 68,
-            display: "flex",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-              fontSize: 15,
-              fontWeight: 700,
-              color: "var(--color-white)",
-              letterSpacing: "-0.3px",
-            }}
-          >
-            FoxPassport
-          </span>
-        </div>
+        {/* Room for the page's fixed site header, which carries the logo. */}
+        <div aria-hidden="true" style={{ paddingTop: 84, flexShrink: 0 }} />
 
         {/* View content */}
         {view === "login" && (
@@ -1021,7 +1192,18 @@ export default function MobileAuthPage() {
             onSignedUp={() => setView("verify")}
           />
         )}
-        {view === "forgot" && <ForgotView onBack={() => setView("login")} />}
+        {view === "forgot" && (
+          <ForgotView
+            onBack={() => setView("login")}
+            onSent={() => setView("reset")}
+          />
+        )}
+        {view === "reset" && (
+          <ResetView
+            onBack={() => setView("forgot")}
+            onDone={() => setView("login")}
+          />
+        )}
         {view === "verify" && (
           <VerifyView onVerified={() => setView("login")} />
         )}

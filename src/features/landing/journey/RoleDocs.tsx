@@ -8,6 +8,7 @@ import api from "@/shared/lib/axios";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { ROLES as CATALOG } from "@/shared/data/roleCatalog";
 import { ROLES } from "./data";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 
 const APPLY_CTA =
   "mt-12 inline-block rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black";
@@ -29,6 +30,9 @@ export default function RoleDocs({ slug }: { slug: string }) {
   // request list onboarding reads.
   const holdsRole = (user?.roleType ?? []).includes(doc.roleType as never);
   const [pendingRoles, setPendingRoles] = useState<string[]>([]);
+  // Until the requests load, the CTA could be "Apply" or "pending": hold its
+  // place instead of offering Apply and then taking it back.
+  const [requestsChecked, setRequestsChecked] = useState(false);
   useEffect(() => {
     if (!user) return;
     api
@@ -40,7 +44,8 @@ export default function RoleDocs({ slug }: { slug: string }) {
           requests.filter((r) => r.status === "pending").map((r) => r.roleType),
         );
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setRequestsChecked(true));
   }, [user]);
   const pending = pendingRoles.includes(doc.roleType);
 
@@ -121,6 +126,10 @@ export default function RoleDocs({ slug }: { slug: string }) {
               Go to your dashboard
             </Link>
           </>
+        ) : user && !requestsChecked ? (
+          <SkeletonGroup label="Checking your applications" className="mt-12">
+            <Skeleton className="h-11 w-56 rounded-full" />
+          </SkeletonGroup>
         ) : user && pending ? (
           <p className="mt-12 inline-block rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-white/70">
             Application pending review

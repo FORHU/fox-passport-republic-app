@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useRef, useState } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Check } from "lucide-react";
 
 type Tab = "terms" | "privacy";
@@ -25,27 +25,13 @@ export function TermsPrivacyModal({
   onAccept,
   onBothRead,
 }: TermsPrivacyModalProps) {
-  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [readTerms, setReadTerms] = useState(false);
   const [readPrivacy, setReadPrivacy] = useState(false);
   const [progress, setProgress] = useState(0);
   const bodyRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [onClose]);
+  const descriptionId = useId();
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   const measure = (el: HTMLDivElement, tab: Tab) => {
     const max = el.scrollHeight - el.clientHeight;
@@ -72,25 +58,49 @@ export function TermsPrivacyModal({
 
   const bothRead = readTerms && readPrivacy;
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+  // A Radix dialog nested in the auth popup: it traps focus, closes on Esc
+  // and on a click outside, and hands focus back to the popup when it closes.
+  return (
+    <DialogPrimitive.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
-      <div className="flex h-[min(640px,84vh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-surface shadow-2xl">
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm" />
+        <DialogPrimitive.Content
+          aria-modal="true"
+          aria-describedby={descriptionId}
+          onOpenAutoFocus={() => {
+            // Radix only refocuses a Dialog.Trigger; remember the opener
+            // (the checkbox or a Terms link) to give focus back to it.
+            returnFocusRef.current =
+              document.activeElement instanceof HTMLElement
+                ? document.activeElement
+                : null;
+          }}
+          onCloseAutoFocus={(event) => {
+            const opener = returnFocusRef.current;
+            if (opener?.isConnected) {
+              event.preventDefault();
+              opener.focus();
+            }
+          }}
+          className="fixed left-1/2 top-1/2 z-[100] flex h-[min(640px,84vh)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-white/15 bg-surface shadow-2xl focus:outline-none"
+        >
         {/* Header */}
         <div className="flex-shrink-0 px-5 pt-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-                <span className="h-2 w-2 flex-shrink-0 rotate-45 rounded-sm bg-accent" />
+              <DialogPrimitive.Title className="flex items-center gap-2 text-lg font-bold text-white">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 flex-shrink-0 rotate-45 rounded-sm bg-accent"
+                />
                 The Republic Charter
-              </h2>
-              <p className="mt-1 text-xs text-white/50">
+              </DialogPrimitive.Title>
+              <p id={descriptionId} className="mt-1 text-xs text-white/50">
                 Read both documents in full to enable acceptance.
               </p>
             </div>
@@ -130,8 +140,15 @@ export function TermsPrivacyModal({
 
         {/* Body */}
         <div className="relative mt-3.5 min-h-0 flex-1">
+          {/* Focusable so keyboard users can scroll it (arrow keys, Page
+              Down) and meet the read-to-the-end requirement. */}
           <div
             ref={bodyRef}
+            tabIndex={0}
+            role="region"
+            aria-label={
+              activeTab === "terms" ? "Terms of Service" : "Privacy Policy"
+            }
             onScroll={(e) => measure(e.currentTarget, activeTab)}
             className="h-full overflow-y-auto px-5 pb-7 font-serif text-[14.5px] leading-[1.68] text-white/60"
           >
@@ -186,9 +203,9 @@ export function TermsPrivacyModal({
             </button>
           </div>
         </div>
-      </div>
-    </div>,
-    document.body,
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -207,11 +224,13 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-colors ${
         active ? "bg-white/10 text-white" : "text-white/50 hover:text-white/70"
       }`}
     >
       <span
+        aria-hidden="true"
         className={`flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border transition-colors ${
           read ? "border-accent bg-accent" : "border-white/30"
         }`}
@@ -219,6 +238,7 @@ function TabButton({
         {read && <Check className="h-2 w-2 text-black" strokeWidth={4} />}
       </span>
       {label}
+      {read && <span className="sr-only">, read</span>}
     </button>
   );
 }
@@ -276,8 +296,7 @@ function TermsContent() {
           &ldquo;us&rdquo;) operates a marketplace and social platform
           connecting Citizens booking venues, gear, and services with
           Foxers &mdash; independent hosts registered under one or more
-          roles: Venue Foxer, Event Foxer, Gear Foxer, Service Foxer, or
-          Investor. By creating an account you agree to these Terms,
+          roles: Venue Foxer, Event Foxer, Provider, Organizer, or Investor. By creating an account you agree to these Terms,
           regardless of which role you hold.
         </p>
       </Clause>

@@ -41,11 +41,9 @@ const RARITY_CONFIG: Record<
 
 const PATH_CONFIG: Record<string, { color: string; label: string }> = {
   user: { color: "var(--accent-text)", label: "Citizen" },
-  gearFoxer: { color: "var(--warning)", label: "Gear Foxer" },
-  serviceFoxer: { color: "var(--warning)", label: "Talent Foxer" },
-  performerFoxer: { color: "var(--warning)", label: "Performer Foxer" },
   eventFoxer: { color: "var(--periwinkle)", label: "Event Foxer" },
   venueFoxer: { color: "var(--accent-text)", label: "Venue Foxer" },
+  providerFoxer: { color: "var(--warning)", label: "Provider" },
   organizer: { color: "var(--periwinkle)", label: "Organizer" },
 };
 

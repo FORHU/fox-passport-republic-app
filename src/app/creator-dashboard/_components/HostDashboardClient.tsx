@@ -19,6 +19,7 @@ import {
   isPerformerService,
   CalendarWidget,
   CreatorProfile,
+  FoxerReputationCard,
   CREATOR_DASHBOARD_BG,
 } from "@/features/dashboard/components";
 import { PendingRequests } from "./OccupancySection";
@@ -157,8 +158,8 @@ export default function HostDashboardClient({
   // Each of these is gated on the same role check that decides whether the
   // section renders at all. Without the gate a Foxer with one role still polled
   // all four resources every 10 seconds to fill three locked sections.
-  // Services data is fetched for both serviceFoxer (talent/operational) and
-  // performerFoxer (entertainment/performer) since both use the Service model.
+  // Services data covers both talent and performer listings, since both use
+  // the Service model.
   const { data: rawServices, total: totalServices } = useHostData(
     "services",
     initialData.services,
@@ -321,7 +322,7 @@ export default function HostDashboardClient({
                 </div>
               )}
 
-              {/* Pure Service Foxer (Talent / Operational) */}
+              {/* Service listings (Talent / Operational) */}
               {access.canManageServices && !access.canManagePerformers && (
                 <div data-tour="host-services">
                   <ServicesSection
@@ -334,7 +335,7 @@ export default function HostDashboardClient({
                 </div>
               )}
 
-              {/* Pure Performer Foxer (Stage / Entertainment / Creative) */}
+              {/* Performer listings only (Stage / Entertainment / Creative) */}
               {access.canManagePerformers && !access.canManageServices && (
                 <div data-tour="host-performers">
                   <PerformersSection
@@ -423,6 +424,11 @@ export default function HostDashboardClient({
                 {access.canReceivePayouts && (
                   <div data-tour="host-payouts">
                     <StripeConnectSection />
+                  </div>
+                )}
+                {access.hasListings && (
+                  <div data-tour="host-reputation">
+                    <FoxerReputationCard />
                   </div>
                 )}
                 <div data-tour="host-calendar">

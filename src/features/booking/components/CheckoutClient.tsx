@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,7 @@ export default function CheckoutClient() {
   } = useCheckoutStore();
   const { user } = useAuthStore();
 
+  const fieldId = useId();
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
 
@@ -353,10 +354,10 @@ export default function CheckoutClient() {
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                    <label htmlFor={`${fieldId}-email`} className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
                       Email
                     </label>
-                    <input
+                    <input id={`${fieldId}-email`} autoComplete="email"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10"
                       placeholder="hello@foxer.com"
                       type="email"
@@ -364,10 +365,10 @@ export default function CheckoutClient() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                    <label htmlFor={`${fieldId}-mobile`} className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
                       Mobile Number
                     </label>
-                    <input
+                    <input id={`${fieldId}-mobile`} autoComplete="tel"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10"
                       placeholder="+63 900 000 0000"
                       type="tel"
@@ -500,7 +501,7 @@ export default function CheckoutClient() {
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="/privacy"
+                href="/cookies"
               >
                 Cookies
               </a>

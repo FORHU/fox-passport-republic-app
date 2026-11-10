@@ -6,6 +6,7 @@ import { FeedPost } from "@/features/republic/types";
 import { getSavedPosts } from "@/shared/api/feed";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
+import { usePostStatsStore } from "@/features/republic/store/usePostStatsStore";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { SharePostModal } from "@/features/messages/components/SharePostModal";
 import { BackButton } from "@/shared/components/ui/BackButton";
@@ -13,14 +14,21 @@ import { BackButton } from "@/shared/components/ui/BackButton";
 export default function SavedPostsPage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  // The first page failed: say so, instead of "Nothing saved yet".
+  const [loadError, setLoadError] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [activePost, setActivePost] = useState<FeedPost | null>(null);
 
   const fetchSaved = useCallback(async (cursor?: string) => {
     try {
-      if (!cursor) setLoading(true);
+      if (!cursor) {
+        setLoading(true);
+        setLoadError(false);
+      }
+      const requestedAt = Date.now();
       const res = await getSavedPosts({ limit: 10, cursor });
+      usePostStatsStore.getState().syncFromServer(res.data, requestedAt);
       if (cursor) {
         setPosts((prev) => [...prev, ...res.data]);
       } else {
@@ -29,6 +37,7 @@ export default function SavedPostsPage() {
       setNextCursor(res.nextCursor ?? null);
     } catch (err) {
       console.error("Failed to load saved posts:", err);
+      if (!cursor) setLoadError(true);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -104,6 +113,22 @@ export default function SavedPostsPage() {
                 className="w-full h-52 rounded-3xl bg-zinc-900/60 border border-zinc-800/60 animate-pulse"
               />
             ))}
+          </div>
+        ) : loadError ? (
+          <div
+            role="alert"
+            className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl"
+          >
+            <h3 className="text-base font-bold text-zinc-300">
+              Couldn&apos;t load your saved posts
+            </h3>
+            <button
+              type="button"
+              onClick={() => fetchSaved()}
+              className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              Try again
+            </button>
           </div>
         ) : posts.length === 0 ? (
           <div className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl">

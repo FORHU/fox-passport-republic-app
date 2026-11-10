@@ -69,12 +69,15 @@ export const useFavorites = () => {
     },
   });
 
-  const toggleFavorite = (venueId: string) => {
+  const toggleFavorite = (
+    venueId: string,
+    options?: { onSuccess?: () => void },
+  ) => {
     if (!userId) {
       toast.error("Please log in to save venues");
       return;
     }
-    toggle(venueId);
+    toggle(venueId, options);
   };
 
   return {

@@ -21,6 +21,9 @@ interface CommentSectionProps {
   postId: string;
   commentsCount: number;
   onCommentAdded?: () => void;
+  /** How many comments a delete removed: 1 for a reply, or 1 plus its
+   * replies for a top-level comment (the API removes those too). */
+  onCommentDeleted?: (removed: number) => void;
 }
 
 function isMine(user: any, authorId: string) {
@@ -214,6 +217,7 @@ function CommentRow({
 export function CommentSection({
   postId,
   onCommentAdded,
+  onCommentDeleted,
 }: CommentSectionProps) {
   const { user } = useAuthStore();
   const [comments, setComments] = useState<PostComment[]>([]);
@@ -354,6 +358,10 @@ export function CommentSection({
   };
 
   const handleDeleted = (id: string, parentId?: string) => {
+    const removed = parentId
+      ? 1
+      : 1 + (comments.find((c) => c.id === id)?.replies?.length ?? 0);
+    onCommentDeleted?.(removed);
     setComments((prev) => {
       if (parentId) {
         return prev.map((c) =>

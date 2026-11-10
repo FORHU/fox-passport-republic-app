@@ -147,6 +147,7 @@ export const useUserDashboard = () => {
     walletBalance,
     recentTransactions,
     savedVibes,
+    savedLoading: isLoadingSaved,
     upcomingEvents,
     recommendations,
     isLoading,

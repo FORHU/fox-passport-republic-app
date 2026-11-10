@@ -18,6 +18,7 @@ import ProposePartnershipModal from "@/features/partnership/components/ProposePa
 import { packageProposalTarget } from "@/features/partnership/utils/packageProposalTarget";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
+import { useApproximateMapCenter } from "../_hooks/useApproximateMapCenter";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   useRouter as useNavigationRouter,
@@ -86,6 +87,14 @@ export function EventDetailView({
     enabled: !!eventId && !!user,
   });
   const isRealEvent = lineItems?.isEvent === true;
+  // No venue pin and no template lat/lng: show the city's area instead.
+  const hasExactMap = mapLat != null && mapLng != null;
+  const approxCenter = useApproximateMapCenter({
+    city: template?.targetCity,
+    state: template?.targetState,
+    country: template?.targetCountry,
+    enabled: !hasExactMap,
+  });
   // This page only serves public packages (page.tsx 404s otherwise).
   const proposalTarget = packageProposalTarget(template);
 
@@ -363,12 +372,14 @@ export function EventDetailView({
                 <EventVenueOverview
                   description={template.description}
                   location={location}
-                  mapLat={mapLat}
-                  mapLng={mapLng}
+                  mapLat={hasExactMap ? mapLat : approxCenter?.lat}
+                  mapLng={hasExactMap ? mapLng : approxCenter?.lng}
+                  mapApproximate={!hasExactMap && !!approxCenter}
                   maxAttendees={maxAttendees}
                   category={category}
                   cancellationPolicy={cancellationPolicy}
                   cancellationPolicyId={template?.cancellationPolicyId}
+                  isPreview={isPreview}
                 />
 
                 {/* Booked items and payment belong to a real event. On a public
@@ -459,7 +470,7 @@ export function EventDetailView({
                 </a>
                 <a
                   className="text-xs text-gray-500 hover:text-white transition-colors"
-                  href="/privacy"
+                  href="/cookies"
                 >
                   Cookies
                 </a>

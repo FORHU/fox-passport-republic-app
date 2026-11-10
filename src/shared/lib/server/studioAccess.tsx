@@ -21,14 +21,14 @@ export const STUDIOS = {
   },
   gear: {
     studio: "Gear Studio",
-    role: "Gear Foxer",
-    applyHref: "/foxer/apply?type=asset",
+    role: "Provider",
+    applyHref: "/foxer/apply?type=provider",
     permissions: ["asset:manage"],
   },
   service: {
     studio: "Service Studio",
-    role: "Talent or Performer Foxer",
-    applyHref: "/foxer/apply?type=service",
+    role: "Provider",
+    applyHref: "/foxer/apply?type=provider",
     permissions: ["service:manage", "performer:manage"],
   },
 } as const satisfies Record<

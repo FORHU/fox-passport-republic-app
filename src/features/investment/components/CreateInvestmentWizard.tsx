@@ -25,6 +25,7 @@ import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
 import { getApiErrorMessage, uploadErrorMessage } from "@/shared/lib/apiError";
 import { QUANTITY_MAX } from "@/shared/lib/limits";
 import { cn } from "@/shared/lib/utils";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 import {
   FIELD_STEP,
   apiFieldErrors,
@@ -119,6 +120,9 @@ export default function CreateInvestmentWizard({
 }: { editId?: string } = {}) {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
+  // Edit mode: the steps wait for the saved hub, so nothing typed into an
+  // empty form is overwritten when it arrives.
+  const [editLoading, setEditLoading] = useState<boolean>(!!editId);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const [modality, setModality] =
@@ -209,7 +213,8 @@ export default function CreateInvestmentWizard({
       .catch(() => {
         toast.error("Could not load this hub.");
         router.push("/republic/investments");
-      });
+      })
+      .finally(() => setEditLoading(false));
   }, [editId, router]);
 
   // The modality can't change after creation, so step 1 is off-limits while
@@ -500,6 +505,18 @@ export default function CreateInvestmentWizard({
           </p>
         </div>
 
+        {editLoading && (
+          <SkeletonGroup label="Loading equipment hub" className="space-y-6">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+            ))}
+            <Skeleton className="h-28 w-full rounded-xl" />
+          </SkeletonGroup>
+        )}
+
         {/* 4 Step Indicator */}
         <div className="grid grid-cols-4 gap-2 border-b border-zinc-800 pb-4">
           {(modality === "venue_equity"
@@ -537,7 +554,7 @@ export default function CreateInvestmentWizard({
         </div>
 
         {/* ── STEP 1: MODALITY PICKER ────────────────────────────────── */}
-        {step === 1 && (
+        {!editLoading && step === 1 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -652,7 +669,7 @@ export default function CreateInvestmentWizard({
         )}
 
         {/* ── STEP 2 (venue_equity): REVENUE SHARE TERMS ──────────────── */}
-        {step === 2 && modality === "venue_equity" && (
+        {!editLoading && step === 2 && modality === "venue_equity" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -791,7 +808,7 @@ export default function CreateInvestmentWizard({
         )}
 
         {/* ── STEP 3 (venue_equity): TARGET VENUE SEARCH ──────────────── */}
-        {step === 3 && modality === "venue_equity" && (
+        {!editLoading && step === 3 && modality === "venue_equity" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -895,7 +912,7 @@ export default function CreateInvestmentWizard({
         )}
 
         {/* ── STEP 2 (physical_inventory): EQUIPMENT DETAILS & ATTRIBUTES ─ */}
-        {step === 2 && modality === "physical_inventory" && (
+        {!editLoading && step === 2 && modality === "physical_inventory" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1112,7 +1129,7 @@ export default function CreateInvestmentWizard({
         )}
 
         {/* ── STEP 3 (physical_inventory): DEPOT LOCATION ON MAP ────── */}
-        {step === 3 && modality === "physical_inventory" && (
+        {!editLoading && step === 3 && modality === "physical_inventory" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1131,7 +1148,7 @@ export default function CreateInvestmentWizard({
 
             <InvestmentLocationPicker
               value={form.location}
-              onChange={(loc) => setForm({ ...form, location: loc })}
+              onChange={(loc) => setForm((f) => ({ ...f, location: loc }))}
               isPhysical={true}
             />
 
@@ -1158,7 +1175,7 @@ export default function CreateInvestmentWizard({
         )}
 
         {/* ── STEP 4: PHOTOS & BROADCAST ────────────────────────────── */}
-        {step === 4 && (
+        {!editLoading && step === 4 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

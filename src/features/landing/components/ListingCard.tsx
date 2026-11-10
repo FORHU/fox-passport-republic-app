@@ -1,5 +1,6 @@
 ﻿"use client";
 import { Heart, Star } from "lucide-react";
+import { IconButton } from "@/shared/components/ui/IconButton";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -32,9 +33,15 @@ export default function ListingCard({ venue }: { venue: Venue }) {
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {/* Heart Icon: Smaller on mobile */}
-        <button className="absolute top-1 right-1 md:top-3 md:right-3 p-1 rounded-full hover:bg-white/10 transition-colors">
-          <Heart className="w-4 h-4 md:w-6 md:h-6 text-white fill-black/50 stroke-white" />
-        </button>
+        {/* Not wired to saving yet (follow-up); named so screen readers
+            don't announce an empty button. */}
+        <IconButton
+          label={`Save ${venue.title}`}
+          className="absolute top-1 right-1 md:top-3 md:right-3 p-1 rounded-full hover:bg-white/10 transition-colors"
+          icon={
+            <Heart className="w-4 h-4 md:w-6 md:h-6 text-white fill-black/50 stroke-white" />
+          }
+        />
       </div>
 
       {/* Content */}

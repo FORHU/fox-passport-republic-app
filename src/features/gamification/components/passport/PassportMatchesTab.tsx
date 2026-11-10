@@ -655,13 +655,9 @@ export function PassportMatchesTab({
                                   ? "Event Foxer"
                                   : entry.path === "venueFoxer"
                                     ? "Venue Foxer"
-                                    : entry.path === "gearFoxer"
-                                      ? "Gear Foxer"
-                                      : entry.path === "serviceFoxer"
-                                        ? "Talent Foxer"
-                                        : entry.path === "performerFoxer"
-                                          ? "Performer Foxer"
-                                          : entry.path}{" "}
+                                    : entry.path === "providerFoxer"
+                                      ? "Provider"
+                                      : entry.path}{" "}
                               · LVL {entry.level}
                             </p>
                           </div>

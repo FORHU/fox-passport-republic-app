@@ -1,23 +1,25 @@
-﻿// Gamification utility functions
+// Gamification utility functions
 
 import {
   PathProgress,
   UserPath,
   XP_PER_LEVEL,
   XP_MULTIPLIER,
+  XP_COST_CAP_LEVEL,
   PATH_LABELS,
   PATH_COLORS,
 } from "@/features/gamification/types/gamification";
 
 /**
- * Calculate the XP required for a specific level
+ * Calculate the XP required for a specific level (gentler curve capped at level 25)
  */
 export function calculateXPForLevel(level: number): number {
   if (level <= 1) return 0;
 
   let totalXP = 0;
   for (let i = 1; i < level; i++) {
-    totalXP += Math.floor(XP_PER_LEVEL * Math.pow(XP_MULTIPLIER, i - 1));
+    const step = Math.min(i, XP_COST_CAP_LEVEL);
+    totalXP += Math.round(XP_PER_LEVEL * Math.pow(XP_MULTIPLIER, step - 1));
   }
 
   return totalXP;
@@ -27,7 +29,8 @@ export function calculateXPForLevel(level: number): number {
  * Calculate the XP required to reach the next level
  */
 export function calculateXPForNextLevel(currentLevel: number): number {
-  return Math.floor(XP_PER_LEVEL * Math.pow(XP_MULTIPLIER, currentLevel - 1));
+  const step = Math.min(currentLevel, XP_COST_CAP_LEVEL);
+  return Math.round(XP_PER_LEVEL * Math.pow(XP_MULTIPLIER, step - 1));
 }
 
 /**
@@ -39,17 +42,18 @@ export function calculateLevelFromXP(totalXP: number): {
   requiredXP: number;
 } {
   let level = 1;
-  let xpForCurrentLevel = 0;
-
-  while (totalXP >= xpForCurrentLevel + calculateXPForNextLevel(level)) {
-    xpForCurrentLevel += calculateXPForNextLevel(level);
+  while (totalXP >= calculateXPForLevel(level + 1)) {
     level++;
   }
 
-  const currentXP = totalXP - xpForCurrentLevel;
-  const requiredXP = calculateXPForNextLevel(level);
+  const levelStart = calculateXPForLevel(level);
+  const levelEnd = calculateXPForLevel(level + 1);
 
-  return { level, currentXP, requiredXP };
+  return {
+    level,
+    currentXP: totalXP - levelStart,
+    requiredXP: levelEnd - levelStart,
+  };
 }
 
 /**

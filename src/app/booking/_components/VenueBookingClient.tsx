@@ -28,6 +28,7 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { venueRateUnit } from "@/features/venue/helpers/rateUnit";
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
@@ -39,7 +40,8 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   // Only the first load shows the spinner — a revisit renders from cache.
   const isLoading = venueQuery.isPending;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: unavailability } = useVenueUnavailableDates(venueId);
+  const { data: unavailability, isLoading: unavailabilityLoading } =
+    useVenueUnavailableDates(venueId);
   const unavailableDates = useMemo(
     () => new Set<string>(unavailability?.dates ?? []),
     [unavailability],
@@ -107,14 +109,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const subtotal = baseAmount + overageAmount;
   const serviceFee = platformFee ?? 0;
   const total = Math.max(0, subtotal + serviceFee - voucherDiscount);
-  const rateUnit =
-    venue?.billingRate === "hourly"
-      ? "hr"
-      : venue?.billingRate === "weekly"
-        ? "week"
-        : venue?.billingRate === "monthly"
-          ? "month"
-          : "day";
+  const rateUnit = venueRateUnit(venue?.billingRate);
 
   const imageUrl =
     venue?.images?.[0]?.url ?? venue?.images?.[0]?.imageUrl ?? null;
@@ -403,6 +398,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                   endLabel="End Date"
                   showSummary={false}
                   disabledDates={unavailableDates}
+                  loading={unavailabilityLoading}
                 />
                 <p className="text-xs text-white/40 mt-3 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[13px] text-red-400/60">
@@ -452,6 +448,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
               {/* Special Requests */}
               <FormSection icon="edit_note" title="Special Requests">
                 <textarea
+                  aria-label="Special requests"
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none"
@@ -568,6 +565,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       ) : (
                         <div className="flex gap-2">
                           <input
+                          aria-label="Voucher code"
                             type="text"
                             value={voucherCodeInput}
                             onChange={(e) => {

@@ -33,9 +33,7 @@ function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
 function getPrimaryRole(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes("eventFoxer")) return "eventFoxer";
-  if (roles.includes("gearFoxer")) return "gearFoxer";
-  if (roles.includes("serviceFoxer")) return "serviceFoxer";
-  if (roles.includes("performerFoxer")) return "performerFoxer";
+  if (roles.includes("providerFoxer")) return "providerFoxer";
   return "";
 }
 
@@ -44,17 +42,9 @@ const ROLE_META: Record<string, { label: string; description: string }> = {
     label: "Event Foxer",
     description: "Plans and runs your whole event, from venue to crew.",
   },
-  gearFoxer: {
-    label: "Gear Foxer",
-    description: "Rents out equipment: sound, lighting and décor.",
-  },
-  serviceFoxer: {
-    label: "Talent Foxer",
-    description: "Provides catering, design and staffing.",
-  },
-  performerFoxer: {
-    label: "Performer Foxer",
-    description: "Photography, DJs, live music and hosts.",
+  providerFoxer: {
+    label: "Provider",
+    description: "Equipment, catering, design, staffing and performers.",
   },
   venueFoxer: {
     label: "Venue Foxer",
@@ -96,7 +86,7 @@ function VenueCarousel({ images, name }: { images: string[]; name: string }) {
           >
             <Image
               src={img}
-              alt={`${name}'s venue, photo ${idx + 1}`}
+              alt={`${name}'s venue (${idx + 1} of ${images.length})`}
               fill
               sizes="144px"
               className="object-cover"
@@ -274,7 +264,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               >
                 <Image
                   src={img}
-                  alt={`Work by ${foxer.name}, ${idx + 1}`}
+                  alt={`Work by ${foxer.name} (${idx + 1} of ${portfolioImages.length})`}
                   fill
                   sizes="120px"
                   className="object-cover"

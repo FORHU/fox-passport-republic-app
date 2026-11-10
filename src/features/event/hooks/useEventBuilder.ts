@@ -215,7 +215,7 @@ export function useEventBuilder() {
                 ? s.category.toLowerCase()
                 : s.category?.slug?.toLowerCase();
 
-            // performerFoxer-owned categories (see PERFORMER_SERVICE_CATEGORIES
+            // Performer categories (see PERFORMER_SERVICE_CATEGORIES
             // in the api's src/types/permissions.ts) land in the talent bucket
             // regardless of icon — "entertainment" is the legacy/paused value,
             // the rest are the granular categories new listings use.

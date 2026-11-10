@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -19,6 +19,7 @@ import { FeedPost, ReactionType, Poll as PollType } from "../types";
 import { AuthorPassportPopover } from "./AuthorPassportPopover";
 import { CommentSection } from "./CommentSection";
 import { ReactionButton } from "./ReactionButton";
+import { usePostStats, usePostStatsStore } from "../store/usePostStatsStore";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { RepostComposer } from "./RepostComposer";
 import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
@@ -148,12 +149,17 @@ export function PostCard({
   // (the feed, saved posts, a post modal).
   const signInHere = () =>
     signInThen(window.location.pathname + window.location.search);
-  const [myReaction, setMyReaction] = useState<ReactionType | null>(
-    post.myReaction ?? (post.isLikedByMe ? "like" : null),
-  );
-  const [likesCount, setLikesCount] = useState(post.likesCount);
+  // Counts live in a store shared with every other card showing this post
+  // (e.g. the detail modal), not in this card's own state (BUG-25).
+  const { myReaction, likesCount, commentsCount } = usePostStats(post);
+  const seedStats = usePostStatsStore((s) => s.seed);
+  const adjustComments = usePostStatsStore((s) => s.adjustComments);
+  // A no-op once the post has counts; fresh server data arrives through
+  // syncFromServer instead, so a stale `post` copy can't overwrite them.
+  useEffect(() => {
+    seedStats(post);
+  }, [post, seedStats]);
   const [showComments, setShowComments] = useState(variant === "modal");
-  const [commentsCount, setCommentsCount] = useState(post.commentsCount);
   const [copied, setCopied] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showRepostModal, setShowRepostModal] = useState(false);
@@ -171,25 +177,20 @@ export function PostCard({
       signInHere();
       return;
     }
-    const prevReaction = myReaction;
-    const prevCount = likesCount;
-
+    const stats = usePostStatsStore.getState();
+    stats.seed(post);
+    stats.beginReaction(post.id);
     // Optimistic update
-    setMyReaction(type);
-    setLikesCount((prev) => {
-      if (prevReaction && !type) return Math.max(0, prev - 1);
-      if (!prevReaction && type) return prev + 1;
-      return prev;
-    });
+    const prev = stats.react(post.id, type);
 
     try {
       const res = await setPostReaction(post.id, type);
-      setMyReaction(res.reaction);
-      setLikesCount(res.likesCount);
+      stats.setReaction(post.id, res);
     } catch (err) {
-      setMyReaction(prevReaction);
-      setLikesCount(prevCount);
+      if (prev) stats.restore(post.id, prev);
       console.error("Reaction failed:", err);
+    } finally {
+      stats.endReaction(post.id);
     }
   };
 
@@ -618,7 +619,7 @@ export function PostCard({
                   post.asset!.id,
                 )
               }
-              title="Chat with Gear Foxer"
+              title="Chat with this Provider"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
               <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
@@ -664,7 +665,7 @@ export function PostCard({
                   post.service!.id,
                 )
               }
-              title="Chat with Talent Foxer"
+              title="Chat with this Provider"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
               <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
@@ -849,7 +850,8 @@ export function PostCard({
         <CommentSection
           postId={post.id}
           commentsCount={commentsCount}
-          onCommentAdded={() => setCommentsCount((prev) => prev + 1)}
+          onCommentAdded={() => adjustComments(post.id, 1)}
+          onCommentDeleted={(removed) => adjustComments(post.id, -removed)}
         />
       )}
     </article>

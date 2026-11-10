@@ -36,6 +36,7 @@ import {
   useEvents,
   useFoxerTotal,
   useVenues,
+  useVenueCount,
   type LandingEventLocation,
   type LandingVenue,
   type Stop,
@@ -1574,7 +1575,7 @@ export function StopCard({
                 <img
                   key={p.src}
                   src={p.src}
-                  alt={i === active ? (p.alt ?? "") : ""}
+                  alt={i === active ? p.alt : ""}
                   loading="lazy"
                   decoding="async"
                   draggable={false}
@@ -2145,6 +2146,7 @@ function TourHero() {
   const openSignup = useAuthStore((s) => s.openSignup);
   const theme = useThemeStore((st) => st.theme);
   const venues = useVenues(80);
+  const venueCount = useVenueCount();
   const events = useEvents(300);
   const eventLocations = useMemo(
     () => buildEventLocations(events, venues),
@@ -2374,8 +2376,8 @@ function TourHero() {
             <p className="mt-5 hidden max-w-sm text-base leading-relaxed text-white/70 sm:block">
               Concerts, weddings, festivals and private events: the venue, the
               gear and the crew in one booking.
-              {venues.length > 0
-                ? ` ${venues.length} venues are on the map so far.`
+              {venueCount
+                ? ` ${venueCount} venues are on the map so far.`
                 : ""}{" "}
               Scroll to see how FoxPassport works.
             </p>

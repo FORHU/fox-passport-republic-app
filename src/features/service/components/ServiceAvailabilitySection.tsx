@@ -9,7 +9,7 @@ const noop = () => {};
 const NO_DATES: string[] = [];
 
 /**
- * A Talent/Performer Foxer's own read on their service's calendar — the
+ * A Provider's own read on their service's calendar — the
  * same booked-days data the citizen's booking page shows, reused here
  * read-only (nothing is ever "selected"). No manual-block concept for
  * services today, unlike a venue's `blockedDates` — this is demand only.

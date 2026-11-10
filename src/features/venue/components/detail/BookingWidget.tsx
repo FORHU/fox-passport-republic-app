@@ -4,13 +4,15 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 import { Money } from "@/shared/components/ui/Money";
+import { venueRateUnit } from "@/features/venue/helpers/rateUnit";
 
 interface VenueBookingWidgetProps {
   venueId: string;
   price: number;
   billingRate?: string;
-  rating: number;
-  reviews: number;
+  rating: number | null;
+  /** Review count; `undefined` while it loads (no rating shown), 0 shows "New". */
+  reviews?: number;
   capacity?: string;
   onContactOwner: () => void;
   onCustomExperience?: () => void;
@@ -20,7 +22,7 @@ interface VenueBookingWidgetProps {
 export function BookingWidget({
   venueId,
   price,
-  billingRate = "day",
+  billingRate,
   rating,
   reviews,
   capacity,
@@ -30,7 +32,7 @@ export function BookingWidget({
 }: VenueBookingWidgetProps) {
   const router = useRouter();
 
-  const rateLabel = billingRate === "hour" ? "hr" : "day";
+  const rateLabel = venueRateUnit(billingRate);
 
   return (
     <div className="relative lg:top-8 w-full max-w-lg mx-auto lg:max-w-none">
@@ -50,15 +52,20 @@ export function BookingWidget({
               / {rateLabel}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-white font-bold">
-            <span className="material-symbols-outlined text-[14px] fill-current gold-foil">
-              star
-            </span>
-            {rating} ·{" "}
-            <span className="text-text-muted underline cursor-pointer">
-              {reviews} reviews
-            </span>
-          </div>
+          {reviews !== undefined &&
+            (reviews > 0 ? (
+              <div className="flex items-center gap-1 text-xs text-white font-bold">
+                <span className="material-symbols-outlined text-[14px] fill-current gold-foil">
+                  star
+                </span>
+                {rating ?? 0} ·{" "}
+                <span className="text-text-muted underline cursor-pointer">
+                  {reviews} {reviews === 1 ? "review" : "reviews"}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xs text-white font-bold">New</span>
+            ))}
         </div>
 
         {/* Capacity badge */}

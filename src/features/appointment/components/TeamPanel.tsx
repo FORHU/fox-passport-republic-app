@@ -20,6 +20,7 @@ import type {
   TeamMember,
 } from "../api/appointments";
 import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 
 const emailSchema = z.email();
 const EMAIL_HINT = "Enter a full email address, like name@example.com.";
@@ -130,10 +131,35 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
     );
 
   const busy = add.isPending || remove.isPending || answerRequest.isPending;
+  const { confirm, dialog } = useConfirm();
+
+  // Removing someone (or withdrawing their invitation) takes effect at once,
+  // so ask first (BUG-27).
+  const confirmRemove = async (m: TeamMember, withdraw: boolean) => {
+    const name = m.user.name || m.user.email;
+    const role = KIND_COPY[m.kind].label;
+    const ok = await confirm(
+      withdraw
+        ? {
+            title: "Withdraw invitation?",
+            description: `${name} won't be able to accept the ${role} invitation.`,
+            confirmLabel: "Withdraw",
+            tone: "danger",
+          }
+        : {
+            title: `Remove ${role}?`,
+            description: `${name} will lose access to this team straight away.`,
+            confirmLabel: "Remove",
+            tone: "danger",
+          },
+    );
+    if (ok) remove.mutate(m.id);
+  };
   const accepting = settings.data?.acceptsOrganizerRequests ?? false;
 
   return (
     <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8 space-y-6">
+      {dialog}
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Users className="w-5 h-5 text-accent" />
@@ -338,7 +364,7 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
                 title="On the team"
                 members={active}
                 actionLabel="Remove"
-                onAction={(m) => remove.mutate(m.id)}
+                onAction={(m) => confirmRemove(m, false)}
                 disabled={busy}
                 note={(m) =>
                   m.respondedAt ? `Since ${formatDate(m.respondedAt)}` : null
@@ -348,7 +374,7 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
                 title="Waiting for an answer"
                 members={invited}
                 actionLabel="Withdraw"
-                onAction={(m) => remove.mutate(m.id)}
+                onAction={(m) => confirmRemove(m, true)}
                 disabled={busy}
                 note={(m) =>
                   m.expiresAt ? `Expires ${formatDate(m.expiresAt)}` : null

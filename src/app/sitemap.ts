@@ -101,6 +101,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "yearly",
       priority: 0.2,
     },
+    {
+      url: `${baseUrl}/cookies`,
+      changeFrequency: "yearly",
+      priority: 0.2,
+    },
   ];
 
   const [venues, categories, eventTemplates, foxers] = await Promise.all([

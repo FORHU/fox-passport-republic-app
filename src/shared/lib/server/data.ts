@@ -220,7 +220,7 @@ function normalizeVenue(v: any) {
           avatar:
             mayor.imgId ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(mayor.name || "Owner")}&background=ccff00&color=000`,
-          bio: "",
+          bio: typeof mayor.bio === "string" ? mayor.bio.trim() : "",
           email: mayor.email,
         }
       : null,

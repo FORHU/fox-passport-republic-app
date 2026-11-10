@@ -13,7 +13,6 @@ describe("canAccessCreatorDashboard", () => {
     "venueFoxer",
     "eventFoxer",
     "providerFoxer",
-    "performerFoxer",
     "investor",
     "organizer",
   ])("lets a %s in", (role) => {

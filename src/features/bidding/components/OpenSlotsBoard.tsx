@@ -34,7 +34,7 @@ export const OpenSlotsBoard: React.FC = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold tracking-tight">Open Event Slots</h2>
       <p className="text-muted-foreground">
-        Find events looking for Talent Foxers and apply to join their team.
+        Find events looking for Providers and apply to join their team.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

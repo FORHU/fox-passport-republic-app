@@ -18,6 +18,9 @@ import { CreatorNavMoreSheet } from "./CreatorNavMoreSheet";
 
 /** Tabs the mobile bar holds; past that, the last slot is "More". */
 const MOBILE_TAB_SLOTS = 5;
+/** Tabs the top bar shows below `xl`; the rest move into "More", so the
+ * bell and the user menu button never get pushed off the bar. */
+const DESKTOP_TAB_SLOTS = 4;
 
 interface DashboardHeaderProps {
   /** The caller already renders its own mobile bottom nav (e.g.
@@ -55,9 +58,12 @@ export function DashboardHeader({
   if (access.isMayor) roleLabels.push("Venue Foxer");
   // From the event permission: isHost (booking:check-in) is held by admins too.
   if (access.canManageEvents) roleLabels.push("Event Foxer");
-  if (access.canManageInventory) roleLabels.push("Gear Foxer");
-  if (access.canManageServices) roleLabels.push("Talent Foxer");
-  if (access.canManagePerformers) roleLabels.push("Performer Foxer");
+  if (
+    access.canManageInventory ||
+    access.canManageServices ||
+    access.canManagePerformers
+  )
+    roleLabels.push("Provider");
   if (roleType.includes("investor")) roleLabels.push("Partner Foxer");
   if (roleType.includes("organizer")) roleLabels.push("Organizer");
 
@@ -72,6 +78,24 @@ export function DashboardHeader({
 
   const { primaryLinks, secondaryLinks, allNavLinks } = useCreatorNavLinks();
   const useDropdown = allNavLinks.length > 5;
+  const tabLinks = useDropdown ? primaryLinks : allNavLinks;
+  // Tabs shown only from `xl`; below it they are listed in "More".
+  const foldedTabs = tabLinks.slice(DESKTOP_TAB_SLOTS);
+  const moreLinks = useDropdown ? secondaryLinks : [];
+  const showMore = moreLinks.length > 0 || foldedTabs.length > 0;
+  const isActiveIn = (links: { href: string }[]) =>
+    links.some((l) => isCreatorLinkActive(pathname, l.href));
+  const moreActive = isActiveIn(moreLinks);
+  // From `xl` the folded tab shows itself as active, so More doesn't.
+  const foldedActive = !moreActive && isActiveIn(foldedTabs);
+  const moreActiveClass = "text-accent bg-white/10 font-bold";
+  const moreIdleClass = "text-white/65 hover:text-white hover:bg-white/10";
+  const moreLinkClass = (href: string) =>
+    `items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+      isCreatorLinkActive(pathname, href)
+        ? "bg-accent text-black shadow-md"
+        : "text-white/80 hover:bg-white/10 hover:text-white"
+    }`;
   // Every section stays reachable on a phone: past the slots, "More".
   const mobileOverflow = allNavLinks.length > MOBILE_TAB_SLOTS;
   const mobileTabs = mobileOverflow
@@ -113,16 +137,18 @@ export function DashboardHeader({
 
             {/* Navigation — Compact pills with clean responsive density */}
             <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 bg-black/40 p-1 rounded-full border border-white/5">
-              {(useDropdown ? primaryLinks : allNavLinks).map((link) => {
+              {tabLinks.map((link, i) => {
                 const isActive = isCreatorLinkActive(pathname, link.href);
+                const folded = i >= DESKTOP_TAB_SLOTS ? " hidden xl:inline" : "";
                 return (
                   <Link
                     key={link.label}
                     href={link.href}
                     className={
-                      isActive
+                      (isActive
                         ? "px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-bold text-black bg-accent transition-all whitespace-nowrap"
-                        : "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium text-white/65 hover:text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+                        : "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium text-white/65 hover:text-white hover:bg-white/10 transition-colors whitespace-nowrap") +
+                      folded
                     }
                   >
                     {link.label}
@@ -130,16 +156,22 @@ export function DashboardHeader({
                 );
               })}
 
-              {/* Tools & More dropdown when nav items exceed 5 */}
-              {useDropdown && (
-                <div className="relative" ref={moreMenuRef}>
+              {/* "More": the tools, and below `xl` the tabs that don't fit.
+                  With only folded tabs in it, it's not needed from `xl`. */}
+              {showMore && (
+                <div
+                  className={`relative${moreLinks.length === 0 ? " xl:hidden" : ""}`}
+                  ref={moreMenuRef}
+                >
                   <button
                     type="button"
                     onClick={() => setMoreMenuOpen((v) => !v)}
                     className={`px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium flex items-center gap-1 transition-colors whitespace-nowrap ${
-                      secondaryLinks.some((l) => pathname.startsWith(l.href))
-                        ? "text-accent bg-white/10 font-bold"
-                        : "text-white/65 hover:text-white hover:bg-white/10"
+                      moreActive
+                        ? moreActiveClass
+                        : foldedActive
+                          ? `${moreActiveClass} xl:text-white/65 xl:bg-transparent xl:font-medium`
+                          : moreIdleClass
                     }`}
                   >
                     <span>More</span>
@@ -154,27 +186,22 @@ export function DashboardHeader({
 
                   {moreMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-48 bg-surface/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                      {secondaryLinks.map((link) => {
-                        const isActive = pathname.startsWith(link.href);
-                        const icon = link.icon;
-                        return (
-                          <Link
-                            key={link.label}
-                            href={link.href}
-                            onClick={() => setMoreMenuOpen(false)}
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                              isActive
-                                ? "bg-accent text-black shadow-md"
-                                : "text-white/80 hover:bg-white/10 hover:text-white"
-                            }`}
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              {icon}
-                            </span>
-                            <span>{link.label}</span>
-                          </Link>
-                        );
-                      })}
+                      {[
+                        ...foldedTabs.map((link) => ({ link, folded: true })),
+                        ...moreLinks.map((link) => ({ link, folded: false })),
+                      ].map(({ link, folded }) => (
+                        <Link
+                          key={link.label}
+                          href={link.href}
+                          onClick={() => setMoreMenuOpen(false)}
+                          className={`${folded ? "flex xl:hidden" : "flex"} ${moreLinkClass(link.href)}`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {link.icon}
+                          </span>
+                          <span>{link.label}</span>
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -185,8 +212,11 @@ export function DashboardHeader({
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               {user && <NotificationBell />}
               <div className="flex items-center gap-2 sm:gap-2.5 pl-1.5 sm:pl-2.5 border-l border-white/10">
+                {/* Hidden while the tabs share the bar below `xl`; the menu's
+                    profile header still shows the name. */}
                 <div
-                  className="text-right hidden sm:block max-w-[130px] lg:max-w-[160px]"
+                  data-testid="dashboard-user-name"
+                  className="text-right hidden sm:block md:hidden xl:block max-w-[130px] xl:max-w-[160px]"
                   title={fullRoleTooltip}
                 >
                   <div className="text-xs sm:text-sm font-bold text-white truncate">
@@ -314,9 +344,8 @@ export function WelcomeBanner({
       icon: "inventory_2",
       iconColor: "text-purple-400",
       allowed: access.canManageInventory,
-      requiredRole: "Gear Foxer",
-      // The role's own application, as the Studios link (roleCatalog).
-      applyHref: "/foxer/apply?type=asset",
+      requiredRole: "Provider",
+      applyHref: "/foxer/apply?type=provider",
       onClick: onNavigateToCreateInventory,
     },
     {
@@ -324,8 +353,8 @@ export function WelcomeBanner({
       icon: "design_services",
       iconColor: "text-yellow-400",
       allowed: access.canManageServices,
-      requiredRole: "Talent Foxer",
-      applyHref: "/foxer/apply?type=service",
+      requiredRole: "Provider",
+      applyHref: "/foxer/apply?type=provider",
       onClick: onNavigateToCreateService,
     },
     {
@@ -333,8 +362,8 @@ export function WelcomeBanner({
       icon: "theater_comedy",
       iconColor: "text-amber-500",
       allowed: access.canManagePerformers,
-      requiredRole: "Performer Foxer",
-      applyHref: "/foxer/apply?type=performer",
+      requiredRole: "Provider",
+      applyHref: "/foxer/apply?type=provider",
       onClick: onNavigateToCreatePerformerService || onNavigateToCreateService,
     },
   ];

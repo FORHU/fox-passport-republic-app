@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import { createPortal } from "react-dom";
 
 export function diffDays(start: string, end: string): number {
@@ -53,6 +53,7 @@ function CompactDatePicker({
   onEndChange,
   onDone,
   disabledDates,
+  loading = false,
 }: {
   startValue: string;
   endValue: string;
@@ -62,6 +63,8 @@ function CompactDatePicker({
   /** Dates (YYYY-MM-DD) that can't be picked as either endpoint — e.g. a
    *  venue's already-booked or manually blocked days. */
   disabledDates?: Set<string>;
+  /** The disabled dates are still loading: nothing can be picked yet. */
+  loading?: boolean;
 }) {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -108,7 +111,7 @@ function CompactDatePicker({
   };
 
   const handleClick = (ds: string) => {
-    if (ds < todayStr) return;
+    if (loading || ds < todayStr) return;
     if (disabledDates?.has(ds)) return;
     if (!startValue || (startValue && endValue)) {
       onStartChange(ds);
@@ -164,7 +167,15 @@ function CompactDatePicker({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px">
+      {loading && (
+        <p role="status" className="text-center text-[10px] text-white/50 mb-1">
+          Checking availability…
+        </p>
+      )}
+      <div
+        aria-busy={loading || undefined}
+        className={`grid grid-cols-7 gap-px ${loading ? "animate-pulse opacity-40 motion-reduce:animate-none" : ""}`}
+      >
         {cells.map((day, i) => {
           if (day === null) return <div key={`e-${i}`} className="h-8" />;
           const ds = toDateStr(viewYear, viewMonth, day);
@@ -178,7 +189,7 @@ function CompactDatePicker({
             <button
               key={ds}
               onClick={() => handleClick(ds)}
-              disabled={disabledCell}
+              disabled={loading || disabledCell}
               title={unavailable ? "Not available on this date" : undefined}
               className={[
                 "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center relative",
@@ -222,6 +233,7 @@ export default function DateRangePicker({
   showSummary = true,
   stacked = false,
   disabledDates,
+  loading = false,
 }: {
   startDate: string;
   endDate: string;
@@ -235,7 +247,11 @@ export default function DateRangePicker({
   /** Dates (YYYY-MM-DD) that can't be picked as either endpoint or fall
    *  inside the selected range — e.g. a venue's booked/blocked days. */
   disabledDates?: Set<string>;
+  /** `disabledDates` is still loading: the calendar can't be picked from yet. */
+  loading?: boolean;
 }) {
+  const fieldId = useId();
+  const errorId = `${fieldId}-error`;
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -309,52 +325,87 @@ export default function DateRangePicker({
         }
       >
         <div className="space-y-2">
-          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+          <label
+            htmlFor={`${fieldId}-start`}
+            className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+          >
             {startLabel}
           </label>
           <div className="relative" ref={triggerRef}>
             <input
+              id={`${fieldId}-start`}
               type="text"
+              aria-invalid={errors?.dates ? true : undefined}
+              aria-describedby={errors?.dates ? errorId : undefined}
               value={localStart}
               placeholder="Select date"
               onChange={(e) => setLocalStart(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onStartChange)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
-            <span
+            <button
+              type="button"
               onClick={openCalendar}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
+              aria-label="Open calendar"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer"
             >
-              calendar_today
-            </span>
+              <span
+                aria-hidden="true"
+                className="material-symbols-outlined text-[18px]"
+              >
+                calendar_today
+              </span>
+            </button>
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+          <label
+            htmlFor={`${fieldId}-end`}
+            className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1"
+          >
             {endLabel}
           </label>
           <div className="relative">
             <input
+              id={`${fieldId}-end`}
               type="text"
+              aria-invalid={errors?.dates ? true : undefined}
+              aria-describedby={errors?.dates ? errorId : undefined}
               value={localEnd}
               placeholder="Select date"
               onChange={(e) => setLocalEnd(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onEndChange)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
-            <span
+            <button
+              type="button"
               onClick={openCalendar}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
+              aria-label="Open calendar"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer"
             >
-              calendar_today
-            </span>
+              <span
+                aria-hidden="true"
+                className="material-symbols-outlined text-[18px]"
+              >
+                calendar_today
+              </span>
+            </button>
           </div>
         </div>
       </div>
 
       {errors?.dates && (
-        <p className="text-xs text-red-400 mt-3 flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[13px]">error</span>
+        <p
+          id={errorId}
+          role="alert"
+          className="text-xs text-red-400 mt-3 flex items-center gap-1.5"
+        >
+          <span
+            aria-hidden="true"
+            className="material-symbols-outlined text-[13px]"
+          >
+            error
+          </span>
           {errors.dates}
         </p>
       )}
@@ -384,6 +435,7 @@ export default function DateRangePicker({
                 onEndChange={handleCalendarEnd}
                 onDone={() => setCalendarOpen(false)}
                 disabledDates={disabledDates}
+                loading={loading}
               />
             </div>
           </>,

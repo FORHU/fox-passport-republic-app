@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { takeReturnTo } from "@/shared/auth/returnTo";
 import RequireAuth from "@/shared/auth/RequireAuth";
+import PageLoader from "@/shared/components/ui/PageLoader";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
 import { isFoxerRole } from "@/shared/constants/roles";
@@ -112,6 +113,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   // The role whose details modal is open — picking a role explains it first
   // instead of dropping straight into its application form.
   const [viewingRole, setViewingRole] = useState<RoleCatalogEntry | null>(null);
+  // Pending or returned applications decide the first step (and the
+  // stepper), so the form waits for them instead of jumping from step 1.
+  const [rolesChecked, setRolesChecked] = useState(false);
 
   useEffect(() => {
     api
@@ -128,7 +132,8 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
         setRevisionRequests(revisions);
         if (pending.length > 0 || revisions.length > 0) setStep(3);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setRolesChecked(true));
   }, []);
 
   const hasCommittedRoles =
@@ -187,6 +192,14 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
     "text-xs font-bold text-white/60 uppercase tracking-wider block mb-2";
   const inputClass =
     "w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+
+  if (!rolesChecked) {
+    return (
+      <RequireAuth>
+        <PageLoader />
+      </RequireAuth>
+    );
+  }
 
   return (
     <RequireAuth>

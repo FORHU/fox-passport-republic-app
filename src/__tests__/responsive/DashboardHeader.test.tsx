@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within, fireEvent } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
   default: ({ alt, priority: _priority, ...props }: any) => (
@@ -23,6 +23,7 @@ const mockAccess = {
   canManageVenues: true,
   canManageInventory: true,
   canManageServices: true,
+  canManagePerformers: true,
 };
 
 vi.mock("@/shared/auth/useRoleAccess", () => ({
@@ -79,5 +80,40 @@ describe("DashboardHeader — responsive nav", () => {
 
     expect(screen.getByText("FoxPassport")).toBeInTheDocument();
     expect(screen.getByTestId("notification-bell")).toBeInTheDocument();
+  });
+
+  // Every tab at once pushed the bell and the user menu off the bar between
+  // `md` and `xl` (e.g. at 887px).
+  it("shows four tabs below xl and lists the rest in More", () => {
+    const { container } = render(<DashboardHeader />);
+    const desktopNav = container.querySelector(
+      "nav.hidden.md\\:flex",
+    ) as HTMLElement;
+
+    const tabs = within(desktopNav).getAllByRole("link");
+    const shown = tabs.filter((t) => !t.classList.contains("hidden"));
+    const folded = tabs.filter((t) => t.classList.contains("hidden"));
+    expect(shown).toHaveLength(4);
+    expect(folded.length).toBeGreaterThan(0);
+    folded.forEach((t) => expect(t).toHaveClass("xl:inline"));
+
+    fireEvent.click(within(desktopNav).getByRole("button", { name: /More/ }));
+    for (const tab of folded) {
+      const inMore = within(desktopNav)
+        .getAllByRole("link", { name: new RegExp(tab.textContent!) })
+        .find((l) => l !== tab);
+      expect(inMore).toBeDefined();
+      expect(inMore).toHaveClass("xl:hidden");
+    }
+  });
+
+  it("keeps the user menu button and hides the name while tabs share the bar", () => {
+    render(<DashboardHeader />);
+
+    expect(screen.getByRole("button", { name: "User menu" })).toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-user-name")).toHaveClass(
+      "md:hidden",
+      "xl:block",
+    );
   });
 });

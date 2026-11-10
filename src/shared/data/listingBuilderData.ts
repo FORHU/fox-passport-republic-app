@@ -35,9 +35,8 @@ export interface ServiceCategoryItem {
   icon: string;
 }
 
-// `entertainment` is a legacy ServiceCategory value — existing rows are
-// paused until reapproved as performerFoxer. New service listings must not
-// offer it; Performer Foxers use their own granular categories instead.
+// `entertainment` is a legacy ServiceCategory value. New service listings must
+// not offer it; performer listings use their own granular categories instead.
 export const SERVICE_CATEGORIES: ServiceCategoryItem[] = [
   { id: "design", label: "Design", icon: "brush" },
   { id: "catering", label: "Catering", icon: "restaurant" },
