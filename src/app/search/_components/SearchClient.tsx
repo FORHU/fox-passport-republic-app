@@ -538,8 +538,10 @@ export default function SearchClient() {
                     )}
                   </button>
                 </SheetTrigger>
+                {/* SearchFilters has its own close button next to the title. */}
                 <SheetContent
                   side="bottom"
+                  showCloseButton={false}
                   className="max-h-[90vh] overflow-y-auto rounded-t-3xl border-white/10 bg-surface p-4 sm:p-6"
                 >
                   <SheetTitle className="sr-only">Filters</SheetTitle>
