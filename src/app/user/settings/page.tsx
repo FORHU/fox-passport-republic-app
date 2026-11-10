@@ -2,7 +2,6 @@ import { requireAuth } from "@/shared/lib/server/auth";
 import ProfileSettingsClient, {
   type SettingsSection,
 } from "@/features/user/components/ProfileSettingsClient";
-import MobileSettingsView from "@/features/user/components/MobileSettingsView";
 import BlockedUsersSection from "./BlockedUsersSection";
 
 export const dynamic = "force-dynamic";
@@ -14,29 +13,17 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ section?: string }>;
 }) {
-  const user = await requireAuth();
+  await requireAuth();
   const { section } = await searchParams;
+  // `?section=` opens the editor at that section; otherwise it opens at Profile.
   const initialSection = SECTIONS.find((s) => s === section);
 
-  // `?section=` opens the editor at every width — it is how the phone menu
-  // below reaches it, since that menu replaces the editor under `lg`.
-  if (initialSection) {
-    return (
-      <ProfileSettingsClient
-        initialSection={initialSection}
-        blockedUsersSlot={<BlockedUsersSection />}
-      />
-    );
-  }
-
+  // The same editor at every width: Edit, Verification, Wishlists and Log Out
+  // are already in the header's user menu, so a phone needs no menu of its own.
   return (
-    <>
-      <div className="lg:hidden">
-        <MobileSettingsView user={user} />
-      </div>
-      <div className="hidden lg:block">
-        <ProfileSettingsClient blockedUsersSlot={<BlockedUsersSection />} />
-      </div>
-    </>
+    <ProfileSettingsClient
+      initialSection={initialSection}
+      blockedUsersSlot={<BlockedUsersSection />}
+    />
   );
 }
