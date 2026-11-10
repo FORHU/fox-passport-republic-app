@@ -8,7 +8,7 @@ import {
 } from "@/features/dashboard/components";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { FILTER_STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
-import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { DashboardListToolbar } from "./DashboardListToolbar";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 
@@ -93,48 +93,36 @@ export default function HostEventsClient({
 
         <main className="pt-32 pb-28 sm:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <div className="flex-1">
-                <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-accent">
-                    hub
-                  </span>
-                  My Events
-                </div>
-                <p className="text-sm text-white/50">
-                  Only shows records created by your account.
-                </p>
+            <div className="mb-5">
+              <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-accent">
+                  hub
+                </span>
+                My Events
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <div className="relative w-full sm:w-72">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
-                    search
-                  </span>
-                  <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search events..."
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-accent"
-                  />
-                </div>
-
-                <div className="w-full sm:w-56">
-                  <StyledSelect
-                    value={status}
-                    onChange={setStatus}
-                    options={[
-                      { value: "all", label: "All Status" },
-                      ...FILTER_STATUS_OPTIONS.event.map((s) => ({
-                        value: s,
-                        label: s,
-                      })),
-                    ]}
-                    className="rounded-full"
-                  />
-                </div>
-              </div>
+              <p className="text-sm text-white/50">
+                Only shows records created by your account.
+              </p>
             </div>
+
+            <DashboardListToolbar
+              search={{
+                value: searchQuery,
+                onChange: setSearchQuery,
+                placeholder: "Search events...",
+              }}
+              status={{
+                value: status,
+                onChange: setStatus,
+                options: [
+                  { value: "all", label: "All Status" },
+                  ...FILTER_STATUS_OPTIONS.event.map((s) => ({
+                    value: s,
+                    label: s,
+                  })),
+                ],
+              }}
+            />
 
             <EventsSection
               events={filteredEvents}

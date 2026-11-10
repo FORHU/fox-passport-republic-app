@@ -4,6 +4,7 @@ export { LockedSection } from "./LockedSection";
 export { DashboardHeader, WelcomeBanner } from "./DashboardHeader";
 export { KPICards } from "./KPICards";
 export { CREATOR_DASHBOARD_BG } from "./dashboardBackground";
+export { DashboardListToolbar } from "./DashboardListToolbar";
 
 export { EventsSection } from "./EventsSection";
 export { VenuesSection } from "./VenuesSection";
