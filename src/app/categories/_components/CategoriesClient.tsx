@@ -44,6 +44,12 @@ function CategoriesContent({
     categories.length > 0 ? categories : initialCategories;
   const displayEvents = events.length > 0 ? events : initialEvents;
   const displayVenues = venues.length > 0 ? venues : initialVenues;
+  // The hooks refetch what the server already rendered. Keep the server's
+  // cards on screen meanwhile; only an empty page waits for the refetch.
+  const listsLoading =
+    (eventsLoading || venuesLoading) &&
+    displayEvents.length === 0 &&
+    displayVenues.length === 0;
 
   // State for search within categories
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,7 +119,7 @@ function CategoriesContent({
             </div>
           </div>
 
-          {eventsLoading || venuesLoading ? (
+          {listsLoading ? (
             <div className="bg-white/5 rounded-2xl shadow-sm border border-white/10 p-6 min-h-[500px] flex items-center justify-center">
               <Loader2 className="w-8 h-8 text-accent animate-spin" />
             </div>

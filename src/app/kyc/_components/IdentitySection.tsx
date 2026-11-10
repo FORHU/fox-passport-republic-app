@@ -12,6 +12,7 @@ import {
   type IdType,
 } from "@/shared/api/identity";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 
 const ACCEPT = UPLOAD_ACCEPT.document;
@@ -121,23 +122,29 @@ export function IdentitySection() {
             you&apos;re you. You can book without it.
           </p>
         </div>
-        <span
-          className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border"
-          style={{
-            color: status.color,
-            borderColor: `color-mix(in srgb, ${status.color} 33%, transparent)`,
-            background: `color-mix(in srgb, ${status.color} 10%, transparent)`,
-          }}
-        >
-          <span className="material-symbols-outlined text-[14px]">
-            {status.icon}
+        {identity.isPending ? (
+          <Skeleton className="h-6 w-24 shrink-0 rounded-full" />
+        ) : (
+          <span
+            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border"
+            style={{
+              color: status.color,
+              borderColor: `color-mix(in srgb, ${status.color} 33%, transparent)`,
+              background: `color-mix(in srgb, ${status.color} 10%, transparent)`,
+            }}
+          >
+            <span className="material-symbols-outlined text-[14px]">
+              {status.icon}
+            </span>
+            {status.label}
           </span>
-          {status.label}
-        </span>
+        )}
       </div>
 
       {identity.isPending ? (
-        <div className="mt-5 h-14 rounded-2xl bg-white/5 animate-pulse" />
+        <SkeletonGroup label="Loading ID status" className="mt-5">
+          <Skeleton className="h-14 rounded-2xl" />
+        </SkeletonGroup>
       ) : identity.isError ? (
         <p className="mt-5 text-sm text-red-400">
           Couldn&apos;t load your ID status.{" "}

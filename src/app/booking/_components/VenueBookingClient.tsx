@@ -40,7 +40,8 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   // Only the first load shows the spinner — a revisit renders from cache.
   const isLoading = venueQuery.isPending;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: unavailability } = useVenueUnavailableDates(venueId);
+  const { data: unavailability, isLoading: unavailabilityLoading } =
+    useVenueUnavailableDates(venueId);
   const unavailableDates = useMemo(
     () => new Set<string>(unavailability?.dates ?? []),
     [unavailability],
@@ -397,6 +398,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                   endLabel="End Date"
                   showSummary={false}
                   disabledDates={unavailableDates}
+                  loading={unavailabilityLoading}
                 />
                 <p className="text-xs text-white/40 mt-3 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[13px] text-red-400/60">

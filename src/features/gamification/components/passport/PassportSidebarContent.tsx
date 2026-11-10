@@ -18,6 +18,7 @@ import {
 } from "@/features/gamification/data/passportData";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 
 export interface PassportSidebarContentProps {
   user: any;
@@ -47,6 +48,8 @@ export interface PassportSidebarContentProps {
       | "leaderboard",
   ) => void;
   earnedPerkKeys: string[];
+  /** The passport is still loading: the level, XP and perks aren't known yet. */
+  loading?: boolean;
   onTabSelect: () => void;
 }
 
@@ -64,6 +67,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
   activeTab,
   setActiveTab,
   earnedPerkKeys,
+  loading = false,
   onTabSelect,
 }) => {
   const router = useRouter();
@@ -139,12 +143,16 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             .join(" · ") || "Citizen"}
         </p>
         <div className="mt-3 flex items-center justify-center">
-          <RankBadge
-            level={calculateLevelFromXP(totalXP).level}
-            size={28}
-            showTitle={true}
-            isCitizen={true}
-          />
+          {loading ? (
+            <Skeleton className="h-7 w-32 rounded-full" />
+          ) : (
+            <RankBadge
+              level={calculateLevelFromXP(totalXP).level}
+              size={28}
+              showTitle={true}
+              isCitizen={true}
+            />
+          )}
         </div>
       </div>
 
@@ -152,7 +160,11 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         <div className="space-y-2">
           <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
             <span>Mastery XP</span>
-            <span className="text-accent font-mono">{formatXP(totalXP)}</span>
+            {loading ? (
+              <Skeleton className="h-3 w-12" />
+            ) : (
+              <span className="text-accent font-mono">{formatXP(totalXP)}</span>
+            )}
           </div>
           <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div
@@ -165,6 +177,13 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         </div>
 
         {(() => {
+          if (loading) {
+            return (
+              <SkeletonGroup label="Loading perks">
+                <Skeleton className="h-32 w-full rounded-2xl" />
+              </SkeletonGroup>
+            );
+          }
           const pathPerkData = activePathTypes.map((path) => {
             const perks = (PATH_PERKS[path] ?? [])
               .map(({ level, perk }) => ({

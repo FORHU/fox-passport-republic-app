@@ -497,6 +497,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                     if (d) setErrors((e) => ({ ...e, dates: undefined }));
                   }}
                   bookedRanges={bookedRanges}
+                  loading={availabilityQuery.isLoading}
                   totalQty={totalQty || 99}
                   requestedQty={quantity}
                   accent="purple"

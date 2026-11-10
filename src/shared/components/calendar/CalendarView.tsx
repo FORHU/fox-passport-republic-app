@@ -7,6 +7,7 @@ import {
   type CalendarBooking,
 } from "@/shared/hooks/useCalendarBookings";
 import type { CalendarRole } from "@/shared/api/calendar";
+import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 
 type View = "month" | "week" | "day" | "agenda";
 
@@ -302,6 +303,7 @@ export function CalendarView() {
           days={days}
           bookings={visible}
           now={now}
+          loading={isLoading}
           onSelect={setSelected}
         />
       )}
@@ -599,11 +601,14 @@ function Agenda({
   days,
   bookings,
   now,
+  loading,
   onSelect,
 }: {
   days: Date[];
   bookings: CalendarBooking[];
   now: Date;
+  /** First load: draw rows instead of saying nothing is booked. */
+  loading: boolean;
   onSelect: (b: CalendarBooking) => void;
 }) {
   const heading = new Intl.DateTimeFormat(undefined, {
@@ -614,6 +619,19 @@ function Agenda({
   const groups = days
     .map((d) => ({ day: d, items: bookings.filter((b) => onDay(b, d)) }))
     .filter((g) => g.items.length > 0);
+
+  if (loading && groups.length === 0) {
+    return (
+      <SkeletonGroup label="Loading bookings" className="divide-y divide-white/5">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="flex gap-4 px-4 py-3">
+            <Skeleton className="h-4 w-24 shrink-0" />
+            <Skeleton className="h-9 flex-1 rounded-lg" />
+          </div>
+        ))}
+      </SkeletonGroup>
+    );
+  }
 
   if (groups.length === 0) {
     return (
