@@ -4,6 +4,15 @@ import { LeaderboardView } from "@/features/gamification/components/leaderboard/
 import * as useLeaderboardDataHook from "@/features/gamification/hooks/useLeaderboardData";
 import type { FoxerLeaderboardResponse } from "@/shared/api/leaderboard";
 
+vi.mock("@/shared/api/providerSpecialties", () => ({
+  useProviderSpecialties: () => ({
+    data: [
+      { slug: "dj", name: "DJ" },
+      { slug: "photography", name: "Photography" },
+    ],
+  }),
+}));
+
 const mockFoxerData: FoxerLeaderboardResponse = {
   tab: "top_rated",
   userPosition: {
@@ -25,9 +34,12 @@ const mockFoxerData: FoxerLeaderboardResponse = {
       avatarUrl: null,
       role: "providerFoxer",
       city: "Manila",
+      paws: 4.9,
       starRating: 4.95,
       reviewCount: 42,
       completedBookings: 60,
+      foxerSince: "2025-03-01T00:00:00.000Z",
+      isVerified: true,
     },
     {
       userId: "f-2",
@@ -36,9 +48,12 @@ const mockFoxerData: FoxerLeaderboardResponse = {
       avatarUrl: null,
       role: "venueFoxer",
       city: "Taguig",
+      paws: null,
       starRating: 4.88,
-      reviewCount: 28,
+      reviewCount: 3,
       completedBookings: 35,
+      foxerSince: "2026-10-01T00:00:00.000Z",
+      isVerified: false,
     },
   ],
 };
@@ -70,7 +85,11 @@ describe("LeaderboardView", () => {
     expect(screen.getByText("Metro Audio Pro")).toBeDefined();
     expect(screen.getByText("The Loft Studio")).toBeDefined();
     expect(screen.getByText("4.9")).toBeDefined();
-    expect(screen.getByText("42 reviews")).toBeDefined();
+    expect(screen.getByText("Paws · 42 reviews")).toBeDefined();
+    // Under 5 reviews: "New" instead of Paws
+    expect(screen.getByText("New")).toBeDefined();
+    expect(screen.getAllByLabelText("Verified")).toHaveLength(1);
+    expect(screen.getByText(/Foxer since 2025/)).toBeDefined();
     expect(screen.getByText(/60 bookings completed/)).toBeDefined();
     expect(screen.getByText("🥇")).toBeDefined();
 
@@ -85,7 +104,18 @@ describe("LeaderboardView", () => {
     render(<LeaderboardView />);
     fireEvent.click(screen.getByText("Most Booked"));
 
-    expect(spy).toHaveBeenLastCalledWith("most_booked", "", "");
+    expect(spy).toHaveBeenLastCalledWith("most_booked", "", "", "");
+  });
+
+  it("filters by specialty from the catalog list", () => {
+    const spy = foxerQuery({ data: mockFoxerData });
+
+    render(<LeaderboardView />);
+    fireEvent.change(screen.getByLabelText("Specialty"), {
+      target: { value: "photography" },
+    });
+
+    expect(spy).toHaveBeenLastCalledWith("top_rated", "", "", "photography");
   });
 
   it("displays loading skeleton during query load", () => {
