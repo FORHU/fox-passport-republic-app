@@ -13,14 +13,12 @@ interface RewardsStoreModalProps {
   isOpen: boolean;
   onClose: () => void;
   userCoins: number;
-  userLevel: number;
 }
 
 export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
   isOpen,
   onClose,
   userCoins,
-  userLevel,
 }) => {
   const { data: catalog = [], isLoading } = useRewardsCatalog("citizen");
   const { mutate: redeem, isPending: isRedeeming } = useRedeemRewardMutation();
@@ -89,7 +87,7 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
                   Citizen Rewards Store
                 </h2>
                 <p className="text-white/50 text-xs sm:text-sm">
-                  Redeem your earned Coins for single-use booking discount vouchers and perks.
+                  Redeem your earned Tokens for single-use booking discount vouchers and perks.
                 </p>
               </div>
             </div>
@@ -101,14 +99,11 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
                 </span>
                 <span className="text-xs sm:text-sm font-bold text-white">Your Balance:</span>
                 <span className="text-base sm:text-lg font-mono font-bold text-accent">
-                  {userCoins.toLocaleString()} Coins
+                  {userCoins.toLocaleString()} Tokens
                 </span>
                 <span className="text-xs text-white/40">
                   (≈ ₱{(userCoins / 5).toFixed(2)})
                 </span>
-              </div>
-              <div className="text-xs font-mono text-white/50">
-                Current Level: <span className="text-white font-bold">Lvl {userLevel}</span>
               </div>
             </div>
           </div>
@@ -126,9 +121,7 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {catalog.map((item) => {
                 const canAfford = item.canAfford ?? userCoins >= item.coinCost;
-                const levelQualified =
-                  item.levelQualified ?? userLevel >= item.minLevel;
-                const canRedeem = canAfford && levelQualified;
+                const canRedeem = canAfford;
                 const minSubtotal =
                   item.minSubtotal ??
                   (item.discountPhp ? Math.ceil(Number(item.discountPhp) * 40) : 0);
@@ -149,7 +142,7 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
                           {item.title}
                         </h4>
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-accent/10 border border-accent/20 text-accent shrink-0">
-                          {item.coinCost} Coins
+                          {item.coinCost} Tokens
                         </span>
                       </div>
 
@@ -169,16 +162,9 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
 
                     <div className="pt-2 border-t border-white/5 flex items-center justify-between">
                       <div className="text-xs">
-                        {!levelQualified ? (
-                          <span className="text-amber-400/90 font-medium flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px]">
-                              lock
-                            </span>
-                            Unlocks at Lvl {item.minLevel}
-                          </span>
-                        ) : !canAfford ? (
+                        {!canAfford ? (
                           <span className="text-white/40">
-                            Need {(item.coinCost - userCoins).toLocaleString()} more Coins
+                            Need {(item.coinCost - userCoins).toLocaleString()} more Tokens
                           </span>
                         ) : (
                           <span className="text-emerald-400 font-medium flex items-center gap-1">
@@ -232,7 +218,7 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
                 <p className="text-white/60 text-sm">
                   Spend{" "}
                   <span className="text-accent font-bold">
-                    {confirmReward.coinCost} Coins
+                    {confirmReward.coinCost} Tokens
                   </span>{" "}
                   for{" "}
                   <span className="text-white font-bold">
@@ -242,7 +228,7 @@ export const RewardsStoreModal: React.FC<RewardsStoreModalProps> = ({
                 </p>
 
                 <div className="my-4 p-4 rounded-xl bg-black/40 border border-white/5 text-xs text-white/50 space-y-1">
-                  <p>• Coins will be deducted immediately from your wallet.</p>
+                  <p>• Tokens will be deducted immediately from your wallet.</p>
                   <p>• Single-use voucher will be valid for 30 days.</p>
                   <p>• Vouchers are tied exclusively to your account.</p>
                 </div>

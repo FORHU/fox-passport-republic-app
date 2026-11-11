@@ -5,7 +5,6 @@ export interface WalletHistoryItem {
   type: "EARNED" | "REVERSED" | "REDEMPTION" | "RELEASED";
   action: string;
   coins: number;
-  xp: number;
   status: string;
   createdAt: string;
   metadata?: Record<string, any>;
@@ -15,8 +14,6 @@ export interface RewardsWallet {
   coins: number;
   pendingCoins: number;
   totalEarnedCoins: number;
-  level: number;
-  rank: string;
   history: WalletHistoryItem[];
 }
 
@@ -30,10 +27,8 @@ export interface RewardCatalogItem {
   targetAudience: "all" | "citizen" | "foxer";
   discountPhp: number | null;
   discountPercentage: number | null;
-  minLevel: number;
   active: boolean;
   canAfford?: boolean;
-  levelQualified?: boolean;
   minSubtotal?: number;
 }
 
@@ -62,7 +57,7 @@ export async function getRewardsWallet(): Promise<RewardsWallet> {
 }
 
 /**
- * Fetches the active rewards catalog with affordability and qualification checks.
+ * Fetches the active rewards catalog with affordability checks. There is no level lock.
  */
 export async function getRewardsCatalog(
   audience?: string,
@@ -73,7 +68,7 @@ export async function getRewardsCatalog(
 }
 
 /**
- * Redeems coins for a specific catalog reward.
+ * Redeems Tokens (the `coins` ledger) for a specific catalog reward.
  */
 export async function redeemReward(rewardId: string): Promise<RedeemRewardResult> {
   const res = await api.post("/rewards/redeem", { rewardId });
