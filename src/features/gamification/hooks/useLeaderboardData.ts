@@ -9,10 +9,18 @@ export function useFoxerLeaderboard(
   tab: FoxerLeaderboardTab = "top_rated",
   role?: string,
   city?: string,
+  specialty?: string,
 ) {
   return useQuery<FoxerLeaderboardResponse>({
-    queryKey: ["leaderboard", "foxers", tab, role || "all", city || "global"],
-    queryFn: () => getFoxerLeaderboard(tab, role, city),
+    queryKey: [
+      "leaderboard",
+      "foxers",
+      tab,
+      role || "all",
+      city || "global",
+      specialty || "all",
+    ],
+    queryFn: () => getFoxerLeaderboard(tab, role, city, specialty),
     staleTime: 1000 * 60 * 3,
   });
 }
