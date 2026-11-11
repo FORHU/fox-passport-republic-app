@@ -11,7 +11,7 @@ export const PassportRewardsTab: React.FC = () => {
           Citizen <span className="text-accent">Rewards & Wallet</span>
         </h2>
         <p className="text-white/50 text-sm">
-          Earn Coins across bookings and platform milestones. Redeem coins for booking discounts or unlock exclusive perks.
+          Earn Tokens across bookings and platform milestones. Redeem Tokens for booking discounts.
         </p>
       </div>
 

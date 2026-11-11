@@ -73,7 +73,6 @@ describe("Review Sub-Ratings, Helpful Votes & Sorting UI (§9.3)", () => {
     mockToggleHelpfulVote.mockResolvedValue({
       helpful: true,
       helpfulCount: 5,
-      xpAwarded: 2,
     });
 
     renderWithQuery(<VenueReviews venueId="venue-123" />);

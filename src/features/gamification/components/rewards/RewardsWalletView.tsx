@@ -8,7 +8,9 @@ import type { WalletHistoryItem } from "@/shared/api/rewards";
 export const RewardsWalletView: React.FC = () => {
   const { data: wallet, isLoading, isError } = useRewardsWallet();
   const [storeOpen, setStoreOpen] = useState(false);
-  const [filter, setFilter] = useState<"ALL" | "EARNED" | "REDEMPTION" | "REVERSED">("ALL");
+  const [filter, setFilter] = useState<
+    "ALL" | "EARNED" | "REDEMPTION" | "REVERSED"
+  >("ALL");
 
   if (isLoading) {
     return (
@@ -24,8 +26,12 @@ export const RewardsWalletView: React.FC = () => {
         <span className="material-symbols-outlined text-4xl text-amber-400 mb-2">
           warning
         </span>
-        <p className="text-white font-bold mb-1">Failed to load rewards wallet</p>
-        <p className="text-xs text-white/40">Please try again or reconnect to your account.</p>
+        <p className="text-white font-bold mb-1">
+          Failed to load rewards wallet
+        </p>
+        <p className="text-xs text-white/40">
+          Please try again or reconnect to your account.
+        </p>
       </div>
     );
   }
@@ -60,6 +66,12 @@ export const RewardsWalletView: React.FC = () => {
             REVERSED
           </span>
         );
+      case "RETURNED":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            TOKENS RETURNED
+          </span>
+        );
       case "RELEASED":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400">
@@ -76,9 +88,7 @@ export const RewardsWalletView: React.FC = () => {
   };
 
   const formatAction = (action: string) => {
-    return action
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return action.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   return (
@@ -96,7 +106,9 @@ export const RewardsWalletView: React.FC = () => {
           </div>
           <div className="text-4xl font-display font-bold text-white mb-1">
             {spendableCoins.toLocaleString()}
-            <span className="text-sm font-sans font-normal text-white/40 ml-2">Tokens</span>
+            <span className="text-sm font-sans font-normal text-white/40 ml-2">
+              Tokens
+            </span>
           </div>
           <div className="text-xs text-white/50 font-mono">
             ≈ ₱{phpEquivalent} in booking discounts
@@ -122,13 +134,18 @@ export const RewardsWalletView: React.FC = () => {
           </div>
           <div className="text-4xl font-display font-bold text-white mb-1">
             {pendingCoins.toLocaleString()}
-            <span className="text-sm font-sans font-normal text-white/40 ml-2">Tokens</span>
+            <span className="text-sm font-sans font-normal text-white/40 ml-2">
+              Tokens
+            </span>
           </div>
           <div className="text-xs text-white/50">
             Releases automatically upon booking completion
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 text-[11px] text-white/40">
-            Lifetime Earned: <span className="text-white font-mono font-bold">{totalEarned.toLocaleString()} Tokens</span>
+            Lifetime Earned:{" "}
+            <span className="text-white font-mono font-bold">
+              {totalEarned.toLocaleString()} Tokens
+            </span>
           </div>
         </div>
 
@@ -164,7 +181,8 @@ export const RewardsWalletView: React.FC = () => {
               Coin Ledger History
             </h3>
             <p className="text-xs text-white/50 mt-1">
-              Append-only audit ledger of every coin earned, released, spent, or reversed.
+              Append-only audit ledger of every coin earned, released, spent, or
+              reversed.
             </p>
           </div>
 
@@ -180,7 +198,11 @@ export const RewardsWalletView: React.FC = () => {
                     : "text-white/40 hover:text-white/70"
                 }`}
               >
-                {t === "ALL" ? "All" : t === "REDEMPTION" ? "Redemptions" : formatAction(t)}
+                {t === "ALL"
+                  ? "All"
+                  : t === "REDEMPTION"
+                    ? "Redemptions"
+                    : formatAction(t)}
               </button>
             ))}
           </div>
@@ -242,8 +264,8 @@ export const RewardsWalletView: React.FC = () => {
                         isPositive
                           ? "text-emerald-400"
                           : isNegative
-                          ? "text-rose-400"
-                          : "text-white/60"
+                            ? "text-rose-400"
+                            : "text-white/60"
                       }`}
                     >
                       {isPositive ? `+${item.coins}` : item.coins} Tokens
