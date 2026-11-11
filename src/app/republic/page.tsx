@@ -297,11 +297,11 @@ function RepublicFeedContent() {
         />
 
         {/* Main three-column layout */}
-        <div className="flex flex-col md:flex-row gap-6 items-start justify-center pt-5 flex-1">
+        <div className="flex flex-col lg:flex-row gap-6 items-start justify-center pt-5 flex-1">
           {/* LEFT SIDEBAR
               - Sticky under the fixed header
               - The page itself scrolls (single scrollbar on the right edge) */}
-          <aside className="hidden md:block w-[320px] shrink-0 sticky top-28 pr-2 pb-12">
+          <aside className="hidden lg:block w-[320px] shrink-0 sticky top-28 pr-2 pb-12">
             <RepublicLeftSidebar
               mapSlot={
                 <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
@@ -310,7 +310,7 @@ function RepublicFeedContent() {
           </aside>
 
           {/* CENTER FEED — scrolls with the page */}
-          <main className="flex-1 min-w-0 max-w-2xl xl:max-w-2xl w-full px-1 pb-12">
+          <main className="flex-1 min-w-0 max-w-2xl w-full px-1 pb-12">
             {/* Search Input */}
             <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)]">
               <form
@@ -369,8 +369,8 @@ function RepublicFeedContent() {
               </div>
             </div>
 
-            {/* Following — tablet only */}
-            <div className="hidden md:block xl:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 mt-5 -mx-3 px-3 sm:mx-0 sm:px-0">
+            {/* Following — tablet and laptop, until the right sidebar fits (1408px) */}
+            <div className="hidden md:block min-[1408px]:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 mt-5 -mx-3 px-3 sm:mx-0 sm:px-0">
               <FollowingWidgetSection />
             </div>
 
@@ -482,7 +482,7 @@ function RepublicFeedContent() {
           </main>
 
           {/* RIGHT SIDEBAR — sticky under the fixed header */}
-          <aside className="hidden xl:block w-[320px] shrink-0 sticky top-28 pl-2 pb-12">
+          <aside className="hidden min-[1408px]:block w-[320px] shrink-0 sticky top-28 pl-2 pb-12">
             <RepublicRightSidebar>
               <FollowingWidgetSection />
             </RepublicRightSidebar>
