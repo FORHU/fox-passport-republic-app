@@ -5,6 +5,7 @@ import { useState, useRef } from "react";
 import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { Money } from "@/shared/components/ui/Money";
+import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
 
 export const EVENT_KINDS = [
   { value: "", label: "Any kind of event" },
@@ -20,6 +21,7 @@ export const EVENT_KINDS = [
 export const FILTER_PARAMS = [
   "q",
   "category",
+  "specialty",
   "country",
   "city",
   "maxPrice",
@@ -40,6 +42,12 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
 
   const searchParamsStr = searchParams?.toString() || "";
   const category = searchParams?.get("category") || "";
+  const specialty = searchParams?.get("specialty") || "";
+  const { data: specialties = [] } = useProviderSpecialties();
+  const specialtyOptions = [
+    { value: "", label: "Any specialty" },
+    ...specialties.map((s) => ({ value: s.slug, label: s.name })),
+  ];
   const country = searchParams?.get("country") || "";
   const city = searchParams?.get("city") || "";
 
@@ -84,7 +92,7 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
 
   // Country alone narrows nothing (results filter on city), so it isn't
   // counted; a city counts once.
-  const activeFiltersCount = [category, city, searchParams?.get("maxPrice")]
+  const activeFiltersCount = [category, specialty, city, searchParams?.get("maxPrice")]
     .filter(Boolean).length;
 
   const labelClass =
@@ -130,6 +138,20 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
           className="py-2.5"
         />
         <p className="mt-1.5 text-xs text-white/60">Applies to Event Foxers.</p>
+      </div>
+
+      <div>
+        <label htmlFor="filter-specialty" className={labelClass}>
+          Specialty
+        </label>
+        <StyledSelect
+          id="filter-specialty"
+          value={specialty}
+          options={specialtyOptions}
+          onChange={(val) => updateParams({ specialty: val })}
+          className="py-2.5"
+        />
+        <p className="mt-1.5 text-xs text-white/60">Applies to Providers.</p>
       </div>
 
       <fieldset>
