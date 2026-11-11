@@ -16,15 +16,12 @@ const mockWallet: RewardsWallet = {
   coins: 250,
   pendingCoins: 50,
   totalEarnedCoins: 300,
-  level: 4,
-  rank: "Bronze Explorer",
   history: [
     {
       id: "ev-1",
       type: "EARNED",
       action: "early_booking",
       coins: 100,
-      xp: 100,
       status: "COMPLETED",
       createdAt: "2026-11-05T08:00:00.000Z",
     },
@@ -33,7 +30,6 @@ const mockWallet: RewardsWallet = {
       type: "REDEMPTION",
       action: "Redeemed ₱20 Discount (RWD-COIN20-ABC)",
       coins: -100,
-      xp: 0,
       status: "COMPLETED",
       createdAt: "2026-11-05T09:00:00.000Z",
     },
@@ -51,10 +47,8 @@ const mockCatalog: RewardCatalogItem[] = [
     targetAudience: "citizen",
     discountPhp: 20,
     discountPercentage: null,
-    minLevel: 1,
     active: true,
     canAfford: true,
-    levelQualified: true,
     minSubtotal: 800,
   },
   {
@@ -67,10 +61,8 @@ const mockCatalog: RewardCatalogItem[] = [
     targetAudience: "citizen",
     discountPhp: 50,
     discountPercentage: null,
-    minLevel: 5,
     active: true,
     canAfford: true,
-    levelQualified: false,
     minSubtotal: 2000,
   },
 ];
@@ -89,7 +81,7 @@ describe("RewardsWalletView Component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders spendable balance, pending escrow, rank, and transaction history", async () => {
+  it("renders spendable balance, pending escrow, Token rules and transaction history, with no level or rank", async () => {
     api.get.mockImplementation(async (url: string) => {
       if (url.includes("/rewards/me")) {
         return { data: { data: mockWallet } };
@@ -105,12 +97,14 @@ describe("RewardsWalletView Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("250")).toBeInTheDocument();
-      expect(screen.getByText("Bronze Explorer")).toBeInTheDocument();
+      expect(screen.getByText("5 Tokens = ₱1")).toBeInTheDocument();
       expect(screen.getByText("Early Booking")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("+100 Coins")).toBeInTheDocument();
-    expect(screen.getByText("-100 Coins")).toBeInTheDocument();
+    expect(screen.getByText("+100 Tokens")).toBeInTheDocument();
+    expect(screen.getByText("-100 Tokens")).toBeInTheDocument();
+    expect(screen.queryByText(/Citizen Level/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/XP/)).not.toBeInTheDocument();
     expect(screen.getAllByText("EARNED").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("REDEEMED")).toBeInTheDocument();
   });
@@ -122,7 +116,7 @@ describe("RewardsStoreModal Component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders catalogue perks, checks level qualification, and allows eligible redemption", async () => {
+  it("renders catalogue perks with no level lock, and allows eligible redemption", async () => {
     api.get.mockImplementation(async (url: string) => {
       if (url.includes("/rewards/catalog")) {
         return { data: { data: mockCatalog } };
@@ -150,7 +144,6 @@ describe("RewardsStoreModal Component", () => {
           isOpen={true}
           onClose={vi.fn()}
           userCoins={250}
-          userLevel={4}
         />
       </QueryClientProvider>,
     );
@@ -161,9 +154,9 @@ describe("RewardsStoreModal Component", () => {
       expect(screen.getByText("₱50 Booking Discount")).toBeInTheDocument();
     });
 
-    // Level qualified checks
-    expect(screen.getByText("Eligible")).toBeInTheDocument();
-    expect(screen.getByText("Unlocks at Lvl 5")).toBeInTheDocument();
+    // No level lock: everything affordable is eligible
+    expect(screen.getAllByText("Eligible")).toHaveLength(2);
+    expect(screen.queryByText(/Unlocks at Lvl/)).not.toBeInTheDocument();
 
     // Click Redeem on eligible ₱20 voucher
     const redeemButtons = screen.getAllByRole("button", { name: "Redeem" });
