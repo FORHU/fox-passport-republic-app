@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRewardsWallet } from "@/features/gamification/hooks/useRewards";
 import { RewardsStoreModal } from "./RewardsStoreModal";
-import { RankBadge } from "@/features/gamification/components/RankBadge";
 import type { WalletHistoryItem } from "@/shared/api/rewards";
 
 export const RewardsWalletView: React.FC = () => {
@@ -86,7 +85,7 @@ export const RewardsWalletView: React.FC = () => {
     <div className="space-y-8">
       {/* Wallet Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Spendable Coins Card */}
+        {/* Spendable Tokens Card */}
         <div className="glass-card p-6 rounded-3xl border border-white/10 relative overflow-hidden group">
           <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none group-hover:bg-accent/20 transition-all duration-500" />
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-white/50 mb-3">
@@ -97,7 +96,7 @@ export const RewardsWalletView: React.FC = () => {
           </div>
           <div className="text-4xl font-display font-bold text-white mb-1">
             {spendableCoins.toLocaleString()}
-            <span className="text-sm font-sans font-normal text-white/40 ml-2">Coins</span>
+            <span className="text-sm font-sans font-normal text-white/40 ml-2">Tokens</span>
           </div>
           <div className="text-xs text-white/50 font-mono">
             ≈ ₱{phpEquivalent} in booking discounts
@@ -113,7 +112,7 @@ export const RewardsWalletView: React.FC = () => {
           </button>
         </div>
 
-        {/* Pending Coins Card */}
+        {/* Pending Tokens Card */}
         <div className="glass-card p-6 rounded-3xl border border-white/10 relative overflow-hidden">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-white/50 mb-3">
             <span>Pending Escrow</span>
@@ -123,27 +122,29 @@ export const RewardsWalletView: React.FC = () => {
           </div>
           <div className="text-4xl font-display font-bold text-white mb-1">
             {pendingCoins.toLocaleString()}
-            <span className="text-sm font-sans font-normal text-white/40 ml-2">Coins</span>
+            <span className="text-sm font-sans font-normal text-white/40 ml-2">Tokens</span>
           </div>
           <div className="text-xs text-white/50">
             Releases automatically upon booking completion
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 text-[11px] text-white/40">
-            Lifetime Earned: <span className="text-white font-mono font-bold">{totalEarned.toLocaleString()} Coins</span>
+            Lifetime Earned: <span className="text-white font-mono font-bold">{totalEarned.toLocaleString()} Tokens</span>
           </div>
         </div>
 
-        {/* Progression & Rank Card */}
+        {/* How Tokens Work Card */}
         <div className="glass-card p-6 rounded-3xl border border-white/10 relative overflow-hidden">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-white/50 mb-3">
-            <span>Mastery Rank</span>
-            <RankBadge level={wallet.level} size={32} isCitizen={true} />
+            <span>How Tokens Work</span>
+            <span className="material-symbols-outlined text-accent text-xl">
+              info
+            </span>
           </div>
           <div className="text-2xl font-display font-bold text-white mb-1">
-            {wallet.rank || "Explorer"}
+            5 Tokens = ₱1
           </div>
-          <div className="text-xs text-accent font-mono font-bold mb-3">
-            Citizen Level {wallet.level}
+          <div className="text-xs text-white/50 mb-3">
+            Off a booking. Tokens never expire.
           </div>
           <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-white/40">
             <span>Redemption Cap:</span>
@@ -245,13 +246,8 @@ export const RewardsWalletView: React.FC = () => {
                           : "text-white/60"
                       }`}
                     >
-                      {isPositive ? `+${item.coins}` : item.coins} Coins
+                      {isPositive ? `+${item.coins}` : item.coins} Tokens
                     </div>
-                    {item.xp > 0 && (
-                      <div className="text-[10px] font-mono text-white/40">
-                        +{item.xp} XP
-                      </div>
-                    )}
                   </div>
                 </div>
               );
@@ -265,7 +261,6 @@ export const RewardsWalletView: React.FC = () => {
         isOpen={storeOpen}
         onClose={() => setStoreOpen(false)}
         userCoins={spendableCoins}
-        userLevel={wallet.level}
       />
     </div>
   );

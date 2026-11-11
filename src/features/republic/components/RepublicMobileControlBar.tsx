@@ -12,13 +12,13 @@ interface RepublicMobileControlBarProps {
 }
 
 /**
- * Sticky mobile-only control bar that docks under the floating header.
+ * Sticky phone/tablet control bar that docks under the floating header.
  *
  * Contains three pieces:
  * 1. Swipeable tab pills (`RepublicTabs`) for switching between feed streams.
  * 2. A quick "Post" compose button that opens the shared compose modal.
  * 3. A mobile-only Equipment Depots shortcut banner linking to the full map
- *    (hidden on md+ where the left sidebar's PartnerEquipmentDepotCard takes
+ *    (hidden on lg+ where the left sidebar's PartnerEquipmentDepotCard takes
  *    over this role).
  *
  * Kept outside `RepublicFeedContent` so it can be wrapped in a
@@ -32,8 +32,10 @@ export function RepublicMobileControlBar({
 }: RepublicMobileControlBarProps) {
   return (
     <>
-      {/* Sticky tabs + compose button — mobile only */}
-      <div className="md:hidden sticky top-16 z-40 py-2.5 bg-canvas/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
+      {/* Sticky tabs + compose button — phones and tablets (below lg, where
+          the left sidebar is hidden); docks 8px under the header, which is
+          taller from sm up. */}
+      <div className="lg:hidden sticky top-16 sm:top-28 z-40 py-2.5 bg-canvas/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 sm:-mx-6 sm:px-6 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
         {/* Stream Tabs (horizontal swipeable pills) */}
         <div className="flex-1 min-w-0">
           <RepublicTabs
@@ -53,9 +55,9 @@ export function RepublicMobileControlBar({
         </button>
       </div>
 
-      {/* Mobile-only Quick Depots Map Link — sits inside the feed column
-          on mobile where the left sidebar is hidden. */}
-      <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
+      {/* Quick Depots Map Link — sits inside the feed column below lg,
+          where the left sidebar is hidden. */}
+      <div className="lg:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
         <div className="flex items-center gap-2 min-w-0">
           <Package
             className="h-[18px] w-[18px] text-amber-400 shrink-0"
