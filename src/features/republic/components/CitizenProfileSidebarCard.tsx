@@ -27,7 +27,7 @@ export function CitizenProfileSidebarCard() {
         </div>
         <p className="text-xs text-zinc-400 leading-relaxed">
           Sign in to interact, publish offerings, connect with partner venues,
-          and earn Passport XP.
+          and earn Tokens.
         </p>
         <button
           onClick={openLogin}
@@ -131,12 +131,6 @@ export function CitizenProfileSidebarCard() {
           <span className="material-symbols-outlined text-[14px] group-hover/link:translate-x-0.5 transition-transform">
             arrow_forward
           </span>
-        </Link>
-        <Link
-          href="/progress"
-          className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          XP Status
         </Link>
       </div>
     </div>

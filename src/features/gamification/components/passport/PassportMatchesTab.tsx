@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { formatXP } from "@/features/gamification/lib/gamification";
 import {
   ClientMatchRequest,
   OutgoingMatchGroup,
@@ -26,7 +25,6 @@ export interface MessageButtonRenderProps {
 }
 
 export interface PassportMatchesTabProps {
-  user: any;
   isEventFoxer: boolean;
   isProvider: boolean;
   clientInboxPage: any;
@@ -37,8 +35,6 @@ export interface PassportMatchesTabProps {
   outgoingLoading: boolean;
   incomingRequests: IncomingMatchRequest[];
   incomingLoading: boolean;
-  leaderboard: any[];
-  leaderboardLoading: boolean;
   renderMessageButton?: (props: MessageButtonRenderProps) => React.ReactNode;
 }
 
@@ -57,7 +53,6 @@ const statusLabel = (s: string) => {
 };
 
 export function PassportMatchesTab({
-  user,
   isEventFoxer,
   isProvider,
   clientInboxPage,
@@ -68,16 +63,12 @@ export function PassportMatchesTab({
   outgoingLoading,
   incomingRequests,
   incomingLoading,
-  leaderboard,
-  leaderboardLoading,
   renderMessageButton,
 }: PassportMatchesTabProps) {
   const router = useRouter();
   const [matchSubTab, setMatchSubTab] = useState<
-    "outgoing" | "incoming" | "client-inbox" | "ranks"
+    "outgoing" | "incoming" | "client-inbox"
   >("client-inbox");
-  const [leaderboardPage, setLeaderboardPage] = useState(0);
-  const RANKS_PER_PAGE = 10;
   const respondMutation = useRespondToMatch();
 
   return (
@@ -131,16 +122,6 @@ export function PassportMatchesTab({
               Incoming
             </button>
           )}
-          <button
-            onClick={() => setMatchSubTab("ranks")}
-            className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all cursor-pointer ${
-              matchSubTab === "ranks"
-                ? "bg-accent text-black shadow-glow-accent"
-                : "text-white/40 hover:text-white"
-            }`}
-          >
-            Global Ranks
-          </button>
         </div>
       </div>
 
@@ -339,7 +320,10 @@ export function PassportMatchesTab({
               <div
                 key={group.templateId}
                 className="rounded-2xl border border-white/5 overflow-hidden"
-                style={{ background: "color-mix(in srgb, var(--color-white) 2%, transparent)" }}
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--color-white) 2%, transparent)",
+                }}
               >
                 <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-accent/5">
                   <span className="material-symbols-outlined text-accent text-base">
@@ -458,7 +442,8 @@ export function PassportMatchesTab({
                   className="group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.01]"
                   style={{
                     borderColor: `${sc}20`,
-                    background: "color-mix(in srgb, var(--color-white) 3%, transparent)",
+                    background:
+                      "color-mix(in srgb, var(--color-white) 3%, transparent)",
                   }}
                 >
                   <div
@@ -562,166 +547,6 @@ export function PassportMatchesTab({
           )}
         </div>
       )}
-
-      {/* ── Global Ranks ── */}
-      {matchSubTab === "ranks" &&
-        (() => {
-          const totalPages = Math.ceil(leaderboard.length / RANKS_PER_PAGE);
-          const pageItems = leaderboard.slice(
-            leaderboardPage * RANKS_PER_PAGE,
-            (leaderboardPage + 1) * RANKS_PER_PAGE,
-          );
-          const rankColors: Record<number, string> = {
-            1: "#FFD700",
-            2: "#C0C0C0",
-            3: "#CD7F32",
-          };
-          return (
-            <div className="space-y-3">
-              {leaderboardLoading ? (
-                <div className="flex flex-col items-center py-20 gap-3 opacity-30">
-                  <span className="material-symbols-outlined text-6xl animate-pulse">
-                    leaderboard
-                  </span>
-                  <p className="text-sm text-white/60">Loading leaderboard…</p>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    {pageItems.map((entry) => {
-                      const isYou = entry.userId === user?.id;
-                      const isTop3 = entry.rank <= 3;
-                      const rankColor =
-                        rankColors[entry.rank] ??
-                        (isYou ? "#C4E85A" : "rgba(255,255,255,0.3)");
-                      return (
-                        <div
-                          key={entry.userId}
-                          className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all"
-                          style={{
-                            background: isYou
-                              ? "rgba(196,232,90,0.06)"
-                              : isTop3
-                                ? `color-mix(in srgb, ${rankColors[entry.rank]} 3%, transparent)`
-                                : "rgba(255,255,255,0.02)",
-                            borderColor: isYou
-                              ? "rgba(196,232,90,0.2)"
-                              : isTop3
-                                ? `color-mix(in srgb, ${rankColors[entry.rank]} 13%, transparent)`
-                                : "rgba(255,255,255,0.05)",
-                          }}
-                        >
-                          <div className="w-8 text-center shrink-0">
-                            {isTop3 ? (
-                              <span
-                                className="text-lg font-black"
-                                style={{ color: rankColor }}
-                              >
-                                #{entry.rank}
-                              </span>
-                            ) : (
-                              <span className="text-sm font-bold text-white/30">
-                                #{entry.rank}
-                              </span>
-                            )}
-                          </div>
-                          <div className="h-10 w-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/40 overflow-hidden shrink-0">
-                            {entry.user?.imgId ? (
-                              <img
-                                src={entry.user.imgId}
-                                className="h-full w-full object-cover"
-                                alt=""
-                              />
-                            ) : (
-                              (entry.user?.name?.charAt(0)?.toUpperCase() ??
-                              "?")
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-white truncate">
-                                {entry.user?.name ?? "Citizen"}
-                              </p>
-                              {isYou && (
-                                <span className="text-[8px] font-black uppercase tracking-widest bg-accent text-black px-1.5 py-0.5 rounded-full shrink-0">
-                                  You
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                              {entry.path === "user"
-                                ? "Citizen"
-                                : entry.path === "eventFoxer"
-                                  ? "Event Foxer"
-                                  : entry.path === "venueFoxer"
-                                    ? "Venue Foxer"
-                                    : entry.path === "providerFoxer"
-                                      ? "Provider"
-                                      : entry.path}{" "}
-                              · LVL {entry.level}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            <span className="text-sm font-mono font-bold text-accent">
-                              {formatXP(entry.totalXP)} XP
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-2">
-                      <button
-                        onClick={() =>
-                          setLeaderboardPage((p) => Math.max(0, p - 1))
-                        }
-                        disabled={leaderboardPage === 0}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:border-white/20 hover:bg-white/5 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-20 cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-base">
-                          chevron_left
-                        </span>{" "}
-                        Prev
-                      </button>
-                      <div className="flex items-center gap-1.5">
-                        {Array.from({ length: totalPages }, (_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setLeaderboardPage(i)}
-                            className="h-2 rounded-full transition-all cursor-pointer"
-                            style={{
-                              width: leaderboardPage === i ? 20 : 8,
-                              backgroundColor:
-                                leaderboardPage === i
-                                  ? "#C4E85A"
-                                  : "rgba(255,255,255,0.15)",
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <button
-                        onClick={() =>
-                          setLeaderboardPage((p) =>
-                            Math.min(totalPages - 1, p + 1),
-                          )
-                        }
-                        disabled={leaderboardPage === totalPages - 1}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:border-white/20 hover:bg-white/5 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-20 cursor-pointer"
-                      >
-                        Next{" "}
-                        <span className="material-symbols-outlined text-base">
-                          chevron_right
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          );
-        })()}
     </motion.div>
   );
 }

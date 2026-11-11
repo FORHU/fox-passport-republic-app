@@ -1,31 +1,22 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { useFoxerScore } from "@/features/dashboard/hooks/useFoxerScore";
 
 interface FoxerReputationCardProps {
   className?: string;
 }
 
-function getFoxerRankInfo(level: number): { title: string; rankNumber: number } {
-  if (level >= 50) return { title: "Legend", rankNumber: 9 };
-  if (level >= 40) return { title: "Sovereign", rankNumber: 8 };
-  if (level >= 30) return { title: "Champion", rankNumber: 7 };
-  if (level >= 20) return { title: "Grandmaster", rankNumber: 6 };
-  if (level >= 15) return { title: "Master", rankNumber: 5 };
-  if (level >= 10) return { title: "Expert", rankNumber: 4 };
-  if (level >= 5) return { title: "Specialist", rankNumber: 3 };
-  if (level >= 3) return { title: "Novice", rankNumber: 2 };
-  return { title: "Rookie", rankNumber: 1 };
-}
-
-export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps) {
+export function FoxerReputationCard({
+  className = "",
+}: FoxerReputationCardProps) {
   const { data: scoreData, isLoading, error } = useFoxerScore();
 
   if (isLoading) {
     return (
-      <div className={`bg-surface border border-white/5 rounded-[2rem] p-6 relative overflow-hidden ${className}`}>
+      <div
+        className={`bg-surface border border-white/5 rounded-[2rem] p-6 relative overflow-hidden ${className}`}
+      >
         <div className="flex items-center justify-between mb-4">
           <div className="h-5 w-28 bg-white/10 rounded animate-pulse" />
           <div className="h-5 w-12 bg-white/10 rounded animate-pulse" />
@@ -40,8 +31,6 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
   }
 
   const { foxerScore, breakdown, operationalMetrics } = scoreData;
-  const level = operationalMetrics?.foxerLevel ?? 1;
-  const { title: rankTitle, rankNumber } = getFoxerRankInfo(level);
 
   // Derive score tier color
   const getScoreColor = (score: number) => {
@@ -50,14 +39,6 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
     if (score >= 60) return "text-sky-400";
     if (score >= 40) return "text-amber-400";
     return "text-white/60";
-  };
-
-  const getScoreBadgeColor = (score: number) => {
-    if (score >= 90) return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    if (score >= 75) return "bg-accent/10 text-accent border-accent/20";
-    if (score >= 60) return "bg-sky-500/10 text-sky-400 border-sky-500/20";
-    if (score >= 40) return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-    return "bg-white/10 text-white/60 border-white/10";
   };
 
   return (
@@ -76,31 +57,11 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
               Foxer Reputation
             </h3>
           </div>
-          <span
-            className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full border ${getScoreBadgeColor(
-              foxerScore,
-            )}`}
-          >
-            {rankTitle}
-          </span>
         </div>
 
         {/* Hero Score Display */}
         <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 mb-5">
           <div className="flex items-center gap-3.5">
-            <div className="relative w-12 h-12 flex-shrink-0">
-              <Image
-                src={`/badges/rank-${rankNumber}.svg`}
-                alt={rankTitle}
-                width={48}
-                height={48}
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  // Fallback to placeholder if SVG not yet loaded
-                  (e.target as HTMLElement).style.display = "none";
-                }}
-              />
-            </div>
             <div>
               <p className="text-[11px] text-white/50 uppercase tracking-wider font-mono">
                 Composite Score
@@ -117,15 +78,6 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
               </div>
             </div>
           </div>
-
-          <div className="text-right">
-            <p className="text-[11px] text-white/50 uppercase tracking-wider font-mono">
-              Provider Rank
-            </p>
-            <p className="text-sm font-display font-bold text-white">
-              Level {level}
-            </p>
-          </div>
         </div>
 
         {/* 5-Factor Score Breakdown */}
@@ -141,7 +93,9 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-400 rounded-full transition-all duration-700"
-                style={{ width: `${Math.min(100, (breakdown.ratingScore / 45) * 100)}%` }}
+                style={{
+                  width: `${Math.min(100, (breakdown.ratingScore / 45) * 100)}%`,
+                }}
               />
             </div>
           </div>
@@ -157,7 +111,9 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all duration-700"
-                style={{ width: `${Math.min(100, (breakdown.volumeScore / 20) * 100)}%` }}
+                style={{
+                  width: `${Math.min(100, (breakdown.volumeScore / 20) * 100)}%`,
+                }}
               />
             </div>
           </div>
@@ -209,7 +165,9 @@ export function FoxerReputationCard({ className = "" }: FoxerReputationCardProps
             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-purple-400 rounded-full transition-all duration-700"
-                style={{ width: `${Math.min(100, (breakdown.trustScore / 5) * 100)}%` }}
+                style={{
+                  width: `${Math.min(100, (breakdown.trustScore / 5) * 100)}%`,
+                }}
               />
             </div>
           </div>

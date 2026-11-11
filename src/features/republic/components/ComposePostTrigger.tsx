@@ -70,17 +70,6 @@ export function ComposePostTrigger({ onOpen }: ComposePostTriggerProps) {
           </span>
           Offer
         </button>
-        <span className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-xp">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/10">
-            <span
-              className="material-symbols-outlined text-[18px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              bolt
-            </span>
-          </span>
-          +15 XP
-        </span>
       </div>
     </div>
   );

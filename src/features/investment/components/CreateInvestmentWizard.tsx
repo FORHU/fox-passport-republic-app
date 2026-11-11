@@ -13,10 +13,7 @@ import {
 } from "@/shared/api/investments";
 import InvestmentLocationPicker from "./InvestmentLocationPicker";
 import api from "@/shared/lib/axios";
-import {
-  searchVenues,
-  type VenueSearchResult,
-} from "@/shared/api/venues";
+import { searchVenues, type VenueSearchResult } from "@/shared/api/venues";
 import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
@@ -153,7 +150,11 @@ export default function CreateInvestmentWizard({
         if (parsed.modality) {
           setModality(parsed.modality);
         }
-        if (typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 4) {
+        if (
+          typeof parsed.step === "number" &&
+          parsed.step >= 1 &&
+          parsed.step <= 4
+        ) {
           // A draft never reopens past a step that isn't complete.
           setStep(
             firstInvalidStep(
@@ -307,7 +308,9 @@ export default function CreateInvestmentWizard({
   const fieldProps = (field: WizardField) => ({
     id: FIELD_ID[field],
     "aria-invalid": shownErrors[field] ? true : undefined,
-    "aria-describedby": shownErrors[field] ? `${FIELD_ID[field]}-error` : undefined,
+    "aria-describedby": shownErrors[field]
+      ? `${FIELD_ID[field]}-error`
+      : undefined,
   });
 
   const fieldMessage = (field: WizardField) => (
@@ -475,15 +478,19 @@ export default function CreateInvestmentWizard({
         </div>
 
         <div className="flex items-center gap-2">
-          {!editId && (Boolean(form.title) || Boolean(form.description) || step > 1 || form.mediaUrls.length > 0) && (
-            <button
-              type="button"
-              onClick={handleResetDraft}
-              className="text-xs px-2.5 py-1 rounded-lg border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors cursor-pointer"
-            >
-              Reset Draft
-            </button>
-          )}
+          {!editId &&
+            (Boolean(form.title) ||
+              Boolean(form.description) ||
+              step > 1 ||
+              form.mediaUrls.length > 0) && (
+              <button
+                type="button"
+                onClick={handleResetDraft}
+                className="text-xs px-2.5 py-1 rounded-lg border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors cursor-pointer"
+              >
+                Reset Draft
+              </button>
+            )}
         </div>
       </header>
 
@@ -744,7 +751,10 @@ export default function CreateInvestmentWizard({
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        revenueSharePercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)),
+                        revenueSharePercent: Math.min(
+                          100,
+                          Math.max(1, Number(e.target.value) || 1),
+                        ),
                       })
                     }
                     className="flex-1 accent-amber-400"
@@ -1004,7 +1014,10 @@ export default function CreateInvestmentWizard({
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        quantityTotal: Math.max(1, parseInt(e.target.value, 10) || 1),
+                        quantityTotal: Math.max(
+                          1,
+                          parseInt(e.target.value, 10) || 1,
+                        ),
                       })
                     }
                     className={cn(
@@ -1253,8 +1266,7 @@ export default function CreateInvestmentWizard({
                     Broadcast to Republic Foxer Partners Feed
                   </div>
                   <p className="text-[11px] text-zinc-400">
-                    Instantly publish an announcement card in the Partners feed
-                    and earn +50 Partner XP.
+                    Instantly publish an announcement card in the Partners feed.
                   </p>
                 </div>
                 <input
@@ -1364,8 +1376,8 @@ export default function CreateInvestmentWizard({
                   : editId
                     ? "Save Changes"
                     : modality === "venue_equity"
-                    ? "Register Revenue Share"
-                    : "Deploy Equipment to Map"}
+                      ? "Register Revenue Share"
+                      : "Deploy Equipment to Map"}
                 <span className="material-symbols-outlined text-[18px]">
                   rocket_launch
                 </span>
