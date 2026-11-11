@@ -21,35 +21,12 @@ import {
   ORGANIZER_KYC_DOCUMENTS,
 } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
+import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
 import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
 import {
   CascadingLocationFields,
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
-
-const SERVICE_CATEGORY_OPTIONS = [
-  { value: "design", label: "Design" },
-  { value: "catering", label: "Catering" },
-  { value: "service_staff", label: "Service Staff" },
-  { value: "other", label: "Other" },
-];
-
-const ASSET_CATEGORY_OPTIONS = [
-  { value: "furnitures", label: "Furnitures" },
-  { value: "sound_system", label: "Sound System" },
-  { value: "decorations", label: "Decorations" },
-  { value: "other", label: "Other" },
-];
-
-// entertainment stays a legacy value on ServiceCategory but isn't offered
-// here; new performer listings use these granular categories.
-const PERFORMER_CATEGORY_OPTIONS = [
-  { value: "photography", label: "Photography" },
-  { value: "videography", label: "Videography" },
-  { value: "dj", label: "DJ" },
-  { value: "live_band", label: "Live Band" },
-  { value: "mc", label: "MC / Host" },
-];
 
 // An Organizer's specializations are the kinds of events and venues they have
 // helped run, so they draw on both the API's EventCategory and VenueCategory.
@@ -63,12 +40,6 @@ const ORGANIZER_CATEGORY_OPTIONS = [
   { value: "hotel", label: "Hotels" },
   { value: "beach_resort", label: "Beach Resorts" },
   { value: "garden", label: "Gardens" },
-];
-
-const PROVIDER_CATEGORY_OPTIONS = [
-  ...ASSET_CATEGORY_OPTIONS,
-  ...SERVICE_CATEGORY_OPTIONS,
-  ...PERFORMER_CATEGORY_OPTIONS,
 ];
 
 type ProviderType = "provider" | "organizer";
@@ -106,7 +77,9 @@ function IconField({
         <input
           {...input}
           className={`${INPUT_BASE} pl-12 pr-4`}
-          onFocus={(e) => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${accent} 50%, transparent)`)}
+          onFocus={(e) =>
+            (e.currentTarget.style.borderColor = `color-mix(in srgb, ${accent} 50%, transparent)`)
+          }
           onBlur={(e) => (e.currentTarget.style.borderColor = "")}
         />
       </div>
@@ -152,6 +125,13 @@ export default function FoxerApplicationClient({
   const [providerSpecializations, setProviderSpecializations] = useState<
     string[]
   >([]);
+  // A Provider's specialties come from the API's catalog, the list it checks
+  // the application against (RR-3).
+  const { data: providerSpecialties = [] } = useProviderSpecialties();
+  const providerCategoryOptions = providerSpecialties.map((s) => ({
+    value: s.slug,
+    label: s.name,
+  }));
 
   // Organizer Form State — mirrors the API's OrganizerApplication
   // Picked as country → state → city; saved as one string in
@@ -224,8 +204,7 @@ export default function FoxerApplicationClient({
           experience: providerData.experience
             ? parseInt(providerData.experience, 10)
             : undefined,
-          nbiClearanceIdNumber:
-            providerData.nbiClearanceIdNumber || undefined,
+          nbiClearanceIdNumber: providerData.nbiClearanceIdNumber || undefined,
           tinNumber: providerData.tinNumber || undefined,
           validId1FileId: providerData.validId1FileId || undefined,
           nbiFileId: providerData.nbiFileId || undefined,
@@ -294,40 +273,37 @@ export default function FoxerApplicationClient({
           docsRow(orgDocs, ORGANIZER_KYC_DOCUMENTS.length),
         ]
       : [
-            {
-              label: "Business / Brand name",
-              value: providerData.businessName || "Independent",
-            },
-            {
-              label: "Equipment types",
-              value: providerData.assetTypes || "None",
-            },
-            {
-              label: "Service & talent types",
-              value: providerData.serviceTypes || "None",
-            },
-            {
-              label: "Years of experience",
-              value: providerData.experience || "Not specified",
-            },
-            {
-              label: "Portfolio links",
-              value: providerData.portfolioUrls || "None",
-            },
-            {
-              label: "NBI clearance ID",
-              value: providerData.nbiClearanceIdNumber || "None",
-            },
-            { label: "TIN number", value: providerData.tinNumber || "None" },
-            {
-              label: "Specializations",
-              value: labelsFor(
-                PROVIDER_CATEGORY_OPTIONS,
-                providerSpecializations,
-              ),
-            },
-            docsRow(providerDocs, FOXER_KYC_DOCUMENTS.length),
-          ];
+          {
+            label: "Business / Brand name",
+            value: providerData.businessName || "Independent",
+          },
+          {
+            label: "Equipment types",
+            value: providerData.assetTypes || "None",
+          },
+          {
+            label: "Service & talent types",
+            value: providerData.serviceTypes || "None",
+          },
+          {
+            label: "Years of experience",
+            value: providerData.experience || "Not specified",
+          },
+          {
+            label: "Portfolio links",
+            value: providerData.portfolioUrls || "None",
+          },
+          {
+            label: "NBI clearance ID",
+            value: providerData.nbiClearanceIdNumber || "None",
+          },
+          { label: "TIN number", value: providerData.tinNumber || "None" },
+          {
+            label: "Specializations",
+            value: labelsFor(providerCategoryOptions, providerSpecializations),
+          },
+          docsRow(providerDocs, FOXER_KYC_DOCUMENTS.length),
+        ];
 
   const intro = (
     <div className="space-y-5">
@@ -419,6 +395,11 @@ export default function FoxerApplicationClient({
             label="Offerings"
             title="Your offerings"
             description="What you supply — equipment rentals, professional services, or live performances."
+            validate={() =>
+              providerSpecializations.length > 0
+                ? null
+                : "Pick at least one specialty."
+            }
           >
             <IconField
               label="Business or Brand Name (Optional)"
@@ -475,10 +456,12 @@ export default function FoxerApplicationClient({
               placeholder="https://instagram.com/..., https://portfolio.com"
             />
             <SpecializationPicker
-              options={PROVIDER_CATEGORY_OPTIONS}
+              options={providerCategoryOptions}
               value={providerSpecializations}
               onChange={setProviderSpecializations}
               accentColor={accent}
+              max={Infinity}
+              required
             />
           </WizardStep>
 
