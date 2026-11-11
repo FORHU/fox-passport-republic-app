@@ -13,10 +13,7 @@ interface Props {
 
 export default function MobilePassportView({ user }: Props) {
   // The same passport the desktop PassportClient reads.
-  const { paths, stamps, badges, isLoading } = useMyPassport();
-  const level =
-    paths.find((p) => p.path === "user")?.level ??
-    Math.max(1, ...paths.map((p) => p.level));
+  const { stamps, badges, isLoading } = useMyPassport();
   const citizenNo = user?.id
     ? `FP-${String(user.id).slice(0, 8).toUpperCase()}`
     : undefined;
@@ -126,12 +123,7 @@ export default function MobilePassportView({ user }: Props) {
         }}
       >
         {/* Passport booklet card */}
-        <PassportBookletCard
-          user={user}
-          level={level}
-          citizenNo={citizenNo}
-          loading={isLoading}
-        />
+        <PassportBookletCard user={user} citizenNo={citizenNo} />
 
         {/* Rewards & Wallet Card */}
         <Link
@@ -143,7 +135,8 @@ export default function MobilePassportView({ user }: Props) {
             justifyContent: "space-between",
             padding: "16px 20px",
             borderRadius: 24,
-            background: "color-mix(in srgb, var(--color-white) 5%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 5%, transparent)",
             border:
               "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           }}
@@ -209,7 +202,8 @@ export default function MobilePassportView({ user }: Props) {
             justifyContent: "space-between",
             padding: "16px 20px",
             borderRadius: 24,
-            background: "color-mix(in srgb, var(--color-white) 5%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 5%, transparent)",
             border:
               "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           }}
@@ -253,7 +247,7 @@ export default function MobilePassportView({ user }: Props) {
                     "color-mix(in srgb, var(--color-white) 45%, transparent)",
                 }}
               >
-                Milestone goals, tier badges, and XP
+                Milestone goals and tier badges
               </p>
             </div>
           </div>

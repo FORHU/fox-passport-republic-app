@@ -182,8 +182,7 @@ export function ComposePostBox({
               Join Republic Foxer
             </h4>
             <p className="text-xs text-zinc-400">
-              Share your venue experiences, gear offerings, and earn Passport
-              XP.
+              Share your venue experiences and gear offerings.
             </p>
           </div>
         </div>
@@ -395,7 +394,10 @@ export function ComposePostBox({
       onClose?.();
     } catch (err: unknown) {
       setError(
-        getApiErrorMessage(err, "Could not publish your post. Check your connection and try again."),
+        getApiErrorMessage(
+          err,
+          "Could not publish your post. Check your connection and try again.",
+        ),
       );
     } finally {
       setSubmitting(false);
@@ -680,13 +682,6 @@ export function ComposePostBox({
                 panelClassName="w-32"
               />
             </div>
-
-            <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-xp bg-xp-tint border border-xp/30 px-2 py-0.5 rounded-full">
-              <span className="material-symbols-outlined text-[12px]">
-                bolt
-              </span>
-              +15 XP for posting
-            </span>
           </div>
 
           <button

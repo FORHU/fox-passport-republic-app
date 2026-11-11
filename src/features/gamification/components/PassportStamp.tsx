@@ -20,7 +20,12 @@ function getStampMeta(title: string): StampMeta {
       shape: "circle",
     };
   if (t.includes("birthday") || t.includes("surprise") || t.includes("party"))
-    return { icon: "🎂", color: "var(--warning)", label: "FESTIVITY", shape: "rect" };
+    return {
+      icon: "🎂",
+      color: "var(--warning)",
+      label: "FESTIVITY",
+      shape: "rect",
+    };
   if (
     t.includes("corporate") ||
     t.includes("summit") ||
@@ -28,17 +33,37 @@ function getStampMeta(title: string): StampMeta {
     t.includes("startup") ||
     t.includes("acme")
   )
-    return { icon: "🏢", color: "var(--periwinkle)", label: "BUSINESS", shape: "rect" };
+    return {
+      icon: "🏢",
+      color: "var(--periwinkle)",
+      label: "BUSINESS",
+      shape: "rect",
+    };
   if (
     t.includes("social") ||
     t.includes("rooftop") ||
     t.includes("festival") ||
     t.includes("music")
   )
-    return { icon: "🎊", color: "var(--accent-text)", label: "SOCIAL", shape: "circle" };
+    return {
+      icon: "🎊",
+      color: "var(--accent-text)",
+      label: "SOCIAL",
+      shape: "circle",
+    };
   if (t.includes("concert") || t.includes("band") || t.includes("live"))
-    return { icon: "🎵", color: "var(--periwinkle)", label: "MUSIC", shape: "circle" };
-  return { icon: "⭐", color: "var(--accent-text)", label: "EVENT", shape: "rect" };
+    return {
+      icon: "🎵",
+      color: "var(--periwinkle)",
+      label: "MUSIC",
+      shape: "circle",
+    };
+  return {
+    icon: "⭐",
+    color: "var(--accent-text)",
+    label: "EVENT",
+    shape: "rect",
+  };
 }
 
 // Extract short city name
@@ -112,14 +137,6 @@ function CircleStamp({
               {day}·{mon}·{yr}
             </div>
           </div>
-        </div>
-
-        {/* XP badge */}
-        <div
-          className="absolute -top-1 -right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black leading-none"
-          style={{ backgroundColor: c }}
-        >
-          +{stamp.xpEarned}XP
         </div>
       </div>
     </div>
@@ -202,14 +219,6 @@ function RectStamp({
               ✓ VERIFIED
             </span>
           </div>
-        </div>
-
-        {/* XP badge */}
-        <div
-          className="absolute -top-2 -right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black leading-none"
-          style={{ backgroundColor: c }}
-        >
-          +{stamp.xpEarned}XP
         </div>
       </div>
     </div>

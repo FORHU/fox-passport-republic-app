@@ -252,7 +252,7 @@ const AchievementCard: React.FC<{ achievement: AchievementProgress }> = ({
       {isAllCoinsZero && (
         <p className="text-[10px] text-white/30 italic mt-3 flex items-center gap-1">
           <span className="material-symbols-outlined text-[12px]">info</span>
-          Social milestone: awards XP & badges only (§6.2).
+          Social milestone: awards a badge only.
         </p>
       )}
     </div>
@@ -291,15 +291,6 @@ const TierPip: React.FC<{
 
       {/* Rewards indicators */}
       <div className="flex flex-wrap items-center justify-center gap-1">
-        <span
-          className={`text-[9px] font-mono px-1 py-0.5 rounded ${
-            isUnlocked
-              ? "bg-accent/20 text-accent font-bold"
-              : "bg-white/5 text-white/40"
-          }`}
-        >
-          +{tier.xp} XP
-        </span>
         {tier.coins > 0 && (
           <span
             className={`text-[9px] font-mono px-1 py-0.5 rounded ${
@@ -308,7 +299,7 @@ const TierPip: React.FC<{
                 : "bg-white/5 text-white/40"
             }`}
           >
-            +{tier.coins} C
+            +{tier.coins} Tokens
           </span>
         )}
       </div>

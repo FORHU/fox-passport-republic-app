@@ -172,7 +172,7 @@ describe("AchievementsView component", () => {
 
     // Check social milestone guardrail text
     expect(
-      screen.getByText(/Social milestone: awards XP & badges only/i),
+      screen.getByText(/Social milestone: awards a badge only/i),
     ).toBeTruthy();
   });
 
