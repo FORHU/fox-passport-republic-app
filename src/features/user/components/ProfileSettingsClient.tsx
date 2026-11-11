@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { ProviderSpecialtiesCard } from "./ProviderSpecialtiesCard";
 import { useQuery } from "@tanstack/react-query";
 import type { ZodType } from "zod";
 import { useProfile } from "@/features/user/hooks/useProfile";
@@ -380,186 +381,191 @@ export default function ProfileSettingsClient({
               Loading profile…
             </div>
           ) : activeSection === "profile" ? (
-            <form
-              onSubmit={handleUpdateProfile}
-              noValidate
-              className="bg-surface border border-white/5 rounded-[2rem] p-5 sm:p-8 space-y-6"
-            >
-              <div>
-                <h2 className="text-lg font-display font-bold mb-1">
-                  Personal Information
-                </h2>
-                <p className="text-sm text-white/40">
-                  Update your name, username, and contact details.
-                </p>
-              </div>
-
-              {showSummary && (
-                <FormErrorSummary
-                  title={`${blockingFields.length} things to fix before you can save`}
-                  items={blockingFields.map((field) => ({
-                    message: FIELD_FIXES[field],
-                    fieldId: field,
-                  }))}
-                />
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Full Name" icon="badge">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your full name"
-                    className="input-field"
-                  />
-                </Field>
-                <Field
-                  label="Username"
-                  icon="alternate_email"
-                  htmlFor="username"
-                  hint="3–30 characters: letters, numbers, . and _"
-                  error={fieldErrors.username}
-                  errorId="username-error"
-                >
-                  <FieldControl invalid={!!fieldErrors.username}>
-                    <input
-                      id="username"
-                      type="text"
-                      value={username}
-                      onChange={(e) => {
-                        // Usernames are stored lowercase; show that as they type.
-                        const next = e.target.value.toLowerCase();
-                        setUsername(next);
-                        checkOnBlur("username", next);
-                      }}
-                      onBlur={() => checkOnBlur("username", username)}
-                      placeholder="your_username"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      aria-invalid={!!fieldErrors.username}
-                      aria-describedby={
-                        fieldErrors.username ? "username-error" : undefined
-                      }
-                      className={cn(
-                        "input-field",
-                        fieldErrors.username && "field-invalid",
-                      )}
-                    />
-                  </FieldControl>
-                </Field>
-                <Field
-                  label="Email address"
-                  icon="mail"
-                  hint="Contact support to change email"
-                >
-                  <input
-                    type="email"
-                    value={profile?.email || storeUser?.email || ""}
-                    disabled
-                    className="input-field opacity-40 cursor-not-allowed"
-                  />
-                </Field>
-                <Field
-                  label="Phone number"
-                  icon="phone"
-                  htmlFor="phone"
-                  hint="Optional — leave empty to remove it"
-                  error={fieldErrors.phone}
-                  errorId="phone-error"
-                >
-                  <div className="mb-2">
-                    <SearchableDropdown
-                      value={
-                        selectedPhoneCountry
-                          ? phoneCountryLabel(selectedPhoneCountry)
-                          : ""
-                      }
-                      options={phoneCountries.map(phoneCountryLabel)}
-                      placeholder={
-                        countries.isPending ? "Loading…" : "Country code"
-                      }
-                      searchPlaceholder="Search countries or codes…"
-                      onChange={(label) => {
-                        const next = phoneCountries.find(
-                          (c) => phoneCountryLabel(c) === label,
-                        )?.code;
-                        if (!next) return;
-                        setPhoneCountry(next);
-                        recheck("phone", phone, next);
-                      }}
-                    />
-                  </div>
-                  <FieldControl invalid={!!fieldErrors.phone}>
-                    <input
-                      id="phone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => {
-                        // Kept as typed — the format is checked on blur and on
-                        // save. A full number with its own +code picks its
-                        // country.
-                        const next = e.target.value;
-                        const named = countryOfPhone(next);
-                        const country =
-                          named && allowedPhoneCountries?.has(named)
-                            ? named
-                            : phoneCountry;
-                        setPhoneCountry(country);
-                        setPhone(next);
-                        recheck("phone", next, country);
-                      }}
-                      onBlur={() => checkOnBlur("phone", phone)}
-                      placeholder="917 123 4567"
-                      maxLength={30}
-                      aria-invalid={!!fieldErrors.phone}
-                      aria-describedby={
-                        fieldErrors.phone ? "phone-error" : undefined
-                      }
-                      className={cn(
-                        "input-field",
-                        fieldErrors.phone && "field-invalid",
-                      )}
-                    />
-                  </FieldControl>
-                </Field>
-              </div>
-
-              <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+            <>
+              <form
+                onSubmit={handleUpdateProfile}
+                noValidate
+                className="bg-surface border border-white/5 rounded-[2rem] p-5 sm:p-8 space-y-6"
+              >
                 <div>
-                  <p className="text-sm font-bold text-white">
-                    Private Profile
-                  </p>
-                  <p className="text-xs text-white/40 mt-0.5">
-                    New followers must be approved by you. Your followers and
-                    following lists are hidden from everyone else.
+                  <h2 className="text-lg font-display font-bold mb-1">
+                    Personal Information
+                  </h2>
+                  <p className="text-sm text-white/40">
+                    Update your name, username, and contact details.
                   </p>
                 </div>
-                <ToggleSwitch checked={isPrivate} onChange={setIsPrivate} />
-              </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isSaving ? (
-                    <span className="material-symbols-outlined text-[18px] animate-spin">
-                      progress_activity
-                    </span>
-                  ) : (
-                    <span className="material-symbols-outlined text-[18px]">
-                      save
-                    </span>
-                  )}
-                  Save Changes
-                </button>
-              </div>
-            </form>
+                {showSummary && (
+                  <FormErrorSummary
+                    title={`${blockingFields.length} things to fix before you can save`}
+                    items={blockingFields.map((field) => ({
+                      message: FIELD_FIXES[field],
+                      fieldId: field,
+                    }))}
+                  />
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Full Name" icon="badge">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your full name"
+                      className="input-field"
+                    />
+                  </Field>
+                  <Field
+                    label="Username"
+                    icon="alternate_email"
+                    htmlFor="username"
+                    hint="3–30 characters: letters, numbers, . and _"
+                    error={fieldErrors.username}
+                    errorId="username-error"
+                  >
+                    <FieldControl invalid={!!fieldErrors.username}>
+                      <input
+                        id="username"
+                        type="text"
+                        value={username}
+                        onChange={(e) => {
+                          // Usernames are stored lowercase; show that as they type.
+                          const next = e.target.value.toLowerCase();
+                          setUsername(next);
+                          checkOnBlur("username", next);
+                        }}
+                        onBlur={() => checkOnBlur("username", username)}
+                        placeholder="your_username"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        aria-invalid={!!fieldErrors.username}
+                        aria-describedby={
+                          fieldErrors.username ? "username-error" : undefined
+                        }
+                        className={cn(
+                          "input-field",
+                          fieldErrors.username && "field-invalid",
+                        )}
+                      />
+                    </FieldControl>
+                  </Field>
+                  <Field
+                    label="Email address"
+                    icon="mail"
+                    hint="Contact support to change email"
+                  >
+                    <input
+                      type="email"
+                      value={profile?.email || storeUser?.email || ""}
+                      disabled
+                      className="input-field opacity-40 cursor-not-allowed"
+                    />
+                  </Field>
+                  <Field
+                    label="Phone number"
+                    icon="phone"
+                    htmlFor="phone"
+                    hint="Optional — leave empty to remove it"
+                    error={fieldErrors.phone}
+                    errorId="phone-error"
+                  >
+                    <div className="mb-2">
+                      <SearchableDropdown
+                        value={
+                          selectedPhoneCountry
+                            ? phoneCountryLabel(selectedPhoneCountry)
+                            : ""
+                        }
+                        options={phoneCountries.map(phoneCountryLabel)}
+                        placeholder={
+                          countries.isPending ? "Loading…" : "Country code"
+                        }
+                        searchPlaceholder="Search countries or codes…"
+                        onChange={(label) => {
+                          const next = phoneCountries.find(
+                            (c) => phoneCountryLabel(c) === label,
+                          )?.code;
+                          if (!next) return;
+                          setPhoneCountry(next);
+                          recheck("phone", phone, next);
+                        }}
+                      />
+                    </div>
+                    <FieldControl invalid={!!fieldErrors.phone}>
+                      <input
+                        id="phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          // Kept as typed — the format is checked on blur and on
+                          // save. A full number with its own +code picks its
+                          // country.
+                          const next = e.target.value;
+                          const named = countryOfPhone(next);
+                          const country =
+                            named && allowedPhoneCountries?.has(named)
+                              ? named
+                              : phoneCountry;
+                          setPhoneCountry(country);
+                          setPhone(next);
+                          recheck("phone", next, country);
+                        }}
+                        onBlur={() => checkOnBlur("phone", phone)}
+                        placeholder="917 123 4567"
+                        maxLength={30}
+                        aria-invalid={!!fieldErrors.phone}
+                        aria-describedby={
+                          fieldErrors.phone ? "phone-error" : undefined
+                        }
+                        className={cn(
+                          "input-field",
+                          fieldErrors.phone && "field-invalid",
+                        )}
+                      />
+                    </FieldControl>
+                  </Field>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div>
+                    <p className="text-sm font-bold text-white">
+                      Private Profile
+                    </p>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      New followers must be approved by you. Your followers and
+                      following lists are hidden from everyone else.
+                    </p>
+                  </div>
+                  <ToggleSwitch checked={isPrivate} onChange={setIsPrivate} />
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isSaving ? (
+                      <span className="material-symbols-outlined text-[18px] animate-spin">
+                        progress_activity
+                      </span>
+                    ) : (
+                      <span className="material-symbols-outlined text-[18px]">
+                        save
+                      </span>
+                    )}
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+              {profile?.roleType?.includes("providerFoxer") && (
+                <ProviderSpecialtiesCard current={profile.specialties ?? []} />
+              )}
+            </>
           ) : activeSection === "privacy" ? (
             blockedUsersSlot
           ) : activeSection === "security" ? (

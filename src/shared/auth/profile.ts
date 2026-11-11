@@ -39,6 +39,8 @@ export interface ProfileData {
   isEmailVerified?: boolean;
   /** When an admin approved their government ID — the Verified badge. */
   identityVerifiedAt?: string | null;
+  /** A Provider's specialties (RR-3); absent for everyone else. */
+  specialties?: { slug: string; name: string }[];
   isPrivate: boolean;
   preferredCurrency: string;
   createdAt: string;
@@ -73,9 +75,7 @@ export async function fetchProfile(): Promise<ProfileData> {
     // Merge into the same person only. Another account's profile replaces the
     // stored one (an account switched outside the UI), or the previous user's
     // fields would ride along on the new one.
-    setUser(
-      currentUser?.id === data.id ? { ...currentUser, ...data } : data,
-    );
+    setUser(currentUser?.id === data.id ? { ...currentUser, ...data } : data);
   }
   return data;
 }
