@@ -12,7 +12,7 @@ import {
   FILTER_STATUS_OPTIONS,
   type ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
-import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { DashboardListToolbar } from "./DashboardListToolbar";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 interface HostServicesClientProps {
@@ -117,8 +117,8 @@ export default function HostServicesClient({
 
       <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div className="flex-1">
+          <div className="mb-5">
+            <div>
               <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
                 <span
                   className={`material-symbols-outlined ${
@@ -139,53 +139,33 @@ export default function HostServicesClient({
                   : "Only shows records created by your account."}
               </p>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button
-                onClick={() => router.push("/foxer/create-service")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold hover:opacity-90 transition-opacity shrink-0 shadow-lg ${
-                  isPerformerOnlyView
-                    ? "bg-amber-400 text-black shadow-amber-500/20"
-                    : "bg-accent text-black shadow-accent/20"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]">
-                  add
-                </span>
-                {isPerformerOnlyView ? "Add Performer Gig" : "Add Service"}
-              </button>
-              <div className="relative w-full sm:w-72">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
-                  search
-                </span>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={
-                    isPerformerOnlyView
-                      ? "Search gigs, genres, tags..."
-                      : "Search services..."
-                  }
-                  className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div className="w-full sm:w-56">
-                <StyledSelect
-                  value={status}
-                  onChange={setStatus}
-                  options={[
-                    { value: "all", label: "All Status" },
-                    ...FILTER_STATUS_OPTIONS.service.map((s) => ({
-                      value: s,
-                      label: s,
-                    })),
-                  ]}
-                  className="rounded-full"
-                />
-              </div>
-            </div>
           </div>
+
+          <DashboardListToolbar
+            tone={isPerformerOnlyView ? "amber" : "accent"}
+            search={{
+              value: searchQuery,
+              onChange: setSearchQuery,
+              placeholder: isPerformerOnlyView
+                ? "Search gigs, genres, tags..."
+                : "Search services...",
+            }}
+            status={{
+              value: status,
+              onChange: setStatus,
+              options: [
+                { value: "all", label: "All Status" },
+                ...FILTER_STATUS_OPTIONS.service.map((s) => ({
+                  value: s,
+                  label: s,
+                })),
+              ],
+            }}
+            action={{
+              label: isPerformerOnlyView ? "Add Performer Gig" : "Add Service",
+              onClick: () => router.push("/foxer/create-service"),
+            }}
+          />
 
           {/* Tab filter if user has both types */}
           {hasPerformerGigs && hasOperationalServices && (

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import {
@@ -9,7 +8,7 @@ import {
   VenuesSection,
 } from "@/features/dashboard/components";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
-import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { DashboardListToolbar } from "./DashboardListToolbar";
 
 function normalizeValue(value: unknown): string {
   return String(value ?? "")
@@ -85,58 +84,41 @@ export default function HostVenuesClient({
         <main className="pt-32 pb-28 sm:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {guide}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <div className="flex-1">
-                <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-pink-500">
-                    apartment
-                  </span>
-                  My Venues
-                </div>
-                <p className="text-sm text-white/50">
-                  Only shows records created by your account.
-                </p>
+            <div className="mb-5">
+              <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-pink-500">
+                  apartment
+                </span>
+                My Venues
               </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                <Link
-                  href="/venue-foxer/create-venue"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-accent hover:bg-accent-hover text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    polyline
-                  </span>
-                  <span>+ Draw & Add Venue</span>
-                </Link>
-
-                <div className="relative w-full sm:w-64">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
-                    search
-                  </span>
-                  <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search venues..."
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-accent"
-                  />
-                </div>
-
-                <div className="w-full sm:w-56">
-                  <StyledSelect
-                    value={status}
-                    onChange={setStatus}
-                    options={[
-                      { value: "all", label: "All Status" },
-                      ...STATUS_OPTIONS.venue.map((s) => ({
-                        value: s,
-                        label: s,
-                      })),
-                    ]}
-                    className="rounded-full"
-                  />
-                </div>
-              </div>
+              <p className="text-sm text-white/50">
+                Only shows records created by your account.
+              </p>
             </div>
+
+            <DashboardListToolbar
+              search={{
+                value: searchQuery,
+                onChange: setSearchQuery,
+                placeholder: "Search venues...",
+              }}
+              status={{
+                value: status,
+                onChange: setStatus,
+                options: [
+                  { value: "all", label: "All Status" },
+                  ...STATUS_OPTIONS.venue.map((s) => ({
+                    value: s,
+                    label: s,
+                  })),
+                ],
+              }}
+              action={{
+                label: "Draw & Add Venue",
+                icon: "polyline",
+                href: "/venue-foxer/create-venue",
+              }}
+            />
 
             <VenuesSection
               venues={filteredVenues}

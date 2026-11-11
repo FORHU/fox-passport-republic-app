@@ -10,7 +10,7 @@ import {
   FILTER_STATUS_OPTIONS,
   type ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
-import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { DashboardListToolbar } from "./DashboardListToolbar";
 
 interface HostPerformersClientProps {
   initialServices: ServiceItem[];
@@ -87,7 +87,7 @@ export default function HostPerformersClient({
       <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Page header */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
+          <div className="mb-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 mb-3">
                 <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
@@ -106,48 +106,31 @@ export default function HostPerformersClient({
                 packages.
               </p>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button
-                onClick={() =>
-                  router.push("/foxer/create-listing?type=service")
-                }
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-amber-400 text-black text-sm font-bold hover:bg-amber-300 transition-colors shrink-0"
-              >
-                <span className="material-symbols-outlined text-[16px]">
-                  add
-                </span>
-                Add Gig / Package
-              </button>
-
-              <div className="relative w-full sm:w-72">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
-                  search
-                </span>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search gigs, genres, tags..."
-                  className="w-full bg-white/5 border border-amber-500/20 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-amber-400 transition-colors"
-                />
-              </div>
-
-              <div className="w-full sm:w-48">
-                <StyledSelect
-                  value={status}
-                  onChange={setStatus}
-                  options={[
-                    { value: "all", label: "All Status" },
-                    ...FILTER_STATUS_OPTIONS.service.map((s) => ({
-                      value: s,
-                      label: s,
-                    })),
-                  ]}
-                  className="rounded-full"
-                />
-              </div>
-            </div>
           </div>
+
+          <DashboardListToolbar
+            tone="amber"
+            search={{
+              value: searchQuery,
+              onChange: setSearchQuery,
+              placeholder: "Search gigs, genres, tags...",
+            }}
+            status={{
+              value: status,
+              onChange: setStatus,
+              options: [
+                { value: "all", label: "All Status" },
+                ...FILTER_STATUS_OPTIONS.service.map((s) => ({
+                  value: s,
+                  label: s,
+                })),
+              ],
+            }}
+            action={{
+              label: "Add Gig / Package",
+              onClick: () => router.push("/foxer/create-listing?type=service"),
+            }}
+          />
 
           {/* Stats strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
