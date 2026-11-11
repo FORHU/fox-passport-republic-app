@@ -300,9 +300,7 @@ export function VenueReviews({
         },
       );
       queryClient.invalidateQueries({ queryKey: ["venue-reviews", venueId] });
-      if (res.helpful && res.xpAwarded > 0) {
-        toast.success(`Marked as helpful! Author earned +${res.xpAwarded} XP.`);
-      } else if (res.helpful) {
+      if (res.helpful) {
         toast.success("Marked as helpful!");
       }
     },

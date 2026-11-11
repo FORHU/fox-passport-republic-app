@@ -135,14 +135,6 @@ export default function PublicCitizenProfileView({
   }
 
   const isPartner = isPartnerUser(profile);
-  const citizenPath = profile.passport?.paths?.find((p) => p.path === "user");
-  const citizenLevel = citizenPath?.level ?? 1;
-  const currentXP = citizenPath?.currentXP ?? 0;
-  const nextLevelXP = citizenLevel * 200;
-  const xpPercentage = Math.min(
-    100,
-    Math.round((currentXP / nextLevelXP) * 100),
-  );
 
   const stamps = profile.passport?.stamps ?? [];
   const badges = profile.passport?.userBadges ?? [];
@@ -188,7 +180,7 @@ export default function PublicCitizenProfileView({
           <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 rounded-full bg-radial from-white/[0.03] to-transparent pointer-events-none" />
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
-            {/* Citizen Avatar with Level Badge */}
+            {/* Citizen Avatar */}
             <div className="relative shrink-0">
               <div
                 className={`w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden p-1 ${
@@ -202,15 +194,6 @@ export default function PublicCitizenProfileView({
                   alt={profile.name}
                   className="w-full h-full object-cover rounded-[22px]"
                 />
-              </div>
-              <div
-                className={`absolute -bottom-2 -right-2 px-2.5 py-1 rounded-xl text-xs font-black border shadow-lg ${
-                  isPartner
-                    ? "gold-foil-pill"
-                    : "bg-zinc-950 text-lime-400 border-lime-400/40"
-                }`}
-              >
-                Level {citizenLevel}
               </div>
             </div>
 
@@ -329,40 +312,10 @@ export default function PublicCitizenProfileView({
               )}
             </div>
           </div>
-
-          {/* XP Progress Bar */}
-          <div className="mt-6 pt-5 border-t border-zinc-800/80">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-zinc-400 font-medium">
-                Republic Citizenship Progression
-              </span>
-              <span className="text-lime-400 font-bold">
-                {currentXP} / {nextLevelXP} XP ({xpPercentage}%)
-              </span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-zinc-900 overflow-hidden border border-zinc-800">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-lime-400 to-emerald-400 transition-all duration-500"
-                style={{ width: `${xpPercentage}%` }}
-              />
-            </div>
-          </div>
         </div>
 
         {/* ── STATS COUNTER BAR ─────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-lime-400 text-xs font-bold uppercase tracking-wider mb-1">
-              <span className="material-symbols-outlined text-[16px]">
-                military_tech
-              </span>
-              Level
-            </div>
-            <div className="text-2xl font-black text-white">
-              L{citizenLevel}
-            </div>
-          </div>
-
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
             <div className="flex items-center justify-center gap-1.5 text-gold text-xs font-bold uppercase tracking-wider mb-1">
               <span className="material-symbols-outlined gold-foil text-[16px]">
@@ -523,23 +476,26 @@ export default function PublicCitizenProfileView({
                           <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold-edge p-0.5 bg-zinc-900 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
                             <img
                               src={stampSeal}
-                              alt={stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
+                              alt={
+                                stamp.venue?.name ??
+                                stamp.eventName ??
+                                "Venue stamp"
+                              }
                               className="w-full h-full object-cover rounded-full"
                             />
                           </div>
 
                           <div className="min-w-0 flex-1">
                             <h4 className="font-bold text-sm text-white truncate group-hover:text-gold transition-colors">
-                              {stamp.venue?.name ?? stamp.eventName ?? "Venue stamp"}
+                              {stamp.venue?.name ??
+                                stamp.eventName ??
+                                "Venue stamp"}
                             </h4>
                             <p className="text-xs text-zinc-400 truncate">
                               {stamp.venue?.city ||
                                 stamp.location ||
                                 "Republic Venue"}
                             </p>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full mt-1">
-                              +{stamp.xpEarned} XP
-                            </span>
                           </div>
                         </div>
 

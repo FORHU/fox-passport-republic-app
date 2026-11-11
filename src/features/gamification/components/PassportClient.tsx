@@ -10,16 +10,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
-import {
-  PathProgress,
-  UserPath,
-  Badge,
-} from "@/features/gamification/types/gamification";
-import { initializePathProgress } from "@/features/gamification/lib/gamification";
+import { UserPath, Badge } from "@/features/gamification/types/gamification";
 import BadgeModal from "@/features/gamification/components/BadgeModal";
 import {
   useMyPassport,
-  useLeaderboard,
   useOutgoingMatchRequests,
   useIncomingMatchRequests,
   useClientMatchRequests,
@@ -27,7 +21,7 @@ import {
 import type { ClientMatchRequest } from "@/features/gamification/api/passport";
 import { PassportSidebarContent } from "./passport/PassportSidebarContent";
 import { PassportMatchesTab } from "./passport/PassportMatchesTab";
-import { PassportProgressTab } from "./passport/PassportProgressTab";
+import { PassportBadgesTab } from "./passport/PassportBadgesTab";
 import { PassportStampsTab } from "./passport/PassportStampsTab";
 import { Skeleton, SkeletonGroup } from "@/shared/components/ui/skeleton";
 import { PassportRewardsTab } from "./passport/PassportRewardsTab";
@@ -37,7 +31,7 @@ import { LeaderboardView } from "./leaderboard/LeaderboardView";
 interface PassportClientProps {
   user: any;
   initialTab?:
-    | "progress"
+    | "badges"
     | "stamps"
     | "matches"
     | "rewards"
@@ -50,12 +44,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
   initialTab,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    | "progress"
-    | "stamps"
-    | "matches"
-    | "rewards"
-    | "achievements"
-    | "leaderboard"
+    "badges" | "stamps" | "matches" | "rewards" | "achievements" | "leaderboard"
   >(initialTab ?? "matches");
   const [clientInboxOffset, setClientInboxOffset] = useState(0);
   const [clientInboxAll, setClientInboxAll] = useState<ClientMatchRequest[]>(
@@ -68,7 +57,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const {
-    paths: apiPaths,
     badges: allBadges,
     stamps,
     perks: earnedPerkKeys,
@@ -81,8 +69,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
     ["providerFoxer", "venueFoxer"].includes(r),
   );
 
-  const { data: leaderboard = [], isLoading: leaderboardLoading } =
-    useLeaderboard(20);
   const { data: outgoingGroups = [], isLoading: outgoingLoading } =
     useOutgoingMatchRequests(isEventFoxer);
   const { data: incomingRequests = [], isLoading: incomingLoading } =
@@ -119,11 +105,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
   const activePathTypes: UserPath[] =
     rolePaths.length > 0 ? [...rolePaths, "user"] : ["user"];
 
-  // Merge real paths with defaults for roles that have no XP yet
-  const filteredPaths: PathProgress[] = activePathTypes.map(
-    (pt) => apiPaths.find((p) => p.path === pt) ?? initializePathProgress(pt),
-  );
-
   const displayBadges = allBadges;
   const earnedBadges = allBadges.filter((b) => !!b.earnedAt);
   const finalLockedIds = allBadges.filter((b) => !b.earnedAt).map((b) => b.id);
@@ -132,9 +113,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
     setSelectedBadge(badge);
     setIsModalOpen(true);
   };
-
-  const totalXP = filteredPaths.reduce((sum, path) => sum + path.totalXP, 0);
-  const maxTotalXP = activePathTypes.length * 20000;
 
   const userName = user?.name || user?.username || "Citizen User";
   const userInitials = userName.charAt(0).toUpperCase();
@@ -177,8 +155,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
               userName={userName}
               userInitials={userInitials}
               activePathTypes={activePathTypes}
-              totalXP={totalXP}
-              maxTotalXP={maxTotalXP}
               expandedPath={expandedPath}
               setExpandedPath={setExpandedPath}
               perkTab={perkTab}
@@ -201,8 +177,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
               userName={userName}
               userInitials={userInitials}
               activePathTypes={activePathTypes}
-              totalXP={totalXP}
-              maxTotalXP={maxTotalXP}
               expandedPath={expandedPath}
               setExpandedPath={setExpandedPath}
               perkTab={perkTab}
@@ -231,21 +205,21 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                         ? "Citizen Rewards & Wallet"
                         : activeTab === "matches"
                           ? "Match Status & Inquiries"
-                          : activeTab === "progress"
-                            ? "Citizenship Journey"
+                          : activeTab === "badges"
+                            ? "Your Badges"
                             : "Verified Event Stamps"}
                 </h1>
                 <p className="text-xs text-white/40 mt-1">
                   {activeTab === "leaderboard"
-                    ? "Explore top citizens and Foxers across the Republic, seasonal rankings, and city standings"
+                    ? "Explore the top Foxers across the Republic, by Paws, bookings and city"
                     : activeTab === "achievements"
-                      ? "Track multi-tier milestones, earn XP and Coins, and unlock exclusive achievement badges"
+                      ? "Track multi-tier milestones, earn Tokens, and unlock achievement badges"
                       : activeTab === "rewards"
-                        ? "Manage your FoxPassport Coins, ledger history, and discount vouchers"
+                        ? "Manage your FoxPassport Tokens, history, and discount vouchers"
                         : activeTab === "matches"
                           ? "Track and manage all your collaboration requests"
-                          : activeTab === "progress"
-                            ? "Track your XP, civic ranks, and milestone rewards"
+                          : activeTab === "badges"
+                            ? "Badges you have earned, and the ones still to unlock"
                             : "Verified passport records of events and experiences attended"}
                 </p>
               </div>
@@ -263,14 +237,14 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                   Matches
                 </button>
                 <button
-                  onClick={() => setActiveTab("progress")}
+                  onClick={() => setActiveTab("badges")}
                   className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
-                    activeTab === "progress"
+                    activeTab === "badges"
                       ? "bg-accent text-black shadow-md"
                       : "text-white/50"
                   }`}
                 >
-                  Mastery
+                  Badges
                 </button>
                 <button
                   onClick={() => setActiveTab("stamps")}
@@ -294,7 +268,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                 <PassportRewardsTab />
               ) : activeTab === "matches" ? (
                 <PassportMatchesTab
-                  user={user}
                   isEventFoxer={isEventFoxer}
                   isProvider={isProvider}
                   clientInboxPage={clientInboxPage}
@@ -307,8 +280,6 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                   outgoingLoading={outgoingLoading}
                   incomingRequests={incomingRequests}
                   incomingLoading={incomingLoading}
-                  leaderboard={leaderboard}
-                  leaderboardLoading={leaderboardLoading}
                 />
               ) : passportLoading ? (
                 <SkeletonGroup
@@ -320,10 +291,8 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                     <Skeleton key={i} className="aspect-square rounded-full" />
                   ))}
                 </SkeletonGroup>
-              ) : activeTab === "progress" ? (
-                <PassportProgressTab
-                  filteredPaths={filteredPaths}
-                  activePathTypes={activePathTypes}
+              ) : activeTab === "badges" ? (
+                <PassportBadgesTab
                   displayBadges={displayBadges}
                   earnedBadges={earnedBadges}
                   finalLockedIds={finalLockedIds}

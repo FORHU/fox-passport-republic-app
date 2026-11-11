@@ -28,9 +28,6 @@ export function AuthorPassportPopover({
   followButtonSlot,
   messageButtonSlot,
 }: AuthorPassportPopoverProps) {
-  const citizenPath = author.passport?.paths?.find((p) => p.path === "user");
-  const citizenLevel = citizenPath?.level ?? 1;
-
   const rawImg = author.imgId;
   const avatarUrl = rawImg
     ? rawImg.startsWith("http://") || rawImg.startsWith("https://")
@@ -77,10 +74,6 @@ export function AuthorPassportPopover({
               initial
             )}
           </div>
-          {/* Level indicator bubble */}
-          <span className="absolute -bottom-1 -right-1 bg-zinc-900 border border-zinc-700 text-[10px] font-extrabold text-lime-400 px-1.5 py-0.2 rounded-full shadow">
-            L{citizenLevel}
-          </span>
         </Link>
 
         {/* Name and Metadata */}
@@ -119,7 +112,10 @@ export function AuthorPassportPopover({
               <>
                 <span>•</span>
                 <span className="inline-flex items-center gap-1 text-[11px] text-gold font-medium">
-                  <Award className="h-[13px] w-[13px] gold-foil-svg" strokeWidth={2} />
+                  <Award
+                    className="h-[13px] w-[13px] gold-foil-svg"
+                    strokeWidth={2}
+                  />
                   {stampsCount} {stampsCount === 1 ? "Stamp" : "Stamps"}
                 </span>
               </>

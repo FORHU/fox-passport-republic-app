@@ -94,17 +94,10 @@ describe("UserSavedVibes", () => {
 });
 
 describe("PassportBookletCard", () => {
-  it("doesn't claim Lvl 1 before the level is known", () => {
-    render(<PassportBookletCard user={{ name: "Ana" }} level={1} loading />);
+  it("shows the citizen, with no level (levels are retired)", () => {
+    render(<PassportBookletCard user={{ name: "Ana" }} />);
+    expect(screen.getByText("Citizen")).toBeInTheDocument();
     expect(screen.queryByText(/Lvl/)).toBeNull();
-    expect(
-      screen.getByRole("status", { name: "Loading level" }),
-    ).toBeInTheDocument();
-  });
-
-  it("shows the level once loaded", () => {
-    render(<PassportBookletCard user={{ name: "Ana" }} level={4} />);
-    expect(screen.getByText("Lvl 4")).toBeInTheDocument();
   });
 });
 

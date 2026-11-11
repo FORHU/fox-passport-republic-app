@@ -8,7 +8,6 @@ import {
   mapPaths,
   mapStamps,
   mapBadges,
-  getLeaderboard,
   getOutgoingMatchRequests,
   getIncomingMatchRequests,
   getClientMatchRequests,
@@ -44,13 +43,6 @@ export function useMyPassport() {
     isLoading: passportQuery.isLoading || badgesQuery.isLoading,
     isError: passportQuery.isError || badgesQuery.isError,
   };
-}
-
-export function useLeaderboard(limit = 20) {
-  return useQuery({
-    queryKey: ["passport", "leaderboard", limit],
-    queryFn: () => getLeaderboard(limit),
-  });
 }
 
 export function useOutgoingMatchRequests(enabled = true) {

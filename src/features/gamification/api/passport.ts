@@ -98,19 +98,6 @@ export function mapStamps(apiStamps: ApiPassportStamp[]): PassportStamp[] {
   }));
 }
 
-export async function getLeaderboard(limit = 20): Promise<LeaderboardEntry[]> {
-  const res = await api.get(`/passport/leaderboard?limit=${limit}`);
-  return res.data.data;
-}
-
-export interface LeaderboardEntry {
-  rank: number;
-  userId: string;
-  totalXP: number;
-  totalLevel: number;
-  user: { id: string; name: string; imgId: string | null; roleType: string[] };
-}
-
 export async function getOutgoingMatchRequests(): Promise<
   OutgoingMatchGroup[]
 > {
