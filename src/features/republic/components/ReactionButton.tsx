@@ -130,7 +130,7 @@ export function ReactionButton({
         onTouchMove={clearLongPressTimer}
         onTouchCancel={clearLongPressTimer}
         onContextMenu={(e) => e.preventDefault()}
-        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors select-none touch-manipulation ${
+        className={`flex w-full items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors select-none touch-manipulation ${
           current
             ? `${current.color} bg-white/5 font-bold`
             : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"

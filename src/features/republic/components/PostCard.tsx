@@ -277,6 +277,9 @@ export function PostCard({
   // feed, where a wall of text would otherwise dominate the whole card.
   // PostDetailModal (variant="modal") always shows the full text.
   const TRUNCATE_LENGTH = 280;
+  // The gallery shows at most this many tiles; the last one carries "+N"
+  // for the rest, which stay reachable in the lightbox.
+  const MAX_VISIBLE_MEDIA = 4;
   const isLongText = variant === "feed" && content.length > TRUNCATE_LENGTH;
   const displayedContent =
     isLongText && !textExpanded
@@ -350,7 +353,7 @@ export function PostCard({
       ) : (
         <div
           onClick={openable ? handleOpenDetail : undefined}
-          className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap break-words leading-relaxed ${openable ? "cursor-pointer" : ""}`}
+          className={`mt-3 text-[15px] text-zinc-200 whitespace-pre-wrap break-words leading-relaxed ${openable ? "cursor-pointer" : ""}`}
         >
           {renderUsernameMentions(displayedContent)}
           {isLongText && !textExpanded && (
@@ -452,61 +455,86 @@ export function PostCard({
         </div>
       )}
 
-      {/* Photo Gallery Grid */}
+      {/* Photo Gallery Grid — full-bleed inside the card (Facebook-style).
+          One item keeps its natural aspect ratio (letterboxed, capped);
+          2–3 items tile; 4+ show a 2×2 grid with "+N" on the last tile.
+          The lightbox still pages through every item. */}
       {post.mediaUrls && post.mediaUrls.length > 0 && (
         <div
           onClick={openable ? handleOpenDetail : undefined}
-          className={`mt-3.5 grid gap-2 rounded-xl overflow-hidden ${openable ? "cursor-pointer" : ""} ${
-            post.mediaUrls.length === 1
-              ? "grid-cols-1"
-              : post.mediaUrls.length === 2
-                ? "grid-cols-2"
-                : "grid-cols-2 sm:grid-cols-3"
+          className={`mt-3 -mx-4 sm:-mx-5 grid gap-0.5 overflow-hidden ${openable ? "cursor-pointer" : ""} ${
+            post.mediaUrls.length === 1 ? "grid-cols-1" : "grid-cols-2"
           }`}
         >
-          {post.mediaUrls.map((url, idx) => (
-            <div
-              key={idx}
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxIndex(idx);
-              }}
-              className={`relative overflow-hidden bg-zinc-800 rounded-lg group cursor-pointer ${
-                post.mediaUrls.length === 3 && idx === 0
-                  ? "col-span-2 sm:col-span-1 h-48 sm:h-40"
-                  : "h-40"
-              }`}
-            >
-              {isVideoUrl(url) ? (
-                <video
-                  src={url}
-                  muted
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <Image
-                  src={url}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              )}
-              {isVideoUrl(url) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <div className="h-10 w-10 rounded-full bg-black/50 flex items-center justify-center">
-                    <PlayCircle
-                      className="h-6 w-6 text-white"
-                      strokeWidth={2}
-                    />
+          {post.mediaUrls.slice(0, MAX_VISIBLE_MEDIA).map((url, idx) => {
+            const total = post.mediaUrls.length;
+            const single = total === 1;
+            const hiddenCount =
+              idx === MAX_VISIBLE_MEDIA - 1 ? total - MAX_VISIBLE_MEDIA : 0;
+            return (
+              <div
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex(idx);
+                }}
+                className={`relative overflow-hidden bg-zinc-800 group cursor-pointer ${
+                  single
+                    ? ""
+                    : total === 3 && idx === 0
+                      ? "col-span-2 aspect-video"
+                      : "aspect-square"
+                }`}
+              >
+                {isVideoUrl(url) ? (
+                  <video
+                    src={url}
+                    muted
+                    className={`${
+                      single
+                        ? "block w-full h-auto max-h-[min(80vh,720px)] object-contain"
+                        : "w-full h-full object-cover"
+                    } transition-transform duration-300 group-hover:scale-105`}
+                  />
+                ) : single ? (
+                  <Image
+                    src={url}
+                    alt=""
+                    width={1200}
+                    height={1200}
+                    sizes="(max-width: 1024px) 100vw, 680px"
+                    className="block w-full h-auto max-h-[min(80vh,720px)] object-contain transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <Image
+                    src={url}
+                    alt=""
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 340px"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                )}
+                {isVideoUrl(url) && hiddenCount <= 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="h-10 w-10 rounded-full bg-black/50 flex items-center justify-center">
+                      <PlayCircle
+                        className="h-6 w-6 text-white"
+                        strokeWidth={2}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
-              <MediaTagOverlay
-                tags={post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []}
-              />
-            </div>
-          ))}
+                )}
+                <MediaTagOverlay
+                  tags={post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []}
+                />
+                {hiddenCount > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-white text-2xl font-bold">
+                    +{hiddenCount}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -750,8 +778,8 @@ export function PostCard({
       )}
 
       {/* ── ENGAGEMENT ACTION BAR ──────────────────────────────── */}
-      <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-zinc-800/80 text-xs">
-        <div className="flex items-center gap-1 sm:gap-2">
+      <div className="pt-2 mt-3 border-t border-zinc-800/80 text-xs">
+        <div className="grid grid-flow-col auto-cols-fr gap-1 w-full">
           <ReactionButton
             myReaction={myReaction}
             likesCount={likesCount}
@@ -766,7 +794,7 @@ export function PostCard({
                 ? handleOpenDetail
                 : () => setShowComments((prev) => !prev)
             }
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors ${
+            className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors ${
               showComments
                 ? "text-lime-400 bg-lime-400/10 font-bold"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
@@ -779,7 +807,7 @@ export function PostCard({
           {/* Share Button */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+            className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
           >
             <Share2 className="h-[18px] w-[18px]" strokeWidth={2} />
             <span className="hidden sm:inline">
@@ -791,7 +819,7 @@ export function PostCard({
               distinct from the copy-link Share above. */}
           <button
             onClick={handleSendClick}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+            className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
           >
             <Send className="h-[18px] w-[18px]" strokeWidth={2} />
             <span className="hidden sm:inline">Send</span>
@@ -808,7 +836,7 @@ export function PostCard({
                 }
                 setShowRepostModal(true);
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+              className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
             >
               <Repeat2 className="h-[18px] w-[18px]" strokeWidth={2} />
               <span className="hidden sm:inline">Repost</span>
