@@ -44,5 +44,4 @@ export interface Review {
 export interface ToggleHelpfulVoteResult {
   helpful: boolean;
   helpfulCount: number;
-  xpAwarded: number;
 }

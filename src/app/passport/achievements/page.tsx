@@ -24,7 +24,7 @@ export default function AchievementsPage() {
               </span>
             </h1>
             <p className="text-white/50 text-base max-w-2xl font-light">
-              Track your citizen and Foxer milestones, earn XP and Coins, and unlock exclusive achievement badges across your Republic journey.
+              Track your citizen milestones, earn Tokens, and unlock achievement badges across your Republic journey.
             </p>
           </div>
 

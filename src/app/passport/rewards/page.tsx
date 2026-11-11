@@ -17,7 +17,7 @@ export default function RewardsPage() {
               Rewards <span className="text-accent underline decoration-accent/20">Wallet</span>
             </h1>
             <p className="text-white/50 text-base max-w-2xl font-light">
-              Manage your FoxPassport Coins, view transparent append-only ledger transaction history, and redeem single-use booking discount vouchers.
+              Manage your FoxPassport Tokens, view your full Token history, and redeem single-use booking discount vouchers.
             </p>
           </div>
 

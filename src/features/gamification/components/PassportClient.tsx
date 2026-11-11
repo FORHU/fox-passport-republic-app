@@ -237,11 +237,11 @@ export const PassportClient: React.FC<PassportClientProps> = ({
                 </h1>
                 <p className="text-xs text-white/40 mt-1">
                   {activeTab === "leaderboard"
-                    ? "Explore top citizens and Foxers across the Republic, seasonal rankings, and city standings"
+                    ? "Explore the top Foxers across the Republic, by Paws, bookings and city"
                     : activeTab === "achievements"
-                      ? "Track multi-tier milestones, earn XP and Coins, and unlock exclusive achievement badges"
+                      ? "Track multi-tier milestones, earn Tokens, and unlock achievement badges"
                       : activeTab === "rewards"
-                        ? "Manage your FoxPassport Coins, ledger history, and discount vouchers"
+                        ? "Manage your FoxPassport Tokens, history, and discount vouchers"
                         : activeTab === "matches"
                           ? "Track and manage all your collaboration requests"
                           : activeTab === "progress"
