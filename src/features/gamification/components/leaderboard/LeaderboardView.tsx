@@ -4,14 +4,27 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useFoxerLeaderboard } from "@/features/gamification/hooks/useLeaderboardData";
 import type { FoxerLeaderboardTab } from "@/shared/api/leaderboard";
+import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
+
+/** Paws: the star rating with one decimal, or "New" under 5 reviews. */
+export function pawsLabel(paws: number | null | undefined): string {
+  return paws == null ? "New" : paws.toFixed(1);
+}
 
 /** The Foxer leaderboard, the only one (rewards spec: the citizen board is retired). */
 export const LeaderboardView: React.FC = () => {
   const [foxerTab, setFoxerTab] = useState<FoxerLeaderboardTab>("top_rated");
   const [foxerRole, setFoxerRole] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
+  const [specialty, setSpecialty] = useState<string>("");
+  const { data: specialties = [] } = useProviderSpecialties();
 
-  const foxerQuery = useFoxerLeaderboard(foxerTab, foxerRole, selectedCity);
+  const foxerQuery = useFoxerLeaderboard(
+    foxerTab,
+    foxerRole,
+    selectedCity,
+    specialty,
+  );
   const { isLoading, isError, refetch } = foxerQuery;
 
   return (
@@ -105,6 +118,22 @@ export const LeaderboardView: React.FC = () => {
               Providers (Gear & Services)
             </option>
           </select>
+          <span className="text-xs text-white/40">Specialty:</span>
+          <select
+            aria-label="Specialty"
+            value={specialty}
+            onChange={(e) => setSpecialty(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent"
+          >
+            <option value="" className="bg-canvas">
+              All Specialties
+            </option>
+            {specialties.map((s) => (
+              <option key={s.slug} value={s.slug} className="bg-canvas">
+                {s.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -185,6 +214,15 @@ export const LeaderboardView: React.FC = () => {
                       <p className="text-sm font-bold text-white truncate">
                         {entry.name}
                       </p>
+                      {entry.isVerified && (
+                        <span
+                          className="material-symbols-outlined text-[15px] text-sky-400"
+                          title="Verified"
+                          aria-label="Verified"
+                        >
+                          verified
+                        </span>
+                      )}
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/60">
                         {entry.role}
                       </span>
@@ -192,25 +230,25 @@ export const LeaderboardView: React.FC = () => {
                     <p className="text-xs text-white/40 truncate">
                       {entry.city || "Republic"} · {entry.completedBookings}{" "}
                       bookings completed
+                      {entry.foxerSince &&
+                        ` · Foxer since ${new Date(entry.foxerSince).getFullYear()}`}
                     </p>
                   </div>
                 </div>
 
-                {/* Right: Rating */}
+                {/* Right: Paws (never shown without the review count) */}
                 <div className="flex items-center gap-4 shrink-0">
                   <div className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <span className="material-symbols-outlined text-[15px] text-amber-400">
-                        star
+                        pets
                       </span>
                       <span className="text-sm font-bold font-mono text-white">
-                        {entry.starRating > 0
-                          ? entry.starRating.toFixed(1)
-                          : "New"}
+                        {pawsLabel(entry.paws)}
                       </span>
                     </div>
                     <p className="text-[10px] text-white/40">
-                      {entry.reviewCount} reviews
+                      Paws · {entry.reviewCount} reviews
                     </p>
                   </div>
                 </div>

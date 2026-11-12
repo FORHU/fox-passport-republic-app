@@ -13,7 +13,10 @@ interface SpecializationPickerProps {
   value: string[];
   onChange: (v: string[]) => void;
   accentColor: string;
+  /** Most choices allowed; `Infinity` for no cap. */
   max?: number;
+  /** At least one choice is needed (Providers, RR-3). */
+  required?: boolean;
 }
 
 export default function SpecializationPicker({
@@ -22,7 +25,9 @@ export default function SpecializationPicker({
   onChange,
   accentColor,
   max = 3,
+  required = false,
 }: SpecializationPickerProps) {
+  const capped = Number.isFinite(max);
   const toggle = (opt: string) => {
     if (value.includes(opt)) {
       onChange(value.filter((v) => v !== opt));
@@ -38,7 +43,11 @@ export default function SpecializationPicker({
           <Sparkles size={14} style={{ color: accentColor }} />
           Specializations
           <span className="text-white/30 normal-case font-normal tracking-normal text-xs">
-            (optional, pick up to {max})
+            {required
+              ? capped
+                ? `(pick 1 to ${max})`
+                : "(pick at least one)"
+              : `(optional${capped ? `, pick up to ${max}` : ""})`}
           </span>
         </label>
         <p className="text-xs text-white/40 mt-1">
@@ -66,7 +75,8 @@ export default function SpecializationPicker({
                     }
                   : {
                       backgroundColor: "transparent",
-                      borderColor: "color-mix(in srgb, var(--color-white) 12%, transparent)",
+                      borderColor:
+                        "color-mix(in srgb, var(--color-white) 12%, transparent)",
                       color: disabled
                         ? "rgba(255,255,255,0.2)"
                         : "rgba(255,255,255,0.55)",

@@ -18,6 +18,8 @@ export interface UnifiedSearchFilters {
   category?: string;
   maxPrice?: string;
   q?: string;
+  /** A Provider specialty slug (RR-3); applies to Providers only. */
+  specialty?: string;
 }
 
 export interface ProviderRow {
@@ -38,6 +40,32 @@ export async function fetchEventFoxers(
   const params: Record<string, any> = { page, limit, roleType: "eventFoxer" };
   if (filters?.city) params.city = filters.city;
   if (filters?.category) params.specialization = filters.category;
+  if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
+  if (filters?.q) params.q = filters.q;
+  const res = await api.get("/users/foxers", { params });
+  const body = res.data ?? {};
+  return {
+    items: Array.isArray(body.data) ? body.data : [],
+    pagination: body.pagination ?? { page, limit, total: 0, totalPages: 0 },
+  };
+}
+
+/**
+ * Providers as people: each one is found under every specialty they declared
+ * (RR-3), so `specialty` narrows to that one.
+ */
+export async function fetchProviders(
+  page = 1,
+  limit = 6,
+  filters?: UnifiedSearchFilters,
+): Promise<SectionResult<Foxer>> {
+  const params: Record<string, any> = {
+    page,
+    limit,
+    roleType: "providerFoxer",
+  };
+  if (filters?.city) params.city = filters.city;
+  if (filters?.specialty) params.specialty = filters.specialty;
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
   const res = await api.get("/users/foxers", { params });

@@ -266,12 +266,13 @@ const FoxerProfile: React.FC<FoxerProfileProps> = ({ initialFoxer }) => {
                   </div>
                   <div className="w-px h-8 bg-white/10" />
                   <div>
+                    {/* Paws: the star rating, "New" under 5 reviews */}
                     <p className="text-xl font-display font-bold text-white flex items-center gap-1">
-                      {foxer.avgRating != null
+                      {foxer.avgRating != null && (foxer.reviewCount ?? 0) >= 5
                         ? foxer.avgRating.toFixed(1)
-                        : "—"}
+                        : "New"}
                       <span className="material-symbols-outlined gold-foil text-[16px] fill-current">
-                        star
+                        pets
                       </span>
                     </p>
                     <p className="text-[10px] text-text-muted uppercase font-bold">
