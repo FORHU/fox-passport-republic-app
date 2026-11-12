@@ -9,6 +9,11 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { takeReturnTo } from "@/shared/auth/returnTo";
 import { getLandingPath } from "@/shared/lib/dashboard-path";
+import {
+  ACCOUNT_NOT_LINKED,
+  ACCOUNT_NOT_LINKED_MESSAGE,
+  ACCOUNT_NOT_LINKED_TOAST_MS,
+} from "@/shared/auth/social-errors";
 
 function FacebookCallbackContent() {
   const router = useRouter();
@@ -26,11 +31,17 @@ function FacebookCallbackContent() {
     // didn't stick) is shown so a failure can be reported, not just retried.
     const fail = (code: string) => {
       console.error("[facebook-callback] sign-in failed:", code);
-      toast.error(
-        code === "email_not_found"
-          ? "Facebook didn't share an email address. Add a confirmed email to your Facebook account, or sign up with email instead."
-          : `Facebook sign-in failed (${code}). Please try again.`,
-      );
+      if (code === ACCOUNT_NOT_LINKED) {
+        toast.error(ACCOUNT_NOT_LINKED_MESSAGE, {
+          duration: ACCOUNT_NOT_LINKED_TOAST_MS,
+        });
+      } else {
+        toast.error(
+          code === "email_not_found"
+            ? "Facebook didn't share an email address. Add a confirmed email to your Facebook account, or sign up with email instead."
+            : `Facebook sign-in failed (${code}). Please try again.`,
+        );
+      }
       router.replace("/");
     };
     const error = searchParams.get("error");
