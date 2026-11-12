@@ -8,6 +8,7 @@ import { useProfile } from "@/features/user/hooks/useProfile";
 import { useLogout } from "@/shared/auth/useLogout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import AvatarUploader from "@/features/user/components/AvatarUploader";
+import FacebookConnectionSection from "@/features/user/components/FacebookConnectionSection";
 import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
 import { FormErrorSummary } from "@/shared/components/ui/FormErrorSummary";
 import { InlineAlert } from "@/shared/components/ui/InlineAlert";
@@ -25,7 +26,12 @@ import {
   passwordPolicyError,
 } from "@/shared/lib/passwordPolicy";
 
-export type SettingsSection = "profile" | "privacy" | "security" | "danger";
+export type SettingsSection =
+  | "profile"
+  | "privacy"
+  | "security"
+  | "connections"
+  | "danger";
 
 type ValidatedField = "username" | "phone";
 // How each field is named in the "things to fix" summary.
@@ -361,6 +367,12 @@ export default function ProfileSettingsClient({
                 onClick={() => openSection("security")}
               />
               <SectionButton
+                active={activeSection === "connections"}
+                icon="link"
+                label="Connections"
+                onClick={() => openSection("connections")}
+              />
+              <SectionButton
                 active={activeSection === "danger"}
                 icon="delete_forever"
                 label="Delete Account"
@@ -562,6 +574,8 @@ export default function ProfileSettingsClient({
             </form>
           ) : activeSection === "privacy" ? (
             blockedUsersSlot
+          ) : activeSection === "connections" ? (
+            <FacebookConnectionSection />
           ) : activeSection === "security" ? (
             <form
               onSubmit={handleChangePassword}

@@ -6,7 +6,13 @@ import BlockedUsersSection from "./BlockedUsersSection";
 
 export const dynamic = "force-dynamic";
 
-const SECTIONS: SettingsSection[] = ["profile", "privacy", "security", "danger"];
+const SECTIONS: SettingsSection[] = [
+  "profile",
+  "privacy",
+  "security",
+  "connections",
+  "danger",
+];
 
 export default async function SettingsPage({
   searchParams,

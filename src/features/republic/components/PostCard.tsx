@@ -11,7 +11,6 @@ import {
   Pin,
   Repeat2,
   Send,
-  Share2,
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +18,7 @@ import { FeedPost, ReactionType, Poll as PollType } from "../types";
 import { AuthorPassportPopover } from "./AuthorPassportPopover";
 import { CommentSection } from "./CommentSection";
 import { ReactionButton } from "./ReactionButton";
+import { PostShareMenu } from "./PostShareMenu";
 import { usePostStats, usePostStatsStore } from "../store/usePostStatsStore";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { RepostComposer } from "./RepostComposer";
@@ -267,6 +267,12 @@ export function PostCard({
     !!user &&
     ((user as any).id === post.authorId ||
       (user as any).userId === post.authorId);
+  // Only the author can send their own public video to their Facebook Page;
+  // the API checks the same.
+  const canShareToFacebook =
+    isOwner &&
+    (post.visibility ?? "public") === "public" &&
+    post.mediaUrls.some(isVideoUrl);
   const isPartnerPost = post.type === "partner_announcement";
   const openable = variant === "feed" && Boolean(onOpenDetail);
   const handleOpenDetail = () => onOpenDetail?.(post);
@@ -804,16 +810,14 @@ export function PostCard({
             <span>{commentsCount}</span>
           </button>
 
-          {/* Share Button */}
-          <button
-            onClick={handleShare}
-            className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
-          >
-            <Share2 className="h-[18px] w-[18px]" strokeWidth={2} />
-            <span className="hidden sm:inline">
-              {copied ? "Copied!" : "Share"}
-            </span>
-          </button>
+          {/* Share — a menu: Copy link, and on the viewer's own public video
+              post, Share to Facebook Page (sent only when clicked). */}
+          <PostShareMenu
+            postId={post.id}
+            onCopyLink={handleShare}
+            copied={copied}
+            canShareToFacebook={canShareToFacebook}
+          />
 
           {/* Send in Message — Messenger-style share to a person/conversation,
               distinct from the copy-link Share above. */}
