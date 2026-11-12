@@ -304,9 +304,11 @@ function TermsContent() {
       <Clause num={2} title="Your Passport">
         <p>
           Every account is issued a <strong className="text-white">Passport</strong>:
-          a record of paths, XP, badges, and event stamps earned through
+          a record of badges, event stamps, and Tokens earned through
           completed bookings and community participation. Passport progress
-          is non-transferable and has no cash value. We may adjust XP or
+          and Tokens are non-transferable and cannot be exchanged for cash;
+          Tokens can only be redeemed for rewards on FoxPassport. We may
+          adjust Tokens or
           revoke a badge awarded in error, but never as a substitute for a
           refund decision, which is governed separately under §6.
         </p>
@@ -397,7 +399,7 @@ function PrivacyContent() {
       <Clause num={2} title="How We Use It">
         <p>
           To operate bookings, bids, and partnerships; to track Passport
-          XP, badges, and stamps; to personalize the Republic Feed; to
+          badges, stamps, and Tokens; to personalize the Republic Feed; to
           send transactional email (OTP verification, booking updates,
           payout notices); and to detect fraud or abuse across accounts.
         </p>

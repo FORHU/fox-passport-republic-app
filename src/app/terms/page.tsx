@@ -133,10 +133,12 @@ export default function TermsOfServicePage() {
           <p>
             Every account is issued a{" "}
             <strong className="text-white">Passport</strong>: a digital record
-            of paths, XP, badges, and event stamps earned through completed
-            bookings and community participation. Passport progress is personal,
-            non-transferable, and holds no cash or monetary value. We reserve
-            the right to adjust XP or revoke badges awarded in technical error,
+            of badges, event stamps, and Tokens earned through completed
+            bookings and community participation. Passport progress and Tokens
+            are personal, non-transferable, and cannot be exchanged for cash;
+            Tokens can only be redeemed for rewards on FoxPassport. We reserve
+            the right to adjust Tokens or revoke badges awarded in technical
+            error,
             but never as an arbitrary substitute for a refund determination,
             which is strictly governed under §6.
           </p>
