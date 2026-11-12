@@ -27,6 +27,7 @@ import {
 } from "@/features/search/components/ResultsState";
 import {
   fetchEventFoxers,
+  fetchProviders,
   fetchGearFoxers,
   fetchServiceFoxers,
   type SectionResult,
@@ -34,8 +35,9 @@ import {
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Money } from "@/shared/components/ui/Money";
+import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
 
-type TypeKey = "event_foxer" | "gear" | "service";
+type TypeKey = "event_foxer" | "provider" | "gear" | "service";
 /** "" is the All tab. */
 type ViewKey = "" | TypeKey;
 
@@ -60,6 +62,16 @@ const TYPES: Record<
     description: "Plan and run your whole event, from the venue to the crew.",
     icon: "celebration",
     // Two columns at most, so previews and pages come in even rows.
+    preview: 2,
+    perPage: 8,
+  },
+  provider: {
+    tab: "Providers",
+    title: "Providers",
+    noun: "Providers",
+    description:
+      "Photographers, DJs, caterers and more, found under each specialty.",
+    icon: "person_search",
     preview: 2,
     perPage: 8,
   },
@@ -106,6 +118,7 @@ function TypeSection({
   page,
   filtered,
   kindIgnored,
+  specialtyIgnored = false,
   onSeeAll,
   onPageChange,
   onClear,
@@ -117,6 +130,8 @@ function TypeSection({
   filtered: boolean;
   /** A kind-of-event filter is set, which this type doesn't support. */
   kindIgnored: boolean;
+  /** A specialty filter is set, which only Providers support. */
+  specialtyIgnored?: boolean;
   onSeeAll: () => void;
   onPageChange: (page: number) => void;
   onClear: () => void;
@@ -145,6 +160,11 @@ function TypeSection({
           {kindIgnored && (
             <p className="mt-1 text-xs text-white/60">
               The kind-of-event filter doesn&apos;t apply to {meta.noun}.
+            </p>
+          )}
+          {specialtyIgnored && (
+            <p className="mt-1 text-xs text-white/60">
+              The specialty filter applies to Providers only.
             </p>
           )}
         </div>
@@ -180,7 +200,7 @@ function TypeSection({
           aria-busy={query.isFetching}
           className={`transition-opacity duration-200 ${refetching ? "opacity-60" : ""}`}
         >
-          {type === "event_foxer" ? (
+          {type === "event_foxer" || type === "provider" ? (
             <EventFoxerList
               items={items}
               loading={firstLoad}
@@ -216,6 +236,8 @@ export default function SearchClient() {
 
   const q = searchParams?.get("q") || "";
   const category = searchParams?.get("category") || "";
+  const specialty = searchParams?.get("specialty") || "";
+  const { data: specialties = [] } = useProviderSpecialties();
   // Filter on `city` only. `label` is the old map picker's display text — a
   // whole place name that matched no stored city.
   const city = searchParams?.get("city") || "";
@@ -276,10 +298,11 @@ export default function SearchClient() {
     () => ({
       ...(city && { city }),
       ...(category && { category }),
+      ...(specialty && { specialty }),
       ...(maxPrice && { maxPrice }),
       ...(q && { q }),
     }),
-    [city, category, maxPrice, q],
+    [city, category, specialty, maxPrice, q],
   );
 
   // Every type is always fetched, so each tab can show its total; only the
@@ -298,6 +321,12 @@ export default function SearchClient() {
       fetchEventFoxers(pageFor("event_foxer"), limitFor("event_foxer"), filters),
     ...queryOptions,
   });
+  const providerQuery = useQuery({
+    queryKey: ["search", "provider", pageFor("provider"), limitFor("provider"), filters],
+    queryFn: () =>
+      fetchProviders(pageFor("provider"), limitFor("provider"), filters),
+    ...queryOptions,
+  });
   const gearQuery = useQuery({
     queryKey: ["search", "gear", pageFor("gear"), limitFor("gear"), filters],
     queryFn: () => fetchGearFoxers(pageFor("gear"), limitFor("gear"), filters),
@@ -311,12 +340,13 @@ export default function SearchClient() {
   });
   const queries: Record<TypeKey, UseQueryResult<SectionResult<any>>> = {
     event_foxer: efQuery,
+    provider: providerQuery,
     gear: gearQuery,
     service: serviceQuery,
   };
   const totalOf = (t: TypeKey) => queries[t].data?.pagination?.total;
 
-  const filtered = Boolean(q || category || city || maxPrice);
+  const filtered = Boolean(q || category || specialty || city || maxPrice);
 
   const clearAll = () => {
     setSearchQuery("");
@@ -348,6 +378,13 @@ export default function SearchClient() {
       name: "kind of event",
       label: EVENT_KINDS.find((k) => k.value === category)?.label ?? category,
       remove: () => setParams({ category: undefined }),
+    });
+  if (specialty)
+    chips.push({
+      key: "specialty",
+      name: "specialty",
+      label: specialties.find((s) => s.slug === specialty)?.name ?? specialty,
+      remove: () => setParams({ specialty: undefined }),
     });
   if (city)
     chips.push({
@@ -616,6 +653,7 @@ export default function SearchClient() {
                   page={pageFor(t)}
                   filtered={filtered}
                   kindIgnored={Boolean(category) && t !== "event_foxer"}
+                  specialtyIgnored={Boolean(specialty) && t !== "provider"}
                   onSeeAll={() => selectView(t)}
                   onPageChange={changePage}
                   onClear={clearAll}

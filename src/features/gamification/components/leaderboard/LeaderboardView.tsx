@@ -2,68 +2,41 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import {
-  useCitizenLeaderboard,
-  useFoxerLeaderboard,
-} from "@/features/gamification/hooks/useLeaderboardData";
-import { RankBadge } from "@/features/gamification/components/RankBadge";
-import type {
-  CitizenLeaderboardTab,
-  FoxerLeaderboardTab,
-} from "@/shared/api/leaderboard";
+import { useFoxerLeaderboard } from "@/features/gamification/hooks/useLeaderboardData";
+import type { FoxerLeaderboardTab } from "@/shared/api/leaderboard";
+import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
 
+/** Paws: the star rating with one decimal, or "New" under 5 reviews. */
+export function pawsLabel(paws: number | null | undefined): string {
+  return paws == null ? "New" : paws.toFixed(1);
+}
+
+/** The Foxer leaderboard, the only one (rewards spec: the citizen board is retired). */
 export const LeaderboardView: React.FC = () => {
-  const [boardType, setBoardType] = useState<"citizens" | "foxers">("citizens");
-  const [citizenTab, setCitizenTab] =
-    useState<CitizenLeaderboardTab>("this_month");
   const [foxerTab, setFoxerTab] = useState<FoxerLeaderboardTab>("top_rated");
   const [foxerRole, setFoxerRole] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
+  const [specialty, setSpecialty] = useState<string>("");
+  const { data: specialties = [] } = useProviderSpecialties();
 
-  const citizenQuery = useCitizenLeaderboard(citizenTab, selectedCity);
-  const foxerQuery = useFoxerLeaderboard(foxerTab, foxerRole, selectedCity);
-
-  const isLoading =
-    boardType === "citizens" ? citizenQuery.isLoading : foxerQuery.isLoading;
-  const isError =
-    boardType === "citizens" ? citizenQuery.isError : foxerQuery.isError;
-  const refetch =
-    boardType === "citizens" ? citizenQuery.refetch : foxerQuery.refetch;
+  const foxerQuery = useFoxerLeaderboard(
+    foxerTab,
+    foxerRole,
+    selectedCity,
+    specialty,
+  );
+  const { isLoading, isError, refetch } = foxerQuery;
 
   return (
     <div className="space-y-6">
-      {/* Top Toggle: Top Citizens vs Top Foxers */}
+      {/* Heading and city filter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
-          <button
-            type="button"
-            onClick={() => setBoardType("citizens")}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-              boardType === "citizens"
-                ? "bg-accent text-black shadow-lg"
-                : "text-white/60 hover:text-white"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              emoji_events
-            </span>
-            Top Citizens
-          </button>
-          <button
-            type="button"
-            onClick={() => setBoardType("foxers")}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-              boardType === "foxers"
-                ? "bg-accent text-black shadow-lg"
-                : "text-white/60 hover:text-white"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              workspace_premium
-            </span>
-            Top Foxers
-          </button>
-        </div>
+        <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+          <span className="material-symbols-outlined text-[20px] text-accent">
+            workspace_premium
+          </span>
+          Top Foxers
+        </h2>
 
         {/* City Filter Shortcut */}
         <div className="flex items-center gap-2">
@@ -100,22 +73,22 @@ export const LeaderboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Secondary Filter Sub-tabs */}
-      {boardType === "citizens" ? (
+      {/* Foxer sub-tabs and role filter */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           {(
             [
-              { key: "this_month", label: "This Month (Season)" },
-              { key: "all_time", label: "All Time" },
-              { key: "my_city", label: "My City" },
+              { key: "top_rated", label: "Top Rated" },
+              { key: "most_booked", label: "Most Booked" },
+              { key: "rising", label: "Rising Stars" },
             ] as const
           ).map((t) => (
             <button
               key={t.key}
               type="button"
-              onClick={() => setCitizenTab(t.key)}
+              onClick={() => setFoxerTab(t.key)}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                citizenTab === t.key
+                foxerTab === t.key
                   ? "bg-accent/10 border-accent/40 text-accent"
                   : "bg-white/[0.02] border-white/5 text-white/50 hover:text-white"
               }`}
@@ -123,60 +96,46 @@ export const LeaderboardView: React.FC = () => {
               {t.label}
             </button>
           ))}
-          {citizenQuery.data?.season && (
-            <span className="ml-auto text-[11px] font-mono text-white/40">
-              Season: {citizenQuery.data.season}
-            </span>
-          )}
         </div>
-      ) : (
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {(
-              [
-                { key: "top_rated", label: "Top Rated" },
-                { key: "most_booked", label: "Most Booked" },
-                { key: "rising", label: "Rising Stars" },
-              ] as const
-            ).map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setFoxerTab(t.key)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                  foxerTab === t.key
-                    ? "bg-accent/10 border-accent/40 text-accent"
-                    : "bg-white/[0.02] border-white/5 text-white/50 hover:text-white"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40">Role:</span>
-            <select
-              value={foxerRole}
-              onChange={(e) => setFoxerRole(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent"
-            >
-              <option value="" className="bg-canvas">
-                All Roles
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-white/40">Role:</span>
+          <select
+            value={foxerRole}
+            onChange={(e) => setFoxerRole(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent"
+          >
+            <option value="" className="bg-canvas">
+              All Roles
+            </option>
+            <option value="venueFoxer" className="bg-canvas">
+              Venues
+            </option>
+            <option value="eventFoxer" className="bg-canvas">
+              Event Foxers
+            </option>
+            <option value="providerFoxer" className="bg-canvas">
+              Providers (Gear & Services)
+            </option>
+          </select>
+          <span className="text-xs text-white/40">Specialty:</span>
+          <select
+            aria-label="Specialty"
+            value={specialty}
+            onChange={(e) => setSpecialty(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent"
+          >
+            <option value="" className="bg-canvas">
+              All Specialties
+            </option>
+            {specialties.map((s) => (
+              <option key={s.slug} value={s.slug} className="bg-canvas">
+                {s.name}
               </option>
-              <option value="venueFoxer" className="bg-canvas">
-                Venues
-              </option>
-              <option value="eventFoxer" className="bg-canvas">
-                Event Foxers
-              </option>
-              <option value="providerFoxer" className="bg-canvas">
-                Providers (Gear & Services)
-              </option>
-            </select>
-          </div>
+            ))}
+          </select>
         </div>
-      )}
+      </div>
 
       {/* Main Leaderboard List */}
       {isLoading ? (
@@ -205,118 +164,6 @@ export const LeaderboardView: React.FC = () => {
           >
             Retry
           </button>
-        </div>
-      ) : boardType === "citizens" ? (
-        <div className="space-y-2">
-          {citizenQuery.data?.entries.length === 0 ? (
-            <p className="text-white/40 text-sm text-center py-12">
-              No citizen activity recorded for this criteria yet.
-            </p>
-          ) : (
-            citizenQuery.data?.entries.map((entry) => (
-              <div
-                key={entry.userId}
-                className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
-                  entry.position === 1
-                    ? "bg-amber-500/[0.08] border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.05)]"
-                    : entry.position === 2
-                      ? "bg-slate-300/[0.05] border-slate-300/20"
-                      : entry.position === 3
-                        ? "bg-amber-700/[0.05] border-amber-700/20"
-                        : "bg-white/[0.02] border-white/5 hover:border-white/15"
-                }`}
-              >
-                {/* Left: Position & Avatar & Name */}
-                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                  <div className="w-8 text-center shrink-0">
-                    {entry.position === 1 ? (
-                      <span className="text-xl">🥇</span>
-                    ) : entry.position === 2 ? (
-                      <span className="text-xl">🥈</span>
-                    ) : entry.position === 3 ? (
-                      <span className="text-xl">🥉</span>
-                    ) : (
-                      <span className="font-mono font-bold text-sm text-white/50">
-                        #{entry.position}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="relative w-10 h-10 rounded-full bg-white/10 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
-                    {entry.avatarUrl ? (
-                      <Image
-                        src={entry.avatarUrl}
-                        alt={entry.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="text-xs font-bold text-white/60">
-                        {entry.name?.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-white truncate">
-                      {entry.name}
-                    </p>
-                    <p className="text-xs text-white/40 truncate">
-                      {entry.city || "Republic Citizen"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right: RankBadge & Level Chip (XP remains strictly private per §8.1) */}
-                <div className="flex items-center gap-3 shrink-0">
-                  <RankBadge
-                    level={entry.level}
-                    size={26}
-                    showTitle={true}
-                    isCitizen={true}
-                  />
-                  <span className="text-[11px] font-mono font-bold bg-white/5 border border-white/10 px-2.5 py-1 rounded-full text-white/70">
-                    LVL {entry.level}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
-
-          {/* Pinned User Position if outside top */}
-          {citizenQuery.data?.userPosition && (
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-accent mb-2">
-                Your Citizen Standing
-              </p>
-              <div className="p-4 rounded-2xl bg-accent/[0.08] border border-accent/40 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-sm text-accent">
-                    #{citizenQuery.data.userPosition.position}
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-white">
-                      {citizenQuery.data.userPosition.name} (You)
-                    </p>
-                    <p className="text-xs text-white/40">
-                      {citizenQuery.data.userPosition.city || "Citizen"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <RankBadge
-                    level={citizenQuery.data.userPosition.level}
-                    size={26}
-                    showTitle={true}
-                    isCitizen={true}
-                  />
-                  <span className="text-[11px] font-mono font-bold bg-accent/20 border border-accent/40 px-2.5 py-1 rounded-full text-accent">
-                    LVL {citizenQuery.data.userPosition.level}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         /* Foxer Leaderboard List */
@@ -367,6 +214,15 @@ export const LeaderboardView: React.FC = () => {
                       <p className="text-sm font-bold text-white truncate">
                         {entry.name}
                       </p>
+                      {entry.isVerified && (
+                        <span
+                          className="material-symbols-outlined text-[15px] text-sky-400"
+                          title="Verified"
+                          aria-label="Verified"
+                        >
+                          verified
+                        </span>
+                      )}
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/60">
                         {entry.role}
                       </span>
@@ -374,31 +230,27 @@ export const LeaderboardView: React.FC = () => {
                     <p className="text-xs text-white/40 truncate">
                       {entry.city || "Republic"} · {entry.completedBookings}{" "}
                       bookings completed
+                      {entry.foxerSince &&
+                        ` · Foxer since ${new Date(entry.foxerSince).getFullYear()}`}
                     </p>
                   </div>
                 </div>
 
-                {/* Right: Rating & Foxer Rank */}
+                {/* Right: Paws (never shown without the review count) */}
                 <div className="flex items-center gap-4 shrink-0">
                   <div className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <span className="material-symbols-outlined text-[15px] text-amber-400">
-                        star
+                        pets
                       </span>
                       <span className="text-sm font-bold font-mono text-white">
-                        {entry.starRating > 0
-                          ? entry.starRating.toFixed(1)
-                          : "New"}
+                        {pawsLabel(entry.paws)}
                       </span>
                     </div>
                     <p className="text-[10px] text-white/40">
-                      {entry.reviewCount} reviews
+                      Paws · {entry.reviewCount} reviews
                     </p>
                   </div>
-
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-accent/10 border border-accent/20 text-accent">
-                    {entry.rankTitle}
-                  </span>
                 </div>
               </div>
             ))
@@ -425,9 +277,6 @@ export const LeaderboardView: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-accent/20 border border-accent/40 text-accent">
-                  {foxerQuery.data.userPosition.rankTitle}
-                </span>
               </div>
             </div>
           )}

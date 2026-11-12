@@ -4,12 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  formatXP,
-  calculateLevelFromXP,
-} from "@/features/gamification/lib/gamification";
 import { UserPath } from "@/features/gamification/types/gamification";
-import { RankBadge } from "@/features/gamification/components/RankBadge";
 import {
   PATH_SHORT,
   PATH_COLORS,
@@ -25,14 +20,12 @@ export interface PassportSidebarContentProps {
   userName: string;
   userInitials: string;
   activePathTypes: UserPath[];
-  totalXP: number;
-  maxTotalXP: number;
   expandedPath: string | null;
   setExpandedPath: (p: string | null) => void;
   perkTab: "unlocked" | "locked";
   setPerkTab: (t: "unlocked" | "locked") => void;
   activeTab:
-    | "progress"
+    | "badges"
     | "stamps"
     | "matches"
     | "rewards"
@@ -40,7 +33,7 @@ export interface PassportSidebarContentProps {
     | "leaderboard";
   setActiveTab: (
     t:
-      | "progress"
+      | "badges"
       | "stamps"
       | "matches"
       | "rewards"
@@ -48,7 +41,7 @@ export interface PassportSidebarContentProps {
       | "leaderboard",
   ) => void;
   earnedPerkKeys: string[];
-  /** The passport is still loading: the level, XP and perks aren't known yet. */
+  /** The passport is still loading: the perks aren't known yet. */
   loading?: boolean;
   onTabSelect: () => void;
 }
@@ -58,8 +51,6 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
   userName,
   userInitials,
   activePathTypes,
-  totalXP,
-  maxTotalXP,
   expandedPath,
   setExpandedPath,
   perkTab,
@@ -142,40 +133,9 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             )
             .join(" · ") || "Citizen"}
         </p>
-        <div className="mt-3 flex items-center justify-center">
-          {loading ? (
-            <Skeleton className="h-7 w-32 rounded-full" />
-          ) : (
-            <RankBadge
-              level={calculateLevelFromXP(totalXP).level}
-              size={28}
-              showTitle={true}
-              isCitizen={true}
-            />
-          )}
-        </div>
       </div>
 
       <div className="space-y-5 grow">
-        <div className="space-y-2">
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
-            <span>Mastery XP</span>
-            {loading ? (
-              <Skeleton className="h-3 w-12" />
-            ) : (
-              <span className="text-accent font-mono">{formatXP(totalXP)}</span>
-            )}
-          </div>
-          <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
-            <div
-              className="h-full bg-accent transition-all duration-1000"
-              style={{
-                width: `${Math.min(100, (totalXP / maxTotalXP) * 100)}%`,
-              }}
-            ></div>
-          </div>
-        </div>
-
         {(() => {
           if (loading) {
             return (
@@ -330,7 +290,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                                   </div>
                                 ))
                               ) : (
-                                display.map(({ perk, level, meta }) => (
+                                display.map(({ perk, meta }) => (
                                   <div
                                     key={perk}
                                     className="flex items-center gap-2 px-2 py-1.5 rounded-xl"
@@ -348,9 +308,6 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                                     <p className="text-[10px] font-bold text-white/25 leading-tight flex-1">
                                       {meta!.title}
                                     </p>
-                                    <span className="text-[7px] font-black text-white/20 bg-white/5 border border-white/5 px-1.5 py-0.5 rounded-full shrink-0">
-                                      LVL {level}
-                                    </span>
                                   </div>
                                 ))
                               )}
@@ -418,15 +375,15 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         </button>
         <button
           onClick={() => {
-            setActiveTab("progress");
+            setActiveTab("badges");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "progress" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "badges" ? "bg-accent text-black" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
-            analytics
+            award_star
           </span>{" "}
-          Mastery
+          Badges
         </button>
         <button
           onClick={() => {
