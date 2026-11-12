@@ -148,6 +148,29 @@ export default function PrivacyPolicyPage() {
               feeds, or messages.
             </li>
             <li>
+              <strong className="text-white">
+                Facebook Page Sharing (optional):
+              </strong>{" "}
+              If you choose to connect a Facebook Page in Settings &rarr;
+              Connections, we request{" "}
+              <code className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-xs">
+                pages_show_list
+              </code>
+              ,{" "}
+              <code className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-xs">
+                pages_read_engagement
+              </code>{" "}
+              and{" "}
+              <code className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-xs">
+                pages_manage_posts
+              </code>
+              . We store the names and IDs of the Pages you manage, the Page
+              you choose, and encrypted access tokens, and use them only to
+              publish a video post of yours to that Page when you press
+              Facebook on it. We never post automatically. Disconnecting
+              deletes the stored tokens.
+            </li>
+            <li>
               <strong className="text-white">Location Data:</strong> With your
               permission, we use your device location to suggest nearby events,
               venues, and experiences on the live Republic map. You can enable
@@ -189,7 +212,9 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-5 mt-2 space-y-1.5 text-sm text-gray-300">
               <li>
                 We use Facebook user data exclusively to authenticate users,
-                prevent fraud, and establish your FoxPassport account profile.
+                prevent fraud, establish your FoxPassport account profile and,
+                only if you connect a Page, publish the videos you choose to
+                share to it.
               </li>
               <li>
                 We <strong>never sell, rent, or transfer</strong> Facebook user

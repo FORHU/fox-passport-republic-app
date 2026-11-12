@@ -141,6 +141,14 @@ export default function DataDeletionPage() {
                 Click <strong className="text-white">Remove</strong>.
               </li>
               <li>
+                If you connected a Facebook Page for sharing videos, you can
+                also disconnect it from{" "}
+                <strong className="text-white">
+                  FoxPassport Settings &rarr; Connections
+                </strong>
+                . That deletes the Page access tokens FoxPassport stored.
+              </li>
+              <li>
                 To also purge historical identity tokens stored in FoxPassport
                 databases, send a note with subject{" "}
                 <strong className="text-white">
