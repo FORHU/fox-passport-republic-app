@@ -182,7 +182,7 @@ export default function PrivacyPolicyPage() {
                 Booking, Activity &amp; Passport Progress:
               </strong>{" "}
               We record your event bookings, venue reservations, Passport
-              stamps, XP achievements, and interactions on the Republic feed.
+              stamps, badges, Tokens, and interactions on the Republic feed.
             </li>
             <li>
               <strong className="text-white">
@@ -259,7 +259,7 @@ export default function PrivacyPolicyPage() {
               fulfillment, and bids.
             </li>
             <li>
-              Tracking Passport stamps, XP, levels, and Republic achievements.
+              Tracking Passport stamps, badges, Tokens, and Republic achievements.
             </li>
             <li>
               Providing transactional notifications, including booking
