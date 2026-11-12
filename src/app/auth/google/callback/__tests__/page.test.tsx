@@ -1,6 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 import GoogleAuthCallbackPage from "../page";
+import {
+  ACCOUNT_NOT_LINKED,
+  ACCOUNT_NOT_LINKED_MESSAGE,
+} from "@/shared/auth/social-errors";
 
 const mocks = vi.hoisted(() => ({
   params: {} as Record<string, string>,
@@ -50,6 +54,30 @@ describe("GoogleAuthCallbackPage", () => {
     await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"));
     expect(mocks.refreshSession).not.toHaveBeenCalled();
     expect(mocks.toastError).toHaveBeenCalled();
+  });
+
+  it("explains account_not_linked instead of showing the raw code", async () => {
+    mocks.params = { error: ACCOUNT_NOT_LINKED };
+
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"));
+    expect(mocks.toastError).toHaveBeenCalledWith(
+      ACCOUNT_NOT_LINKED_MESSAGE,
+      expect.objectContaining({ duration: expect.any(Number) }),
+    );
+  });
+
+  it("keeps the code in the message for other errors", async () => {
+    mocks.params = { error: "access_denied" };
+
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() =>
+      expect(mocks.toastError).toHaveBeenCalledWith(
+        "Google sign-in failed (access_denied). Please try again.",
+      ),
+    );
   });
 
   it("redirects home when no session came back", async () => {
