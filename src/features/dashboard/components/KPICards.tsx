@@ -53,14 +53,19 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
           key={kpi.id}
           className="bg-surface/80 backdrop-blur border border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 relative overflow-hidden group"
         >
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-20 group-hover:opacity-30 transition-opacity">
+          <div
+            aria-hidden="true"
+            className={`absolute top-3 right-3 sm:top-4 sm:right-4 h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center ${kpi.iconBg}`}
+          >
             <span
-              className={`material-symbols-outlined text-3xl sm:text-4xl lg:text-5xl ${kpi.iconColor}`}
+              className={`material-symbols-outlined text-[20px] sm:text-[22px] ${kpi.iconColor}`}
             >
               {kpi.icon}
             </span>
           </div>
-          <p className="text-white/50 text-xs sm:text-sm mb-1">{kpi.label}</p>
+          <p className="text-white/50 text-xs sm:text-sm mb-1 pr-12">
+            {kpi.label}
+          </p>
           <h3 className="text-2xl sm:text-3xl font-display font-bold mb-2 sm:mb-3">
             {kpi.value}
           </h3>
