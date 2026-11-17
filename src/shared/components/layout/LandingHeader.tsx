@@ -1,0 +1,255 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
+import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
+import { Badge } from "@/shared/components/ui/badge";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetTitle,
+  SheetTrigger,
+} from "@/shared/components/ui/sheet";
+import { LOGO_SRC } from "@/shared/lib/assets";
+import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
+
+interface LandingHeaderProps {
+  /** Optional — defaults to the auth store's own `openLogin`, so a server
+   * component can render this with no props at all (it can't pass a
+   * closure across the server/client boundary the way a caller that's
+   * already a client component can). */
+  onSignIn?: () => void;
+  /** When provided, renders an inline search input in place of the search icon. */
+  search?: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+  };
+}
+
+// Signed-out visitors get the landing page's own nav; signed-in users get the
+// app's (APP_NAV, the same places as the mobile bottom nav). On small screens
+// the landing links open from the menu button.
+const LANDING_TABS = [
+  { label: "Find events", href: "/#events" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "List your business", href: "/#earn" },
+];
+
+export default function LandingHeader({
+  onSignIn,
+  search,
+}: LandingHeaderProps) {
+  const { isAuthenticated, isLoading, openLogin, openSignup } = useAuthStore();
+  const handleSignIn = onSignIn ?? openLogin;
+  const [menuOpen, setMenuOpen] = useState(false);
+  // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
+  const navTabs = isLoading ? [] : isAuthenticated ? APP_NAV : LANDING_TABS;
+  const pathname = usePathname();
+  const isTabActive = (href: string) => isNavActive(pathname, href);
+
+  return (
+    <>
+      {/* Top Header */}
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 pt-2 sm:pt-6 transition-all duration-300"
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.45, ease: [0, 0, 0.2, 1] }}
+      >
+        <div className="mx-auto max-w-7xl px-3 sm:px-4">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-12 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+            {/* Logo */}
+            <Link
+              href="/"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer relative shrink-0"
+            >
+              <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden shrink-0">
+                <Image
+                  src={LOGO_SRC}
+                  alt="FoxPassport Logo"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                />
+              </div>
+              <div className="relative">
+                {/* Not a heading: the page's own h1 comes first in the outline. */}
+                <span className="block text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                  FoxPassport
+                </span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
+              </div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
+              {navTabs.map((tab) => {
+                const active = isTabActive(tab.href);
+                return (
+                  <div key={tab.href} className="relative">
+                    <Link
+                      href={tab.href}
+                      className={
+                        // px-4 below xl: five app tabs plus the search box
+                        // don't fit a 1024px header at px-6.
+                        active
+                          ? "px-4 xl:px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
+                          : "px-4 xl:px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+                      }
+                    >
+                      {tab.label}
+                    </Link>
+                    {/* "Soon"-style corner flag — same treatment platforms use
+                        to mark a feature as early/experimental, just labeled
+                        Beta here instead. */}
+                    {tab.href === "/republic" && (
+                      <Badge
+                        variant="partner"
+                        icon={false}
+                        // The badge's own height (~19px from its py-1 +
+                        // text-[9px]) is taller than a -top-3 (12px) offset
+                        // can clear, so its bottom edge dipped back down
+                        // into the pill it's meant to float above.
+                        // -top-6 (24px) clears it with a bit of margin.
+                        className="pointer-events-none absolute -top-6 -right-1 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
+                      >
+                        Beta Community
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              {/* Inline search input — only rendered where a caller (e.g.
+                  /search) actually integrates it via the `search` prop. */}
+              {search && (
+                <div className="relative flex-1 min-w-0 sm:max-w-55 md:max-w-xs">
+                  <span
+                    aria-hidden="true"
+                    className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[16px] pointer-events-none"
+                  >
+                    search
+                  </span>
+                  <input
+                    type="text"
+                    aria-label={search.placeholder ?? "Search"}
+                    value={search.value}
+                    onChange={(e) => search.onChange(e.target.value)}
+                    placeholder={search.placeholder ?? "Search anything..."}
+                    className="w-full bg-white/6 border border-white/10 rounded-full py-1.5 sm:py-2 pl-10 pr-3 text-xs sm:text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-accent/40 focus:bg-white/10 transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
+              {/* Not while the store hydrates: it flashed for signed-in users. */}
+              {!isLoading && !isAuthenticated && (
+                <button
+                  onClick={handleSignIn}
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black transition-all duration-300 group overflow-hidden relative cursor-pointer"
+                >
+                  <span className="relative z-10">Sign In</span>
+                  <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                </button>
+              )}
+              {/* New visitors are who this header is for, so sign-up gets the
+                  accent. From sm up; on a phone it is in the menu. */}
+              {!isLoading && !isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={openSignup}
+                  className="hidden sm:flex items-center rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                >
+                  Sign up
+                </button>
+              )}
+              {isAuthenticated && (
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <NotificationBell />
+                  <UserMenuButton onSignIn={handleSignIn} />
+                </div>
+              )}
+
+              {/* Small screens, signed out: the landing links, which the
+                  desktop nav shows inline. Signed-in users have the bottom nav. */}
+              {!isLoading && !isAuthenticated && (
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open menu"
+                      className="lg:hidden flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 sm:bg-white/5 border border-white/15 text-white hover:bg-white/15 transition-colors cursor-pointer"
+                    >
+                      <span
+                        aria-hidden
+                        className="material-symbols-outlined text-[22px]"
+                      >
+                        menu
+                      </span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    aria-describedby={undefined}
+                    className="bg-canvas border-white/10 text-white"
+                  >
+                    <SheetTitle className="px-6 pt-6 text-lg font-display font-bold text-white">
+                      Menu
+                    </SheetTitle>
+                    <nav className="flex flex-col gap-1 px-3">
+                      {LANDING_TABS.map((tab) => (
+                        <SheetClose asChild key={tab.href}>
+                          <Link
+                            href={tab.href}
+                            className="rounded-xl px-3 py-3 text-base font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            {tab.label}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </nav>
+                    <SheetFooter className="p-6 gap-2">
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={openSignup}
+                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                        >
+                          Sign up
+                        </button>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={handleSignIn}
+                          className="w-full rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          Sign In
+                        </button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Mobile floating capsule bottom nav */}
+      <MobileBottomNav />
+    </>
+  );
+}
