@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
 import { Building2, Phone, MapPin, Hash, AlignLeft } from "lucide-react";
 import Link from "next/link";
 import { KycDocumentSection, FOXER_KYC_DOCUMENTS } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
 import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
+import { TinField } from "@/shared/components/ui/TinField";
+import { PhoneField } from "@/shared/components/ui/PhoneField";
+import {
+  CountryField,
+  useCountryName,
+} from "@/shared/components/ui/CountryField";
+import { formatPhone, rehomePhone } from "@/shared/lib/phone";
 
 const VENUE_CATEGORY_OPTIONS = [
   { value: "indoor", label: "Indoor" },
@@ -31,9 +38,13 @@ export default function MayorApplicationClient() {
 
   const [formData, setFormData] = useState({
     businessName: "",
+    // E.164 (`+639171234567`), from PhoneField.
     contactNumber: "",
     address: "",
     tinNumber: "",
+    // ISO code of the business's country (CountryField). It sets the
+    // contact number's and the TIN's format, and is stored as the TIN's.
+    tinCountry: "",
     description: "",
     validId1FileId: "",
     nbiFileId: "",
@@ -46,6 +57,31 @@ export default function MayorApplicationClient() {
   const handleFileUpload = (field: string, fileId: string) => {
     setFormData((prev) => ({ ...prev, [field]: fileId }));
   };
+
+  // One country for the form: the contact number keeps its digits under the
+  // new calling code; the TIN was masked for the old country, so it clears.
+  const setCountry = useCallback(
+    (country: string) =>
+      setFormData((prev) => ({
+        ...prev,
+        tinCountry: country,
+        contactNumber: prev.tinCountry
+          ? rehomePhone(prev.contactNumber, prev.tinCountry, country)
+          : prev.contactNumber,
+        tinNumber: prev.tinCountry ? "" : prev.tinNumber,
+      })),
+    [],
+  );
+  const countryName = useCountryName(formData.tinCountry);
+  const setContactNumber = useCallback(
+    (contactNumber: string) =>
+      setFormData((prev) => ({ ...prev, contactNumber })),
+    [],
+  );
+  const setTinNumber = useCallback(
+    (tinNumber: string) => setFormData((prev) => ({ ...prev, tinNumber })),
+    [],
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -101,7 +137,11 @@ export default function MayorApplicationClient() {
       }
       summary={[
         { label: "Business / venue name", value: formData.businessName },
-        { label: "Contact number", value: formData.contactNumber },
+        { label: "Country", value: countryName },
+        {
+          label: "Contact number",
+          value: formatPhone(formData.contactNumber),
+        },
         { label: "Address", value: formData.address },
         { label: "TIN number", value: formData.tinNumber },
         { label: "Description", value: formData.description },
@@ -143,23 +183,24 @@ export default function MayorApplicationClient() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className={LABEL}>Contact Number *</label>
-          <div className="relative">
-            <div className={ICON}>
-              <Phone size={18} />
-            </div>
-            <input
-              required
-              type="tel"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              className={INPUT}
-              placeholder="+63 900 000 0000"
-            />
-          </div>
-        </div>
+        <CountryField
+          value={formData.tinCountry}
+          onChange={setCountry}
+          labelClassName={LABEL}
+          hint="Sets the format of your contact number and TIN."
+        />
+
+        <PhoneField
+          required
+          label="Contact Number"
+          country={formData.tinCountry}
+          countryName={countryName}
+          value={formData.contactNumber}
+          onChange={setContactNumber}
+          icon={<Phone size={18} />}
+          labelClassName={LABEL}
+          inputClassName={INPUT}
+        />
 
         <div className="space-y-2">
           <label className={LABEL}>Complete Address *</label>
@@ -179,23 +220,16 @@ export default function MayorApplicationClient() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className={LABEL}>TIN Number *</label>
-          <div className="relative">
-            <div className={ICON}>
-              <Hash size={18} />
-            </div>
-            <input
-              required
-              type="text"
-              name="tinNumber"
-              value={formData.tinNumber}
-              onChange={handleChange}
-              className={INPUT}
-              placeholder="000-000-000-000"
-            />
-          </div>
-        </div>
+        <TinField
+          required
+          country={formData.tinCountry}
+          countryName={countryName}
+          value={formData.tinNumber}
+          onChange={setTinNumber}
+          icon={<Hash size={18} />}
+          labelClassName={LABEL}
+          inputClassName={INPUT}
+        />
 
         <div className="space-y-2">
           <label className={LABEL}>Description (Optional)</label>
