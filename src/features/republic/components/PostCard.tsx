@@ -293,8 +293,11 @@ export function PostCard({
       : content;
 
   return (
+    // The blur below makes each card its own stacking context, so a menu
+    // inside it can't rise above the next card on its own. While any menu in
+    // the card is open (aria-expanded), lift the whole card instead.
     <article
-      className={`relative w-full rounded-2xl transition-all duration-300 ${
+      className={`relative w-full rounded-2xl transition-all duration-300 has-[[aria-expanded=true]]:z-20 ${
         isPartnerPost
           ? "bg-gradient-to-b from-gold-tint via-zinc-900/90 to-zinc-900 border-2 border-gold-edge shadow-[0_4px_30px_rgba(201,160,74,0.18)]"
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
