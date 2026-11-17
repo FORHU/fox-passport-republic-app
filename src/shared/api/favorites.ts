@@ -1,9 +1,12 @@
 ﻿import api from "@/shared/lib/axios";
 
+/** What a favourite points at. A "foxer" favourite's `targetId` is the Foxer's user id. */
+export type FavoriteType = "venue" | "event" | "foxer";
+
 export interface Favorite {
   id: string;
   targetId: string;
-  type: "venue" | "event";
+  type: FavoriteType;
   createdAt: string;
   venue?: {
     id: string;
@@ -22,6 +25,14 @@ export interface Favorite {
     price?: number | string | null;
     images?: { imageUrl?: string; url?: string; isPrimary?: boolean }[];
   };
+  foxer?: {
+    id: string;
+    name: string;
+    imgId?: string | null;
+    city?: string | null;
+    state?: string | null;
+    roleType?: string[];
+  };
 }
 
 export const getUserFavorites = async (userId: string): Promise<Favorite[]> => {
@@ -31,7 +42,7 @@ export const getUserFavorites = async (userId: string): Promise<Favorite[]> => {
 
 export const checkFavorite = async (
   targetId: string,
-  type: string,
+  type: FavoriteType,
 ): Promise<{ isFavorited: boolean; favoriteId?: string }> => {
   const res = await api.get("/favorites/check", { params: { targetId, type } });
   return res.data.data || { isFavorited: false };
@@ -39,7 +50,7 @@ export const checkFavorite = async (
 
 export const addFavorite = async (
   targetId: string,
-  type: "venue" | "event",
+  type: FavoriteType,
 ): Promise<Favorite> => {
   const res = await api.post("/favorites/add", { targetId, type });
   return res.data.data;
@@ -47,7 +58,7 @@ export const addFavorite = async (
 
 export const removeFavoriteByListing = async (
   targetId: string,
-  type: "venue" | "event",
+  type: FavoriteType,
 ): Promise<void> => {
   await api.delete("/favorites/remove/listing", { data: { targetId, type } });
 };

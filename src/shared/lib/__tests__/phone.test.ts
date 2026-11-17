@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { countryOfPhone, phoneSchema, splitPhone } from "../phone";
+import {
+  countryOfPhone,
+  formatPhone,
+  phoneExample,
+  phoneSchema,
+  rehomePhone,
+  splitPhone,
+  toE164,
+} from "../phone";
 
 // Mirrors the API's PUT /profile cases (tests/profile.update.spec.ts).
 const PROJECT = new Set(["PH", "US", "GB", "DO"]);
@@ -73,5 +81,45 @@ describe("countryOfPhone", () => {
   it("names the country only when the number carries its own +code", () => {
     expect(countryOfPhone("+44 20 7946 0958")).toBe("GB");
     expect(countryOfPhone("0917 123 4567")).toBeUndefined();
+  });
+});
+
+// The phone inputs (react-phone-number-input) show numbers for the picked
+// country; these feed them.
+describe("phoneExample", () => {
+  it("gives the country's example mobile number without its +code", () => {
+    expect(phoneExample("PH")).toMatch(/^9\d\d \d{3} \d{4}$/);
+    expect(phoneExample("US")).toMatch(/^\d{3} \d{3} \d{4}$/);
+    expect(phoneExample("GB")).toMatch(/^7\d{3} \d{6}$/);
+  });
+
+  it("gives nothing for a country with no numbering", () => {
+    expect(phoneExample("AQ")).toBe("");
+    expect(phoneExample("")).toBe("");
+  });
+});
+
+describe("toE164", () => {
+  it("keeps E.164 and reads a pre-E.164 number as Philippine", () => {
+    expect(toE164("+14155550132")).toBe("+14155550132");
+    expect(toE164("09171234567")).toBe("+639171234567");
+    expect(toE164("")).toBe("");
+    expect(toE164("not a number")).toBe("");
+  });
+});
+
+describe("rehomePhone", () => {
+  it("keeps the typed digits under the new country code", () => {
+    expect(rehomePhone("+639171234567", "PH", "US")).toBe("+19171234567");
+    // Half a number too.
+    expect(rehomePhone("+63917", "PH", "GB")).toBe("+44917");
+    expect(rehomePhone("", "PH", "US")).toBe("");
+  });
+});
+
+describe("formatPhone", () => {
+  it("shows E.164 in international format", () => {
+    expect(formatPhone("+639171234567")).toBe("+63 917 123 4567");
+    expect(formatPhone("")).toBe("");
   });
 });

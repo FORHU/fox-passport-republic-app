@@ -37,6 +37,38 @@ export async function fetchCountries(): Promise<GeoCountry[]> {
   return res.data?.data ?? [];
 }
 
+/** One accepted TIN format of a country — see the API's utils/tax-id-formats. */
+export interface TinFormat {
+  label: string;
+  /** react-imask pattern: `0` digit, `a` letter, `*` either; "" = no mask. */
+  mask: string;
+  example: string;
+  /** Regex source, on the value uppercased without spaces; groups = compact. */
+  pattern: string;
+  /** Stricter regex source on the compact value, or null. */
+  rule: string | null;
+}
+
+export interface TinFormats {
+  /** false where the country issues no TIN: the field is optional there. */
+  issuesTin: boolean;
+  /** The API's message for a TIN that fits none of the formats. */
+  message: string;
+  formats: TinFormat[];
+}
+
+/** Bump with any change to the API's TIN table (the API caches it a day). */
+const TIN_DATA_VERSION = "1";
+
+export async function fetchTinFormats(
+  countryCode: string,
+): Promise<TinFormats> {
+  const res = await api.get(`/locations/countries/${countryCode}/tin-formats`, {
+    params: { v: TIN_DATA_VERSION },
+  });
+  return res.data?.data;
+}
+
 export async function fetchStates(countryCode: string): Promise<GeoState[]> {
   const res = await api.get(`/locations/countries/${countryCode}/states`, {
     params: { v: GEO_DATA_VERSION },

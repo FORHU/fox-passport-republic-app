@@ -34,12 +34,7 @@ import { getApiErrorMessage, uploadErrorMessage } from "@/shared/lib/apiError";
 import { POST_MAX, POST_MESSAGE } from "@/shared/lib/limits";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
-
-const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
-const isVideoUrl = (url: string) => {
-  const clean = url.split("?")[0].toLowerCase();
-  return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
-};
+import { isVideoUrl } from "@/shared/lib/media";
 
 interface PendingTag extends PendingMediaTag {
   mediaUrl: string;

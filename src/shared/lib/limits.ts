@@ -10,6 +10,8 @@ export const EVENT_DESCRIPTION_MAX = 5000;
 export const POST_MAX = 5000;
 export const QUANTITY_MAX = 100_000;
 export const PRICE_MAX = 9_999_999.99;
+// Free-text search boxes (the Foxers search), matching the API's cap on `q`.
+export const SEARCH_QUERY_MAX = 200;
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
@@ -86,3 +88,22 @@ export const firstLimitError = (v: {
     : null) ??
   (v.quantity !== undefined ? quantityError(v.quantity) : null) ??
   (v.price !== undefined ? priceError(v.price) : null);
+
+// The search page's Max Price filter. Listings can be priced up to PRICE_MAX,
+// so that is the highest useful cap; the API applies the same one.
+export const MAX_PRICE_FILTER_MESSAGE = `Max price can be up to ${fmt(PRICE_MAX)}.`;
+
+/** Max Price filter input: the message to show, or null when it can be applied. */
+export const maxPriceError = (raw: string) => {
+  if (raw.trim() === "") return null;
+  const value = Number(raw);
+  if (Number.isFinite(value) && value > PRICE_MAX) return MAX_PRICE_FILTER_MESSAGE;
+  return priceError(raw);
+};
+
+/** A `maxPrice` URL param made safe: a valid price above 0, or "" for no filter. */
+export const maxPriceParam = (raw: string | null | undefined) => {
+  if (!raw || maxPriceError(raw) !== null) return "";
+  const value = Number(raw);
+  return value > 0 ? String(value) : "";
+};

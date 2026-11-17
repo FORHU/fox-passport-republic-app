@@ -7,7 +7,6 @@ import {
   Award,
   Handshake,
   MessageCircle,
-  PlayCircle,
   Pin,
   Repeat2,
   Send,
@@ -32,12 +31,8 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
 import { Badge } from "@/shared/components/ui/badge";
 import { Money } from "@/shared/components/ui/Money";
-
-const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
-const isVideoUrl = (url: string) => {
-  const clean = url.split("?")[0].toLowerCase();
-  return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
-};
+import { MediaTile, VideoPlayBadge } from "@/shared/components/ui/MediaTile";
+import { isVideoUrl } from "@/shared/lib/media";
 
 // Single-choice voting UI — tapping an option you already picked toggles
 // your vote off (see FeedRepo.voteOnPoll), tapping another moves it there.
@@ -293,8 +288,11 @@ export function PostCard({
       : content;
 
   return (
+    // The blur below makes each card its own stacking context, so a menu
+    // inside it can't rise above the next card on its own. While any menu in
+    // the card is open (aria-expanded), lift the whole card instead.
     <article
-      className={`relative w-full rounded-2xl transition-all duration-300 ${
+      className={`relative w-full rounded-2xl transition-all duration-300 has-[[aria-expanded=true]]:z-20 ${
         isPartnerPost
           ? "bg-gradient-to-b from-gold-tint via-zinc-900/90 to-zinc-900 border-2 border-gold-edge shadow-[0_4px_30px_rgba(201,160,74,0.18)]"
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
@@ -492,17 +490,23 @@ export function PostCard({
                       : "aspect-square"
                 }`}
               >
-                {isVideoUrl(url) ? (
-                  <video
-                    src={url}
-                    muted
-                    className={`${
-                      single
-                        ? "block w-full h-auto max-h-[min(80vh,720px)] object-contain"
-                        : "w-full h-full object-cover"
-                    } transition-transform duration-300 group-hover:scale-105`}
+                {!single ? (
+                  <MediaTile
+                    url={url}
+                    sizes="(max-width: 1024px) 50vw, 340px"
+                    className="transition-transform duration-300 group-hover:scale-105"
+                    showPlayBadge={hiddenCount <= 0}
                   />
-                ) : single ? (
+                ) : isVideoUrl(url) ? (
+                  <>
+                    <video
+                      src={url}
+                      muted
+                      className="block w-full h-auto max-h-[min(80vh,720px)] object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <VideoPlayBadge />
+                  </>
+                ) : (
                   <Image
                     src={url}
                     alt=""
@@ -511,24 +515,6 @@ export function PostCard({
                     sizes="(max-width: 1024px) 100vw, 680px"
                     className="block w-full h-auto max-h-[min(80vh,720px)] object-contain transition-transform duration-300 group-hover:scale-105"
                   />
-                ) : (
-                  <Image
-                    src={url}
-                    alt=""
-                    fill
-                    sizes="(max-width: 1024px) 50vw, 340px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                )}
-                {isVideoUrl(url) && hiddenCount <= 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="h-10 w-10 rounded-full bg-black/50 flex items-center justify-center">
-                      <PlayCircle
-                        className="h-6 w-6 text-white"
-                        strokeWidth={2}
-                      />
-                    </div>
-                  </div>
                 )}
                 <MediaTagOverlay
                   tags={post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []}

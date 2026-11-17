@@ -38,8 +38,20 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/shared/api/geo", () => ({
   fetchCountries: async () => [
     { code: "AQ", name: "Antarctica", flag: "🇦🇶", phoneCode: "", currency: "" },
-    { code: "PH", name: "Philippines", flag: "🇵🇭", phoneCode: "63", currency: "PHP" },
-    { code: "US", name: "United States", flag: "🇺🇸", phoneCode: "1", currency: "USD" },
+    {
+      code: "PH",
+      name: "Philippines",
+      flag: "🇵🇭",
+      phoneCode: "63",
+      currency: "PHP",
+    },
+    {
+      code: "US",
+      name: "United States",
+      flag: "🇺🇸",
+      phoneCode: "1",
+      currency: "USD",
+    },
   ],
 }));
 
@@ -65,9 +77,7 @@ describe("ProfileSettingsClient phone field", () => {
 
   it("shows a saved number as its country and grouped digits", async () => {
     renderSettings();
-    expect(
-      await screen.findByText("🇵🇭 Philippines (+63)"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("🇵🇭 Philippines (+63)")).toBeInTheDocument();
     expect(phoneInput()).toHaveValue("917 123 4567");
   });
 
@@ -97,13 +107,46 @@ describe("ProfileSettingsClient phone field", () => {
     );
   });
 
+  it("formats as typed and shows the picked country's example", async () => {
+    profile.current = { name: "Ana", username: "ana", phone: "" };
+    renderSettings();
+    await screen.findByText("🇵🇭 Philippines (+63)");
+    expect(phoneInput().getAttribute("placeholder")).toMatch(
+      /^9\d\d \d{3} \d{4}$/,
+    );
+    fireEvent.change(phoneInput(), { target: { value: "9171234567" } });
+    expect(phoneInput()).toHaveValue("917 123 4567");
+    fireEvent.click(screen.getByText("🇵🇭 Philippines (+63)"));
+    fireEvent.click(await screen.findByText("🇺🇸 United States (+1)"));
+    // The digits stay, shown in the new country's grouping.
+    await waitFor(() => expect(phoneInput()).toHaveValue("917 123 4567"));
+    expect(phoneInput().getAttribute("placeholder")).toMatch(
+      /^\d{3} \d{3} \d{4}$/,
+    );
+  });
+
+  it("starts an empty phone on the profile's own country", async () => {
+    profile.current = {
+      name: "Ana",
+      username: "ana",
+      phone: "",
+      country: "United States",
+    };
+    renderSettings();
+    expect(
+      await screen.findByText("🇺🇸 United States (+1)"),
+    ).toBeInTheDocument();
+  });
+
   it("shows an error and does not save an invalid number", async () => {
     renderSettings();
     await screen.findByText("🇵🇭 Philippines (+63)");
     fireEvent.change(phoneInput(), { target: { value: "12345678" } });
     save();
     expect(
-      await screen.findAllByText(/valid phone number for the selected country/i),
+      await screen.findAllByText(
+        /valid phone number for the selected country/i,
+      ),
     ).not.toHaveLength(0);
     expect(updateProfile).not.toHaveBeenCalled();
   });

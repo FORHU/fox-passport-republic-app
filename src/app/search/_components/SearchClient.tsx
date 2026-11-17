@@ -35,7 +35,9 @@ import {
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Money } from "@/shared/components/ui/Money";
+import { maxPriceParam } from "@/shared/lib/limits";
 import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
+import { SEARCH_QUERY_MAX } from "@/shared/lib/limits";
 
 type TypeKey = "event_foxer" | "provider" | "gear" | "service";
 /** "" is the All tab. */
@@ -234,14 +236,17 @@ export default function SearchClient() {
   const router = useRouter();
   const paramsStr = searchParams?.toString() || "";
 
-  const q = searchParams?.get("q") || "";
+  // Cut to the search box's limit, so a long `q` in a shared or hand-edited
+  // link can't overflow the box, the chip or the API call.
+  const q = (searchParams?.get("q") || "").slice(0, SEARCH_QUERY_MAX);
   const category = searchParams?.get("category") || "";
   const specialty = searchParams?.get("specialty") || "";
   const { data: specialties = [] } = useProviderSpecialties();
   // Filter on `city` only. `label` is the old map picker's display text — a
   // whole place name that matched no stored city.
   const city = searchParams?.get("city") || "";
-  const maxPrice = searchParams?.get("maxPrice") || "";
+  // A bad `maxPrice` in the URL (negative, over the cap, not a number) is ignored.
+  const maxPrice = maxPriceParam(searchParams?.get("maxPrice"));
   const typeParam = searchParams?.get("type") ?? null;
   // An unknown type (e.g. the retired "event_template") is the All tab.
   const view: ViewKey = isType(typeParam) ? typeParam : "";
@@ -354,11 +359,13 @@ export default function SearchClient() {
     setParams(Object.fromEntries(FILTER_PARAMS.map((k) => [k, undefined])));
   };
 
-  // `name` is what the remove button says to a screen reader.
+  // `name` is what the remove button says to a screen reader; `title` is the
+  // full text, shown on hover when a long label is cut short.
   const chips: {
     key: string;
     name: string;
     label: React.ReactNode;
+    title?: string;
     remove: () => void;
   }[] = [];
   if (q)
@@ -366,6 +373,7 @@ export default function SearchClient() {
       key: "q",
       name: `search "${q}"`,
       label: <>&ldquo;{q}&rdquo;</>,
+      title: q,
       remove: () => {
         setSearchQuery("");
         setPushedQ("");
@@ -391,6 +399,7 @@ export default function SearchClient() {
       key: "city",
       name: city,
       label: city,
+      title: city,
       remove: () =>
         setParams({
           city: undefined,
@@ -475,6 +484,7 @@ export default function SearchClient() {
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              maxLength={SEARCH_QUERY_MAX}
               placeholder="Search by name, service or city"
               autoComplete="off"
               className="h-12 w-full rounded-full border border-white/15 bg-white/5 pl-12 pr-12 text-base text-white placeholder:text-white/50 focus:border-accent/60 focus:bg-white/10 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
@@ -602,11 +612,15 @@ export default function SearchClient() {
               )}
 
               {chips.length > 0 && (
-                <ul aria-label="Active filters" className="flex flex-wrap items-center gap-2">
+                <ul aria-label="Active filters" className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
                   {chips.map((chip) => (
-                    <li key={chip.key}>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 py-1 pl-3 pr-1 text-sm text-white">
-                        {chip.label}
+                    <li key={chip.key} className="min-w-0 max-w-full">
+                      <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 py-1 pl-3 pr-1 text-sm text-white">
+                        {/* A long search or city is cut with an ellipsis so the
+                            chip never pushes the page wider than the screen. */}
+                        <span title={chip.title} className="min-w-0 max-w-64 truncate sm:max-w-xs">
+                          {chip.label}
+                        </span>
                         <button
                           type="button"
                           onClick={chip.remove}
