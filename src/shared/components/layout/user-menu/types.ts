@@ -1,5 +1,5 @@
 import { FOXER_ROLES } from "@/shared/constants/roles";
-import { Users, Building2, Coins } from "lucide-react";
+import { Users, Building2, Handshake } from "lucide-react";
 import type { User } from "@/shared/auth/types";
 import { canAccessCreatorDashboard } from "@/shared/lib/dashboard-path";
 
@@ -79,7 +79,8 @@ export const ROLE_DEFS: RoleDef[] = [
     // blocked with no way forward.
     applyHref: "/foxer/apply-investor",
     description: "Equipment depots, capital map & inventory",
-    icon: Coins,
+    // Not Coins: that's the currency switcher in the same menu.
+    icon: Handshake,
     emoji: "💎",
     canOpen: (user) => (user.roleType ?? []).includes("investor"),
   },

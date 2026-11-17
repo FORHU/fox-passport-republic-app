@@ -2,20 +2,21 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+// Each row has its own icon: a shared one makes two rows read as one place.
 import {
+  BadgeCheck,
   Bell,
   CalendarDays,
   Heart,
-  Briefcase,
+  IdCard,
+  Luggage,
   MessageSquare,
-  User,
   Settings,
   HelpCircle,
   UserPlus,
   LogOut,
   RefreshCw,
   QrCode,
-  ShieldCheck,
   Smartphone,
 } from "lucide-react";
 import { useLogout } from "@/shared/auth/useLogout";
@@ -48,7 +49,7 @@ export function UserMenuNavLinks({
       ? [
           {
             label: "My Public Passport",
-            icon: User,
+            icon: IdCard,
             href: `/user/${userId}`,
           },
         ]
@@ -56,11 +57,12 @@ export function UserMenuNavLinks({
     { label: "Wishlists", icon: Heart, href: "/wishlists" },
     {
       label: "Trips",
-      icon: Briefcase,
+      icon: Luggage,
       href: "/trips",
       comingSoon: true,
     },
-    { label: "My Bookings", icon: Briefcase, href: "/booking" },
+    // No "My Bookings": Bookings is in the top bar, the bottom nav, and the
+    // "Go to" section on dashboard headers.
     // Every role's calendar — bookings, hosted events, venue dates, jobs.
     { label: "Calendar", icon: CalendarDays, href: "/calendar" },
     {
@@ -82,7 +84,8 @@ export function UserMenuNavLinks({
       href: "/user/settings",
     },
     // Email check for booking, and the status of role-application documents.
-    { label: "Verification", icon: ShieldCheck, href: "/kyc" },
+    // Not ShieldCheck: that's the Admin Dashboard row.
+    { label: "Verification", icon: BadgeCheck, href: "/kyc" },
     {
       label: "Help Center",
       icon: HelpCircle,
