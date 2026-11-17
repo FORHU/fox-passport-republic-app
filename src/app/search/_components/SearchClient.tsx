@@ -35,6 +35,7 @@ import {
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Money } from "@/shared/components/ui/Money";
+import { maxPriceParam } from "@/shared/lib/limits";
 import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
 import { SEARCH_QUERY_MAX } from "@/shared/lib/limits";
 
@@ -244,7 +245,8 @@ export default function SearchClient() {
   // Filter on `city` only. `label` is the old map picker's display text — a
   // whole place name that matched no stored city.
   const city = searchParams?.get("city") || "";
-  const maxPrice = searchParams?.get("maxPrice") || "";
+  // A bad `maxPrice` in the URL (negative, over the cap, not a number) is ignored.
+  const maxPrice = maxPriceParam(searchParams?.get("maxPrice"));
   const typeParam = searchParams?.get("type") ?? null;
   // An unknown type (e.g. the retired "event_template") is the All tab.
   const view: ViewKey = isType(typeParam) ? typeParam : "";

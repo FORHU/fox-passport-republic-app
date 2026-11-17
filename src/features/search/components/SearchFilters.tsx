@@ -6,6 +6,8 @@ import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocatio
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { Money } from "@/shared/components/ui/Money";
 import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
+import { PRICE_MAX, maxPriceError, maxPriceParam } from "@/shared/lib/limits";
+import { cn } from "@/shared/lib/utils";
 
 export const EVENT_KINDS = [
   { value: "", label: "Any kind of event" },
@@ -30,7 +32,10 @@ export const FILTER_PARAMS = [
   "lng",
 ] as const;
 
-const MAX_PRICE = 500000;
+// The slider covers the common range; typed values go up to PRICE_MAX.
+const SLIDER_MAX = 500_000;
+// Keys a number input accepts that a price can't use (exponent and sign).
+const BLOCKED_PRICE_KEYS = ["e", "E", "+", "-"];
 
 interface SearchFiltersProps {
   onClose?: () => void;
@@ -51,15 +56,17 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
   const country = searchParams?.get("country") || "";
   const city = searchParams?.get("city") || "";
 
+  // The applied max price; junk in the URL counts as no filter.
+  const appliedMaxPrice = maxPriceParam(searchParams?.get("maxPrice"));
+
   // Max price is typed, so it keeps a draft until it's committed.
-  const [maxPrice, setMaxPrice] = useState(
-    () => searchParams?.get("maxPrice") || "",
-  );
+  const [maxPrice, setMaxPrice] = useState(appliedMaxPrice);
   const [prevParamsStr, setPrevParamsStr] = useState(searchParamsStr);
   if (searchParamsStr !== prevParamsStr) {
     setPrevParamsStr(searchParamsStr);
-    setMaxPrice(searchParams?.get("maxPrice") || "");
+    setMaxPrice(appliedMaxPrice);
   }
+  const maxPriceMessage = maxPriceError(maxPrice);
 
   // A changed filter starts the results again from page 1.
   const updateParams = (updates: Record<string, string | undefined>) => {
@@ -72,12 +79,13 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
     router.push(`/search?${params.toString()}`, { scroll: false });
   };
 
+  // Only a valid price is applied. An invalid one stays in the box with its
+  // message, and the results keep the last applied filter.
   const commitMaxPrice = (raw: string) => {
-    const clamped =
-      raw === "" ? "" : String(Math.min(MAX_PRICE, Math.max(0, Number(raw))));
-    const next = clamped === "0" ? "" : clamped;
+    if (maxPriceError(raw)) return;
+    const next = maxPriceParam(raw);
     setMaxPrice(next);
-    updateParams({ maxPrice: next });
+    if (next !== appliedMaxPrice) updateParams({ maxPrice: next });
   };
 
   // Debounce while typing so filtering updates live without needing Enter/blur
@@ -92,7 +100,7 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
 
   // Country alone narrows nothing (results filter on city), so it isn't
   // counted; a city counts once.
-  const activeFiltersCount = [category, specialty, city, searchParams?.get("maxPrice")]
+  const activeFiltersCount = [category, specialty, city, appliedMaxPrice]
     .filter(Boolean).length;
 
   const labelClass =
@@ -178,19 +186,30 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
         <label htmlFor="filter-max-price" className={labelClass}>
           Max price:{" "}
           <span className="text-(--accent-text)">
-            {maxPrice ? <Money amount={maxPrice} /> : "Any"}
+            {maxPrice && !maxPriceMessage ? (
+              <Money amount={maxPrice} />
+            ) : appliedMaxPrice ? (
+              <Money amount={appliedMaxPrice} />
+            ) : (
+              "Any"
+            )}
           </span>
         </label>
         <input
           id="filter-max-price"
           type="number"
-          inputMode="numeric"
+          inputMode="decimal"
           min={0}
-          max={MAX_PRICE}
+          max={PRICE_MAX}
           step={1000}
           value={maxPrice}
           placeholder="Any"
-          aria-describedby="filter-max-price-help"
+          aria-invalid={maxPriceMessage ? true : undefined}
+          aria-describedby={
+            maxPriceMessage
+              ? "filter-max-price-error filter-max-price-help"
+              : "filter-max-price-help"
+          }
           onChange={(e) => onMaxPriceInput(e.target.value)}
           onBlur={(e) => {
             if (maxPriceDebounceRef.current)
@@ -198,20 +217,37 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
             commitMaxPrice(e.target.value);
           }}
           onKeyDown={(e) => {
+            if (BLOCKED_PRICE_KEYS.includes(e.key)) {
+              e.preventDefault();
+              return;
+            }
             if (e.key === "Enter") {
               if (maxPriceDebounceRef.current)
                 clearTimeout(maxPriceDebounceRef.current);
               commitMaxPrice((e.target as HTMLInputElement).value);
             }
           }}
-          className={`${inputClass} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+          className={cn(
+            inputClass,
+            "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+            maxPriceMessage && "border-red-400/60 focus:border-red-400",
+          )}
         />
+        {maxPriceMessage && (
+          <p
+            id="filter-max-price-error"
+            role="alert"
+            className="mt-1.5 text-xs text-red-400"
+          >
+            {maxPriceMessage}
+          </p>
+        )}
         <input
           type="range"
           min={0}
-          max={MAX_PRICE}
+          max={SLIDER_MAX}
           step={1000}
-          value={maxPrice || 0}
+          value={Math.min(SLIDER_MAX, Math.max(0, Number(maxPrice) || 0))}
           aria-label="Max price"
           aria-describedby="filter-max-price-help"
           onChange={(e) => setMaxPrice(e.target.value)}
@@ -225,7 +261,8 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
           className="mt-3 w-full accent-accent"
         />
         <p id="filter-max-price-help" className="mt-1.5 text-xs text-white/60">
-          Per booking, or per day where a listing is priced daily.
+          Up to <Money amount={PRICE_MAX} />. Per booking, or per day where a
+          listing is priced daily.
         </p>
       </div>
 
