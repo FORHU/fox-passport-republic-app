@@ -76,18 +76,13 @@ import {
 import { RoleBadges } from "@/shared/components/ui/RoleBadges";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
+import { isVideoUrl } from "@/shared/lib/media";
 
 // Hover-revealed "..." trigger on a message row, opening a tiny menu of
 // Reply/Forward/Delete — one component instead of separate always-visible
 // icon buttons, so a message row only ever shows one thing to hover, same
 // as Messenger's per-message overflow menu.
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "😠"];
-
-const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
-function isVideoUrl(url: string): boolean {
-  const clean = url.split("?")[0].toLowerCase();
-  return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
-}
 
 // A muted, controls-less preview for a video attachment thumbnail — the
 // actual playback happens in ImageLightbox once tapped, same as PostCard's
