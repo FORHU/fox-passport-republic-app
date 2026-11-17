@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
 import { categoryLabel } from "@/features/search/helpers/labels";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -124,6 +126,11 @@ function VenueCarousel({ images, name }: { images: string[]; name: string }) {
 
 function FoxerCard({ foxer }: { foxer: Foxer }) {
   const router = useRouter();
+  const { user } = useAuthStore();
+  const { isFavorited, toggleFavorite, isToggling } = useFavorites();
+  const saved = isFavorited(foxer.id, "foxer");
+  // You can't save yourself to your own wishlist.
+  const isSelf = user?.id === foxer.id;
 
   const isHost = foxer.roleType?.includes("eventFoxer");
   const hasTemplates = (foxer.eventTemplates?.length ?? 0) > 0;
@@ -287,19 +294,32 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         >
           Plan with {firstName}
         </button>
-        <button
-          type="button"
-          aria-label={`Favourite ${foxer.name}`}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-        >
-          <span aria-hidden className="material-symbols-outlined text-[18px]">
-            favorite
-          </span>
-        </button>
+        {!isSelf && (
+          <button
+            type="button"
+            aria-label={saved ? `Remove ${foxer.name}` : `Save ${foxer.name}`}
+            aria-pressed={saved}
+            disabled={isToggling}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite(foxer.id, { type: "foxer" });
+            }}
+            className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors disabled:cursor-wait disabled:opacity-60 ${
+              saved
+                ? "border-pink-500/40 bg-pink-500/10 text-pink-500 hover:bg-pink-500/20"
+                : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <span
+              aria-hidden
+              className="material-symbols-outlined text-[18px]"
+              style={saved ? { fontVariationSettings: "'FILL' 1" } : undefined}
+            >
+              {saved ? "favorite" : "favorite_border"}
+            </span>
+          </button>
+        )}
       </div>
     </article>
   );

@@ -1,15 +1,34 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
+import {
+  rememberPendingFavorite,
+  takePendingFavorite,
+} from "@/shared/auth/pendingFavorite";
 import {
   getUserFavorites,
   addFavorite,
   removeFavoriteByListing,
   Favorite,
+  FavoriteType,
 } from "@/shared/api/favorites";
 import { toast } from "sonner";
 
+interface FavoriteTarget {
+  targetId: string;
+  type: FavoriteType;
+}
+
+const matches = (f: Favorite, { targetId, type }: FavoriteTarget) =>
+  f.targetId === targetId && f.type === type;
+
+/**
+ * The viewer's favourites (venues, events and Foxers). `type` defaults to
+ * "venue", which is what every caller saved before Foxers and events joined.
+ */
 export const useFavorites = () => {
   const { user } = useAuthStore();
   const userId = user?.id as string | undefined;
@@ -22,25 +41,40 @@ export const useFavorites = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const isFavorited = (venueId: string) =>
-    favorites.some((f) => f.targetId === venueId && f.type === "venue");
+  // A save a signed-out user asked for: finish it once they're signed in.
+  // `takePendingFavorite` clears it as it reads, so of the many mounted
+  // instances only the first one acts. Adding is idempotent on the API.
+  useEffect(() => {
+    if (!userId) return;
+    const pending = takePendingFavorite();
+    if (!pending) return;
+    addFavorite(pending.targetId, pending.type)
+      .then(() => toast.success("Saved to wishlist"))
+      .catch(() => toast.error("Could not update favorites"))
+      .finally(() =>
+        queryClient.invalidateQueries({ queryKey: ["favorites", userId] }),
+      );
+  }, [userId, queryClient]);
+
+  const isFavorited = (targetId: string, type: FavoriteType = "venue") =>
+    favorites.some((f) => matches(f, { targetId, type }));
 
   const { mutate: toggle, isPending } = useMutation({
-    mutationFn: async (venueId: string) => {
-      if (isFavorited(venueId)) {
-        await removeFavoriteByListing(venueId, "venue");
+    mutationFn: async (target: FavoriteTarget) => {
+      if (isFavorited(target.targetId, target.type)) {
+        await removeFavoriteByListing(target.targetId, target.type);
       } else {
-        await addFavorite(venueId, "venue");
+        await addFavorite(target.targetId, target.type);
       }
     },
-    onMutate: async (venueId: string) => {
+    onMutate: async (target: FavoriteTarget) => {
       await queryClient.cancelQueries({ queryKey: ["favorites", userId] });
       const prev =
         queryClient.getQueryData<Favorite[]>(["favorites", userId]) ?? [];
-      if (isFavorited(venueId)) {
+      if (isFavorited(target.targetId, target.type)) {
         queryClient.setQueryData(
           ["favorites", userId],
-          prev.filter((f) => f.targetId !== venueId),
+          prev.filter((f) => !matches(f, target)),
         );
       } else {
         queryClient.setQueryData(
@@ -49,8 +83,8 @@ export const useFavorites = () => {
             ...prev,
             {
               id: "__optimistic__",
-              targetId: venueId,
-              type: "venue",
+              targetId: target.targetId,
+              type: target.type,
               createdAt: new Date().toISOString(),
             } as Favorite,
           ],
@@ -58,7 +92,7 @@ export const useFavorites = () => {
       }
       return { prev };
     },
-    onError: (_err, _venueId, context) => {
+    onError: (_err, _target, context) => {
       if (context?.prev) {
         queryClient.setQueryData(["favorites", userId], context.prev);
       }
@@ -70,14 +104,17 @@ export const useFavorites = () => {
   });
 
   const toggleFavorite = (
-    venueId: string,
-    options?: { onSuccess?: () => void },
+    targetId: string,
+    options?: { type?: FavoriteType; onSuccess?: () => void },
   ) => {
+    const type = options?.type ?? "venue";
     if (!userId) {
-      toast.error("Please log in to save venues");
+      // Signed out: sign in, come back here, and the save completes.
+      rememberPendingFavorite({ targetId, type });
+      signInThen(window.location.pathname + window.location.search);
       return;
     }
-    toggle(venueId, options);
+    toggle({ targetId, type }, { onSuccess: options?.onSuccess });
   };
 
   return {
