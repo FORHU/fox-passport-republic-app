@@ -356,3 +356,36 @@ describe("PublicCitizenProfileView post viewer", () => {
     );
   });
 });
+
+/**
+ * Your own profile links to your Passport (/user) and to Account settings
+ * (/user/settings). Other people's profiles show neither (app#312).
+ */
+describe("PublicCitizenProfileView own-profile actions", () => {
+  it("shows My Passport and Account settings on your own profile", async () => {
+    profile.current = makeProfile({ id: "viewer" });
+    renderProfile();
+
+    expect(
+      await screen.findByRole("link", { name: "Account settings" }),
+    ).toHaveAttribute("href", "/user/settings");
+    expect(screen.getByRole("link", { name: "My Passport" })).toHaveAttribute(
+      "href",
+      "/user",
+    );
+    expect(screen.queryByText(/my dashboard/i)).not.toBeInTheDocument();
+  });
+
+  it("shows neither on someone else's profile", async () => {
+    profile.current = makeProfile();
+    renderProfile();
+
+    await screen.findByRole("button", { name: /republic activity/i });
+    expect(
+      screen.queryByRole("link", { name: "Account settings" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "My Passport" }),
+    ).not.toBeInTheDocument();
+  });
+});

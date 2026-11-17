@@ -322,16 +322,34 @@ export default function PublicCitizenProfileView({
                   {renderBlockMenuButton?.(profile.id)}
                 </>
               )}
+              {/* Named and iconed like the "Passport" tab, which also opens /user. */}
               {isMe && (
-                <Link
-                  href="/user"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    manage_accounts
-                  </span>
-                  My Dashboard
-                </Link>
+                <>
+                  <Link
+                    href="/user"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <span
+                      className="material-symbols-outlined text-[16px]"
+                      aria-hidden="true"
+                    >
+                      person
+                    </span>
+                    My Passport
+                  </Link>
+                  <Link
+                    href="/user/settings"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <span
+                      className="material-symbols-outlined text-[16px]"
+                      aria-hidden="true"
+                    >
+                      settings
+                    </span>
+                    Account settings
+                  </Link>
+                </>
               )}
             </div>
           </div>
