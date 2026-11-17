@@ -64,7 +64,7 @@ export function PartnerEquipmentDepotCard({
       {/* Action Buttons — minmax(0,1fr) tracks so a button can actually
           shrink/truncate its label instead of forcing the grid (and this
           card's overflow-hidden) to clip content at the narrower md
-          breakpoint width (see RepublicLeftSidebar's w-64). */}
+          breakpoint width. */}
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
         {mapSlot ? (
           <button

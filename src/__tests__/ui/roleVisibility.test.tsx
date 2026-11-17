@@ -40,6 +40,7 @@ import { useCreatorNavLinks } from "@/features/dashboard/hooks/useCreatorNavLink
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import { isPartnerUser } from "@/shared/auth/roles";
+import { RepublicLeftSidebar } from "@/features/republic/components/RepublicLeftSidebar";
 import { ROLES } from "@/shared/data/roleCatalog";
 
 const signIn = (user: Record<string, unknown>) =>
@@ -166,5 +167,29 @@ describe("the Partner Foxer badge", () => {
 
   it("isn't for an admin without the investor role", () => {
     expect(isPartnerUser({ roleType: [], systemRole: "admin" })).toBe(false);
+  });
+});
+
+describe("the Republic feed's left sidebar", () => {
+  beforeEach(() => useAuthStore.getState().logout?.());
+
+  const renderSidebar = () =>
+    render(<RepublicLeftSidebar mapSlot={<div data-testid="map" />} />);
+
+  it("shows the Partner Resource Pool to an investor", () => {
+    signIn({ roleType: ["investor"], permissions: ["partnership:propose"] });
+    renderSidebar();
+    expect(screen.getByText("Partner Resource Pool")).toBeInTheDocument();
+  });
+
+  it("hides the Partner Resource Pool from a Foxer who isn't an investor", () => {
+    signIn({ roleType: ["eventFoxer"] });
+    renderSidebar();
+    expect(screen.queryByText("Partner Resource Pool")).not.toBeInTheDocument();
+  });
+
+  it("hides the Partner Resource Pool from a signed-out guest", () => {
+    renderSidebar();
+    expect(screen.queryByText("Partner Resource Pool")).not.toBeInTheDocument();
   });
 });
