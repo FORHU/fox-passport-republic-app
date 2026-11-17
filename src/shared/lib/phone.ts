@@ -1,8 +1,12 @@
 import { z } from "zod";
 import {
+  getCountryCallingCode,
+  getExampleNumber,
+  isSupportedCountry,
   parsePhoneNumberFromString,
   type CountryCode,
 } from "libphonenumber-js/max";
+import examples from "libphonenumber-js/examples.mobile.json";
 
 /**
  * Phone numbers, kept in step with the API's normalizePhone
@@ -24,10 +28,7 @@ export function normalizePhone(
   // The parser pulls a number out of free text ("<b>0917…</b>" parses), so
   // anything that isn't a phone character is refused before it gets there.
   if (!/^[\d\s()+.-]{1,30}$/.test(raw)) return null;
-  const parsed = parsePhoneNumberFromString(
-    raw,
-    defaultCountry as CountryCode,
-  );
+  const parsed = parsePhoneNumberFromString(raw, defaultCountry as CountryCode);
   return parsed?.isValid() &&
     parsed.country &&
     (!allowed || allowed.has(parsed.country))
@@ -53,6 +54,54 @@ export function splitPhone(saved: string): {
       .replace(`+${parsed.countryCallingCode}`, "")
       .trim(),
   };
+}
+
+/**
+ * A country's example mobile number as the phone inputs show it — international
+ * format without the `+code`, which the country picker shows: PH
+ * `905 123 4567`, US `201 555 0123`. "" for a country with no numbering.
+ */
+export function phoneExample(country: string): string {
+  if (!isSupportedCountry(country)) return "";
+  const example = getExampleNumber(country, examples);
+  if (!example) return "";
+  return example
+    .formatInternational()
+    .replace(`+${example.countryCallingCode}`, "")
+    .trim();
+}
+
+/**
+ * A saved number as E.164 for the phone inputs: `+639171234567` stays, a
+ * number saved before E.164 (`09171234567`) is read as Philippine, and
+ * anything that doesn't parse gives "".
+ */
+export function toE164(saved: string): string {
+  if (!saved.trim()) return "";
+  return parsePhoneNumberFromString(saved, "PH")?.number ?? "";
+}
+
+/**
+ * The same typed digits under another country's calling code, for when the
+ * country picker changes from `from` to `to`: PH `+639171234567` → US
+ * `+19171234567`. The input then keeps what was typed (even half a number)
+ * and shows it in the new country's format.
+ */
+export function rehomePhone(e164: string, from: string, to: string): string {
+  if (!e164 || !isSupportedCountry(to)) return "";
+  const code = isSupportedCountry(from)
+    ? `+${getCountryCallingCode(from)}`
+    : "";
+  const national =
+    code && e164.startsWith(code)
+      ? e164.slice(code.length)
+      : (parsePhoneNumberFromString(e164)?.nationalNumber ?? "");
+  return national ? `+${getCountryCallingCode(to)}${national}` : "";
+}
+
+/** A number for display: `+639171234567` → `+63 917 123 4567`. */
+export function formatPhone(e164: string): string {
+  return parsePhoneNumberFromString(e164)?.formatInternational() ?? e164;
 }
 
 /** The country a typed number names with its own `+code`, if any. */

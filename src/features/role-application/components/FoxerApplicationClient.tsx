@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
 import {
   Briefcase,
@@ -27,6 +27,11 @@ import {
   CascadingLocationFields,
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
+import { TinField } from "@/shared/components/ui/TinField";
+import {
+  CountryField,
+  useCountryName,
+} from "@/shared/components/ui/CountryField";
 
 // An Organizer's specializations are the kinds of events and venues they have
 // helped run, so they draw on both the API's EventCategory and VenueCategory.
@@ -116,12 +121,29 @@ export default function FoxerApplicationClient({
     experience: "",
     nbiClearanceIdNumber: "",
     tinNumber: "",
+    // ISO code of the country that issued the TIN (CountryField).
+    tinCountry: "",
     validId1FileId: "",
     nbiFileId: "",
     tinIdFileId: "",
     birPermitFileId: "",
     selfieFileId: "",
   });
+  // The TIN was masked for the old country, so a new country clears it.
+  const setTinCountry = useCallback(
+    (tinCountry: string) =>
+      setProviderData((prev) => ({
+        ...prev,
+        tinCountry,
+        tinNumber: prev.tinCountry ? "" : prev.tinNumber,
+      })),
+    [],
+  );
+  const tinCountryName = useCountryName(providerData.tinCountry);
+  const setTinNumber = useCallback(
+    (tinNumber: string) => setProviderData((prev) => ({ ...prev, tinNumber })),
+    [],
+  );
   const [providerSpecializations, setProviderSpecializations] = useState<
     string[]
   >([]);
@@ -167,7 +189,6 @@ export default function FoxerApplicationClient({
 
   const DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
     nbiClearanceIdNumber: 18,
-    tinNumber: 9,
   };
 
   const handleProviderDigitsChange = (
@@ -206,6 +227,9 @@ export default function FoxerApplicationClient({
             : undefined,
           nbiClearanceIdNumber: providerData.nbiClearanceIdNumber || undefined,
           tinNumber: providerData.tinNumber || undefined,
+          tinCountry: providerData.tinNumber
+            ? providerData.tinCountry
+            : undefined,
           validId1FileId: providerData.validId1FileId || undefined,
           nbiFileId: providerData.nbiFileId || undefined,
           tinIdFileId: providerData.tinIdFileId || undefined,
@@ -297,7 +321,12 @@ export default function FoxerApplicationClient({
             label: "NBI clearance ID",
             value: providerData.nbiClearanceIdNumber || "None",
           },
-          { label: "TIN number", value: providerData.tinNumber || "None" },
+          {
+            label: "TIN number",
+            value: providerData.tinNumber
+              ? `${providerData.tinNumber} (${tinCountryName})`
+              : "None",
+          },
           {
             label: "Specializations",
             value: labelsFor(providerCategoryOptions, providerSpecializations),
@@ -473,17 +502,21 @@ export default function FoxerApplicationClient({
               docsMessage(providerDocs, FOXER_KYC_DOCUMENTS.length)
             }
           >
-            <IconField
-              label="TIN Number (Optional)"
-              accent={accent}
-              icon={<Hash size={18} />}
-              type="text"
-              inputMode="numeric"
-              name="tinNumber"
-              maxLength={9}
+            <CountryField
+              value={providerData.tinCountry}
+              onChange={setTinCountry}
+              labelClassName={LABEL}
+              hint="Sets the format of your TIN."
+            />
+            <TinField
+              country={providerData.tinCountry}
+              countryName={tinCountryName}
               value={providerData.tinNumber}
-              onChange={handleProviderDigitsChange}
-              placeholder="000-000-000-000"
+              onChange={setTinNumber}
+              icon={<Hash size={18} />}
+              labelClassName={LABEL}
+              inputClassName={`${INPUT_BASE} pl-12 pr-4`}
+              accent={accent}
             />
             <IconField
               label="NBI Clearance ID (Optional)"

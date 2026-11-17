@@ -17,7 +17,14 @@ import { ConfirmDialog } from "@/shared/components/ui/ConfirmDialog";
 import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
 import { cn } from "@/shared/lib/utils";
 import { usernameSchema } from "@/shared/lib/schema";
-import { countryOfPhone, phoneSchema, splitPhone } from "@/shared/lib/phone";
+import { PhoneNumberInput } from "@/shared/components/ui/PhoneNumberInput";
+import {
+  phoneExample,
+  phoneSchema,
+  rehomePhone,
+  splitPhone,
+  toE164,
+} from "@/shared/lib/phone";
 import { fetchCountries, type GeoCountry } from "@/shared/api/geo";
 import { BackButton } from "@/shared/components/ui/BackButton";
 import {
@@ -28,11 +35,7 @@ import {
 } from "@/shared/lib/passwordPolicy";
 
 export type SettingsSection =
-  | "profile"
-  | "privacy"
-  | "security"
-  | "connections"
-  | "danger";
+  "profile" | "privacy" | "security" | "connections" | "danger";
 
 type ValidatedField = "username" | "phone";
 // How each field is named in the "things to fix" summary.
@@ -133,6 +136,8 @@ export default function ProfileSettingsClient({
   // Profile form
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
+  // E.164 (`+639171234567`) or ""; the input shows it formatted for
+  // `phoneCountry` (PhoneNumberInput).
   const [phone, setPhone] = useState("");
   const [phoneCountry, setPhoneCountry] = useState("PH");
   const [profileImage, setProfileImage] = useState("");
@@ -185,12 +190,25 @@ export default function ProfileSettingsClient({
       setName(profile.name ?? "");
       setUsername(profile.username ?? "");
       const saved = splitPhone(profile.phone ?? "");
-      setPhone(saved.number);
+      setPhone(toE164(profile.phone ?? ""));
       setPhoneCountry(saved.country ?? "PH");
       setProfileImage(profile.imgId ?? "");
       setIsPrivate(profile.isPrivate ?? false);
     }
   }, [profile]);
+
+  // No saved number: start the picker on the profile's own country, not PH.
+  useEffect(() => {
+    if (!profile || profile.phone || !countries.data) return;
+    const home = (profile.country ?? "").trim().toLowerCase();
+    const match = countries.data.find(
+      (c) =>
+        c.phoneCode &&
+        home &&
+        (c.name.toLowerCase() === home || c.code.toLowerCase() === home),
+    );
+    if (match) setPhoneCountry(match.code);
+  }, [profile, countries.data]);
 
   const openSection = (section: SettingsSection) => {
     setActiveSection(section);
@@ -500,34 +518,28 @@ export default function ProfileSettingsClient({
                             (c) => phoneCountryLabel(c) === label,
                           )?.code;
                           if (!next) return;
+                          // Keep what was typed, under the new country code.
+                          const moved = rehomePhone(phone, phoneCountry, next);
                           setPhoneCountry(next);
-                          recheck("phone", phone, next);
+                          setPhone(moved);
+                          recheck("phone", moved, next);
                         }}
                       />
                     </div>
                     <FieldControl invalid={!!fieldErrors.phone}>
-                      <input
+                      <PhoneNumberInput
                         id="phone"
-                        type="tel"
-                        inputMode="tel"
+                        // Formats the number as typed for the picked country,
+                        // without its +code (the picker shows that).
+                        country={phoneCountry}
                         autoComplete="tel"
                         value={phone}
-                        onChange={(e) => {
-                          // Kept as typed — the format is checked on blur and on
-                          // save. A full number with its own +code picks its
-                          // country.
-                          const next = e.target.value;
-                          const named = countryOfPhone(next);
-                          const country =
-                            named && allowedPhoneCountries?.has(named)
-                              ? named
-                              : phoneCountry;
-                          setPhoneCountry(country);
+                        onChange={(next) => {
                           setPhone(next);
-                          recheck("phone", next, country);
+                          recheck("phone", next, phoneCountry);
                         }}
                         onBlur={() => checkOnBlur("phone", phone)}
-                        placeholder="917 123 4567"
+                        placeholder={phoneExample(phoneCountry)}
                         maxLength={30}
                         aria-invalid={!!fieldErrors.phone}
                         aria-describedby={
