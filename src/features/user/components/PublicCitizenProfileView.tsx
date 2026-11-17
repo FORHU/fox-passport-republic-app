@@ -17,6 +17,23 @@ import { isPartnerUser } from "@/shared/auth/roles";
 import { Money } from "@/shared/components/ui/Money";
 import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { MediaTile } from "@/shared/components/ui/MediaTile";
+import { isVideoUrl } from "@/shared/lib/media";
+import { ProfilePostViewer, type CitizenPost } from "./ProfilePostViewer";
+
+/** A tile shows only media, so its label carries the text and the counts
+ * that sighted mouse users see on hover. */
+function postTileLabel(post: CitizenPost): string {
+  const text = post.content?.trim() ?? "";
+  const snippet = text.length > 60 ? `${text.slice(0, 60).trimEnd()}…` : text;
+  const plural = (n: number, word: string) =>
+    `${n} ${word}${n === 1 ? "" : "s"}`;
+  return [
+    snippet ? `Open post: ${snippet}` : "Open post",
+    plural(post.likesCount, "like"),
+    plural(post.commentsCount, "comment"),
+  ].join(" · ");
+}
 
 export interface PublicCitizenProfileViewProps {
   followCounts?: { followers: number; following: number };
@@ -87,6 +104,8 @@ export default function PublicCitizenProfileView({
   // Posts first: a profile opens on Republic Activity, even when empty —
   // its empty state explains why, so the default never shifts per profile.
   const [activeTab, setActiveTab] = useState<ProfileTab>("activity");
+  // Which media post is open in the viewer (an index into mediaPosts).
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const {
     data: profile,
@@ -141,6 +160,8 @@ export default function PublicCitizenProfileView({
   const stamps = profile.passport?.stamps ?? [];
   const badges = profile.passport?.userBadges ?? [];
   const posts = profile.posts ?? [];
+  const mediaPosts = posts.filter((p) => (p.mediaUrls?.length ?? 0) > 0);
+  const textPosts = posts.filter((p) => !p.mediaUrls?.length);
   const hasOfferings =
     (profile.venues?.length ?? 0) > 0 ||
     (profile.assets?.length ?? 0) > 0 ||
@@ -624,72 +645,138 @@ export default function PublicCitizenProfileView({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {posts.map((post) => (
-                    <div
-                      key={post.id}
-                      className="rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700 p-4 transition-all"
-                    >
-                      <div className="flex items-center justify-between text-xs text-zinc-400 mb-2">
-                        <span className="px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-300 font-bold uppercase text-[10px] border border-zinc-800">
-                          {post.type.replace(/_/g, " ")}
-                        </span>
-                        <span>
-                          {new Date(post.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
-                        </span>
-                      </div>
-
-                      <p className="text-sm text-zinc-200 whitespace-pre-line mb-3 leading-relaxed">
-                        {post.content}
-                      </p>
-
-                      {/* Attached media preview */}
-                      {post.mediaUrls?.length > 0 && (
-                        <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
-                          {post.mediaUrls.map((url, i) => (
-                            <img
-                              key={i}
-                              src={url}
-                              alt="Media"
-                              className="w-28 h-20 object-cover rounded-xl border border-zinc-800 shrink-0"
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Engagement strip */}
-                      <div className="flex items-center justify-between pt-2.5 border-t border-zinc-900 text-xs text-zinc-400">
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">
-                              favorite
-                            </span>
-                            {post.likesCount}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">
-                              chat_bubble
-                            </span>
-                            {post.commentsCount}
-                          </span>
-                        </div>
-                        <Link
-                          href={`/republic?postId=${post.id}`}
-                          className="text-lime-400 hover:underline font-bold text-xs"
+                <>
+                  {/* Media first: one square tile per post, showing its
+                      first item. A tile opens the post in a viewer on this
+                      page, where videos play. */}
+                  {mediaPosts.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-2">
+                      {mediaPosts.map((post, i) => (
+                        <button
+                          key={post.id}
+                          type="button"
+                          onClick={() => setViewerIndex(i)}
+                          aria-label={postTileLabel(post)}
+                          className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-lime-400 cursor-pointer"
                         >
-                          View in Feed →
-                        </Link>
-                      </div>
+                          {/* The ▶ sits in the corner, not the centre, so
+                              the hover counts never cover it. */}
+                          <MediaTile
+                            url={post.mediaUrls[0]}
+                            sizes="(max-width: 640px) 50vw, 300px"
+                            className="transition-transform duration-300 group-hover:scale-105"
+                            showPlayBadge={false}
+                          />
+                          <div
+                            className="pointer-events-none absolute top-2 right-2 flex gap-1 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                            aria-hidden
+                          >
+                            {isVideoUrl(post.mediaUrls[0]) && (
+                              <span
+                                data-testid="video-icon"
+                                className="material-symbols-outlined text-[22px]"
+                              >
+                                play_circle
+                              </span>
+                            )}
+                            {post.mediaUrls.length > 1 && (
+                              <span
+                                data-testid="multiple-media-icon"
+                                className="material-symbols-outlined text-[20px]"
+                              >
+                                photo_library
+                              </span>
+                            )}
+                          </div>
+                          <div
+                            className="absolute inset-0 flex items-center justify-center gap-4 bg-black/50 text-sm font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                            aria-hidden
+                          >
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[18px]">
+                                favorite
+                              </span>
+                              {post.likesCount}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[18px]">
+                                chat_bubble
+                              </span>
+                              {post.commentsCount}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+
+                  {viewerIndex !== null && (
+                    <ProfilePostViewer
+                      posts={mediaPosts}
+                      startIndex={viewerIndex}
+                      onClose={() => setViewerIndex(null)}
+                    />
+                  )}
+
+                  {textPosts.length > 0 && mediaPosts.length > 0 && (
+                    <h3 className="pt-4 text-sm font-bold text-zinc-300 uppercase tracking-wider">
+                      Posts
+                    </h3>
+                  )}
+
+                  <div className="space-y-3">
+                    {textPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700 p-4 transition-all"
+                      >
+                        <div className="flex items-center justify-between text-xs text-zinc-400 mb-2">
+                          <span className="px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-300 font-bold uppercase text-[10px] border border-zinc-800">
+                            {post.type.replace(/_/g, " ")}
+                          </span>
+                          <span>
+                            {new Date(post.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                        </div>
+
+                        <p className="text-sm text-zinc-200 whitespace-pre-line mb-3 leading-relaxed">
+                          {post.content}
+                        </p>
+
+                        {/* Engagement strip */}
+                        <div className="flex items-center justify-between pt-2.5 border-t border-zinc-900 text-xs text-zinc-400">
+                          <div className="flex items-center gap-4">
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[16px]">
+                                favorite
+                              </span>
+                              {post.likesCount}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[16px]">
+                                chat_bubble
+                              </span>
+                              {post.commentsCount}
+                            </span>
+                          </div>
+                          <Link
+                            href={`/republic?postId=${post.id}`}
+                            className="text-lime-400 hover:underline font-bold text-xs"
+                          >
+                            View in Feed →
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}

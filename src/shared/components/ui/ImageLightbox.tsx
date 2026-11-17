@@ -6,12 +6,7 @@ import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { toast } from "sonner";
 import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
 import type { MediaTag } from "@/shared/types/feed";
-
-const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
-const isVideoUrl = (url: string) => {
-  const clean = url.split("?")[0].toLowerCase();
-  return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
-};
+import { isVideoUrl } from "@/shared/lib/media";
 
 // A swipe past this many pixels commits to a prev/next, rather than
 // snapping back — matches the feel of a native mobile gallery without
