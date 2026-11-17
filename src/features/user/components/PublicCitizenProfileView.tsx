@@ -70,7 +70,7 @@ const RARITY_COLORS: Record<
   },
 };
 
-type ProfileTab = "stamps" | "badges" | "activity" | "offerings";
+type ProfileTab = "activity" | "stamps" | "badges" | "offerings";
 
 export default function PublicCitizenProfileView({
   followCounts,
@@ -84,7 +84,9 @@ export default function PublicCitizenProfileView({
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<ProfileTab>("stamps");
+  // Posts first: a profile opens on Republic Activity, even when empty —
+  // its empty state explains why, so the default never shifts per profile.
+  const [activeTab, setActiveTab] = useState<ProfileTab>("activity");
 
   const {
     data: profile,
@@ -356,6 +358,26 @@ export default function PublicCitizenProfileView({
         {/* ── INTERACTIVE TABS HEADER ────────────────────────────────── */}
         <div className="sticky top-0 z-20 flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold bg-canvas/95 backdrop-blur-xl pt-2">
           <button
+            onClick={() => setActiveTab("activity")}
+            className={`pb-3 flex items-center gap-2 transition-colors relative ${
+              activeTab === "activity"
+                ? "text-lime-400"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              dynamic_feed
+            </span>
+            Republic Activity ({posts.length})
+            {activeTab === "activity" && (
+              <motion.div
+                layoutId="activeCitizenTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-lime-400"
+              />
+            )}
+          </button>
+
+          <button
             onClick={() => setActiveTab("stamps")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${
               activeTab === "stamps"
@@ -395,26 +417,6 @@ export default function PublicCitizenProfileView({
             )}
           </button>
 
-          <button
-            onClick={() => setActiveTab("activity")}
-            className={`pb-3 flex items-center gap-2 transition-colors relative ${
-              activeTab === "activity"
-                ? "text-lime-400"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              dynamic_feed
-            </span>
-            Republic Activity ({posts.length})
-            {activeTab === "activity" && (
-              <motion.div
-                layoutId="activeCitizenTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-lime-400"
-              />
-            )}
-          </button>
-
           {hasOfferings && (
             <button
               onClick={() => setActiveTab("offerings")}
@@ -440,7 +442,7 @@ export default function PublicCitizenProfileView({
 
         {/* ── TAB CONTENT PANELS ─────────────────────────────────────── */}
         <div>
-          {/* TAB 1: VENUE STAMPS */}
+          {/* TAB 2: VENUE STAMPS */}
           {activeTab === "stamps" && (
             <div className="space-y-4">
               {stamps.length === 0 ? (
@@ -534,7 +536,7 @@ export default function PublicCitizenProfileView({
             </div>
           )}
 
-          {/* TAB 2: MILESTONE BADGES */}
+          {/* TAB 3: MILESTONE BADGES */}
           {activeTab === "badges" && (
             <div className="space-y-4">
               {badges.length === 0 ? (
@@ -603,7 +605,7 @@ export default function PublicCitizenProfileView({
             </div>
           )}
 
-          {/* TAB 3: REPUBLIC ACTIVITY & POSTS */}
+          {/* TAB 1: REPUBLIC ACTIVITY & POSTS (default) */}
           {activeTab === "activity" && (
             <div className="space-y-4">
               {posts.length === 0 ? (
