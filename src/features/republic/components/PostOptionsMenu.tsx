@@ -109,15 +109,21 @@ export function PostOptionsMenu({
         onClick={() => setOpen((v) => !v)}
         disabled={busy}
         aria-label="Post options"
+        aria-haspopup="menu"
+        aria-expanded={open}
         className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
       >
         <MoreHorizontal className="w-4 h-4" />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-20 py-1">
+        <div
+          role="menu"
+          className="absolute right-0 top-full mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-20 py-1"
+        >
           <button
             type="button"
+            role="menuitem"
             onClick={() => {
               setOpen(false);
               onCopyLink();
@@ -129,6 +135,7 @@ export function PostOptionsMenu({
           </button>
           <button
             type="button"
+            role="menuitem"
             onClick={handleToggleSave}
             className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
           >
@@ -144,6 +151,7 @@ export function PostOptionsMenu({
               <div className="my-1 border-t border-zinc-800" />
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   setOpen(false);
                   onEdit();
@@ -155,6 +163,7 @@ export function PostOptionsMenu({
               </button>
               <button
                 type="button"
+                role="menuitem"
                 onClick={handleDelete}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
               >
@@ -166,6 +175,7 @@ export function PostOptionsMenu({
             <>
               <button
                 type="button"
+                role="menuitem"
                 onClick={handleHide}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
               >
@@ -175,6 +185,7 @@ export function PostOptionsMenu({
               <div className="my-1 border-t border-zinc-800" />
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   setOpen(false);
                   setShowReport(true);
