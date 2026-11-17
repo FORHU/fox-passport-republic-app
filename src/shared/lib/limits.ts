@@ -10,6 +10,8 @@ export const EVENT_DESCRIPTION_MAX = 5000;
 export const POST_MAX = 5000;
 export const QUANTITY_MAX = 100_000;
 export const PRICE_MAX = 9_999_999.99;
+// Free-text search boxes (the Foxers search), matching the API's cap on `q`.
+export const SEARCH_QUERY_MAX = 200;
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
