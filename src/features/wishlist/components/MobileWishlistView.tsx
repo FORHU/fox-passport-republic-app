@@ -1,13 +1,10 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import type { Favorite } from "@/shared/api/favorites";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
-import { LOGO_SRC } from "@/shared/lib/assets";
-import { BackButton } from "@/shared/components/ui/BackButton";
 
 // `format` is the viewer's display-currency formatter (useCurrency), passed in
 // since this helper sits outside the component.
@@ -46,52 +43,18 @@ export default function MobileWishlistView() {
         minHeight: "100svh",
         position: "relative",
         color: "var(--color-white)",
+        // Clears the fixed shared header (56px) above, like /booking's pt-24.
+        paddingTop: 96,
       }}
     >
-      {/* Nav bar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 62,
-          left: 0,
-          right: 0,
-          height: 64,
-          zIndex: 5,
-          background: "color-mix(in srgb, var(--canvas) 90%, transparent)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 16px",
-          gap: 10,
-        }}
-      >
-        <Image
-          src={LOGO_SRC}
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
-        <BackButton onClick={() => router.back()} />
-        <p
-          style={{
-            flex: 1,
-            fontSize: 14,
-            fontWeight: 700,
-            fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-            margin: 0,
-          }}
-        >
-          Saved
-        </p>
-      </div>
+      <h1 className="font-landing-display text-5xl leading-[0.9] text-white px-4 mb-6">
+        Wishlists
+      </h1>
 
       {isLoading ? (
         <p
           style={{
-            padding: "142px 16px 0",
+            padding: "0 16px",
             color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             fontSize: 13,
           }}
@@ -101,23 +64,23 @@ export default function MobileWishlistView() {
       ) : favorites.length === 0 ? (
         <div
           style={{
-            padding: "180px 20px 0",
+            padding: "48px 20px 0",
             textAlign: "center",
             color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           }}
         >
           <p style={{ fontWeight: 700, color: "var(--color-white)", marginBottom: 4 }}>
-            Nothing saved yet
+            Your wishlist is empty
           </p>
           <p style={{ fontSize: 13 }}>
-            Bookmark venues and events to see them here.
+            Tap the heart on a venue or event to add it to your wishlist.
           </p>
         </div>
       ) : (
         /* 2-column grid */
         <div
           style={{
-            padding: "142px 16px 112px",
+            padding: "0 16px 112px",
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: 12,
@@ -125,7 +88,7 @@ export default function MobileWishlistView() {
         >
           {favorites.map((favorite) => {
             const target = favorite.venue ?? favorite.event;
-            const name = target?.name ?? "Saved item";
+            const name = target?.name ?? "Untitled";
             const image = imageOf(favorite);
             const href =
               favorite.type === "venue"
