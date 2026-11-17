@@ -299,12 +299,23 @@ function RepublicFeedContent() {
         {/* Main three-column layout */}
         <div className="flex flex-col lg:flex-row gap-6 items-start justify-center pt-5 flex-1">
           {/* LEFT SIDEBAR
-              - Sticky under the fixed header
-              - The page itself scrolls (single scrollbar on the right edge) */}
-          <aside className="hidden lg:block w-[320px] shrink-0 sticky top-28 pr-2 pb-12">
+              - Sticky under the fixed header (top-28 = 7rem)
+              - Capped at the viewport height below that offset and scrolls on
+                its own, so a column taller than the screen (e.g. with the
+                partner map open on a 768px-tall laptop) can still be fully
+                reached instead of staying pinned with its bottom off-screen.
+                No overscroll-contain: once the column hits its end, the wheel
+                chains on to the page so the feed never feels trapped. */}
+          <aside className="hidden lg:block w-[320px] shrink-0 sticky top-28 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 pb-12">
             <RepublicLeftSidebar
               mapSlot={
-                <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
+                // dragPan={false} turns on cooperative gestures: a plain wheel
+                // or drag over the inline map scrolls the sidebar/page instead
+                // of being captured by the map (Ctrl/⌘ + wheel zooms it).
+                <PartnerInventoryMap
+                  className="h-[360px] w-full rounded-2xl overflow-hidden"
+                  dragPan={false}
+                />
               }
             />
           </aside>
