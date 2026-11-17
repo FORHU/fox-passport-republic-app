@@ -2,11 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import type { Favorite } from "@/shared/api/favorites";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
-import { BackButton } from "@/shared/components/ui/BackButton";
 
 // `format` is the viewer's display-currency formatter (useCurrency), passed in
 // since this helper sits outside the component.
@@ -35,21 +33,16 @@ function imageOf(favorite: Favorite): string | undefined {
 
 export default function WishlistsClient() {
   const { format } = useCurrency();
-  const router = useRouter();
   const { favorites, isLoading, toggleFavorite } = useFavorites();
 
   return (
     <div className="bg-canvas text-white min-h-screen font-body antialiased">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
-        <div className="mx-auto max-w-7xl px-4 h-20 flex items-center gap-4">
-          <BackButton onClick={() => router.back()} />
-          <h1 className="text-2xl font-display font-bold">Saved</h1>
-        </div>
-      </header>
-
-      <main className="pt-32 pb-20 px-4">
+      {/* Content clears the fixed shared header (56px / 104px). */}
+      <main className="pt-24 sm:pt-36 pb-20 px-4">
         <div className="mx-auto max-w-7xl">
+          <h1 className="font-landing-display text-5xl leading-[0.9] text-white sm:text-6xl lg:text-7xl mb-10">
+            Wishlists
+          </h1>
           {isLoading ? (
             <p className="text-zinc-500 text-sm">Loading…</p>
           ) : favorites.length === 0 ? (
@@ -57,16 +50,18 @@ export default function WishlistsClient() {
               <span className="material-symbols-outlined text-4xl text-zinc-700 mb-3">
                 favorite_border
               </span>
-              <p className="font-bold text-white mb-1">Nothing saved yet</p>
+              <p className="font-bold text-white mb-1">
+                Your wishlist is empty
+              </p>
               <p className="text-sm text-zinc-500">
-                Bookmark venues and events to see them here.
+                Tap the heart on a venue or event to add it to your wishlist.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {favorites.map((favorite) => {
                 const target = favorite.venue ?? favorite.event;
-                const name = target?.name ?? "Saved item";
+                const name = target?.name ?? "Untitled";
                 const href =
                   favorite.type === "venue"
                     ? `/venues/${favorite.targetId}`
@@ -92,7 +87,7 @@ export default function WishlistsClient() {
                           e.stopPropagation();
                           toggleFavorite(favorite.targetId);
                         }}
-                        aria-label="Remove from saved"
+                        aria-label="Remove from wishlist"
                         className="absolute top-2 right-2 leading-none"
                       >
                         <span
