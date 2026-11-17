@@ -2,7 +2,6 @@
 
 import PageLoader from "@/shared/components/ui/PageLoader";
 import React, { useState, useEffect, useMemo, useId } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useService } from "@/features/service/hooks/useService";
@@ -12,7 +11,6 @@ import {
   previewServiceBookingPrice,
 } from "@/features/booking/api/bookings";
 import { useServiceAvailability } from "@/features/booking/hooks/useAvailability";
-import { LOGO_SRC } from "@/shared/lib/assets";
 
 const NO_DATES: string[] = [];
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
@@ -22,8 +20,8 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
 import { ScheduleConflictWarning } from "@/shared/components/ui/ScheduleConflictWarning";
 import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
-import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import LandingHeader from "@/shared/components/layout/LandingHeader";
 
 export default function ServiceBookingClient({
   serviceId,
@@ -327,63 +325,9 @@ export default function ServiceBookingClient({
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
-      {/* Header */}
-      <header className="fixed top-6 left-0 right-0 z-50">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                <Image
-                  src={LOGO_SRC}
-                  alt="FoxPassport Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                FoxPassport
-              </h2>
-            </Link>
-            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link
-                href="/"
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
-              >
-                Explore
-              </Link>
-              <Link
-                href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all"
-              >
-                Bookings
-              </Link>
-            </nav>
-            <div
-              className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath(user))}
-            >
-              {user?.imgId ? (
-                <img
-                  alt="User"
-                  className="h-full w-full object-cover"
-                  src={user.imgId}
-                />
-              ) : (
-                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <LandingHeader />
 
-      <main className="grow pt-32 pb-28 sm:pb-20">
+      <main className="grow pt-20 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb + heading */}
           <div className="mb-8">

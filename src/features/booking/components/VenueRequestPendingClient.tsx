@@ -1,84 +1,23 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useSearchParams } from "next/navigation";
 import { formatCurrency } from "@/shared/lib/currency";
-import { LOGO_SRC } from "@/shared/lib/assets";
+import LandingHeader from "@/shared/components/layout/LandingHeader";
 
 export default function VenueRequestPendingClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuthStore();
 
   const bookingId = searchParams.get("bookingId");
   const extraGuests = Number(searchParams.get("extraGuests") ?? 0);
   const total = Number(searchParams.get("total") ?? 0);
 
-  const dashboardPath = getDashboardPath(user);
-
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden">
-      {/* Header */}
-      <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                <Image
-                  src={LOGO_SRC}
-                  alt="FoxPassport Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                FoxPassport
-              </h2>
-            </Link>
-            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link
-                href="/"
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
-              >
-                Explore
-              </Link>
-              <Link
-                href="/booking"
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all transform hover:-translate-y-0.5"
-              >
-                Bookings
-              </Link>
-            </nav>
-            <div
-              className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(dashboardPath)}
-            >
-              {user?.imgId ? (
-                <img
-                  alt="User"
-                  className="h-full w-full object-cover"
-                  src={user.imgId}
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center bg-accent text-black font-bold text-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <LandingHeader />
 
-      <main className="grow pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
+      <main className="grow pt-20 sm:pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
         {/* Ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-500/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen" />
 
