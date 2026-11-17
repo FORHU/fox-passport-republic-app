@@ -1,16 +1,21 @@
 import "@testing-library/jest-dom";
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import type { Favorite } from "@/shared/api/favorites";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
 }));
 
+const favs = vi.hoisted(() => ({
+  list: [] as Favorite[],
+  toggleFavorite: vi.fn(),
+}));
 vi.mock("@/shared/hooks/useFavorites", () => ({
   useFavorites: () => ({
-    favorites: [],
+    favorites: favs.list,
     isLoading: false,
-    toggleFavorite: vi.fn(),
+    toggleFavorite: favs.toggleFavorite,
   }),
 }));
 
@@ -31,6 +36,11 @@ import WishlistsPage from "@/app/wishlists/page";
  * view (CSS hides one), so each check sees two of everything.
  */
 describe("WishlistsPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    favs.list = [];
+  });
+
   it("renders the shared default header once, over both views", () => {
     render(<WishlistsPage />);
 
@@ -49,5 +59,49 @@ describe("WishlistsPage", () => {
     ).toHaveLength(2);
     expect(screen.getAllByText("Your wishlist is empty")).toHaveLength(2);
     expect(container.textContent).not.toMatch(/saved/i);
+  });
+
+  // app#313: saved Foxers show in the wishlist and can be removed there.
+  it("lists a saved Foxer, linking to their profile with role and city", () => {
+    favs.list = [
+      {
+        id: "f-1",
+        targetId: "fox-1",
+        type: "foxer",
+        createdAt: "2026-11-17T00:00:00Z",
+        foxer: {
+          id: "fox-1",
+          name: "Ada Fox",
+          imgId: "avatars/ada.jpg",
+          city: "Makati",
+          roleType: ["eventFoxer"],
+        },
+      },
+    ];
+    render(<WishlistsPage />);
+
+    expect(screen.getAllByText("Ada Fox")).toHaveLength(2);
+    expect(screen.getAllByText("Event Foxer · Makati")).toHaveLength(2);
+    expect(
+      screen.getByRole("link", { name: /Ada Fox/ }),
+    ).toHaveAttribute("href", "/foxer/fox-1");
+  });
+
+  it("removes a favourite with its own type", () => {
+    favs.list = [
+      {
+        id: "f-1",
+        targetId: "e-1",
+        type: "event",
+        createdAt: "2026-11-17T00:00:00Z",
+        event: { id: "e-1", name: "Beach Party", price: 100 },
+      },
+    ];
+    render(<WishlistsPage />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remove Beach Party from wishlist" }),
+    );
+    expect(favs.toggleFavorite).toHaveBeenCalledWith("e-1", { type: "event" });
   });
 });

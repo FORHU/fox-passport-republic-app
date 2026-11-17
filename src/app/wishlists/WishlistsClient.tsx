@@ -3,33 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { useFavorites } from "@/shared/hooks/useFavorites";
-import type { Favorite } from "@/shared/api/favorites";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
-
-// `format` is the viewer's display-currency formatter (useCurrency), passed in
-// since this helper sits outside the component.
-function formatPrice(
-  favorite: Favorite,
-  format: (amount: number) => string,
-): string {
-  const target = favorite.venue ?? favorite.event;
-  if (!target || target.price == null) return "Inquire for price";
-  const amount = Number(target.price);
-  if (Number.isNaN(amount)) return "Inquire for price";
-  const suffix =
-    favorite.type === "venue"
-      ? favorite.venue?.billingRate === "hourly"
-        ? "/hour"
-        : "/night"
-      : "/event";
-  return `${format(amount)}${suffix}`;
-}
-
-function imageOf(favorite: Favorite): string | undefined {
-  const images = favorite.venue?.images ?? favorite.event?.images;
-  const img = images?.find((i) => i.isPrimary) ?? images?.[0];
-  return img?.imageUrl ?? img?.url;
-}
+import {
+  favoriteHref,
+  favoriteImage,
+  favoriteName,
+  favoriteSubline,
+} from "@/features/wishlist/helpers/favoriteCard";
 
 export default function WishlistsClient() {
   const { format } = useCurrency();
@@ -54,19 +34,16 @@ export default function WishlistsClient() {
                 Your wishlist is empty
               </p>
               <p className="text-sm text-zinc-500">
-                Tap the heart on a venue or event to add it to your wishlist.
+                Tap the heart on a venue, event or Foxer to add it to your
+                wishlist.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {favorites.map((favorite) => {
-                const target = favorite.venue ?? favorite.event;
-                const name = target?.name ?? "Untitled";
-                const href =
-                  favorite.type === "venue"
-                    ? `/venues/${favorite.targetId}`
-                    : `/event/${favorite.targetId}`;
-                const image = imageOf(favorite);
+                const name = favoriteName(favorite);
+                const href = favoriteHref(favorite);
+                const image = favoriteImage(favorite);
 
                 return (
                   <Link
@@ -85,9 +62,11 @@ export default function WishlistsClient() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          toggleFavorite(favorite.targetId);
+                          toggleFavorite(favorite.targetId, {
+                            type: favorite.type,
+                          });
                         }}
-                        aria-label="Remove from wishlist"
+                        aria-label={`Remove ${name} from wishlist`}
                         className="absolute top-2 right-2 leading-none"
                       >
                         <span
@@ -105,7 +84,7 @@ export default function WishlistsClient() {
                         {name}
                       </p>
                       <p className="text-[11px] font-bold text-accent mt-1">
-                        {formatPrice(favorite, format)}
+                        {favoriteSubline(favorite, format)}
                       </p>
                     </div>
                   </Link>
