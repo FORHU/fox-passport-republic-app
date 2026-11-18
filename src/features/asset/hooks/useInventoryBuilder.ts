@@ -253,7 +253,7 @@ export function useInventoryBuilder() {
       } else {
         await createAsset({
           name: store.title,
-          description: store.description || " ",
+          description: store.description || undefined,
           condition: store.condition || "good",
           category: store.category || "other",
           price: parsedPrice > 0 ? parsedPrice : 1,

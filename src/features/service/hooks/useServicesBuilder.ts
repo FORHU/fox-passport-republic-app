@@ -208,7 +208,7 @@ export function useServicesBuilder() {
       } else {
         await createService({
           name: store.title,
-          description: store.description || " ",
+          description: store.description || undefined,
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
           category:
             (store.category && categoryMap[store.category]) ||
