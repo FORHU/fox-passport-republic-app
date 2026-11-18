@@ -110,6 +110,10 @@ export interface FeedPost {
   /** Distinct signed-in viewers other than the author. */
   viewsCount?: number;
   isPinned: boolean;
+  /** For you only: an older post brought back into the mix ("From earlier"). */
+  resurfaced?: boolean;
+  /** For you only: this session's one featured post. Absent in Recent. */
+  isFeatured?: boolean;
   isLikedByMe?: boolean;
   /** The viewer has already shared it, so sharing again won't count. */
   isSharedByMe?: boolean;

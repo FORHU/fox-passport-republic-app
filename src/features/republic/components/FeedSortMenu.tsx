@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-export type FeedSortMode = "recent" | "top";
+export type FeedSortMode = "foryou" | "recent";
 
 interface FeedSortMenuProps {
   mode: FeedSortMode;
@@ -17,16 +17,16 @@ const OPTIONS: Array<{
   description: string;
 }> = [
   {
+    id: "foryou",
+    label: "For You",
+    icon: "auto_awesome",
+    description: "Fresh posts, a new mix each visit",
+  },
+  {
     id: "recent",
     label: "Recent",
     icon: "schedule",
     description: "Newest posts first",
-  },
-  {
-    id: "top",
-    label: "Top Posts",
-    icon: "hotel_class",
-    description: "Most liked & discussed",
   },
 ];
 
