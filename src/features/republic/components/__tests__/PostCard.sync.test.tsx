@@ -85,7 +85,9 @@ describe("PostCard count sync", () => {
 
     fireEvent.click(likeButton(modal));
 
-    await waitFor(() => expect(api.setPostReaction).toHaveBeenCalledWith("p1", "like"));
+    await waitFor(() =>
+      expect(api.setPostReaction).toHaveBeenCalledWith("p1", "like"),
+    );
     expect(likeButton(card).textContent).toContain("6");
     expect(likeButton(modal).textContent).toContain("6");
   });
@@ -122,7 +124,9 @@ describe("PostCard count sync", () => {
 
     fireEvent.click(modal.getAllByTitle("Delete comment")[0]);
 
-    await waitFor(() => expect(card.getByText("0")).toBeTruthy());
+    // Both comments gone: the count drops to 0, which the bar hides.
+    await waitFor(() => expect(card.queryByText("2")).toBeNull());
+    expect(card.queryByText("0")).toBeNull();
     expect(api.deletePostComment).toHaveBeenCalledWith("p1", "c1");
   });
 });

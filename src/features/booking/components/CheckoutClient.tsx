@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useState, useId } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useThemeStore } from "@/shared/store/useThemeStore";
+import { stripeElementsAppearance } from "@/shared/lib/theme";
 import {
   createPaymentIntent,
   confirmBookingPayment,
@@ -35,6 +37,7 @@ export default function CheckoutClient() {
     setClientSecret,
   } = useCheckoutStore();
   const { user } = useAuthStore();
+  const theme = useThemeStore((s) => s.theme);
 
   const fieldId = useId();
   const [loadingIntent, setLoadingIntent] = useState(false);
@@ -103,19 +106,13 @@ export default function CheckoutClient() {
     return () => observer.disconnect();
   }, []);
 
-  const elementsOptions = clientSecret
-    ? {
-        clientSecret,
-        appearance: {
-          theme: "night" as const,
-          variables: {
-            colorPrimary: "#C4E85A",
-            colorBackground: "#14161B",
-            colorText: "#ffffff",
-          },
-        },
-      }
-    : null;
+  const elementsOptions = useMemo(
+    () =>
+      clientSecret
+        ? { clientSecret, appearance: stripeElementsAppearance(theme) }
+        : null,
+    [clientSecret, theme],
+  );
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden grow">

@@ -16,8 +16,14 @@ import {
 export interface FeedResponse {
   success: boolean;
   data: FeedPost[];
+  /** Opaque: pass back as `cursor` for the next page, never parse it. */
   nextCursor?: string | null;
+  /** For you only: the session's start (server time). Newer posts aren't in it. */
+  anchor?: string;
 }
+
+/** `foryou` is the ranked mix (app#308); `recent` is strictly newest first. */
+export type FeedMode = "foryou" | "recent";
 
 export const getFeed = async (params: {
   tab?: FeedTab;
@@ -25,7 +31,7 @@ export const getFeed = async (params: {
   search?: string;
   limit?: number;
   cursor?: string;
-  mode?: "recent" | "top";
+  mode?: FeedMode;
 }): Promise<FeedResponse> => {
   const queryParams = { ...params };
   if (queryParams.tab === "all") {
@@ -33,6 +39,23 @@ export const getFeed = async (params: {
   }
   const res = await api.get("/feed", { params: queryParams });
   return res.data;
+};
+
+/**
+ * How many posts the viewer may see were created after `since`, not counting
+ * their own. Drives the "New posts" pill.
+ */
+export const getNewPostsCount = async (params: {
+  since: string;
+  tab?: FeedTab;
+}): Promise<number> => {
+  const res = await api.get("/feed/new-count", {
+    params: {
+      since: params.since,
+      ...(params.tab && params.tab !== "all" ? { tab: params.tab } : {}),
+    },
+  });
+  return res.data?.data?.count ?? 0;
 };
 
 export const getPostById = async (id: string): Promise<FeedPost> => {
@@ -87,11 +110,21 @@ export const repostPost = async (
   return res.data.data;
 };
 
+/** Counts a share once per signed-in user per post (the API enforces it).
+ * `counted` is false for a repeat or a guest; `sharesCount` is the post's
+ * count either way. */
 export const trackPostShare = async (
   id: string,
-): Promise<{ success: boolean }> => {
+): Promise<{ counted: boolean; sharesCount: number }> => {
   const res = await api.post(`/feed/${id}/share`);
-  return res.data;
+  return res.data.data;
+};
+
+/** Records that the signed-in viewer saw these posts. Returns the ids the
+ * server counted (first view by a non-author who may see the post). */
+export const recordPostViews = async (postIds: string[]): Promise<string[]> => {
+  const res = await api.post(`/feed/views`, { postIds });
+  return res.data.data?.recorded ?? [];
 };
 
 export const toggleSavePost = async (

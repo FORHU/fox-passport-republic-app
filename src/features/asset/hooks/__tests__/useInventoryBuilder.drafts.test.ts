@@ -94,6 +94,17 @@ describe("Gear Studio drafts", () => {
     expect(result.current.error).toBeNull();
   });
 
+  // The API refuses a blank description; leaving it out lets a draft save.
+  it("sends no description when the draft has none", async () => {
+    const { result } = setUp();
+
+    await act(() => result.current.handleSaveDraft());
+
+    const payload = assets.createAsset.mock.calls[0][0];
+    expect(payload).toMatchObject({ name: "Test speaker", status: "draft" });
+    expect(payload.description).toBeUndefined();
+  });
+
   it("saves a picked image with the draft, then clears it", async () => {
     const { result } = setUp();
     act(() => result.current.setImage(IMAGE));

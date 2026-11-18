@@ -29,7 +29,11 @@ describe("usePostStatsStore", () => {
     store().seed(post());
     store().react("p1", "like");
     store().seed(post()); // the modal's stale copy of the same post
-    expect(stats()).toEqual({ likesCount: 6, commentsCount: 2, myReaction: "like" });
+    expect(stats()).toMatchObject({
+      likesCount: 6,
+      commentsCount: 2,
+      myReaction: "like",
+    });
   });
 
   it("reads isLikedByMe when myReaction is missing", () => {
@@ -75,7 +79,11 @@ describe("usePostStatsStore", () => {
     store().react("p1", "love");
     expect(stats()).toMatchObject({ likesCount: 6, myReaction: "love" });
     store().restore("p1", before!);
-    expect(stats()).toEqual({ likesCount: 5, commentsCount: 2, myReaction: null });
+    expect(stats()).toMatchObject({
+      likesCount: 5,
+      commentsCount: 2,
+      myReaction: null,
+    });
   });
 
   it("takes the server's count after a reaction", () => {
@@ -91,6 +99,58 @@ describe("usePostStatsStore", () => {
     expect(stats().commentsCount).toBe(3);
     store().adjustComments("p1", -10);
     expect(stats().commentsCount).toBe(0);
+  });
+
+  it("adjusts share, send, repost and view counts, never below zero", () => {
+    store().seed(post({ sharesCount: 1, viewsCount: 9 }));
+    store().adjustCount("p1", "sharesCount", 1);
+    store().adjustCount("p1", "sendsCount", 3);
+    store().adjustCount("p1", "repostsCount", 1);
+    store().adjustCount("p1", "viewsCount", -20);
+    expect(stats()).toMatchObject({
+      sharesCount: 2,
+      sendsCount: 3,
+      repostsCount: 1,
+      viewsCount: 0,
+    });
+    // Counted here, so an older fetch can't undo it.
+    expect(store().touchedAt.p1).toBe(1_000);
+  });
+
+  it("counts the viewer's share once, however often they share", () => {
+    store().seed(post({ sharesCount: 4 }));
+    const prev = store().markShared("p1");
+    store().markShared("p1");
+    expect(prev).toMatchObject({ sharesCount: 4, sharedByMe: false });
+    expect(stats()).toMatchObject({ sharesCount: 5, sharedByMe: true });
+  });
+
+  it("adds nothing for a post the viewer had already shared", () => {
+    store().seed(post({ sharesCount: 4, isSharedByMe: true }));
+    store().markShared("p1");
+    expect(stats().sharesCount).toBe(4);
+  });
+
+  it("takes the server's share count", () => {
+    store().seed(post({ sharesCount: 4 }));
+    store().markShared("p1");
+    store().setShares("p1", 9);
+    expect(stats()).toMatchObject({ sharesCount: 9, sharedByMe: true });
+  });
+
+  it("leaves an unseeded post alone", () => {
+    store().adjustCount("p1", "sharesCount", 1);
+    expect(stats()).toBeUndefined();
+  });
+
+  it("defaults missing counters to 0", () => {
+    store().seed(post());
+    expect(stats()).toMatchObject({
+      sharesCount: 0,
+      sendsCount: 0,
+      repostsCount: 0,
+      viewsCount: 0,
+    });
   });
 
   it("forgets every post when the account changes", () => {

@@ -5,13 +5,37 @@ import { onAccountChange } from "@/shared/auth/useAuthStore";
 export interface PostStats {
   likesCount: number;
   commentsCount: number;
+  sharesCount: number;
+  sendsCount: number;
+  repostsCount: number;
+  viewsCount: number;
+  /** The viewer has shared this post; a share only counts once per user. */
+  sharedByMe: boolean;
   myReaction: ReactionType | null;
 }
 
+/** Counters changed one step at a time (not set from a server reply). */
+export type AdjustableCount =
+  | "commentsCount"
+  | "sharesCount"
+  | "sendsCount"
+  | "repostsCount"
+  | "viewsCount";
+
+// The newer counters are optional: they default to 0 when a caller (or an
+// older response) doesn't have them.
 type PostCounts = Pick<
   FeedPost,
-  "id" | "likesCount" | "commentsCount" | "myReaction" | "isLikedByMe"
->;
+  | "id"
+  | "likesCount"
+  | "commentsCount"
+  | "myReaction"
+  | "isLikedByMe"
+  | "isSharedByMe"
+> &
+  Partial<
+    Pick<FeedPost, "sharesCount" | "sendsCount" | "repostsCount" | "viewsCount">
+  >;
 
 interface PostStatsState {
   stats: Record<string, PostStats>;
@@ -34,15 +58,28 @@ interface PostStatsState {
     res: { reaction: ReactionType | null; likesCount: number },
   ) => void;
   restore: (postId: string, prev: PostStats) => void;
+  /** The viewer shared the post: +1 the first time only (the API counts
+   * each user once). Returns the previous stats for rollback. */
+  markShared: (postId: string) => PostStats | undefined;
+  /** Takes the server's share count after a share request. */
+  setShares: (postId: string, sharesCount: number) => void;
   beginReaction: (postId: string) => void;
   endReaction: (postId: string) => void;
   adjustComments: (postId: string, delta: number) => void;
+  /** Changes one counter by `delta` (never below 0). Unseeded posts are
+   * left alone: their card isn't showing, and its next fetch has the count. */
+  adjustCount: (postId: string, key: AdjustableCount, delta: number) => void;
   reset: () => void;
 }
 
 export const statsFromPost = (post: PostCounts): PostStats => ({
   likesCount: post.likesCount,
   commentsCount: post.commentsCount,
+  sharesCount: post.sharesCount ?? 0,
+  sendsCount: post.sendsCount ?? 0,
+  repostsCount: post.repostsCount ?? 0,
+  viewsCount: post.viewsCount ?? 0,
+  sharedByMe: post.isSharedByMe ?? false,
   myReaction: post.myReaction ?? (post.isLikedByMe ? "like" : null),
 });
 
@@ -56,9 +93,10 @@ const patch = (
   return { ...stats, [postId]: { ...current, ...change } };
 };
 
-// One copy of each post's like and comment counts, shared by every PostCard
-// showing that post (the feed card, the detail modal over it, saved posts),
-// so a like or comment in one shows in all of them at once (BUG-25).
+// One copy of each post's counts (likes, comments, shares, sends, reposts,
+// views), shared by every PostCard showing that post (the feed card, the
+// detail modal over it, saved posts), so an action in one shows in all of
+// them at once (BUG-25).
 export const usePostStatsStore = create<PostStatsState>((set, get) => ({
   stats: {},
   pending: {},
@@ -100,6 +138,25 @@ export const usePostStatsStore = create<PostStatsState>((set, get) => ({
       }),
     })),
 
+  markShared: (postId) => {
+    const prev = get().stats[postId];
+    if (!prev) return undefined;
+    set((s) => ({
+      stats: patch(s.stats, postId, {
+        sharedByMe: true,
+        sharesCount: prev.sharedByMe ? prev.sharesCount : prev.sharesCount + 1,
+      }),
+      touchedAt: { ...s.touchedAt, [postId]: Date.now() },
+    }));
+    return prev;
+  },
+
+  setShares: (postId, sharesCount) =>
+    set((s) => ({
+      stats: patch(s.stats, postId, { sharesCount, sharedByMe: true }),
+      touchedAt: { ...s.touchedAt, [postId]: Date.now() },
+    })),
+
   restore: (postId, prev) =>
     set((s) => ({ stats: patch(s.stats, postId, prev) })),
 
@@ -124,12 +181,15 @@ export const usePostStatsStore = create<PostStatsState>((set, get) => ({
     }),
 
   adjustComments: (postId, delta) =>
+    get().adjustCount(postId, "commentsCount", delta),
+
+  adjustCount: (postId, key, delta) =>
     set((s) => {
       const current = s.stats[postId];
       if (!current) return s;
       return {
         stats: patch(s.stats, postId, {
-          commentsCount: Math.max(0, current.commentsCount + delta),
+          [key]: Math.max(0, current[key] + delta),
         }),
         touchedAt: { ...s.touchedAt, [postId]: Date.now() },
       };

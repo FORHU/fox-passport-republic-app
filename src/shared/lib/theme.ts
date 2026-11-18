@@ -1,3 +1,5 @@
+import type { Appearance } from "@stripe/stripe-js";
+
 export type Theme = "dark" | "light";
 
 /** Where the chosen theme is kept — this browser only, like the map theme. */
@@ -38,6 +40,40 @@ export function stripeAppearanceColors(theme: Theme = currentTheme()) {
         colorBackground: "#0B0C0F",
         colorText: "#ffffff",
       };
+}
+
+/**
+ * The Payment Element at checkout sits on a panel (globals.css: --surface),
+ * not the page canvas, so its background is the surface colour.
+ */
+const STRIPE_ELEMENTS_SURFACE: Record<Theme, string> = {
+  dark: "#14161B",
+  light: "#ffffff",
+};
+
+/**
+ * Appearance for the checkout Payment Element. Shared by every checkout so
+ * they stay alike; pass the store's theme so a switch restyles the form
+ * (react-stripe-js forwards a changed appearance to elements.update()).
+ * Light sets placeholder and error colours that read at AA on white.
+ */
+export function stripeElementsAppearance(
+  theme: Theme = currentTheme(),
+): Appearance {
+  const variables = {
+    ...stripeAppearanceColors(theme),
+    colorBackground: STRIPE_ELEMENTS_SURFACE[theme],
+  };
+  return theme === "light"
+    ? {
+        theme: "stripe",
+        variables: {
+          ...variables,
+          colorTextPlaceholder: "#6B6E76",
+          colorDanger: "#B42318",
+        },
+      }
+    : { theme: "night", variables };
 }
 
 /** The theme the page is showing right now. */
