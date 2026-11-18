@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Award,
   Handshake,
+  History,
   MessageCircle,
   Pin,
   Repeat2,
@@ -298,11 +299,20 @@ export function PostCard({
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
       } p-4 sm:p-5`}
     >
-      {/* Top Banner for Pinned or Partner Posts */}
-      {post.isPinned && (
+      {/* Top Banner for Pinned or Partner Posts. For you marks its one
+          rotating featured post (isFeatured); other lists fall back to the pin. */}
+      {(post.isFeatured ?? post.isPinned) && (
         <div className="flex items-center gap-1.5 text-xs text-lime-400 font-bold mb-3 pb-2 border-b border-zinc-800/60">
           <Pin className="h-4 w-4" strokeWidth={2} />
           <span>Featured in Republic</span>
+        </div>
+      )}
+
+      {/* An older post For you brought back into the mix (app#308). */}
+      {post.resurfaced && (
+        <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-bold mb-3">
+          <History className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+          <span>From earlier</span>
         </div>
       )}
 

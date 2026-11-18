@@ -103,6 +103,10 @@ export interface FeedPost {
   commentsCount: number;
   sharesCount: number;
   isPinned: boolean;
+  /** For you only: an older post brought back into the mix ("From earlier"). */
+  resurfaced?: boolean;
+  /** For you only: this session's one featured post. Absent in Recent. */
+  isFeatured?: boolean;
   isLikedByMe?: boolean;
   myReaction?: ReactionType | null;
   isFollowingAuthor?: boolean;

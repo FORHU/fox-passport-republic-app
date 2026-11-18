@@ -20,6 +20,7 @@ import {
 } from "@/shared/components/ui/sheet";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
+import { requestRepublicRefresh } from "@/shared/lib/republic-refresh";
 
 interface LandingHeaderProps {
   /** Optional — defaults to the auth store's own `openLogin`, so a server
@@ -98,6 +99,13 @@ export default function LandingHeader({
                   <div key={tab.href} className="relative">
                     <Link
                       href={tab.href}
+                      // Republic: a fresh For You mix on every click, also
+                      // when already on the feed (app#308).
+                      onClick={
+                        tab.href === "/republic"
+                          ? requestRepublicRefresh
+                          : undefined
+                      }
                       className={
                         // px-4 below xl: five app tabs plus the search box
                         // don't fit a 1024px header at px-6.

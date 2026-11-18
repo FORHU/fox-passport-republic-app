@@ -36,6 +36,9 @@ export const SOCKET_EVENTS = {
   // The conversation's pinned message changed — carries the conversation
   // and the now-pinned message's id (or null if unpinned).
   MESSAGE_PINNED: "message:pinned",
+  // A public Republic post was just created — carries only its `{ tab }`.
+  // Open feeds show a "New posts" pill rather than refetching (app#308).
+  FEED_NEW: "feed:new",
 } as const;
 
 /**
