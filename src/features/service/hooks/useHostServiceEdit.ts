@@ -15,6 +15,7 @@ import type { Id } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
   BILLING_RATE_MAP,
+  SERVICE_STATUS_TO_API,
 } from "@/features/service/data/serviceBuilderData";
 
 function belongsToHost(record: any, hostId: Id): boolean {
@@ -78,13 +79,6 @@ function mapStatusToService(value: unknown): string {
   return "active";
 }
 
-/** The owner's choices back to the API's ServiceStatus, which has no
- * "active" or "unavailable". */
-const SERVICE_STATUS_TO_API: Record<string, string> = {
-  active: "available",
-  unavailable: "archived",
-};
-
 function invertBillingRateToUnitLabel(billingRate: unknown): string {
   const br = normalizeLower(billingRate);
   const entry = Object.entries(BILLING_RATE_MAP).find(([, backendValue]) => {
@@ -144,13 +138,15 @@ export function useHostServiceEdit(serviceId: string) {
 
         services.setUnit(invertBillingRateToUnitLabel(found?.billingRate));
         // Only a live listing's status maps onto the owner's choices; one
-        // still on its way to approval keeps the store's "draft" and goes to
-        // review on publish (it used to come back as "active").
+        // still on its way to approval shows none checked ("draft") and goes
+        // to review on publish (it used to come back as "active").
         const rawStatus = String(found?.status ?? "").toLowerCase();
         setListingStatus(rawStatus);
-        if (!NEEDS_REVIEW.includes(rawStatus)) {
-          services.setStatus(mapStatusToService(found?.status));
-        }
+        services.setStatus(
+          NEEDS_REVIEW.includes(rawStatus)
+            ? "draft"
+            : mapStatusToService(found?.status),
+        );
 
         const firstImg = found?.images?.[0];
         const url = firstImg?.url ?? firstImg?.imageUrl ?? "";

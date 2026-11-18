@@ -10,6 +10,7 @@ import { fetchAssetsByOwnerId, updateAsset } from "@/features/asset/api/assets";
 import type { Id } from "@/shared/lib/api-types";
 import {
   ASSET_CATEGORIES,
+  ASSET_STATUS_TO_API,
   CONDITIONS,
 } from "@/features/asset/data/listingBuilderData";
 import { firstLimitError } from "@/shared/lib/limits";
@@ -162,13 +163,15 @@ export function useHostAssetEdit(assetId: string) {
         inventory.setUnit(mappedUnit);
 
         // Only a live listing's status maps onto the owner's choices; one
-        // still on its way to approval keeps the store's "draft" and goes to
-        // review on publish (it used to come back as "available").
+        // still on its way to approval shows none checked ("draft") and goes
+        // to review on publish (it used to come back as "available").
         const rawStatus = String(found?.status ?? "").toLowerCase();
         setListingStatus(rawStatus);
-        if (!NEEDS_REVIEW.includes(rawStatus)) {
-          inventory.setStatus(mapStatusToInventory(found?.status));
-        }
+        inventory.setStatus(
+          NEEDS_REVIEW.includes(rawStatus)
+            ? "draft"
+            : mapStatusToInventory(found?.status),
+        );
 
         inventory.setCity((found as any)?.city ?? "");
         inventory.setState((found as any)?.state ?? "");
@@ -275,9 +278,7 @@ export function useHostAssetEdit(assetId: string) {
         // (as the create path in useInventoryBuilder maps it).
         status: NEEDS_REVIEW.includes(listingStatus)
           ? "pending"
-          : inventory.status === "unavailable"
-            ? "archived"
-            : inventory.status,
+          : (ASSET_STATUS_TO_API[inventory.status] ?? inventory.status),
       };
 
       await updateAsset(assetId, payload as any);
