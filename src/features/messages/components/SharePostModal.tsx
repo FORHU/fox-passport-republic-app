@@ -24,6 +24,8 @@ export interface SharePostTarget {
 interface SharePostModalProps {
   post: SharePostTarget;
   onClose: () => void;
+  /** Called with how many recipients the post was sent to. */
+  onSent?: (count: number) => void;
   followingUsers?: Candidate[];
 }
 
@@ -44,6 +46,7 @@ interface Recipient {
 export function SharePostModal({
   post,
   onClose,
+  onSent,
   followingUsers,
 }: SharePostModalProps) {
   const { user } = useAuthStore();
@@ -158,6 +161,7 @@ export function SharePostModal({
           ? "Post sent!"
           : `Post sent to ${selected.size} people`,
       );
+      onSent?.(selected.size);
       onClose();
     } catch (error: any) {
       toast.error(

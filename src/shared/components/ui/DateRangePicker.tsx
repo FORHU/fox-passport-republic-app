@@ -133,7 +133,7 @@ function CompactDatePicker({
     startValue && endValue && ds > startValue && ds < endValue;
 
   return (
-    <div className="bg-black/95 border border-white/10 rounded-2xl p-4 w-[280px]">
+    <div className="bg-surface border border-white/10 rounded-2xl shadow-xl p-4 w-[280px]">
       <div className="flex items-center justify-between mb-3">
         <button
           onClick={prevMonth}
@@ -190,6 +190,7 @@ function CompactDatePicker({
               key={ds}
               onClick={() => handleClick(ds)}
               disabled={loading || disabledCell}
+              aria-current={ds === todayStr ? "date" : undefined}
               title={unavailable ? "Not available on this date" : undefined}
               className={[
                 "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center relative",
@@ -207,7 +208,7 @@ function CompactDatePicker({
                   ? "text-red-400/50 cursor-not-allowed line-through decoration-red-400/40"
                   : "",
                 ds === todayStr && !sel
-                  ? "ring-1 ring-white/70 rounded-full animate-pulse"
+                  ? "ring-1 ring-inset ring-white/30 rounded-full"
                   : "",
               ]
                 .filter(Boolean)
@@ -425,7 +426,7 @@ export default function DateRangePicker({
               onClick={() => setCalendarOpen(false)}
             />
             <div
-              className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+              className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none"
               style={{ top: popupPos.top, left: popupPos.left }}
             >
               <CompactDatePicker

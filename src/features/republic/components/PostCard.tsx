@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Award,
   Handshake,
+  History,
   MessageCircle,
   Pin,
   Repeat2,
@@ -21,9 +22,17 @@ import { PostShareMenu } from "./PostShareMenu";
 import { usePostStats, usePostStatsStore } from "../store/usePostStatsStore";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { RepostComposer } from "./RepostComposer";
+import { ActionCount } from "./ActionCount";
+import { usePostViewTracker } from "../hooks/usePostViewTracker";
+import { formatCount } from "@/shared/lib/formatCount";
 import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
 import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
-import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
+import {
+  setPostReaction,
+  editPost,
+  voteOnPoll,
+  trackPostShare,
+} from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { POST_MAX, POST_MESSAGE } from "@/shared/lib/limits";
@@ -127,7 +136,12 @@ interface PostCardProps {
     contextType: string;
     contextId: string;
   }) => void;
-  renderShareModal?: (postToShare: any, onClose: () => void) => React.ReactNode;
+  /** `onSent(n)` is called after the post was sent to `n` recipients. */
+  renderShareModal?: (
+    postToShare: any,
+    onClose: () => void,
+    onSent: (n: number) => void,
+  ) => React.ReactNode;
 }
 
 export function PostCard({
@@ -146,9 +160,25 @@ export function PostCard({
     signInThen(window.location.pathname + window.location.search);
   // Counts live in a store shared with every other card showing this post
   // (e.g. the detail modal), not in this card's own state (BUG-25).
-  const { myReaction, likesCount, commentsCount } = usePostStats(post);
+  const {
+    myReaction,
+    likesCount,
+    commentsCount,
+    sharesCount,
+    sendsCount,
+    repostsCount,
+    viewsCount,
+    sharedByMe,
+  } = usePostStats(post);
   const seedStats = usePostStatsStore((s) => s.seed);
   const adjustComments = usePostStatsStore((s) => s.adjustComments);
+  const adjustCount = usePostStatsStore((s) => s.adjustCount);
+  // A repost's card shows the original too, so both get the view. Signed-out
+  // viewers and the author aren't counted (the API skips them as well).
+  const viewRef = usePostViewTracker(
+    post.originalPostId ? [post.id, post.originalPostId] : [post.id],
+    Boolean(user) && user?.id !== post.author.id,
+  );
   // A no-op once the post has counts; fresh server data arrives through
   // syncFromServer instead, so a stale `post` copy can't overwrite them.
   useEffect(() => {
@@ -189,6 +219,23 @@ export function PostCard({
     }
   };
 
+  // A share counts once per signed-in user, enforced by the API; guests can
+  // copy the link but aren't counted, so they send nothing. Shown at once
+  // (+1 only the first time), then the server's count wins.
+  const countShare = async () => {
+    if (!user) return;
+    const stats = usePostStatsStore.getState();
+    stats.seed(post);
+    const prev = stats.markShared(post.id);
+    try {
+      const res = await trackPostShare(post.id);
+      stats.setShares(post.id, res.sharesCount);
+    } catch {
+      // The link was copied anyway; just don't show a count the API didn't take.
+      if (prev) stats.restore(post.id, prev);
+    }
+  };
+
   const handleShare = async () => {
     const url = `${window.location.origin}/republic?postId=${post.id}`;
     try {
@@ -196,6 +243,7 @@ export function PostCard({
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      void countShare();
     } catch {
       toast.error("Could not copy link. Copy it manually: " + url);
     }
@@ -292,17 +340,27 @@ export function PostCard({
     // inside it can't rise above the next card on its own. While any menu in
     // the card is open (aria-expanded), lift the whole card instead.
     <article
+      ref={viewRef}
       className={`relative w-full rounded-2xl transition-all duration-300 has-[[aria-expanded=true]]:z-20 ${
         isPartnerPost
           ? "bg-gradient-to-b from-gold-tint via-zinc-900/90 to-zinc-900 border-2 border-gold-edge shadow-[0_4px_30px_rgba(201,160,74,0.18)]"
           : "bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 hover:border-zinc-700/80 shadow-lg"
       } p-4 sm:p-5`}
     >
-      {/* Top Banner for Pinned or Partner Posts */}
-      {post.isPinned && (
+      {/* Top Banner for Pinned or Partner Posts. For you marks its one
+          rotating featured post (isFeatured); other lists fall back to the pin. */}
+      {(post.isFeatured ?? post.isPinned) && (
         <div className="flex items-center gap-1.5 text-xs text-lime-400 font-bold mb-3 pb-2 border-b border-zinc-800/60">
           <Pin className="h-4 w-4" strokeWidth={2} />
           <span>Featured in Republic</span>
+        </div>
+      )}
+
+      {/* An older post For you brought back into the mix (app#308). */}
+      {post.resurfaced && (
+        <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-bold mb-3">
+          <History className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+          <span>From earlier</span>
         </div>
       )}
 
@@ -507,14 +565,27 @@ export function PostCard({
                     <VideoPlayBadge />
                   </>
                 ) : (
-                  <Image
-                    src={url}
-                    alt=""
-                    width={1200}
-                    height={1200}
-                    sizes="(max-width: 1024px) 100vw, 680px"
-                    className="block w-full h-auto max-h-[min(80vh,720px)] object-contain transition-transform duration-300 group-hover:scale-105"
-                  />
+                  <>
+                    {/* A narrow photo is height-capped and would leave empty
+                        bars at its sides: fill them with a blurred, dimmed
+                        copy of the same photo instead of cropping it. */}
+                    <Image
+                      src={url}
+                      alt=""
+                      aria-hidden
+                      fill
+                      sizes="64px"
+                      className="object-cover scale-110 blur-2xl opacity-50 pointer-events-none"
+                    />
+                    <Image
+                      src={url}
+                      alt=""
+                      width={1200}
+                      height={1200}
+                      sizes="(max-width: 1024px) 100vw, 680px"
+                      className="relative block w-full h-auto max-h-[min(80vh,720px)] object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </>
                 )}
                 <MediaTagOverlay
                   tags={post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []}
@@ -769,8 +840,19 @@ export function PostCard({
         </div>
       )}
 
+      {/* Views — distinct signed-in viewers other than the author. */}
+      {viewsCount > 0 && (
+        <div className="mt-3 flex justify-end text-xs text-zinc-500 tabular-nums">
+          {formatCount(viewsCount)} {viewsCount === 1 ? "view" : "views"}
+        </div>
+      )}
+
       {/* ── ENGAGEMENT ACTION BAR ──────────────────────────────── */}
-      <div className="pt-2 mt-3 border-t border-zinc-800/80 text-xs">
+      {/* Equal columns on one line at any width: labels drop below `sm`,
+          leaving icon + count, and counts are compact ("1.2k"). */}
+      <div
+        className={`pt-2 border-t border-zinc-800/80 text-xs ${viewsCount > 0 ? "mt-1.5" : "mt-3"}`}
+      >
         <div className="grid grid-flow-col auto-cols-fr gap-1 w-full">
           <ReactionButton
             myReaction={myReaction}
@@ -786,14 +868,17 @@ export function PostCard({
                 ? handleOpenDetail
                 : () => setShowComments((prev) => !prev)
             }
-            className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors ${
+            className={`flex min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg transition-colors ${
               showComments
                 ? "text-lime-400 bg-lime-400/10 font-bold"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2} />
-            <span>{commentsCount}</span>
+            <MessageCircle
+              className="h-[18px] w-[18px] shrink-0"
+              strokeWidth={2}
+            />
+            <ActionCount n={commentsCount} />
           </button>
 
           {/* Share — a menu: Copy link, and on the viewer's own public video
@@ -803,16 +888,25 @@ export function PostCard({
             onCopyLink={handleShare}
             copied={copied}
             canShareToFacebook={canShareToFacebook}
+            sharesCount={sharesCount}
+            shared={sharedByMe}
+            onFacebookShared={() => {
+              // The API counted it (once per user) when the video was uploaded.
+              usePostStatsStore.getState().seed(post);
+              usePostStatsStore.getState().markShared(post.id);
+            }}
           />
 
           {/* Send in Message — Messenger-style share to a person/conversation,
               distinct from the copy-link Share above. */}
           <button
             onClick={handleSendClick}
-            className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+            aria-label={`Send in message${sendsCount > 0 ? `, ${sendsCount}` : ""}`}
+            className="flex min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
           >
-            <Send className="h-[18px] w-[18px]" strokeWidth={2} />
+            <Send className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
             <span className="hidden sm:inline">Send</span>
+            <ActionCount n={sendsCount} />
           </button>
 
           {/* Repost — publishes a new post of your own quoting this one,
@@ -826,10 +920,12 @@ export function PostCard({
                 }
                 setShowRepostModal(true);
               }}
-              className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+              aria-label={`Repost${repostsCount > 0 ? `, ${repostsCount}` : ""}`}
+              className="flex min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
             >
-              <Repeat2 className="h-[18px] w-[18px]" strokeWidth={2} />
+              <Repeat2 className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
               <span className="hidden sm:inline">Repost</span>
+              <ActionCount n={repostsCount} />
             </button>
           )}
         </div>
@@ -848,6 +944,10 @@ export function PostCard({
             },
           },
           () => setShowShareModal(false),
+          (n) => {
+            usePostStatsStore.getState().seed(post);
+            adjustCount(post.id, "sendsCount", n);
+          },
         )}
 
       {lightboxIndex !== null && (

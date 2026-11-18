@@ -74,4 +74,5 @@ export type CreateServicePayload = {
   isWillingToTravel?: boolean;
   tags?: string[];
   imgIds: string[];
+  status?: string;
 };

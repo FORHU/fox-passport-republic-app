@@ -54,9 +54,16 @@ const makePost = (mediaUrls: string[]): FeedPost =>
 const urls = (n: number) =>
   Array.from({ length: n }, (_, i) => `https://cdn.test/photo-${i + 1}.jpg`);
 
+// The photos themselves, not the decorative blurred backdrop behind a single one.
 const galleryImages = (container: HTMLElement) =>
-  Array.from(container.querySelectorAll("img")).filter((img) =>
-    img.getAttribute("src")?.startsWith("https://cdn.test/"),
+  Array.from(container.querySelectorAll("img")).filter(
+    (img) =>
+      img.getAttribute("src")?.startsWith("https://cdn.test/") &&
+      !img.hasAttribute("aria-hidden"),
+  );
+const backdrops = (container: HTMLElement) =>
+  container.querySelectorAll(
+    'img[aria-hidden="true"][src^="https://cdn.test/"]',
   );
 
 beforeEach(() => {
@@ -74,6 +81,25 @@ describe("PostCard media gallery", () => {
     expect(img.className).toContain("h-auto");
     expect(img.className).toContain("object-contain");
     expect(img.parentElement!.className).not.toMatch(/\bh-40\b|aspect-/);
+  });
+
+  it("fills the side bars of a single photo with a blurred copy of it", () => {
+    const { container } = render(
+      <PostCard post={makePost(urls(1))} onOpenDetail={() => {}} />,
+    );
+    const [backdrop] = backdrops(container);
+
+    expect(backdrop.getAttribute("src")).toBe("https://cdn.test/photo-1.jpg");
+    expect(backdrop.className).toContain("blur-2xl");
+    expect(backdrop.className).toContain("object-cover");
+    expect(galleryImages(container)).toHaveLength(1);
+  });
+
+  it("adds no blurred backdrop to a multi-photo grid", () => {
+    const { container } = render(
+      <PostCard post={makePost(urls(3))} onOpenDetail={() => {}} />,
+    );
+    expect(backdrops(container)).toHaveLength(0);
   });
 
   it("shows 4 tiles and +2 for a post with 6 photos", () => {

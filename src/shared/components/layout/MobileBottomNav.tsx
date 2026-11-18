@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
+import { requestRepublicRefresh } from "@/shared/lib/republic-refresh";
 
 /** The app's mobile nav — signed-in only, like the desktop app tabs. */
 export default function MobileBottomNav() {
@@ -167,6 +168,8 @@ export default function MobileBottomNav() {
         <Link
           href={republic.href}
           aria-label={republic.label}
+          // A fresh For You mix on every tap, also when already there (app#308).
+          onClick={requestRepublicRefresh}
           style={{
             width: 56,
             height: 56,

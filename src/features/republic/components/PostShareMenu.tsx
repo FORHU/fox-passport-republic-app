@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link2, Loader2, Share2 } from "lucide-react";
 import { FacebookIcon } from "@/shared/components/ui/FacebookIcon";
 import { useShareToFacebook } from "../hooks/useShareToFacebook";
+import { ActionCount } from "./ActionCount";
 
 interface PostShareMenuProps {
   postId: string;
@@ -12,6 +13,13 @@ interface PostShareMenuProps {
   copied: boolean;
   /** The viewer's own public video post: it can go to their Facebook Page. */
   canShareToFacebook: boolean;
+  /** Shown beside the icon; hidden at 0. */
+  sharesCount?: number;
+  /** The viewer has shared this post: the trigger is shown active. Sharing
+   * again still works; it just doesn't count again. */
+  shared?: boolean;
+  /** Called when a press puts the video on Facebook, so it's counted. */
+  onFacebookShared?: () => void;
 }
 
 const ITEM =
@@ -27,10 +35,13 @@ export function PostShareMenu({
   onCopyLink,
   copied,
   canShareToFacebook,
+  sharesCount = 0,
+  shared = false,
+  onFacebookShared,
 }: PostShareMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const facebook = useShareToFacebook(postId);
+  const facebook = useShareToFacebook(postId, onFacebookShared);
   const sharing = facebook.state === "sharing";
 
   useEffect(() => {
@@ -68,16 +79,24 @@ export function PostShareMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-busy={sharing}
-        className="w-full h-full flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+        className={`w-full h-full flex min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg transition-colors ${
+          shared
+            ? "text-lime-400 bg-lime-400/10 font-bold"
+            : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+        }`}
       >
         {sharing ? (
-          <Loader2 className="h-[18px] w-[18px] animate-spin" strokeWidth={2} />
+          <Loader2
+            className="h-[18px] w-[18px] shrink-0 animate-spin"
+            strokeWidth={2}
+          />
         ) : (
-          <Share2 className="h-[18px] w-[18px]" strokeWidth={2} />
+          <Share2 className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
         )}
         <span className="hidden sm:inline">
           {copied ? "Copied!" : sharing ? "Sharing…" : "Share"}
         </span>
+        <ActionCount n={sharesCount} />
       </button>
 
       {open && (

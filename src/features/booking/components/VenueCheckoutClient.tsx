@@ -1,12 +1,14 @@
 ﻿"use client";
 
-import React, { useEffect, useState, useRef, useId } from "react";
+import React, { useEffect, useMemo, useState, useRef, useId } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useThemeStore } from "@/shared/store/useThemeStore";
+import { stripeElementsAppearance } from "@/shared/lib/theme";
 import {
   createPaymentIntent,
   confirmBookingPayment,
@@ -33,6 +35,7 @@ export default function VenueCheckoutClient() {
   const serviceFeeParam = searchParams.get("serviceFee");
   const serviceFeeAmount = serviceFeeParam ? Number(serviceFeeParam) : 0;
   const { user } = useAuthStore();
+  const theme = useThemeStore((s) => s.theme);
   const { currency, format } = useCurrency();
   const confirmed = useRef(false);
 
@@ -125,19 +128,13 @@ export default function VenueCheckoutClient() {
     ? `${window.location.origin}/booking/venue/checkout?bookingId=${bookingId}&total=${totalAmount}`
     : `${window.location.origin}/checkout/success`;
 
-  const elementsOptions = clientSecret
-    ? {
-        clientSecret,
-        appearance: {
-          theme: "night" as const,
-          variables: {
-            colorPrimary: "#C4E85A",
-            colorBackground: "#14161B",
-            colorText: "#ffffff",
-          },
-        },
-      }
-    : null;
+  const elementsOptions = useMemo(
+    () =>
+      clientSecret
+        ? { clientSecret, appearance: stripeElementsAppearance(theme) }
+        : null,
+    [clientSecret, theme],
+  );
 
   if (!bookingId) {
     return (

@@ -16,8 +16,13 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+// The catalog has a row (with an id) for each Studio category.
 vi.mock("@/shared/lib/axios", () => ({
-  default: { get: vi.fn(async () => ({ data: { data: [] } })) },
+  default: {
+    get: vi.fn(async () => ({
+      data: { data: [{ id: 12, slug: "catering" }] },
+    })),
+  },
 }));
 
 const services = vi.hoisted(() => ({
@@ -40,6 +45,7 @@ vi.mock("@/shared/lib/imageFile", async (importOriginal) => ({
 import { useServicesBuilder } from "../useServicesBuilder";
 import { useListingBuilderStore } from "@/shared/store/useListingBuilderStore";
 import { toast } from "sonner";
+import api from "@/shared/lib/axios";
 
 const IMAGE = "data:image/png;base64,AAAA";
 
@@ -85,6 +91,20 @@ describe("Talent Studio drafts", () => {
     expect(result.current.title).toBe("");
     expect(result.current.image).toBe("");
     expect(result.current.activeType).toBe("service");
+  });
+
+  // The API refuses a blank description; leaving it out lets a draft save.
+  it("sends no description when the draft has none", async () => {
+    const { result } = setUp();
+
+    await act(() => result.current.handleSaveDraft());
+
+    const payload = services.createService.mock.calls[0][0];
+    expect(payload).toMatchObject({
+      name: "Event photography",
+      status: "draft",
+    });
+    expect(payload.description).toBeUndefined();
   });
 
   it("makes each Save Draft its own listing", async () => {
@@ -138,5 +158,114 @@ describe("Talent Studio drafts", () => {
       expect.objectContaining({ imgIds: ["f1"] }),
     );
     expect(upload.uploadFile).toHaveBeenCalledOnce();
+  });
+});
+
+// The API accepts only ServiceCategory slugs; a catalog id is a 400 (#321).
+describe("Service Studio category", () => {
+  // Let anything the hook loads on mount (it used to load the catalog to swap
+  // slugs for ids) settle first, as it has on a real page by the time a
+  // Provider clicks.
+  async function setUpLoaded() {
+    const hook = setUp();
+    await act(async () => {});
+    return hook;
+  }
+
+  it("publishes with the picked slug", async () => {
+    const { result } = await setUpLoaded();
+    act(() => {
+      result.current.setImage(IMAGE);
+      result.current.setDescription("Buffet for 100");
+      result.current.setCategory("catering");
+      result.current.setPrice(1500);
+    });
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ category: "catering" }),
+    );
+  });
+
+  it("saves a new draft with the picked slug", async () => {
+    const { result } = await setUpLoaded();
+    act(() => result.current.setCategory("catering"));
+
+    await act(() => result.current.handleSaveDraft());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ category: "catering" }),
+    );
+  });
+
+  it("doesn't load the category catalog", async () => {
+    await setUpLoaded();
+    expect(api.get).not.toHaveBeenCalled();
+  });
+
+  it("updates an adopted draft with the picked slug", async () => {
+    const { result } = await setUpLoaded();
+    act(() => {
+      result.current.adoptDraft("s9");
+      result.current.setCategory("catering");
+    });
+
+    await act(() => result.current.handleSaveDraft());
+
+    expect(services.updateService).toHaveBeenCalledWith(
+      "s9",
+      expect.objectContaining({ category: "catering" }),
+    );
+  });
+});
+
+// app#323: a published service carried no status, so the API saved a draft.
+describe("Service Studio Initial Status", () => {
+  function fillForPublish(result: ReturnType<typeof setUp>["result"]) {
+    act(() => {
+      result.current.setImage(IMAGE);
+      result.current.setDescription("Weddings and launches");
+      result.current.setCategory("other");
+      result.current.setPrice(1500);
+    });
+  }
+
+  it("opens with Active checked and publishes it as available", async () => {
+    const { result } = setUp();
+    expect(result.current.status).toBe("active");
+    fillForPublish(result);
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "available" }),
+    );
+  });
+
+  it.each([
+    ["paused", "paused"],
+    ["unavailable", "archived"],
+  ])("sends %s as the API's %s", async (picked, sent) => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus(picked));
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ status: sent }),
+    );
+  });
+
+  it("refuses to publish a status that isn't an option", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus("draft"));
+
+    await act(() => result.current.handlePublish());
+
+    expect(result.current.error).toBe("Pick an Initial Status");
+    expect(services.createService).not.toHaveBeenCalled();
   });
 });

@@ -58,6 +58,18 @@ export const SERVICE_UNITS = [
 export type ServiceStatus = (typeof SERVICE_STATUSES)[number];
 export type ServiceUnit = (typeof SERVICE_UNITS)[number];
 
+/** Initial Status choices the API's AssetStatus names differently. */
+export const ASSET_STATUS_TO_API: Record<string, string> = {
+  unavailable: "archived",
+};
+
+/** The owner's choices back to the API's ServiceStatus, which has no
+ * "active" or "unavailable". */
+export const SERVICE_STATUS_TO_API: Record<string, string> = {
+  active: "available",
+  unavailable: "archived",
+};
+
 // Maps UI display labels to the backend BillingRate enum values
 export const BILLING_RATE_MAP: Record<ServiceUnit, string> = {
   "Per Hour": "hourly",

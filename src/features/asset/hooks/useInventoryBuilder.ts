@@ -11,6 +11,7 @@ import type { CreateAssetPayload } from "@/shared/lib/api-types";
 import {
   ASSET_CATEGORIES,
   STATUSES,
+  ASSET_STATUS_TO_API,
   ListingType,
 } from "@/features/asset/data/listingBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
@@ -253,7 +254,7 @@ export function useInventoryBuilder() {
       } else {
         await createAsset({
           name: store.title,
-          description: store.description || " ",
+          description: store.description || undefined,
           condition: store.condition || "good",
           category: store.category || "other",
           price: parsedPrice > 0 ? parsedPrice : 1,
@@ -327,6 +328,15 @@ export function useInventoryBuilder() {
       setError(limitMsg);
       return;
     }
+    // A new listing goes up with the Initial Status the owner sees checked,
+    // never as a draft. (An opened draft goes to review below instead.)
+    if (
+      !savedDraftId.current &&
+      !(currentStatuses as readonly string[]).includes(store.status)
+    ) {
+      setError("Pick an Initial Status");
+      return;
+    }
 
     store.setIsSubmitting(true);
     setError(null);
@@ -366,8 +376,7 @@ export function useInventoryBuilder() {
 
       // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
       // such value, so map it to the closest backend equivalent.
-      const statusMap: Record<string, string> = { unavailable: "archived" };
-      const status = statusMap[store.status] ?? store.status;
+      const status = ASSET_STATUS_TO_API[store.status] ?? store.status;
 
       const assetData: CreateAssetPayload & { cancellationPolicyId?: string } =
         {
@@ -420,6 +429,7 @@ export function useInventoryBuilder() {
     createAssetWithAPI,
     router,
     uploadPickedImage,
+    currentStatuses,
   ]);
 
   return {

@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useState, useId } from "react";
+import React, { useEffect, useMemo, useState, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useThemeStore } from "@/shared/store/useThemeStore";
+import { stripeElementsAppearance } from "@/shared/lib/theme";
 import { createPaymentIntent } from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
@@ -51,6 +53,8 @@ export default function ItemCheckoutClient() {
     setClientSecret,
   } = useItemBookingStore();
 
+  const theme = useThemeStore((s) => s.theme);
+
   const fieldId = useId();
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
@@ -92,19 +96,13 @@ export default function ItemCheckoutClient() {
       .finally(() => setLoadingIntent(false));
   }, []);
 
-  const elementsOptions = clientSecret
-    ? {
-        clientSecret,
-        appearance: {
-          theme: "night" as const,
-          variables: {
-            colorPrimary: "#C4E85A",
-            colorBackground: "#14161B",
-            colorText: "#ffffff",
-          },
-        },
-      }
-    : null;
+  const elementsOptions = useMemo(
+    () =>
+      clientSecret
+        ? { clientSecret, appearance: stripeElementsAppearance(theme) }
+        : null,
+    [clientSecret, theme],
+  );
 
   const retryPaymentIntent = () => {
     setIntentError(null);

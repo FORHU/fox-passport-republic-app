@@ -94,6 +94,17 @@ describe("Gear Studio drafts", () => {
     expect(result.current.error).toBeNull();
   });
 
+  // The API refuses a blank description; leaving it out lets a draft save.
+  it("sends no description when the draft has none", async () => {
+    const { result } = setUp();
+
+    await act(() => result.current.handleSaveDraft());
+
+    const payload = assets.createAsset.mock.calls[0][0];
+    expect(payload).toMatchObject({ name: "Test speaker", status: "draft" });
+    expect(payload.description).toBeUndefined();
+  });
+
   it("saves a picked image with the draft, then clears it", async () => {
     const { result } = setUp();
     act(() => result.current.setImage(IMAGE));
@@ -203,5 +214,69 @@ describe("Gear Studio drafts", () => {
       expect.objectContaining({ imgIds: ["f1"] }),
     );
     expect(upload.uploadFile).toHaveBeenCalledOnce();
+  });
+});
+
+// app#323: a publish without touching Initial Status used to save a draft.
+describe("Gear Studio Initial Status", () => {
+  function fillForPublish(result: ReturnType<typeof setUp>["result"]) {
+    act(() => {
+      result.current.setImage(IMAGE);
+      result.current.setDescription("A loud speaker");
+      result.current.setCategory("sound_system");
+      result.current.setPrice(500);
+    });
+  }
+
+  it("opens with Available checked and publishes it", async () => {
+    const { result } = setUp();
+    expect(result.current.status).toBe("available");
+    fillForPublish(result);
+
+    await act(() => result.current.handlePublish());
+
+    expect(assets.createAsset).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "available" }),
+    );
+  });
+
+  it("sends Unavailable as the API's archived", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus("unavailable"));
+
+    await act(() => result.current.handlePublish());
+
+    expect(assets.createAsset).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "archived" }),
+    );
+  });
+
+  it("refuses to publish a status that isn't an option", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus("draft"));
+
+    await act(() => result.current.handlePublish());
+
+    expect(result.current.error).toBe("Pick an Initial Status");
+    expect(assets.createAsset).not.toHaveBeenCalled();
+    expect(upload.uploadFile).not.toHaveBeenCalled();
+  });
+
+  it("still sends an adopted draft to review", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => {
+      result.current.adoptDraft("x9");
+      result.current.setStatus("draft");
+    });
+
+    await act(() => result.current.handlePublish());
+
+    expect(assets.updateAsset).toHaveBeenCalledWith(
+      "x9",
+      expect.objectContaining({ status: "pending" }),
+    );
   });
 });

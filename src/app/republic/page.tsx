@@ -14,9 +14,19 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Inbox, Search } from "lucide-react";
+import { ArrowUp, CheckCircle2, Inbox, Search } from "lucide-react";
 import { FeedPost, FeedTab } from "@/features/republic/types";
-import { getFeed, getPostById, type FeedResponse } from "@/shared/api/feed";
+import {
+  getFeed,
+  getPostById,
+  type FeedMode,
+  type FeedResponse,
+} from "@/shared/api/feed";
+import { useNewPostsCount } from "@/features/republic/hooks/useNewPostsCount";
+import {
+  onRepublicRefresh,
+  takePendingRepublicRefresh,
+} from "@/shared/lib/republic-refresh";
 import { RepublicTabs } from "@/features/republic/components/RepublicTabs";
 import { ComposePostTrigger } from "@/features/republic/components/ComposePostTrigger";
 import { ComposePostModal } from "@/features/republic/components/ComposePostModal";
@@ -48,7 +58,7 @@ function RepublicFeedContent() {
   const initialSearch = hashtagParam ? `#${hashtagParam}` : "";
 
   const [activeTab, setActiveTab] = useState<FeedTab>(initialTab);
-  const [mode, setMode] = useState<"recent" | "top">("recent");
+  const [mode, setMode] = useState<FeedMode>("foryou");
   const [search, setSearch] = useState(initialSearch);
   const [searchInput, setSearchInput] = useState(initialSearch);
   const queryClient = useQueryClient();
@@ -158,13 +168,107 @@ function RepublicFeedContent() {
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    staleTime: 0,
+    // A For you refetch is a new session, i.e. a reshuffle. Never do that
+    // under the reader (window focus, reconnect); only on an explicit refresh,
+    // or when coming back after a while (app#308). Recent keeps refetching.
+    staleTime: mode === "foryou" ? 5 * 60_000 : 0,
+    refetchOnWindowFocus: mode !== "foryou",
+    refetchOnReconnect: mode !== "foryou",
   });
-  const posts = useMemo<FeedPost[]>(
-    () => feedQuery.data?.pages.flatMap((page) => page.data) ?? [],
-    [feedQuery.data],
+
+  // Posts picked up through the "New posts" pill (or the viewer's own new
+  // post), shown above the session's list. Keyed by view, so switching tab,
+  // search or mode drops them.
+  const viewKey = `${activeTab}|${term}|${mode}`;
+  const [freshPosts, setFreshPosts] = useState<{
+    key: string;
+    posts: FeedPost[];
+  }>({ key: "", posts: [] });
+  const prepended = useMemo(
+    () => (freshPosts.key === viewKey ? freshPosts.posts : []),
+    [freshPosts, viewKey],
   );
+
+  // De-duplicated by id: a post can be both prepended and in a later page,
+  // and a session's list can shift by one if a post is deleted mid-scroll.
+  const posts = useMemo<FeedPost[]>(() => {
+    const seen = new Set<string>();
+    const out: FeedPost[] = [];
+    for (const p of [
+      ...prepended,
+      ...(feedQuery.data?.pages.flatMap((page) => page.data) ?? []),
+    ]) {
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      out.push(p);
+    }
+    return out;
+  }, [prepended, feedQuery.data]);
   const loading = feedQuery.isPending;
+
+  // "Newer than what's on screen": For you's session start (server time),
+  // Recent's newest post, or the newest post picked up since.
+  const firstPage = feedQuery.data?.pages[0];
+  const since = useMemo(() => {
+    const candidates = [
+      mode === "foryou" ? firstPage?.anchor : firstPage?.data[0]?.createdAt,
+      prepended[0]?.createdAt,
+    ].filter((t): t is string => !!t);
+    if (candidates.length === 0) return null;
+    return candidates.reduce((a, b) =>
+      new Date(a).getTime() >= new Date(b).getTime() ? a : b,
+    );
+  }, [mode, firstPage, prepended]);
+  // The count endpoint has no search, so the pill only runs on unfiltered feeds.
+  const newCount = useNewPostsCount(
+    since,
+    activeTab,
+    !loading && term.length === 0,
+  );
+  const [loadingNew, setLoadingNew] = useState(false);
+
+  /** Puts posts newer than `since` on top, then scrolls up to them. */
+  const showNewPosts = useCallback(async () => {
+    if (!since) return;
+    setLoadingNew(true);
+    try {
+      const requestedAt = Date.now();
+      const page = await getFeed({ tab: activeTab, mode: "recent", limit: 20 });
+      usePostStatsStore.getState().syncFromServer(page.data, requestedAt);
+      const sinceMs = new Date(since).getTime();
+      const newer = page.data.filter(
+        (p) => new Date(p.createdAt).getTime() > sinceMs,
+      );
+      setFreshPosts((prev) => ({
+        key: viewKey,
+        posts: [...newer, ...(prev.key === viewKey ? prev.posts : [])],
+      }));
+    } catch (err) {
+      console.error("Failed to load new posts:", err);
+    } finally {
+      setLoadingNew(false);
+    }
+    postsListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [since, activeTab, viewKey]);
+
+  /** A new session: a new For you mix, from the top. */
+  const refreshFeed = useCallback(() => {
+    setFreshPosts({ key: "", posts: [] });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    queryClient.resetQueries({ queryKey: ["feed", activeTab, term, mode] });
+  }, [queryClient, activeTab, term, mode]);
+
+  // The nav's Republic button refreshes the feed (header pill, mobile bottom
+  // bar): a click while here is heard live, and one made on another page is
+  // taken when the feed mounts. Through a ref, so subscribing happens once.
+  const refreshFeedRef = useRef(refreshFeed);
+  useEffect(() => {
+    refreshFeedRef.current = refreshFeed;
+  }, [refreshFeed]);
+  useEffect(() => {
+    if (takePendingRepublicRefresh()) refreshFeedRef.current();
+    return onRepublicRefresh(() => refreshFeedRef.current());
+  }, []);
   const loadingMore = feedQuery.isFetchingNextPage;
   const hasMore = feedQuery.hasNextPage;
 
@@ -175,6 +279,10 @@ function RepublicFeedContent() {
 
   const removePost = useCallback(
     (id: string) => {
+      setFreshPosts((prev) => ({
+        ...prev,
+        posts: prev.posts.filter((p) => p.id !== id),
+      }));
       queryClient.setQueryData<InfiniteData<FeedResponse>>(
         feedQueryKey,
         (old) =>
@@ -193,10 +301,21 @@ function RepublicFeedContent() {
 
   // Shared success handler for the compose modal, wherever it was opened
   // from — refetches every cached feed view (and the landing teaser), so
-  // the new post shows up on whichever tab the author goes to next.
+  // the new post shows up on whichever tab the author goes to next. The For
+  // you list on screen is kept (a refetch would reshuffle it, and the new
+  // post could land anywhere); the author's post is put on top instead.
   const handleDesktopPostCreated = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["feed"] });
-  }, [queryClient]);
+    if (mode !== "foryou") {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      return;
+    }
+    const onScreen = JSON.stringify(["feed", activeTab, term, mode]);
+    queryClient.invalidateQueries({
+      queryKey: ["feed"],
+      predicate: (q) => JSON.stringify(q.queryKey) !== onScreen,
+    });
+    void showNewPosts();
+  }, [queryClient, mode, activeTab, term, showNewPosts]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -387,6 +506,22 @@ function RepublicFeedContent() {
 
             {/* Feed */}
             <div className="mt-5">
+              {/* "New posts" pill: a zero-height sticky row, so it floats over
+                  the list as you scroll and never pushes a post down. */}
+              {newCount > 0 && (
+                <div className="sticky top-24 sm:top-32 z-30 h-0 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => void showNewPosts()}
+                    disabled={loadingNew}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-lime-400 hover:bg-lime-300 text-black text-xs font-bold shadow-[0_8px_24px_rgba(0,0,0,0.55)] transition-colors cursor-pointer disabled:opacity-70"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    {newCount === 1 ? "1 new post" : `${newCount} new posts`}
+                  </button>
+                </div>
+              )}
+
               {loading ? (
                 <div className="space-y-4">
                   {Array.from({ length: 3 }).map((_, i) => (
@@ -454,8 +589,12 @@ function RepublicFeedContent() {
                       onPostDeleted={(id) => {
                         removePost(id);
                       }}
-                      renderShareModal={(postToShare, onClose) => (
-                        <SharePostModal post={postToShare} onClose={onClose} />
+                      renderShareModal={(postToShare, onClose, onSent) => (
+                        <SharePostModal
+                          post={postToShare}
+                          onClose={onClose}
+                          onSent={onSent}
+                        />
                       )}
                     />
                   ))}
@@ -509,8 +648,12 @@ function RepublicFeedContent() {
             removePost(id);
             handleCloseDetail();
           }}
-          renderShareModal={(postToShare, onClose) => (
-            <SharePostModal post={postToShare} onClose={onClose} />
+          renderShareModal={(postToShare, onClose, onSent) => (
+            <SharePostModal
+              post={postToShare}
+              onClose={onClose}
+              onSent={onSent}
+            />
           )}
         />
       )}
