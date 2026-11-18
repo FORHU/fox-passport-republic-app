@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { useListingBuilderStore } from "@/shared/store/useListingBuilderStore";
-import api from "@/shared/lib/axios";
 import { createService, updateService } from "@/features/service/api/services";
 import { toast } from "sonner";
 import type { CreateServicePayload } from "@/shared/lib/api-types";
@@ -28,7 +27,6 @@ export function useServicesBuilder() {
   // Set only on the edit page (adoptDraft), so a Studio never quietly
   // updates an earlier draft.
   const savedDraftId = useRef<string | null>(null);
-  const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
 
   // Ensure the shared store is initialized for service mode
   useEffect(() => {
@@ -36,27 +34,6 @@ export function useServicesBuilder() {
     return () => {
       store.reset();
     };
-  }, []);
-
-  // Fetch categories from API to map slugs to IDs
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get("/categories");
-        if (response.data?.data) {
-          const map: { [key: string]: string } = {};
-          response.data.data.forEach((cat: any) => {
-            if (cat.slug) {
-              map[cat.slug] = String(cat.id);
-            }
-          });
-          setCategoryMap(map);
-        }
-      } catch (err) {
-        console.warn("[useServicesBuilder] Failed to fetch categories:", err);
-      }
-    };
-    fetchCategories();
   }, []);
 
   // Categories and statuses specifically for services
@@ -195,10 +172,8 @@ export function useServicesBuilder() {
           name: store.title,
           description: store.description || undefined,
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-          category:
-            (store.category && categoryMap[store.category]) ||
-            store.category ||
-            undefined,
+          // The API takes the ServiceCategory slug, not a catalog id.
+          category: store.category || undefined,
           price: parsedPrice > 0 ? parsedPrice : undefined,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
           status: "draft",
@@ -210,10 +185,7 @@ export function useServicesBuilder() {
           name: store.title,
           description: store.description || " ",
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-          category:
-            (store.category && categoryMap[store.category]) ||
-            store.category ||
-            "other",
+          category: store.category || "other",
           price: parsedPrice > 0 ? parsedPrice : 1,
           city: "N/A",
           country: "PH",
@@ -235,7 +207,7 @@ export function useServicesBuilder() {
     } finally {
       store.setIsSubmitting(false);
     }
-  }, [store, getUserId, categoryMap, uploadPickedImage]);
+  }, [store, getUserId, uploadPickedImage]);
 
   // For the edit page: Save Draft updates the draft that's open rather than
   // creating a new one, and leaves its current image alone unless replaced.
@@ -295,7 +267,7 @@ export function useServicesBuilder() {
         name: store.title,
         description: store.description,
         billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-        category: categoryMap[store.category] || store.category,
+        category: store.category,
         price:
           typeof store.price === "string"
             ? parseFloat(store.price)
