@@ -64,7 +64,9 @@ const getInitialState = (type: ListingType = "inventory") => ({
   price: 0,
   unit: type === "service" ? "Per Hour" : "Per Item / Day",
   condition: "good",
-  status: "draft",
+  // One of the Initial Status options, so the Studio opens with one checked
+  // and Publish saves it (a "draft" here used to be published as a draft).
+  status: type === "service" ? "active" : "available",
   image: "",
   city: "",
   state: "",

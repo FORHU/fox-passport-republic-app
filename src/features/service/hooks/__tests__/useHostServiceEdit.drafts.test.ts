@@ -90,6 +90,8 @@ describe("editing a Talent draft", () => {
 
   it("Publish sends the draft to review", async () => {
     const { result } = await open("draft");
+    // No Initial Status checked: the pick doesn't apply to a review.
+    expect(result.current.status).toBe("draft");
 
     await act(() => result.current.handlePublish());
 

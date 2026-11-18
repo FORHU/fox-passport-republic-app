@@ -12,6 +12,7 @@ import type { CreateServicePayload } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
   SERVICE_STATUSES,
+  SERVICE_STATUS_TO_API,
   BILLING_RATE_MAP,
   ServiceUnit,
 } from "@/features/service/data/serviceBuilderData";
@@ -272,6 +273,15 @@ export function useServicesBuilder() {
       setError(`Please fill in: ${missing.join(", ")}`);
       return;
     }
+    // A new service goes up with the Initial Status the owner sees checked,
+    // never as a draft. (An opened draft goes to review below instead.)
+    if (
+      !savedDraftId.current &&
+      !(currentStatuses as readonly string[]).includes(store.status)
+    ) {
+      setError("Pick an Initial Status");
+      return;
+    }
 
     store.setIsSubmitting(true);
     setError(null);
@@ -306,6 +316,8 @@ export function useServicesBuilder() {
         lat: store.lat ?? undefined,
         lng: store.lng ?? undefined,
         imgIds: [fileId],
+        // Without a status the API saves a draft.
+        status: SERVICE_STATUS_TO_API[store.status] ?? store.status,
         cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
 
@@ -342,6 +354,7 @@ export function useServicesBuilder() {
     createServiceWithAPI,
     router,
     uploadPickedImage,
+    currentStatuses,
   ]);
 
   return {

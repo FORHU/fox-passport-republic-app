@@ -140,3 +140,53 @@ describe("Talent Studio drafts", () => {
     expect(upload.uploadFile).toHaveBeenCalledOnce();
   });
 });
+
+// app#323: a published service carried no status, so the API saved a draft.
+describe("Service Studio Initial Status", () => {
+  function fillForPublish(result: ReturnType<typeof setUp>["result"]) {
+    act(() => {
+      result.current.setImage(IMAGE);
+      result.current.setDescription("Weddings and launches");
+      result.current.setCategory("other");
+      result.current.setPrice(1500);
+    });
+  }
+
+  it("opens with Active checked and publishes it as available", async () => {
+    const { result } = setUp();
+    expect(result.current.status).toBe("active");
+    fillForPublish(result);
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "available" }),
+    );
+  });
+
+  it.each([
+    ["paused", "paused"],
+    ["unavailable", "archived"],
+  ])("sends %s as the API's %s", async (picked, sent) => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus(picked));
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ status: sent }),
+    );
+  });
+
+  it("refuses to publish a status that isn't an option", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus("draft"));
+
+    await act(() => result.current.handlePublish());
+
+    expect(result.current.error).toBe("Pick an Initial Status");
+    expect(services.createService).not.toHaveBeenCalled();
+  });
+});

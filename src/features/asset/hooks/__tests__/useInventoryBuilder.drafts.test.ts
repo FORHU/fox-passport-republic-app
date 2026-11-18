@@ -205,3 +205,67 @@ describe("Gear Studio drafts", () => {
     expect(upload.uploadFile).toHaveBeenCalledOnce();
   });
 });
+
+// app#323: a publish without touching Initial Status used to save a draft.
+describe("Gear Studio Initial Status", () => {
+  function fillForPublish(result: ReturnType<typeof setUp>["result"]) {
+    act(() => {
+      result.current.setImage(IMAGE);
+      result.current.setDescription("A loud speaker");
+      result.current.setCategory("sound_system");
+      result.current.setPrice(500);
+    });
+  }
+
+  it("opens with Available checked and publishes it", async () => {
+    const { result } = setUp();
+    expect(result.current.status).toBe("available");
+    fillForPublish(result);
+
+    await act(() => result.current.handlePublish());
+
+    expect(assets.createAsset).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "available" }),
+    );
+  });
+
+  it("sends Unavailable as the API's archived", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus("unavailable"));
+
+    await act(() => result.current.handlePublish());
+
+    expect(assets.createAsset).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "archived" }),
+    );
+  });
+
+  it("refuses to publish a status that isn't an option", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => result.current.setStatus("draft"));
+
+    await act(() => result.current.handlePublish());
+
+    expect(result.current.error).toBe("Pick an Initial Status");
+    expect(assets.createAsset).not.toHaveBeenCalled();
+    expect(upload.uploadFile).not.toHaveBeenCalled();
+  });
+
+  it("still sends an adopted draft to review", async () => {
+    const { result } = setUp();
+    fillForPublish(result);
+    act(() => {
+      result.current.adoptDraft("x9");
+      result.current.setStatus("draft");
+    });
+
+    await act(() => result.current.handlePublish());
+
+    expect(assets.updateAsset).toHaveBeenCalledWith(
+      "x9",
+      expect.objectContaining({ status: "pending" }),
+    );
+  });
+});
