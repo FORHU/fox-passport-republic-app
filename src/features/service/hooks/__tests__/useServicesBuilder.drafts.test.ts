@@ -93,6 +93,20 @@ describe("Talent Studio drafts", () => {
     expect(result.current.activeType).toBe("service");
   });
 
+  // The API refuses a blank description; leaving it out lets a draft save.
+  it("sends no description when the draft has none", async () => {
+    const { result } = setUp();
+
+    await act(() => result.current.handleSaveDraft());
+
+    const payload = services.createService.mock.calls[0][0];
+    expect(payload).toMatchObject({
+      name: "Event photography",
+      status: "draft",
+    });
+    expect(payload.description).toBeUndefined();
+  });
+
   it("makes each Save Draft its own listing", async () => {
     const { result } = setUp();
     await act(() => result.current.handleSaveDraft());
