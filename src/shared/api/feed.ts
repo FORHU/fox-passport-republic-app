@@ -87,11 +87,21 @@ export const repostPost = async (
   return res.data.data;
 };
 
+/** Counts a share once per signed-in user per post (the API enforces it).
+ * `counted` is false for a repeat or a guest; `sharesCount` is the post's
+ * count either way. */
 export const trackPostShare = async (
   id: string,
-): Promise<{ success: boolean }> => {
+): Promise<{ counted: boolean; sharesCount: number }> => {
   const res = await api.post(`/feed/${id}/share`);
-  return res.data;
+  return res.data.data;
+};
+
+/** Records that the signed-in viewer saw these posts. Returns the ids the
+ * server counted (first view by a non-author who may see the post). */
+export const recordPostViews = async (postIds: string[]): Promise<string[]> => {
+  const res = await api.post(`/feed/views`, { postIds });
+  return res.data.data?.recorded ?? [];
 };
 
 export const toggleSavePost = async (

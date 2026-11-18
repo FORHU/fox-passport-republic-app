@@ -152,8 +152,12 @@ export default function SavedPostsPage() {
                 onOpenDetail={setActivePost}
                 onPostDeleted={handleUnsaved}
                 onPostUnsaved={handleUnsaved}
-                renderShareModal={(postToShare, onClose) => (
-                  <SharePostModal post={postToShare} onClose={onClose} />
+                renderShareModal={(postToShare, onClose, onSent) => (
+                  <SharePostModal
+                    post={postToShare}
+                    onClose={onClose}
+                    onSent={onSent}
+                  />
                 )}
               />
             ))}
@@ -194,8 +198,12 @@ export default function SavedPostsPage() {
             handleUnsaved(id);
             setActivePost(null);
           }}
-          renderShareModal={(postToShare, onClose) => (
-            <SharePostModal post={postToShare} onClose={onClose} />
+          renderShareModal={(postToShare, onClose, onSent) => (
+            <SharePostModal
+              post={postToShare}
+              onClose={onClose}
+              onSent={onSent}
+            />
           )}
         />
       )}

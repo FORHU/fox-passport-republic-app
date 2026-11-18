@@ -101,9 +101,18 @@ export interface FeedPost {
   originalPostId?: string | null;
   likesCount: number;
   commentsCount: number;
+  /** Distinct signed-in users who shared it (copy link, Facebook, event
+   * page); each user counts once. */
   sharesCount: number;
+  /** Times the post was sent in a message. */
+  sendsCount?: number;
+  repostsCount?: number;
+  /** Distinct signed-in viewers other than the author. */
+  viewsCount?: number;
   isPinned: boolean;
   isLikedByMe?: boolean;
+  /** The viewer has already shared it, so sharing again won't count. */
+  isSharedByMe?: boolean;
   myReaction?: ReactionType | null;
   isFollowingAuthor?: boolean;
   isSavedByMe?: boolean;

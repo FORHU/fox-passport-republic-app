@@ -7,7 +7,11 @@ interface PostDetailModalProps {
   post: FeedPost;
   onClose: () => void;
   onPostDeleted?: (id: string) => void;
-  renderShareModal?: (postToShare: any, onClose: () => void) => React.ReactNode;
+  renderShareModal?: (
+    postToShare: any,
+    onClose: () => void,
+    onSent: (n: number) => void,
+  ) => React.ReactNode;
 }
 
 // Facebook-style "click a post, see it full-screen with comments" modal.

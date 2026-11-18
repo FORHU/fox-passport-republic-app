@@ -454,8 +454,12 @@ function RepublicFeedContent() {
                       onPostDeleted={(id) => {
                         removePost(id);
                       }}
-                      renderShareModal={(postToShare, onClose) => (
-                        <SharePostModal post={postToShare} onClose={onClose} />
+                      renderShareModal={(postToShare, onClose, onSent) => (
+                        <SharePostModal
+                          post={postToShare}
+                          onClose={onClose}
+                          onSent={onSent}
+                        />
                       )}
                     />
                   ))}
@@ -509,8 +513,12 @@ function RepublicFeedContent() {
             removePost(id);
             handleCloseDetail();
           }}
-          renderShareModal={(postToShare, onClose) => (
-            <SharePostModal post={postToShare} onClose={onClose} />
+          renderShareModal={(postToShare, onClose, onSent) => (
+            <SharePostModal
+              post={postToShare}
+              onClose={onClose}
+              onSent={onSent}
+            />
           )}
         />
       )}

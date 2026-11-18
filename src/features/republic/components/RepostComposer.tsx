@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { repostPost } from "@/shared/api/feed";
+import { usePostStatsStore } from "../store/usePostStatsStore";
 import type { FeedPost } from "../types";
 
 interface RepostComposerProps {
@@ -40,6 +41,9 @@ export function RepostComposer({ post, onClose }: RepostComposerProps) {
     setSubmitting(true);
     try {
       await repostPost(post.id, caption);
+      const stats = usePostStatsStore.getState();
+      stats.seed(post);
+      stats.adjustCount(post.id, "repostsCount", 1);
       toast.success("Reposted to your feed!");
       onClose();
     } catch (error: any) {
