@@ -105,6 +105,9 @@ export interface PublicCitizenProfile {
     likesCount: number;
     commentsCount: number;
     sharesCount: number;
+    sendsCount?: number;
+    repostsCount?: number;
+    viewsCount?: number;
     venue?: {
       id: string;
       name: string;

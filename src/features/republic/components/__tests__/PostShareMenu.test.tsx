@@ -47,6 +47,7 @@ const refusal = (status: number, code: string, data?: unknown) =>
   });
 
 const onCopyLink = vi.fn();
+const onFacebookShared = vi.fn();
 const renderMenu = (canShareToFacebook = true) =>
   render(
     <PostShareMenu
@@ -54,6 +55,7 @@ const renderMenu = (canShareToFacebook = true) =>
       onCopyLink={onCopyLink}
       copied={false}
       canShareToFacebook={canShareToFacebook}
+      onFacebookShared={onFacebookShared}
     />,
   );
 
@@ -80,6 +82,7 @@ beforeEach(() => {
   api.shareToFacebook.mockReset();
   api.getFacebookShare.mockReset();
   onCopyLink.mockReset();
+  onFacebookShared.mockReset();
   toast.mockReset();
   toast.success.mockReset();
   toast.error.mockReset();
@@ -91,6 +94,21 @@ afterEach(() => {
 });
 
 describe("PostShareMenu", () => {
+  it("shows the trigger active once the viewer has shared the post", () => {
+    const { rerender } = renderMenu();
+    expect(trigger().className).not.toContain("text-lime-400");
+    rerender(
+      <PostShareMenu
+        postId="p1"
+        onCopyLink={onCopyLink}
+        copied={false}
+        canShareToFacebook
+        shared
+      />,
+    );
+    expect(trigger().className).toContain("text-lime-400");
+  });
+
   it("copies the link and closes the menu", () => {
     renderMenu();
     fireEvent.click(trigger());
@@ -131,6 +149,8 @@ describe("PostShareMenu", () => {
       fireEvent.click(facebookItem());
     });
     expect(api.shareToFacebook).toHaveBeenCalledWith("p1");
+    // Uploaded, so it counts as a share right away (app#303).
+    expect(onFacebookShared).toHaveBeenCalledTimes(1);
     // The menu closed; the Share button keeps showing the share is running.
     expect(trigger()).toHaveTextContent("Sharing…");
     expect(openFacebookItem()).toHaveTextContent("Sharing to Facebook…");
@@ -210,6 +230,8 @@ describe("PostShareMenu", () => {
     renderMenu();
     await pressFacebook();
     expect(openFacebookItem()).toHaveTextContent("Shared to Facebook");
+    // Already there: pressing again isn't another share.
+    expect(onFacebookShared).not.toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalledWith(
       "This video is already on your Facebook Page.",
       { action: expect.objectContaining({ label: "View on Facebook" }) },

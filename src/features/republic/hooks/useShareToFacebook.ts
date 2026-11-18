@@ -50,8 +50,14 @@ const SETTINGS_FIXES: Record<string, { message: string; label: string }> = {
  * Page, then follows it until Facebook has it live. Nothing is sent until
  * `share` is called. The outcome is told with toasts; `state` drives the UI.
  */
-export function useShareToFacebook(postId: string) {
+export function useShareToFacebook(postId: string, onShared?: () => void) {
   const [state, setStateRaw] = useState<FacebookShareState>("idle");
+  // Called when this press put the video on Facebook (not when it was
+  // already there), so the caller can count the share straight away.
+  const onSharedRef = useRef(onShared);
+  useEffect(() => {
+    onSharedRef.current = onShared;
+  });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useRef(true);
   // Set synchronously: calls that land before the re-render still see it,
@@ -116,6 +122,9 @@ export function useShareToFacebook(postId: string) {
     setState("sharing");
     try {
       const result = await shareToFacebook(postId);
+      // The API counts the share as soon as the video is uploaded (anything
+      // but "failed"); mirror it here.
+      if (result.status !== "failed") onSharedRef.current?.();
       if (result.status === "published" || result.status === "failed") {
         finish(result);
       } else {
