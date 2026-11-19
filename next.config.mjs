@@ -39,6 +39,7 @@ const nextConfig = {
   // Query's 30s staleTime in QueryProvider, so hopping back to a page you
   // just left is instant on both layers. `router.refresh()` still bypasses it.
   experimental: {
+    agentUpgrade: "security",
     staleTimes: {
       dynamic: 30,
     },
