@@ -11,6 +11,7 @@ import {
   FILTER_STATUS_OPTIONS,
   type ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
+import { useSaveListingStatus } from "@/features/dashboard/hooks/useSaveListingStatus";
 import { DashboardListToolbar } from "./DashboardListToolbar";
 
 interface HostPerformersClientProps {
@@ -22,16 +23,6 @@ function normalizeValue(value: unknown): string {
     .trim()
     .toLowerCase()
     .replace(/_/g, " ");
-}
-
-function toTitleCaseStatus(status: string): string {
-  const normalized = normalizeValue(status);
-  if (!normalized) return status;
-  return normalized
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
 }
 
 export default function HostPerformersClient({
@@ -66,10 +57,18 @@ export default function HostPerformersClient({
     });
   }, [services, searchQuery, status]);
 
-  const handleStatusChange = (id: number | string, nextStatus: string) => {
-    const label = toTitleCaseStatus(nextStatus);
+  const saveStatus = useSaveListingStatus();
+
+  // The badge changes once the API has the new status; on failure it keeps
+  // the old one and a toast says why.
+  const handleStatusChange = async (
+    id: number | string,
+    nextStatus: string,
+  ) => {
+    const saved = await saveStatus("service", id, nextStatus);
+    if (!saved) return;
     setServices((prev) =>
-      prev.map((sv) => (sv.id === id ? { ...sv, status: label } : sv)),
+      prev.map((sv) => (sv.id === id ? { ...sv, status: saved } : sv)),
     );
   };
 

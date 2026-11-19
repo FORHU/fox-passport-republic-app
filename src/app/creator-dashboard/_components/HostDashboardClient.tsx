@@ -2,10 +2,9 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
-import { updateAsset } from "@/features/asset/api/assets";
+import { useSaveListingStatus } from "@/features/dashboard/hooks/useSaveListingStatus";
 import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
 import {
   DashboardHeader,
@@ -58,7 +57,6 @@ export default function HostDashboardClient({
   initialData,
 }: HostDashboardClientProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const {
     isCreateMenuOpen,
@@ -132,27 +130,12 @@ export default function HostDashboardClient({
     }
   };
 
-  // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
-  // such value, so map it to the closest backend equivalent.
-  const assetStatusMap: Record<string, string> = { unavailable: "archived" };
-
-  const handleInventoryStatusChange = async (
-    id: number | string,
-    status: string,
-  ) => {
-    try {
-      await updateAsset(id, { status: assetStatusMap[status] ?? status });
-      queryClient.invalidateQueries({ queryKey: ["host-data", "assets"] });
-      toast.success("Status updated");
-    } catch (err: any) {
-      console.error(
-        "[handleInventoryStatusChange]",
-        err?.response?.status,
-        err?.response?.data,
-      );
-      toast.error(err?.response?.data?.message ?? "Failed to update status");
-    }
-  };
+  // Saves and invalidates the host-data query, so the lists below refetch.
+  const saveStatus = useSaveListingStatus();
+  const handleInventoryStatusChange = (id: number | string, status: string) =>
+    saveStatus("asset", id, status);
+  const handleServiceStatusChange = (id: number | string, status: string) =>
+    saveStatus("service", id, status);
 
   // Reactive data with polling
   // Each of these is gated on the same role check that decides whether the
@@ -327,7 +310,7 @@ export default function HostDashboardClient({
                 <div data-tour="host-services">
                   <ServicesSection
                     services={services}
-                    onStatusChange={() => {}}
+                    onStatusChange={handleServiceStatusChange}
                     page={servicesPage}
                     totalPages={totalServicePages}
                     onPageChange={setServicesPage}
@@ -340,7 +323,7 @@ export default function HostDashboardClient({
                 <div data-tour="host-performers">
                   <PerformersSection
                     services={services}
-                    onStatusChange={() => {}}
+                    onStatusChange={handleServiceStatusChange}
                     page={servicesPage}
                     totalPages={totalServicePages}
                     onPageChange={setServicesPage}
@@ -357,7 +340,7 @@ export default function HostDashboardClient({
                   <div data-tour="host-services">
                     <ServicesSection
                       services={services.filter((s) => !isPerformerService(s))}
-                      onStatusChange={() => {}}
+                      onStatusChange={handleServiceStatusChange}
                       page={servicesPage}
                       totalPages={totalServicePages}
                       onPageChange={setServicesPage}
@@ -366,7 +349,7 @@ export default function HostDashboardClient({
                   <div data-tour="host-performers">
                     <PerformersSection
                       services={services.filter(isPerformerService)}
-                      onStatusChange={() => {}}
+                      onStatusChange={handleServiceStatusChange}
                       page={servicesPage}
                       totalPages={totalServicePages}
                       onPageChange={setServicesPage}

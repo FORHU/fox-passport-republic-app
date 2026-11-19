@@ -11,6 +11,7 @@ import {
   FILTER_STATUS_OPTIONS,
   type InventoryItem,
 } from "@/features/dashboard/data/dashboardData";
+import { useSaveListingStatus } from "@/features/dashboard/hooks/useSaveListingStatus";
 import { DashboardListToolbar } from "./DashboardListToolbar";
 
 function normalizeValue(value: unknown): string {
@@ -65,9 +66,18 @@ export default function HostAssetsClient({
     });
   }, [inventory, searchQuery, status]);
 
-  const handleStatusChange = (id: number | string, nextStatus: string) => {
+  const saveStatus = useSaveListingStatus();
+
+  // The badge changes once the API has the new status; on failure it keeps
+  // the old one and a toast says why.
+  const handleStatusChange = async (
+    id: number | string,
+    nextStatus: string,
+  ) => {
+    const saved = await saveStatus("asset", id, nextStatus);
+    if (!saved) return;
     setInventory((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, status: nextStatus } : it)),
+      prev.map((it) => (it.id === id ? { ...it, status: saved } : it)),
     );
   };
 
