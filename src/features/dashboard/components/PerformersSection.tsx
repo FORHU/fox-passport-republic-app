@@ -3,7 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { type ServiceItem } from "@/features/dashboard/data/dashboardData";
+import {
+  canOwnerSetStatus,
+  type ServiceItem,
+} from "@/features/dashboard/data/dashboardData";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
@@ -52,7 +55,8 @@ export function isPerformerService(item: ServiceItem): boolean {
 
 interface PerformersSectionProps {
   services: ServiceItem[];
-  onStatusChange: (id: number | string, status: string) => void;
+  /** Leave out to show every badge as a label. */
+  onStatusChange?: (id: number | string, status: string) => void;
   showViewAllLink?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
@@ -155,7 +159,11 @@ export function PerformersSection({
                     <StatusBadge
                       currentStatus={sv.status}
                       type="service"
-                      onStatusChange={(s) => onStatusChange(sv.id, s)}
+                      onStatusChange={
+                        onStatusChange && canOwnerSetStatus(sv.status)
+                          ? (s) => onStatusChange(sv.id, s)
+                          : undefined
+                      }
                     />
                   </div>
                 </div>

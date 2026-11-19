@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
+  canOwnerSetStatus,
   InventoryItem,
   ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
@@ -14,7 +15,8 @@ import { Money } from "@/shared/components/ui/Money";
 
 interface InventorySectionProps {
   inventory: InventoryItem[];
-  onStatusChange: (id: number | string, status: string) => void;
+  /** Leave out to show every badge as a label. */
+  onStatusChange?: (id: number | string, status: string) => void;
   showViewAllLink?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
@@ -93,7 +95,11 @@ export function InventorySection({
                 <StatusBadge
                   currentStatus={it.status}
                   type="inventory"
-                  onStatusChange={(s) => onStatusChange(it.id, s)}
+                  onStatusChange={
+                    onStatusChange && canOwnerSetStatus(it.status)
+                      ? (s) => onStatusChange(it.id, s)
+                      : undefined
+                  }
                 />
               </div>
 
@@ -127,7 +133,8 @@ export function InventorySection({
 
 interface ServicesSectionProps {
   services: ServiceItem[];
-  onStatusChange: (id: number | string, status: string) => void;
+  /** Leave out to show every badge as a label. */
+  onStatusChange?: (id: number | string, status: string) => void;
   showViewAllLink?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
@@ -210,7 +217,11 @@ export function ServicesSection({
               <StatusBadge
                 currentStatus={sv.status}
                 type="service"
-                onStatusChange={(s) => onStatusChange(sv.id, s)}
+                onStatusChange={
+                  onStatusChange && canOwnerSetStatus(sv.status)
+                    ? (s) => onStatusChange(sv.id, s)
+                    : undefined
+                }
               />
             </div>
           ))
