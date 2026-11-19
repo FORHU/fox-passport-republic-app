@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardHeader,
   PerformersSection,
+  isPerformerService,
 } from "@/features/dashboard/components";
 import {
   FILTER_STATUS_OPTIONS,
@@ -43,7 +44,10 @@ export default function HostPerformersClient({
   const [status, setStatus] = useState<"all" | string>(
     () => searchParams.get("status") ?? "all",
   );
-  const [services, setServices] = useState<ServiceItem[]>(initialServices);
+  // The page gets every service; this page lists performer gigs only.
+  const [services, setServices] = useState<ServiceItem[]>(() =>
+    initialServices.filter(isPerformerService),
+  );
 
   const filteredServices = useMemo(() => {
     const q = normalizeValue(searchQuery);
