@@ -94,6 +94,23 @@ export const ADMIN_SECTIONS = [
     permission: "disputes:resolve",
   },
   {
+    // Stripe chargebacks; answered in the Stripe dashboard before the deadline.
+    label: "Chargebacks",
+    title: "Chargebacks",
+    icon: "credit_card_off",
+    id: "chargebacks",
+    // What the API's payment-disputes route checks.
+    permission: "disputes:resolve",
+  },
+  {
+    // Foxer payouts that didn't go through, with a retry (payments:manage).
+    label: "Payouts",
+    title: "Failed Payouts",
+    icon: "account_balance",
+    id: "payouts",
+    permission: "payments:read:all",
+  },
+  {
     label: "Reports",
     title: "Reports",
     icon: "flag",
