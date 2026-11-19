@@ -269,3 +269,48 @@ describe("Service Studio Initial Status", () => {
     expect(services.createService).not.toHaveBeenCalled();
   });
 });
+
+// app#326: every "add a gig" button opens the Studio with `?type=performer`.
+describe("Gig Studio (performer mode)", () => {
+  it("offers the performer categories, and Add Service keeps its own", () => {
+    const gig = renderHook(() => useServicesBuilder({ mode: "performer" }));
+    expect(gig.result.current.mode).toBe("performer");
+    expect(gig.result.current.categories.map((c) => c.id)).toEqual([
+      "dj",
+      "live_band",
+      "photography",
+      "videography",
+      "mc",
+    ]);
+    gig.unmount();
+
+    const service = renderHook(() => useServicesBuilder());
+    expect(service.result.current.mode).toBe("service");
+    expect(service.result.current.categories.map((c) => c.id)).toEqual([
+      "design",
+      "catering",
+      "service_staff",
+      "other",
+    ]);
+  });
+
+  it("publishes a gig with its performer slug", async () => {
+    const { result } = renderHook(() =>
+      useServicesBuilder({ mode: "performer" }),
+    );
+    act(() => {
+      result.current.setTitle("Wedding DJ set");
+      result.current.setDescription("Four hours, sound included");
+      result.current.handleCategorySelect("dj");
+      result.current.setPrice(8000);
+      result.current.setImage(IMAGE);
+    });
+    expect(result.current.displayCategory).toBe("DJ");
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.createService).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Wedding DJ set", category: "dj" }),
+    );
+  });
+});

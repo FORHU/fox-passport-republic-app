@@ -114,3 +114,38 @@ describe("editing a Talent draft", () => {
     );
   });
 });
+
+// app#326: a gig reopened as "Other" would save as `other` and leave the
+// Performers page.
+describe("editing a performer gig", () => {
+  async function openCategory(category: string) {
+    services.fetchServicesByOwnerId.mockResolvedValue([
+      { ...LISTING, category, status: "available" },
+    ]);
+    const hook = renderHook(() => useHostServiceEdit("s1"));
+    await waitFor(() => expect(hook.result.current.isPrefilling).toBe(false));
+    return hook;
+  }
+
+  it("keeps its performer category and offers the gig categories", async () => {
+    const { result } = await openCategory("dj");
+    expect(result.current.category).toBe("dj");
+    expect(result.current.customCategory).toBe("");
+    expect(result.current.mode).toBe("performer");
+    expect(result.current.categories.map((c) => c.id)).toContain("dj");
+
+    await act(() => result.current.handlePublish());
+
+    expect(services.updateService).toHaveBeenCalledWith(
+      "s1",
+      expect.objectContaining({ category: "dj" }),
+    );
+  });
+
+  it("still opens an unknown category as Other", async () => {
+    const { result } = await openCategory("balloon_art");
+    expect(result.current.category).toBe("other");
+    expect(result.current.customCategory).toBe("balloon_art");
+    expect(result.current.mode).toBe("service");
+  });
+});

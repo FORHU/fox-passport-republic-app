@@ -223,7 +223,7 @@ export function PerformersSection({
           <div className="col-span-full">
             <EmptyState
               type="services"
-              href="/foxer/create-listing?type=service"
+              href="/foxer/create-service?type=performer"
             />
           </div>
         )}
