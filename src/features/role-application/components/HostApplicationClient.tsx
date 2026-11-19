@@ -12,6 +12,8 @@ import {
   CascadingLocationFields,
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
+import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+import { yearsOfExperienceError } from "../utils/yearsOfExperience";
 
 const EVENT_CATEGORY_OPTIONS = [
   { value: "corporate", label: "Corporate" },
@@ -59,10 +61,9 @@ export default function HostApplicationClient() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, "");
-    setFormData((prev) => ({ ...prev, experience: digits }));
-  };
+  // Kept as typed and checked instead: stripping non-digits turned "2.5" into
+  // "25" (app#327).
+  const experienceError = yearsOfExperienceError(formData.experience);
 
   const uploaded = FOXER_KYC_DOCUMENTS.filter(
     (d) => formData[d.field as keyof typeof formData],
@@ -132,7 +133,11 @@ export default function HostApplicationClient() {
       onSubmit={() =>
         applyRole({
           roleType: "eventFoxer",
-          data: { ...formData, specializations },
+          data: {
+            ...formData,
+            experience: formData.experience.trim(),
+            specializations,
+          },
         })
       }
     >
@@ -141,9 +146,10 @@ export default function HostApplicationClient() {
         title="About you"
         description="Your background in organizing events, and where you're based."
         validate={() =>
-          place.city
+          experienceError ??
+          (place.city
             ? null
-            : "Choose your base location — country, state and city."
+            : "Choose your base location — country, state and city.")
         }
       >
         <div className="space-y-2">
@@ -180,21 +186,25 @@ export default function HostApplicationClient() {
 
         <div className="space-y-2">
           <label className={LABEL}>Years of Experience</label>
-          <div className="relative">
+          <FieldControl invalid={!!experienceError}>
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
               <ShieldCheck size={18} />
             </div>
             <input
               type="text"
               inputMode="numeric"
-              pattern="[0-9]*"
               name="experience"
               value={formData.experience}
-              onChange={handleExperienceChange}
-              className={`${INPUT} pl-12`}
+              onChange={handleChange}
+              aria-invalid={experienceError ? true : undefined}
+              aria-describedby={
+                experienceError ? "experience-error" : undefined
+              }
+              className={`${INPUT} pl-12 ${experienceError ? "field-invalid pr-10" : ""}`}
               placeholder="e.g. 5"
             />
-          </div>
+          </FieldControl>
+          <FieldError id="experience-error" message={experienceError} />
         </div>
 
         <SpecializationPicker

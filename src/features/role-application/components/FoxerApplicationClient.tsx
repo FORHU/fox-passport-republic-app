@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useId, useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
 import {
   Briefcase,
@@ -32,6 +32,12 @@ import {
   CountryField,
   useCountryName,
 } from "@/shared/components/ui/CountryField";
+import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+import {
+  WHOLE_YEARS_MESSAGE,
+  toYearsOfExperience,
+  yearsOfExperienceError,
+} from "../utils/yearsOfExperience";
 
 // An Organizer's specializations are the kinds of events and venues they have
 // helped run, so they draw on both the API's EventCategory and VenueCategory.
@@ -64,30 +70,37 @@ function IconField({
   hint,
   icon,
   accent,
+  error,
   ...input
 }: {
   label: string;
   hint?: string;
   icon: React.ReactNode;
   accent: string;
+  /** Shown under the field, which is then marked invalid. */
+  error?: string | null;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const errorId = `${useId()}-error`;
   return (
     <div className="space-y-2">
       <label className={LABEL}>{label}</label>
       {hint && <p className="mb-1 text-xs text-white/40">{hint}</p>}
-      <div className="relative">
+      <FieldControl invalid={!!error}>
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
           {icon}
         </div>
         <input
           {...input}
-          className={`${INPUT_BASE} pl-12 pr-4`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          className={`${INPUT_BASE} pl-12 ${error ? "field-invalid pr-10" : "pr-4"}`}
           onFocus={(e) =>
             (e.currentTarget.style.borderColor = `color-mix(in srgb, ${accent} 50%, transparent)`)
           }
           onBlur={(e) => (e.currentTarget.style.borderColor = "")}
         />
-      </div>
+      </FieldControl>
+      <FieldError id={errorId} message={error} />
     </div>
   );
 }
@@ -201,17 +214,14 @@ export default function FoxerApplicationClient({
     setProviderData((prev) => ({ ...prev, [name]: digits }));
   };
 
-  const handleProviderExperienceChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const digits = e.target.value.replace(/\D/g, "");
-    if (digits === "") {
-      setProviderData((prev) => ({ ...prev, experience: "" }));
-      return;
-    }
-    const clamped = Math.min(100, Math.max(0, Number(digits)));
-    setProviderData((prev) => ({ ...prev, experience: String(clamped) }));
-  };
+  // Kept as typed and checked instead: stripping non-digits turned "2.5" into
+  // "25" (app#327).
+  const providerExperienceError = yearsOfExperienceError(
+    providerData.experience,
+  );
+  const organizerExperienceError = yearsOfExperienceError(
+    organizerData.experience,
+  );
 
   const submit = () => {
     if (providerType === "provider") {
@@ -222,9 +232,7 @@ export default function FoxerApplicationClient({
           assetTypes: splitList(providerData.assetTypes),
           serviceTypes: splitList(providerData.serviceTypes),
           portfolioUrls: splitList(providerData.portfolioUrls),
-          experience: providerData.experience
-            ? parseInt(providerData.experience, 10)
-            : undefined,
+          experience: toYearsOfExperience(providerData.experience),
           nbiClearanceIdNumber: providerData.nbiClearanceIdNumber || undefined,
           tinNumber: providerData.tinNumber || undefined,
           tinCountry: providerData.tinNumber
@@ -243,7 +251,7 @@ export default function FoxerApplicationClient({
         roleType: "organizer",
         data: {
           ...organizerData,
-          experience: parseInt(organizerData.experience, 10),
+          experience: toYearsOfExperience(organizerData.experience),
           specializations: organizerSpecializations,
         },
       });
@@ -425,9 +433,10 @@ export default function FoxerApplicationClient({
             title="Your offerings"
             description="What you supply — equipment rentals, professional services, or live performances."
             validate={() =>
-              providerSpecializations.length > 0
+              providerExperienceError ??
+              (providerSpecializations.length > 0
                 ? null
-                : "Pick at least one specialty."
+                : "Pick at least one specialty.")
             }
           >
             <IconField
@@ -468,10 +477,10 @@ export default function FoxerApplicationClient({
               icon={<UserCircle size={18} />}
               type="text"
               inputMode="numeric"
-              pattern="[0-9]*"
               name="experience"
               value={providerData.experience}
-              onChange={handleProviderExperienceChange}
+              onChange={handleProviderChange}
+              error={providerExperienceError}
               placeholder="e.g. 3"
             />
             <IconField
@@ -540,9 +549,13 @@ export default function FoxerApplicationClient({
             title="About you"
             description="The events and venues you've helped run, and where."
             validate={() =>
-              organizerPlace.city
+              // Required: `required` catches "", this also catches "  ".
+              (toYearsOfExperience(organizerData.experience) === undefined
+                ? WHOLE_YEARS_MESSAGE
+                : null) ??
+              (organizerPlace.city
                 ? null
-                : "Choose where you usually work — country, state and city."
+                : "Choose where you usually work — country, state and city.")
             }
           >
             <div className="space-y-2">
@@ -570,17 +583,15 @@ export default function FoxerApplicationClient({
               required
               type="text"
               inputMode="numeric"
-              pattern="[0-9]*"
               name="experience"
               value={organizerData.experience}
-              onChange={(e) => {
-                const digits = e.target.value.replace(/\D/g, "");
+              onChange={(e) =>
                 setOrganizerData((prev) => ({
                   ...prev,
-                  experience:
-                    digits === "" ? "" : String(Math.min(100, Number(digits))),
-                }));
-              }}
+                  experience: e.target.value,
+                }))
+              }
+              error={organizerExperienceError}
               placeholder="e.g. 3"
             />
 
