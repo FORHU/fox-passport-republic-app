@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import HostPerformersClient from "@/features/dashboard/components/HostPerformersClient";
 import type { ServiceItem } from "@/features/dashboard/data/dashboardData";
 
@@ -52,9 +53,15 @@ const SERVICES = [
   }),
 ];
 
+function renderWithQuery(ui: React.ReactElement) {
+  return render(
+    <QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>,
+  );
+}
+
 describe("HostPerformersClient", () => {
   it("lists performer gigs and leaves out catering", () => {
-    render(<HostPerformersClient initialServices={SERVICES} />);
+    renderWithQuery(<HostPerformersClient initialServices={SERVICES} />);
     expect(screen.getByText("Manila Event Photography")).toBeInTheDocument();
     expect(screen.getByText("Live Band Performance")).toBeInTheDocument();
     expect(
@@ -63,7 +70,7 @@ describe("HostPerformersClient", () => {
   });
 
   it("counts only performer gigs in the stats strip", () => {
-    render(<HostPerformersClient initialServices={SERVICES} />);
+    renderWithQuery(<HostPerformersClient initialServices={SERVICES} />);
     const total = screen.getByText("Total Gigs").previousElementSibling;
     expect(total).toHaveTextContent("2");
     const available = screen.getByText("Available", {
