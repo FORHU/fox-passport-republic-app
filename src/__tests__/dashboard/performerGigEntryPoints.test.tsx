@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import HostPerformersClient from "@/features/dashboard/components/HostPerformersClient";
 import { PerformersSection } from "@/features/dashboard/components/PerformersSection";
 
@@ -24,7 +25,11 @@ const GIG_STUDIO = "/foxer/create-service?type=performer";
 
 describe("adding a performer gig", () => {
   it("Add Gig / Package opens the Gig Studio", () => {
-    render(<HostPerformersClient initialServices={[]} />);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <HostPerformersClient initialServices={[]} />
+      </QueryClientProvider>,
+    );
     fireEvent.click(screen.getByRole("button", { name: /Add Gig \/ Package/ }));
     expect(router.push).toHaveBeenCalledWith(GIG_STUDIO);
   });
