@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
-import { LISTING_LABELS } from "./listingLabels";
+import { LISTING_LABELS, type ListingLabels } from "./listingLabels";
 import { toast } from "sonner";
 import { Money } from "@/shared/components/ui/Money";
 import { checkUploadFile, UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
@@ -10,6 +10,8 @@ import { descriptionError, nameError } from "@/shared/lib/limits";
 
 interface ListingPreviewCardProps {
   activeType: ListingType;
+  /** Overrides the Studio wording, e.g. the Gig Studio. */
+  labels?: ListingLabels;
   title: string;
   description: string;
   price: number;
@@ -29,6 +31,7 @@ interface ListingPreviewCardProps {
 
 export function ListingPreviewCard({
   activeType,
+  labels: labelsProp,
   title,
   description,
   price,
@@ -43,6 +46,7 @@ export function ListingPreviewCard({
   onImageUpload,
   children,
 }: ListingPreviewCardProps) {
+  const labels = labelsProp ?? LISTING_LABELS[activeType];
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +108,7 @@ export function ListingPreviewCard({
         <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8 space-y-8 w-full">
           <div>
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-              {LISTING_LABELS[activeType].noun} Title
+              {labels.noun} Title
             </label>
             <input
               type="text"
@@ -131,7 +135,7 @@ export function ListingPreviewCard({
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              placeholder={LISTING_LABELS[activeType].descriptionPlaceholder}
+              placeholder={labels.descriptionPlaceholder}
               aria-invalid={!!descriptionError(description)}
               className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-40 focus:border-accent/30 outline-none transition-colors"
             />

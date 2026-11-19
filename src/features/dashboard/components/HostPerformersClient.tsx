@@ -128,7 +128,7 @@ export default function HostPerformersClient({
             }}
             action={{
               label: "Add Gig / Package",
-              onClick: () => router.push("/foxer/create-listing?type=service"),
+              onClick: () => router.push("/foxer/create-service?type=performer"),
             }}
           />
 

@@ -10,15 +10,20 @@ import { toast } from "sonner";
 import type { CreateServicePayload } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
+  PERFORMER_SERVICE_CATEGORIES,
   SERVICE_STATUSES,
   SERVICE_STATUS_TO_API,
   BILLING_RATE_MAP,
   ServiceUnit,
+  type ServiceStudioMode,
 } from "@/features/service/data/serviceBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { imageUrlToFile } from "@/shared/lib/imageFile";
 
-export function useServicesBuilder() {
+/** `mode: "performer"` offers the gig categories instead of the operational ones. */
+export function useServicesBuilder({
+  mode = "service",
+}: { mode?: ServiceStudioMode } = {}) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const store = useListingBuilderStore();
@@ -38,7 +43,8 @@ export function useServicesBuilder() {
   }, []);
 
   // Categories and statuses specifically for services
-  const categories = SERVICE_CATEGORIES;
+  const categories =
+    mode === "performer" ? PERFORMER_SERVICE_CATEGORIES : SERVICE_CATEGORIES;
   const currentStatuses = SERVICE_STATUSES;
 
   // Completion percentage
@@ -59,7 +65,7 @@ export function useServicesBuilder() {
     return (
       categories.find((c) => c.id === store.category)?.label || "Uncategorized"
     );
-  }, [store.category, store.customCategory]);
+  }, [store.category, store.customCategory, categories]);
 
   const getUserId = useCallback(() => {
     try {
@@ -331,6 +337,7 @@ export function useServicesBuilder() {
 
   return {
     ...store,
+    mode,
     categories,
     currentStatuses,
     completionPercentage,
