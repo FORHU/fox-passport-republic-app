@@ -6,7 +6,7 @@ import { IconButton } from "@/shared/components/ui/IconButton";
 export function PasswordVisibilityToggle({
   visible,
   onToggle,
-  className = "flex h-9 w-9 items-center justify-center rounded-lg text-white/30 hover:text-white transition-colors",
+  className = "flex h-9 w-9 items-center justify-center rounded-lg text-white/60 hover:text-white transition-colors",
 }: {
   visible: boolean;
   onToggle: () => void;
