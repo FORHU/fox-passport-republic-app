@@ -36,6 +36,13 @@ const DEFAULT_LABEL =
   "block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors";
 const DEFAULT_INPUT =
   "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium";
+/**
+ * Browser autofill paints its own pale background and dark text, which hides
+ * the white text and the icons inside these dark fields. An inset shadow in
+ * the auth panel's colour covers that paint; the text stays white.
+ */
+const AUTOFILL_DARK =
+  "autofill:shadow-[inset_0_0_0_1000px_#14161B] autofill:[-webkit-text-fill-color:#fff] autofill:[caret-color:#fff]";
 
 export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
   function TextField(
@@ -90,6 +97,7 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
             aria-describedby={describedBy}
             className={cn(
               inputClassName ?? DEFAULT_INPUT,
+              AUTOFILL_DARK,
               leading && "pl-11",
               trailing && "pr-12",
               error && "field-invalid",
