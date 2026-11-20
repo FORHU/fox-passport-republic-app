@@ -6,7 +6,6 @@ import LandingHeader from "@/features/landing/components/sections/LandingHeader"
 import { UserWelcome } from "@/features/user/components/citizen/UserWelcome";
 import { UserNextUp } from "@/features/user/components/citizen/UserNextUp";
 import { UserForYou } from "@/features/user/components/citizen/UserForYou";
-import { UserCalendarWidget } from "@/features/user/components/citizen/UserCalendarWidget";
 import { UserWallet } from "@/features/user/components/citizen/UserWallet";
 import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibes";
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
@@ -23,7 +22,7 @@ const CITIZEN_TOUR_KEY = "citizen-dashboard";
 const CITIZEN_TOUR: TourStep[] = [
   {
     title: "Welcome to your dashboard",
-    body: "This is home base: your upcoming events, your calendar and what's worth booking next. Here's a quick look around.",
+    body: "This is home base: your upcoming events and what's worth booking next. Here's a quick look around.",
   },
   {
     target: "user-identity",
@@ -34,11 +33,6 @@ const CITIZEN_TOUR: TourStep[] = [
     target: "user-next-up",
     title: "Next up",
     body: "Your upcoming bookings, soonest first. Open one for details, tickets and messages.",
-  },
-  {
-    target: "user-calendar",
-    title: "Your calendar",
-    body: "Everything you've booked on one calendar, so you can spot a clash before you book.",
   },
   {
     target: "user-for-you",
@@ -102,24 +96,14 @@ function UserDashboardContent({
             />
           </div>
 
-          {/* Row 1: what's booked */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
-            <div
-              data-tour="user-next-up"
-              className="md:col-span-7 lg:col-span-8 flex flex-col"
-            >
-              <UserNextUp
-                bookings={upcomingEvents}
-                isLoading={isLoading}
-                className="flex-1"
-              />
-            </div>
-            <div
-              data-tour="user-calendar"
-              className="md:col-span-5 lg:col-span-4 flex flex-col"
-            >
-              <UserCalendarWidget className="flex-1" />
-            </div>
+          {/* Row 1: what's booked. No calendar widget: it disagreed with
+              /booking, which lists every booking (api#418). */}
+          <div data-tour="user-next-up" className="flex flex-col">
+            <UserNextUp
+              bookings={upcomingEvents}
+              isLoading={isLoading}
+              className="flex-1"
+            />
           </div>
 
           {/* Row 2: what to book next, and what's kept */}

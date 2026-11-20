@@ -97,7 +97,7 @@ export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
     // Every calendar of booked dates (features/booking/hooks/useAvailability
     // and the venue one), so a date someone just took greys out live.
     ["availability"],
-    // Everyone's calendar (/calendar) — a new booking lands on it at once.
+    // The creator dashboard calendar — a new booking lands on it at once.
     ["calendar"],
   ],
   // The admin disputes and refunds tables. React Query matches keys by prefix,
