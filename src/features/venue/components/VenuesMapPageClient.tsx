@@ -6,6 +6,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useLayoutEffect,
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,6 +19,7 @@ import {
   MapVenue,
   CATEGORY_COLORS,
   CATEGORY_LABELS,
+  ViewportChangeReason,
 } from "@/shared/components/ui/VenuesMap";
 import { LocationSearchResult } from "@/shared/components/ui/LocationSearchControl";
 import {
@@ -34,6 +36,8 @@ import { BackButton } from "@/shared/components/ui/BackButton";
 // sometimes doesn't (small towns), so pad a fixed radius around its center
 // instead of falling back to the live pixel viewport.
 const CITY_FALLBACK_RADIUS_KM = 25;
+
+const PAGE_SIZE = 12;
 
 function boundsFromLocation(location: LocationSearchResult): ViewportBounds {
   if (location.bbox) {
@@ -395,7 +399,47 @@ export function VenuesMapPageClient({
   // (e.g. an earlier viewport before a quick pan) can't clobber a newer one.
   const viewportFetchSeqRef = useRef(0);
 
+  // Separate sequence for map-pin fetches, which can also run on their own
+  // (after a resize) without touching the list.
+  const mapPinsFetchSeqRef = useRef(0);
+
+  // The query the list's current page 1 was fetched with — the pinned
+  // location's bounds or the viewport's, plus the search text. Prev/Next
+  // page through this, not whatever the camera shows by the time they click.
+  const listQueryRef = useRef<{
+    bounds: ViewportBounds;
+    search: string;
+  } | null>(null);
+
+  // "Near me" returns every match at once, so its pages are sliced from here
+  // instead of fetched.
+  const nearMeVenuesRef = useRef<any[]>([]);
+
   const listParentRef = useRef<HTMLDivElement>(null);
+  // On mobile the list is display:none while the map shows, which drops its
+  // scroll position; it's saved here when switching away and restored after.
+  const listScrollTopRef = useRef(0);
+
+  // For when the list's contents are replaced, so a restored mobile scroll
+  // position doesn't land somewhere arbitrary in the new list.
+  const scrollListToTop = useCallback(() => {
+    listScrollTopRef.current = 0;
+    listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (mobileView === "list" && listParentRef.current) {
+      listParentRef.current.scrollTop = listScrollTopRef.current;
+    }
+  }, [mobileView]);
+
+  const showMobileView = (view: "list" | "map") => {
+    if (view === mobileView) return;
+    if (view === "map" && listParentRef.current) {
+      listScrollTopRef.current = listParentRef.current.scrollTop;
+    }
+    setMobileView(view);
+  };
 
   const normalizeListVenue = useCallback((v: any): ListVenue => {
     const resolvedImg = resolveVenueImage(v);
@@ -464,6 +508,28 @@ export function VenuesMapPageClient({
     );
   }, [selectedVenue, mapVenues]);
 
+  // Pins for the map (max 1000, lightweight). Its own sequence guard, so it
+  // can run alone after a resize as well as alongside a list fetch.
+  const refreshMapPins = useCallback(
+    (bounds: ViewportBounds, search: string) => {
+      const seq = ++mapPinsFetchSeqRef.current;
+      fetchVenuesByViewport({
+        ...bounds,
+        page: 1,
+        limit: 1000,
+        lightweight: true,
+        search: search || undefined,
+      })
+        .then((resp) => {
+          if (seq === mapPinsFetchSeqRef.current) {
+            setMapRawVenues(resp.venues);
+          }
+        })
+        .catch(() => {});
+    },
+    [],
+  );
+
   // When camera moves, query the screen bounding box
   const handleViewportChange = useCallback(
     (bounds: ViewportBounds) => {
@@ -475,34 +541,23 @@ export function VenuesMapPageClient({
       debounceTimerRef.current = setTimeout(async () => {
         setIsLoadingViewport(true);
         const seq = ++viewportFetchSeqRef.current;
+        const search = debouncedSearch;
         try {
-          // Fetch max 1000 for the map (lightweight)
-          fetchVenuesByViewport({
-            ...bounds,
-            page: 1,
-            limit: 1000,
-            lightweight: true,
-            search: debouncedSearch || undefined,
-          })
-            .then((resp) => {
-              if (seq === viewportFetchSeqRef.current) {
-                setMapRawVenues(resp.venues);
-              }
-            })
-            .catch(() => {});
+          refreshMapPins(bounds, search);
 
-          // Fetch 12 for the list
+          // Page 1 of the list
           const resp = await fetchVenuesByViewport({
             ...bounds,
             page: 1,
-            limit: 12,
-            search: debouncedSearch || undefined,
+            limit: PAGE_SIZE,
+            search: search || undefined,
           });
           if (seq !== viewportFetchSeqRef.current) return;
+          listQueryRef.current = { bounds, search };
           setRawVenues(resp.venues);
           setTotalCount(resp.total);
           setPage(1);
-          listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+          scrollListToTop();
         } catch (err) {
           console.warn("Could not query viewport venues:", err);
         } finally {
@@ -512,19 +567,31 @@ export function VenuesMapPageClient({
         }
       }, 350);
     },
-    [debouncedSearch],
+    [debouncedSearch, refreshMapPins, scrollListToTop],
   );
 
-  // Real camera movement from panning/zooming. Ignored while a location is
-  // pinned via search — otherwise the very first pan inside, say, Baguio
-  // would immediately narrow the query back down to a tiny pixel rectangle
-  // and undo the point of picking a place.
+  // Camera movement. Ignored while a location is pinned via search —
+  // otherwise the very first pan inside, say, Baguio would immediately
+  // narrow the query back down to a tiny pixel rectangle and undo the point
+  // of picking a place. Only a real pan/zoom refetches the list: flying to
+  // or back from a selected venue, and resizes (window resize, the map
+  // showing after the mobile toggle), would otherwise replace the list and
+  // throw away the user's scroll position.
   const handleMapViewportChange = useCallback(
-    (bounds: ViewportBounds) => {
+    (bounds: ViewportBounds, meta?: { reason: ViewportChangeReason }) => {
       if (selectedLocationRef.current || nearMeActiveRef.current) return;
+      const reason = meta?.reason ?? "user";
+      if (reason === "selection") return;
+      if (reason === "resize") {
+        // Keep the pins covering whatever the resized map now shows; the
+        // list stays as it is.
+        setCurrentBounds(bounds);
+        refreshMapPins(bounds, debouncedSearch);
+        return;
+      }
       handleViewportChange(bounds);
     },
-    [handleViewportChange],
+    [handleViewportChange, refreshMapPins, debouncedSearch],
   );
 
   // Only sets state — the effect below (watching `selectedLocation`) is
@@ -556,14 +623,21 @@ export function VenuesMapPageClient({
             );
             return;
           }
+          // A viewport fetch still pending or in flight must not land on top
+          // of the near-me results.
+          if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+          viewportFetchSeqRef.current++;
+          mapPinsFetchSeqRef.current++;
+          setIsLoadingViewport(false);
+          nearMeVenuesRef.current = venues;
           setSelectedLocation(null);
           setNearMeActive(true);
           setNearMeCenter([lng, lat]);
-          setRawVenues(venues);
+          setRawVenues(venues.slice(0, PAGE_SIZE));
           setMapRawVenues(venues);
           setTotalCount(venues.length);
           setPage(1);
-          listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+          scrollListToTop();
         } catch {
           toast.error("Couldn't check your location right now.");
         } finally {
@@ -580,9 +654,10 @@ export function VenuesMapPageClient({
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
-  }, []);
+  }, [scrollListToTop]);
 
   const handleNearMeClear = useCallback(() => {
+    nearMeVenuesRef.current = [];
     setNearMeActive(false);
     setNearMeCenter(null);
     if (currentBounds) handleViewportChange(currentBounds);
@@ -604,79 +679,56 @@ export function VenuesMapPageClient({
     // selection, and including them here would double-fetch on every pan.
   }, [debouncedSearch, selectedLocation]);
 
-  const totalPages = Math.ceil(totalCount / 12);
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
 
+  // Pages change only from the Prev/Next buttons — never from scrolling.
   const handlePageChange = useCallback(
     async (newPage: number) => {
       if (
         isLoadingMore ||
         isLoadingViewport ||
-        !currentBounds ||
         newPage < 1 ||
         newPage > totalPages
       )
         return;
+
+      if (nearMeActive) {
+        const start = (newPage - 1) * PAGE_SIZE;
+        setRawVenues(nearMeVenuesRef.current.slice(start, start + PAGE_SIZE));
+        setPage(newPage);
+        scrollListToTop();
+        return;
+      }
+
+      const query = listQueryRef.current;
+      if (!query) return;
+      // A pan/search started while this page loads wins over it.
+      const seq = viewportFetchSeqRef.current;
       setIsLoadingMore(true);
 
       try {
         const resp = await fetchVenuesByViewport({
-          ...currentBounds,
+          ...query.bounds,
           page: newPage,
-          limit: 12,
-          search: debouncedSearch || undefined,
+          limit: PAGE_SIZE,
+          search: query.search || undefined,
         });
+        if (seq !== viewportFetchSeqRef.current) return;
         // Replace entirely for pagination instead of appending
         setRawVenues(resp.venues);
         setTotalCount(resp.total);
         setPage(newPage);
-        // Scroll to top
-        listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        scrollListToTop();
       } catch (err) {
         console.warn("Error loading page:", err);
       } finally {
         setIsLoadingMore(false);
       }
     },
-    [
-      isLoadingMore,
-      isLoadingViewport,
-      currentBounds,
-      totalPages,
-      debouncedSearch,
-    ],
+    [isLoadingMore, isLoadingViewport, totalPages, nearMeActive, scrollListToTop],
   );
-
-  // Observer for sentinel div at bottom of sidebar (Auto-Pagination)
-  const sentinelBottomRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = sentinelBottomRef.current;
-    if (!el) return;
-    // IntersectionObserver reports the sentinel's *current* visibility as
-    // soon as observe() is called, before any real scrolling happens. If a
-    // page's cards don't fill the sidebar's visible height (short pages,
-    // the last partial page, a tall viewport), that first callback alone
-    // would advance the page — whose new sentinel then does the same,
-    // cascading through every remaining page with no user interaction.
-    // Skipping that one synchronous callback and only acting on a later,
-    // genuine visibility change fixes it without affecting real scrolling.
-    let isInitialCallback = true;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isInitialCallback) {
-          isInitialCallback = false;
-          return;
-        }
-        if (entries[0].isIntersecting && page < totalPages) {
-          handlePageChange(page + 1);
-        }
-      },
-      { rootMargin: "100px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [handlePageChange, page, totalPages]);
 
   // Selection handlers: bidirectional sync between map pin & sidebar card
   const handleSelect = (id: string) => {
@@ -812,7 +864,7 @@ export function VenuesMapPageClient({
             </div>
           </div>
 
-          {/* List Container with Infinite Scroll */}
+          {/* List Container (pages change only via Prev/Next) */}
           <div
             ref={listParentRef}
             className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-3"
@@ -889,9 +941,6 @@ export function VenuesMapPageClient({
                     </button>
                   </div>
                 )}
-
-                {/* Auto-Pagination Sentinel */}
-                <div ref={sentinelBottomRef} className="h-1 w-full" />
               </>
             )}
           </div>
@@ -938,7 +987,7 @@ export function VenuesMapPageClient({
       <div className="sm:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
         <div className="flex items-center gap-1 rounded-full bg-black/80 backdrop-blur-xl border border-white/10 p-1 shadow-2xl">
           <button
-            onClick={() => setMobileView("list")}
+            onClick={() => showMobileView("list")}
             className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               mobileView === "list"
                 ? "bg-accent text-black"
@@ -948,7 +997,7 @@ export function VenuesMapPageClient({
             List ({listVenues.length})
           </button>
           <button
-            onClick={() => setMobileView("map")}
+            onClick={() => showMobileView("map")}
             className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               mobileView === "map" ? "bg-accent text-black" : "text-white/60"
             }`}
