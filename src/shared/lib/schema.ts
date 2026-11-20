@@ -72,6 +72,37 @@ export const signupSchema = z
 
 export type SignupFormData = z.infer<typeof signupSchema>;
 
+// --- ACCOUNT SETUP (api#419) ---
+/**
+ * A Google account sets only what it lacks: the username, the password, or
+ * both. Same rules as sign-up; the API's POST /profile/credentials checks
+ * them again.
+ */
+export const accountSetupSchema = (needs: {
+  username: boolean;
+  password: boolean;
+}) =>
+  z
+    .object({
+      username: needs.username
+        ? z.string().min(1, "Username is required").pipe(usernameSchema)
+        : z.string().optional(),
+      password: needs.password
+        ? requiredPassword("Password is required")
+        : z.string().optional(),
+      confirmPassword: needs.password
+        ? z.string().min(1, CONFIRM_PASSWORD_REQUIRED)
+        : z.string().optional(),
+    })
+    .refine(
+      (d) => !needs.password || d.password === d.confirmPassword,
+      confirmMismatchIssue,
+    );
+
+export type AccountSetupFormData = z.infer<
+  ReturnType<typeof accountSetupSchema>
+>;
+
 // --- PASSWORD RESET / EMAIL VERIFICATION SCHEMAS ---
 export const forgotPasswordSchema = z.object({
   email: z.email("Please enter a valid email address"),
