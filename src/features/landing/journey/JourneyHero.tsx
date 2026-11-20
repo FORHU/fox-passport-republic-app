@@ -1373,8 +1373,9 @@ function cardAmount(v: number, i: number) {
  */
 const HEADER_H = 104;
 function pinPad(h: number, w: number) {
-  const photo = Math.min(232, Math.max(112, h * 0.22));
-  const card = photo + 235 + (w < 640 ? 60 : 0);
+  // The step row (36) sits above the photo; the photo keeps room for a two-line title.
+  const photo = Math.min(196, Math.max(144, h * 0.22 - 36));
+  const card = 36 + photo + 235 + (w < 640 ? 60 : 0);
   const needed = HEADER_H + card + 44;
   return Math.min(0.72, Math.max(0.3, (2 * needed) / h - 1));
 }
@@ -1566,8 +1567,23 @@ export function StopCard({
             </>
           )}
           <div className="relative z-[1] overflow-hidden rounded-2xl border border-accent/40 bg-surface text-white shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)]">
+            {/* The step sits on the card, not the photo, so it doesn't read as a carousel control. */}
+            <div className="flex items-center justify-between gap-3 border-b border-accent/20 px-5 py-2.5">
+              <p className="font-landing-mono text-[10px] font-bold uppercase tracking-[0.16em] text-accent">
+                Step {index + 1} of {STOPS}
+              </p>
+              <div aria-hidden className="flex gap-1">
+                {Array.from({ length: STOPS }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1 w-4 rounded-full ${i <= index ? "bg-accent" : "bg-white/20"}`}
+                  />
+                ))}
+              </div>
+            </div>
             <div
-              className="relative h-[22svh] max-h-[14.5rem] min-h-28 select-none overflow-hidden"
+              // Less the step row's 2.25rem; keep in step with pinPad.
+              className="relative h-[calc(22svh-2.25rem)] max-h-49 min-h-36 select-none overflow-hidden"
               onPointerEnter={(e) => setHeld(e.pointerType === "mouse")}
               onPointerLeave={() => setHeld(false)}
             >
@@ -1615,9 +1631,6 @@ export function StopCard({
                 }}
                 className="absolute inset-0 z-10 cursor-zoom-in"
               />
-              <p className="font-landing-mono pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-[#000]/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#fff] backdrop-blur">
-                Step {index + 1} of {STOPS}
-              </p>
               <div className="pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-full bg-[#000]/60 py-0.5 pl-1 pr-2 backdrop-blur">
                 {!reduce && (
                   <button
