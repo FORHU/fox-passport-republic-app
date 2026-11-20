@@ -42,7 +42,6 @@ export default function robots(): MetadataRoute.Robots {
           "/onboarding",
           "/progress",
           "/wishlists",
-          "/calendar",
           "/reviews/",
           "/match/",
           "/mayor",
