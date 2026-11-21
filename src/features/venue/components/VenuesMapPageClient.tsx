@@ -29,6 +29,8 @@ import { Money } from "@/shared/components/ui/Money";
 import { venueRateUnit } from "@/features/venue/helpers/rateUnit";
 import { assetUrl } from "@/shared/lib/assets";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { ProductTour } from "@/shared/components/ui/ProductTour";
+import { MAP_TOUR, MAP_TOUR_KEY } from "./mapTour";
 
 // A searched country has an exact bbox from Mapbox; a searched city
 // sometimes doesn't (small towns), so pad a fixed radius around its center
@@ -710,7 +712,7 @@ export function VenuesMapPageClient({
             </h1>
 
             {/* Search Bar */}
-            <div className="mt-4 mb-2 flex gap-2">
+            <div data-tour="map-search" className="mt-4 mb-2 flex gap-2">
               <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
                   search
@@ -796,7 +798,10 @@ export function VenuesMapPageClient({
             </div>
 
             {/* Category Badges */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">
+            <div
+              data-tour="map-legend"
+              className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3"
+            >
               {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                 <span
                   key={key}
@@ -815,6 +820,7 @@ export function VenuesMapPageClient({
           {/* List Container with Infinite Scroll */}
           <div
             ref={listParentRef}
+            data-tour="map-list"
             className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-3"
           >
             {isLoadingViewport && listVenues.length === 0 ? (
@@ -899,6 +905,7 @@ export function VenuesMapPageClient({
 
         {/* Right: Map fills viewport */}
         <div
+          data-tour="map-canvas"
           className={`${mobileView === "map" ? "block" : "hidden"} sm:block relative flex-1 min-w-0 p-4`}
         >
           <VenuesMap
@@ -935,7 +942,10 @@ export function VenuesMapPageClient({
       </div>
 
       {/* Mobile Toggle Button */}
-      <div className="sm:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
+      <div
+        data-tour="map-toggle"
+        className="sm:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40"
+      >
         <div className="flex items-center gap-1 rounded-full bg-black/80 backdrop-blur-xl border border-white/10 p-1 shadow-2xl">
           <button
             onClick={() => setMobileView("list")}
@@ -957,6 +967,7 @@ export function VenuesMapPageClient({
           </button>
         </div>
       </div>
+      <ProductTour tourKey={MAP_TOUR_KEY} steps={MAP_TOUR} />
     </div>
   );
 }

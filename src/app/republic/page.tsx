@@ -38,6 +38,8 @@ import { RepublicLeftSidebar } from "@/features/republic/components/RepublicLeft
 import { RepublicRightSidebar } from "@/features/republic/components/RepublicRightSidebar";
 import { RepublicMobileControlBar } from "@/features/republic/components/RepublicMobileControlBar";
 import FollowingWidgetSection from "./FollowingWidgetSection";
+import { ProductTour } from "@/shared/components/ui/ProductTour";
+import { REPUBLIC_TOUR, REPUBLIC_TOUR_KEY } from "./republicTour";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { SharePostModal } from "@/features/messages/components/SharePostModal";
@@ -425,7 +427,10 @@ function RepublicFeedContent() {
                 reached instead of staying pinned with its bottom off-screen.
                 No overscroll-contain: once the column hits its end, the wheel
                 chains on to the page so the feed never feels trapped. */}
-          <aside className="hidden lg:block w-[320px] shrink-0 sticky top-28 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 pb-12">
+          <aside
+            data-tour="republic-sidebar"
+            className="hidden lg:block w-[320px] shrink-0 sticky top-28 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 pb-12"
+          >
             <RepublicLeftSidebar
               mapSlot={
                 // dragPan={false} turns on cooperative gestures: a plain wheel
@@ -442,7 +447,10 @@ function RepublicFeedContent() {
           {/* CENTER FEED — scrolls with the page */}
           <main className="flex-1 min-w-0 max-w-2xl w-full px-1 pb-12">
             {/* Search Input */}
-            <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)]">
+            <div
+              data-tour="republic-search"
+              className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)]"
+            >
               <form
                 onSubmit={handleSearchSubmit}
                 className="relative flex items-center"
@@ -478,12 +486,15 @@ function RepublicFeedContent() {
             </div>
 
             {/* Publish */}
-            <div className="space-y-1.5 mt-5">
+            <div data-tour="republic-compose" className="space-y-1.5 mt-5">
               <ComposePostTrigger onOpen={() => setComposeOpen(true)} />
             </div>
 
             {/* Feed filters */}
-            <div className="flex items-center justify-between px-1 mt-5">
+            <div
+              data-tour="republic-filters"
+              className="flex items-center justify-between px-1 mt-5"
+            >
               <span className="text-sm font-black text-white">Posts</span>
 
               <div className="flex items-center gap-1">
@@ -500,7 +511,10 @@ function RepublicFeedContent() {
             </div>
 
             {/* Following — tablet and laptop, until the right sidebar fits (1408px) */}
-            <div className="hidden md:block min-[1408px]:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 mt-5 -mx-3 px-3 sm:mx-0 sm:px-0">
+            <div
+              data-tour="republic-following"
+              className="hidden md:block min-[1408px]:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 mt-5 -mx-3 px-3 sm:mx-0 sm:px-0"
+            >
               <FollowingWidgetSection />
             </div>
 
@@ -580,7 +594,11 @@ function RepublicFeedContent() {
                   )}
                 </div>
               ) : (
-                <div ref={postsListRef} className="space-y-4 scroll-mt-24">
+                <div
+                  ref={postsListRef}
+                  data-tour="republic-feed"
+                  className="space-y-4 scroll-mt-24"
+                >
                   {posts.map((post) => (
                     <PostCard
                       key={post.id}
@@ -632,7 +650,10 @@ function RepublicFeedContent() {
           </main>
 
           {/* RIGHT SIDEBAR — sticky under the fixed header */}
-          <aside className="hidden min-[1408px]:block w-[320px] shrink-0 sticky top-28 pl-2 pb-12">
+          <aside
+            data-tour="republic-following"
+            className="hidden min-[1408px]:block w-[320px] shrink-0 sticky top-28 pl-2 pb-12"
+          >
             <RepublicRightSidebar>
               <FollowingWidgetSection />
             </RepublicRightSidebar>
@@ -666,6 +687,8 @@ function RepublicFeedContent() {
           onPostCreated={handleDesktopPostCreated}
         />
       )}
+
+      <ProductTour tourKey={REPUBLIC_TOUR_KEY} steps={REPUBLIC_TOUR} />
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {

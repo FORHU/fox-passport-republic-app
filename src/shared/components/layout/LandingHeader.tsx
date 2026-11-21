@@ -10,6 +10,7 @@ import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { Badge } from "@/shared/components/ui/badge";
+import { TourHeaderButton } from "@/shared/components/ui/ProductTour";
 import {
   Sheet,
   SheetClose,
@@ -185,6 +186,8 @@ export default function LandingHeader({
               )}
               {isAuthenticated && (
                 <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Same spot on every page that has a tour (app#366). */}
+                  <TourHeaderButton />
                   <NotificationBell />
                   <UserMenuButton onSignIn={handleSignIn} />
                 </div>
