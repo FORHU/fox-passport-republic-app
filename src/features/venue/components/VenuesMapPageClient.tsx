@@ -18,6 +18,7 @@ import {
   MapVenue,
   CATEGORY_COLORS,
   CATEGORY_LABELS,
+  categoryBadgeStyle,
 } from "@/shared/components/ui/VenuesMap";
 import { LocationSearchResult } from "@/shared/components/ui/LocationSearchControl";
 import {
@@ -119,14 +120,14 @@ function VenueListCard({
   return (
     <div
       onClick={onSelect}
-      className={`group cursor-pointer rounded-2xl border transition-all overflow-hidden bg-white/5 hover:bg-white/10 ${
+      className={`group cursor-pointer rounded-2xl border shadow-sm transition-all overflow-hidden bg-listing hover:bg-listing-hover ${
         selected
-          ? "border-accent ring-1 ring-accent bg-white/10"
-          : "border-white/10 hover:border-white/20"
+          ? "border-(--accent-text) ring-1 ring-(--accent-text)"
+          : "border-listing-edge hover:border-listing-edge-hover"
       }`}
     >
       <div className="flex gap-3 p-3">
-        <div className="relative h-24 w-28 shrink-0 rounded-xl overflow-hidden bg-white/5">
+        <div className="relative h-24 w-28 shrink-0 rounded-xl overflow-hidden bg-white/10">
           <Image
             src={imageSrc || FALLBACK_VENUE_IMG}
             alt={venue.name || "Venue"}
@@ -142,29 +143,25 @@ function VenueListCard({
             </h3>
             {venue.category && (
               <span
-                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0"
-                style={{
-                  backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}20`,
-                  color: CATEGORY_COLORS[venue.category] ?? "#C4E85A",
-                  border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}40`,
-                }}
+                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0"
+                style={categoryBadgeStyle(venue.category)}
               >
                 {CATEGORY_LABELS[venue.category] ?? venue.category}
               </span>
             )}
           </div>
           {venue.location && (
-            <p className="text-xs text-white/40 truncate mt-0.5">
+            <p className="text-xs text-white/60 truncate mt-0.5">
               {venue.location}
             </p>
           )}
-          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/50">
+          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/70">
             {venue.rating > 0 && (
               <span className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-accent text-accent" />
                 {venue.rating.toFixed(1)}
                 {venue.reviews > 0 && (
-                  <span className="text-white/30">({venue.reviews})</span>
+                  <span className="text-white/50">({venue.reviews})</span>
                 )}
               </span>
             )}
@@ -178,7 +175,7 @@ function VenueListCard({
           <div className="flex items-center justify-between mt-auto pt-2">
             <p className="text-sm font-bold text-white">
               <Money amount={venue.price} />
-              <span className="text-[10px] font-normal text-white/40">
+              <span className="text-[10px] font-normal text-white/60">
                 /{venueRateUnit(venue.billingRate)}
               </span>
             </p>
@@ -218,7 +215,7 @@ function VenueDetailCard({
       transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
       className="absolute bottom-16 sm:bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm max-h-[calc(100%-5.5rem)] sm:max-h-[calc(100%-3rem)] rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl overflow-y-auto"
     >
-      <div className="relative h-40 w-full bg-white/5">
+      <div className="relative h-40 w-full bg-white/10">
         <Image
           src={detailImage || FALLBACK_VENUE_IMG}
           alt={venue.name || "Venue"}
@@ -235,12 +232,8 @@ function VenueDetailCard({
         </button>
         {venue.category && (
           <span
-            className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md shadow"
-            style={{
-              backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}30`,
-              color: CATEGORY_COLORS[venue.category] ?? "#C4E85A",
-              border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#C4E85A"}50`,
-            }}
+            className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow"
+            style={categoryBadgeStyle(venue.category, { onPhoto: true })}
           >
             {CATEGORY_LABELS[venue.category] ?? venue.category}
           </span>
@@ -253,17 +246,17 @@ function VenueDetailCard({
             {venue.name}
           </h3>
           {venue.location && (
-            <p className="text-xs text-white/40 mt-0.5">{venue.location}</p>
+            <p className="text-xs text-white/60 mt-0.5">{venue.location}</p>
           )}
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-white/60">
+        <div className="flex items-center gap-4 text-xs text-white/70">
           {venue.rating > 0 && (
             <span className="flex items-center gap-1">
               <Star className="w-3.5 h-3.5 fill-accent text-accent" />
               {venue.rating.toFixed(1)}
               {venue.reviews > 0 && (
-                <span className="text-white/30">
+                <span className="text-white/50">
                   ({venue.reviews} review{venue.reviews === 1 ? "" : "s"})
                 </span>
               )}
@@ -278,7 +271,7 @@ function VenueDetailCard({
         </div>
 
         {venue.description && (
-          <p className="text-xs text-white/50 leading-relaxed line-clamp-2">
+          <p className="text-xs text-white/70 leading-relaxed line-clamp-2">
             {venue.description}
           </p>
         )}
@@ -313,10 +306,10 @@ function VenueDetailCard({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-white/10">
+        <div className="flex items-center justify-between pt-2 border-t border-white/15">
           <p className="text-base font-bold text-white">
             <Money amount={venue.price} />
-            <span className="text-xs font-normal text-white/40">
+            <span className="text-xs font-normal text-white/60">
               /{venueRateUnit(venue.billingRate)}
             </span>
           </p>
@@ -751,7 +744,7 @@ export function VenuesMapPageClient({
 
             {/* Screen-Scoped Counter */}
             <div className="flex items-center justify-between mt-1 text-xs">
-              <p className="text-white/40">
+              <p className="text-white/60">
                 {isLoadingViewport ? (
                   <span className="flex items-center gap-1.5 text-accent font-mono">
                     <Loader2 className="w-3 h-3 animate-spin" /> Scanning
@@ -788,7 +781,7 @@ export function VenuesMapPageClient({
                 </button>
               ) : (
                 currentBounds && (
-                  <span className="text-[10px] font-mono text-accent/60 bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">
+                  <span className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/40">
                     Live Viewport
                   </span>
                 )
@@ -800,7 +793,7 @@ export function VenuesMapPageClient({
               {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                 <span
                   key={key}
-                  className="flex items-center gap-1.5 text-[10px] text-white/50"
+                  className="flex items-center gap-1.5 text-[10px] text-white/70"
                 >
                   <span
                     className="h-2.5 w-2.5 rounded-full shrink-0"
@@ -822,12 +815,12 @@ export function VenuesMapPageClient({
                 {[1, 2, 3].map((n) => (
                   <div
                     key={n}
-                    className="h-28 rounded-2xl border border-white/10 bg-white/5 animate-pulse"
+                    className="h-28 rounded-2xl border border-listing-edge bg-listing animate-pulse"
                   />
                 ))}
               </div>
             ) : listVenues.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/5 py-16 flex flex-col items-center justify-center gap-2 text-white/30 text-center px-4">
+              <div className="rounded-2xl border border-listing-edge bg-listing py-16 flex flex-col items-center justify-center gap-2 text-white/30 text-center px-4">
                 <span className="material-symbols-outlined text-[36px] text-white/20">
                   travel_explore
                 </span>
@@ -875,7 +868,7 @@ export function VenuesMapPageClient({
                         <span>Loading...</span>
                       </div>
                     ) : (
-                      <span className="text-[11px] font-mono text-white/30 uppercase tracking-wider">
+                      <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
                         Page {page} of {totalPages}
                       </span>
                     )}
