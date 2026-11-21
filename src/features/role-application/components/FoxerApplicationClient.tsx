@@ -34,6 +34,10 @@ import {
 } from "@/shared/components/ui/CountryField";
 import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
 import {
+  portfolioUrlsError,
+  splitPortfolioUrls,
+} from "@/shared/lib/portfolioUrls";
+import {
   WHOLE_YEARS_MESSAGE,
   toYearsOfExperience,
   yearsOfExperienceError,
@@ -219,6 +223,7 @@ export default function FoxerApplicationClient({
   const providerExperienceError = yearsOfExperienceError(
     providerData.experience,
   );
+  const providerLinksError = portfolioUrlsError(providerData.portfolioUrls);
   const organizerExperienceError = yearsOfExperienceError(
     organizerData.experience,
   );
@@ -231,7 +236,7 @@ export default function FoxerApplicationClient({
           businessName: providerData.businessName.trim() || undefined,
           assetTypes: splitList(providerData.assetTypes),
           serviceTypes: splitList(providerData.serviceTypes),
-          portfolioUrls: splitList(providerData.portfolioUrls),
+          portfolioUrls: splitPortfolioUrls(providerData.portfolioUrls),
           experience: toYearsOfExperience(providerData.experience),
           nbiClearanceIdNumber: providerData.nbiClearanceIdNumber || undefined,
           tinNumber: providerData.tinNumber || undefined,
@@ -434,6 +439,7 @@ export default function FoxerApplicationClient({
             description="What you supply — equipment rentals, professional services, or live performances."
             validate={() =>
               providerExperienceError ??
+              providerLinksError ??
               (providerSpecializations.length > 0
                 ? null
                 : "Pick at least one specialty.")
@@ -491,6 +497,8 @@ export default function FoxerApplicationClient({
               name="portfolioUrls"
               value={providerData.portfolioUrls}
               onChange={handleProviderChange}
+              error={providerLinksError}
+              hint="Up to 5 full web addresses, separated by commas."
               placeholder="https://instagram.com/..., https://portfolio.com"
             />
             <SpecializationPicker
