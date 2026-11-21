@@ -25,6 +25,8 @@ import {
 } from "@/features/booking/components/bookings/statusInk";
 import { AgendaRow } from "@/features/booking/components/bookings/AgendaRow";
 import { MonthStrip } from "@/features/booking/components/bookings/MonthStrip";
+import { ProductTour } from "@/shared/components/ui/ProductTour";
+import { BOOKINGS_TOUR, BOOKINGS_TOUR_KEY } from "./bookingsTour";
 import { SheetPager } from "@/features/booking/components/bookings/SheetPager";
 import {
   Arrow,
@@ -191,6 +193,7 @@ export default function BookingListClient({
               <div
                 role="group"
                 aria-label="Which bookings"
+                data-tour="bookings-switch"
                 className="grid grid-cols-2 overflow-hidden rounded-2xl border border-white/15"
               >
                 {(
@@ -217,7 +220,10 @@ export default function BookingListClient({
                 ))}
               </div>
             )}
-            <div className="flex items-center justify-between gap-4">
+            <div
+              data-tour="bookings-find"
+              className="flex items-center justify-between gap-4"
+            >
               <p className="text-sm text-white/70">
                 {total !== undefined ? (
                   <>
@@ -294,17 +300,22 @@ export default function BookingListClient({
           )
         ) : (
           <>
-            <MonthStrip
-              key={`${tab}-${page}`}
-              bookings={stripBookings}
-              anchor={anchor}
-              note={pageNote}
-              onPick={pickDay}
-            />
+            <div data-tour="bookings-strip">
+              <MonthStrip
+                key={`${tab}-${page}`}
+                bookings={stripBookings}
+                anchor={anchor}
+                note={pageNote}
+                onPick={pickDay}
+              />
+            </div>
 
             <div className="mt-14 flex flex-col gap-14">
               {groups.attention.length > 0 && (
-                <section aria-labelledby="attention-title">
+                <section
+                  aria-labelledby="attention-title"
+                  data-tour="bookings-attention"
+                >
                   <SectionHead
                     id="attention-title"
                     title="Needs attention"
@@ -325,7 +336,10 @@ export default function BookingListClient({
                 </section>
               )}
 
-              <section aria-labelledby="upcoming-title">
+              <section
+                aria-labelledby="upcoming-title"
+                data-tour="bookings-upcoming"
+              >
                 <SectionHead
                   id="upcoming-title"
                   title="Coming up"
@@ -417,6 +431,7 @@ export default function BookingListClient({
           }}
         />
       )}
+      <ProductTour tourKey={BOOKINGS_TOUR_KEY} steps={BOOKINGS_TOUR} />
     </div>
   );
 }
