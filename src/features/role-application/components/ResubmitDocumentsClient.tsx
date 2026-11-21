@@ -19,13 +19,16 @@ const ROLE_LABELS: Record<string, string> = {
 
 // Must match DOCUMENT_FIELD_TO_DB_COLUMN in the API's role-request.service.ts
 // and DOCUMENT_FIELDS in the admin review panel.
-const DOCUMENT_FIELDS: Record<string, { label: string; accept?: string }> = {
+const DOCUMENT_FIELDS: Record<
+  string,
+  { label: string; accept?: string; purpose?: "portfolio" }
+> = {
   validId1: { label: "Primary Valid ID" },
   nbiFile: { label: "NBI Clearance", accept: "application/pdf" },
   tinIdFile: { label: "TIN ID / Certificate" },
   birPermitFile: { label: "BIR 2303 / Permit" },
   selfieFile: { label: "Verification Selfie" },
-  portfolioFile: { label: "Portfolio / Resume" },
+  portfolioFile: { label: "Portfolio / Resume", purpose: "portfolio" },
   backgroundClearanceFile: { label: "Police / Background Clearance" },
 };
 
@@ -151,6 +154,7 @@ export default function ResubmitDocumentsClient({
                       key={key}
                       label={`${field.label} *`}
                       accept={field.accept}
+                      purpose={field.purpose}
                       private
                       onUploadComplete={(fileId) =>
                         setReplacements((prev) => ({

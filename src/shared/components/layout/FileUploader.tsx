@@ -18,6 +18,9 @@ import {
   FILE_PDF_ONLY,
   FILE_UNSUPPORTED,
   UPLOAD_ACCEPT,
+  UPLOAD_HINT,
+  acceptsFileType,
+  isWordFile,
 } from "@/shared/lib/uploadRules";
 
 interface FileUploaderProps {
@@ -33,18 +36,27 @@ interface FileUploaderProps {
   onFileCleared?: () => void;
   /** An identity document: stored in the private bucket, never at a public URL. */
   private?: boolean;
+  /**
+   * `portfolio`: a portfolio / resume, PDF or Word only (app#371), into the
+   * private bucket. Sets the accepted types unless `accept` is given.
+   */
+  purpose?: "document" | "portfolio";
 }
 
 export default function FileUploader({
   label,
   onUploadComplete,
-  accept = UPLOAD_ACCEPT.document,
+  purpose = "document",
+  accept = UPLOAD_ACCEPT[purpose],
   maxSizeMB = 15,
   validateFile,
   onFileSelected,
   onFileCleared,
-  private: isPrivate = false,
+  private: isPrivateProp = false,
 }: FileUploaderProps) {
+  const isPortfolio = purpose === "portfolio";
+  // A portfolio has nowhere to go but the private bucket.
+  const isPrivate = isPrivateProp || isPortfolio;
   const { uploadFile, uploadPrivateFile } = useFileUpload();
   const [fileName, setFileName] = useState<string | null>(null);
   const [status, setStatus] = useState<
@@ -78,15 +90,24 @@ export default function FileUploader({
       return;
     }
 
-    // File type validation
+    // File type validation. A portfolio uses the shared rules, which also
+    // read a typeless Word file by its name.
     const acceptedTypes = accept.split(",").map((t) => t.trim());
-    const matchesType = acceptedTypes.some((type) => {
-      if (type.endsWith("/*"))
-        return file.type.startsWith(type.replace("/*", "/"));
-      return file.type === type;
-    });
+    const matchesType = isPortfolio
+      ? acceptsFileType(file, "portfolio")
+      : acceptedTypes.some((type) => {
+          if (type.endsWith("/*"))
+            return file.type.startsWith(type.replace("/*", "/"));
+          return file.type === type;
+        });
     if (!matchesType) {
-      toast.error(pdfOnly ? FILE_PDF_ONLY : FILE_UNSUPPORTED.document);
+      toast.error(
+        pdfOnly
+          ? FILE_PDF_ONLY
+          : isPortfolio
+            ? FILE_UNSUPPORTED.portfolio
+            : FILE_UNSUPPORTED.document,
+      );
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -111,7 +132,7 @@ export default function FileUploader({
     onFileSelected?.(file);
 
     const result = isPrivate
-      ? await uploadPrivateFile(file)
+      ? await uploadPrivateFile(file, purpose)
       : await uploadFile(file);
 
     if (result) {
@@ -133,6 +154,8 @@ export default function FileUploader({
   };
 
   const isImage = fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+  // A browser can't show a Word file, so it has no preview.
+  const canPreview = !!file && !isWordFile(file);
 
   return (
     <div className="space-y-2">
@@ -170,7 +193,7 @@ export default function FileUploader({
               <span className="text-[10px] opacity-60">
                 {accept === "application/pdf"
                   ? "PDF only"
-                  : "JPG, PNG, WebP, GIF or PDF"}{" "}
+                  : UPLOAD_HINT[purpose]}{" "}
                 (Max {maxSizeMB}MB)
               </span>
             </p>
@@ -193,8 +216,10 @@ export default function FileUploader({
               <button
                 type="button"
                 onClick={openPreview}
-                disabled={!file}
-                aria-label={`Preview ${fileName}`}
+                disabled={!canPreview}
+                aria-label={
+                  canPreview ? `Preview ${fileName}` : (fileName ?? undefined)
+                }
                 className="flex-1 min-w-0 flex items-center gap-3 text-left rounded-xl -m-1 p-1 hover:bg-white/5 transition-colors relative z-20 cursor-pointer disabled:cursor-default"
               >
                 <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center shrink-0">
@@ -213,16 +238,17 @@ export default function FileUploader({
                   </p>
                 </div>
               </button>
-              <button
-                type="button"
-                onClick={openPreview}
-                disabled={!file}
-                aria-label="Preview file"
-                title="Preview"
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all relative z-20 shrink-0"
-              >
-                <Eye size={16} />
-              </button>
+              {canPreview && (
+                <button
+                  type="button"
+                  onClick={openPreview}
+                  aria-label="Preview file"
+                  title="Preview"
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all relative z-20 shrink-0"
+                >
+                  <Eye size={16} />
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="Remove file"
