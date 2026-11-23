@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import {
   ResourceItem,
   GalleryItem,
@@ -122,7 +122,7 @@ const initialData = {
   cancellationPolicyId: null as string | null,
   includedItems: [] as ResourceItem[],
   addonItems: [] as ResourceItem[],
-  baseRate: 15000,
+  baseRate: 0,
   occupancyRate: 60,
   extraGuestRate: 0,
   activeCategory: "spaces",
