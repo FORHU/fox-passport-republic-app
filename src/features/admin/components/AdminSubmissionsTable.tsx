@@ -29,6 +29,8 @@ interface ApplicationData {
   birPermitFile?: FileRecord | null;
   selfieFile?: FileRecord | null;
   portfolioFile?: FileRecord | null;
+  // Links to work hosted elsewhere: Event Foxer and Provider (app#371).
+  portfolioUrls?: string[];
   backgroundClearanceFile?: FileRecord | null; // organizer only
   // investor fields — match InvestorApplication in the Prisma schema, not
   // the identity-verification shape every other role uses. An investor is
@@ -107,6 +109,11 @@ function getAppData(app: RoleApplication): ApplicationData | null {
   );
 }
 
+const WORD_TYPES = [
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
 function DocPreview({
   label,
   file,
@@ -131,6 +138,8 @@ function DocPreview({
     );
 
   const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+  const isWord =
+    WORD_TYPES.includes(file.type) || /\.docx?$/i.test(file.name ?? "");
   const ringClass = flagged
     ? "border-red-500/60 ring-1 ring-red-500/40"
     : "border-white/10 group-hover:border-accent/40";
@@ -148,7 +157,24 @@ function DocPreview({
           </span>
         )}
       </p>
-      {isPdf ? (
+      {isWord ? (
+        // A browser can't show a Word file: download it instead (app#371).
+        <a
+          href={file.url}
+          download={file.name}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`w-full h-24 rounded-xl bg-white/5 border ${ringClass} flex flex-col items-center justify-center gap-2 hover:bg-white/10 transition group`}
+        >
+          <span className="material-symbols-outlined text-[32px] text-sky-400 group-hover:scale-110 transition-transform">
+            description
+          </span>
+          <span className="text-[10px] text-white/40 group-hover:text-white/70 truncate max-w-[120px]">
+            {file.name}
+          </span>
+          <span className="text-[10px] text-white/30">Download</span>
+        </a>
+      ) : isPdf ? (
         <button
           type="button"
           onClick={() => onPreview(file, label)}
@@ -179,6 +205,37 @@ function DocPreview({
           </div>
         </button>
       )}
+    </div>
+  );
+}
+
+/** An applicant's links to work hosted elsewhere, opened in a new tab. */
+function PortfolioLinks({ urls }: { urls: string[] }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-[10px] text-white/30 uppercase tracking-wider">
+        Portfolio Links
+      </p>
+      <ul className="space-y-1">
+        {urls.map((url) => (
+          <li key={url}>
+            {/* Links saved before app#371 were never checked: only a web
+                address becomes clickable, never a javascript: one. */}
+            {/^https?:\/\//i.test(url) ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="text-xs text-accent hover:underline break-all"
+              >
+                {url}
+              </a>
+            ) : (
+              <span className="text-xs text-white/50 break-all">{url}</span>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -526,6 +583,9 @@ function ApplicationDetailDrawer({
                       />
                     )}
                   </div>
+                  {!!data.portfolioUrls?.length && (
+                    <PortfolioLinks urls={data.portfolioUrls} />
+                  )}
                 </>
               )}
 
