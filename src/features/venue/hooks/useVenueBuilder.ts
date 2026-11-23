@@ -304,9 +304,6 @@ export function useVenueBuilder() {
       if (!store.state) missing.push("Province");
       if (!store.district) missing.push("Barangay");
     }
-    if (!store.boundary || store.boundary.length < 3) {
-      missing.push("Service Area (draw a shape on the map)");
-    }
 
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(", ")}`);

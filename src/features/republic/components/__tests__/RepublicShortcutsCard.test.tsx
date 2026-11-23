@@ -14,7 +14,7 @@ describe("RepublicShortcutsCard", () => {
   it("hides the builders from someone without the roles", () => {
     signInWith(["payouts:onboard"]);
     render(<RepublicShortcutsCard />);
-    expect(screen.queryByText(/Draw & Add Venue/)).toBeNull();
+    expect(screen.queryByText(/Add Venue/)).toBeNull();
     expect(screen.queryByText(/Register Equipment Hub/)).toBeNull();
     expect(screen.getByText("Saved Posts")).toBeTruthy();
   });
@@ -22,7 +22,7 @@ describe("RepublicShortcutsCard", () => {
   it("shows each builder to whoever can open it", () => {
     signInWith(["venue:manage", "partnership:propose"]);
     render(<RepublicShortcutsCard />);
-    expect(screen.getByText(/Draw & Add Venue/)).toBeTruthy();
+    expect(screen.getByText(/Add Venue/)).toBeTruthy();
     expect(screen.getByText(/Register Equipment Hub/)).toBeTruthy();
   });
 });

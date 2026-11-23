@@ -15,7 +15,7 @@ import {
   type GeoMatch,
 } from "@/shared/lib/geocoding";
 import { fetchBarangays } from "@/shared/api/geo";
-import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
+import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 import {
   LONG_DESCRIPTION_MAX,
@@ -80,7 +80,7 @@ export function VenueDetailsForm({
   lat = null,
   lng = null,
   boundary = null,
-  excludeVenueId,
+  excludeVenueId: _excludeVenueId,
   gallery,
   showGuide,
   cancellationPolicyId,
@@ -101,7 +101,7 @@ export function VenueDetailsForm({
   onDistrictChange,
   onCountryChange,
   onLatLngChange = () => {},
-  onBoundaryChange = () => {},
+  onBoundaryChange: _onBoundaryChange = () => {},
   onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
@@ -345,19 +345,20 @@ export function VenueDetailsForm({
               )}
             </div>
 
-            {/* Service Area */}
-            <div>
-              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                Service Area
-              </label>
-              <VenuePolygonMapPicker
-                boundary={boundary}
-                focusLat={lat}
-                focusLng={lng}
-                excludeVenueId={excludeVenueId}
-                onChange={onBoundaryChange}
-              />
-            </div>
+            {/* Location Preview */}
+            {lat != null && lng != null && (
+              <div>
+                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+                  Location Preview
+                </label>
+                <LocationMap
+                  lat={lat}
+                  lng={lng}
+                  boundary={boundary}
+                  className="h-64 w-full rounded-2xl overflow-hidden border border-white/10"
+                />
+              </div>
+            )}
 
             {/* Cancellation Policy */}
             <div className="max-w-md">
