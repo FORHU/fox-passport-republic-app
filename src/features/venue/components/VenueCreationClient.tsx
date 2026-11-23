@@ -10,6 +10,7 @@ import {
   VenueDetailsForm,
   FeatureDropZone,
   RevenueProjector,
+  VenuePoliciesSection,
   VenuePreviewModal,
 } from "@/features/venue/components/venue-builder";
 
@@ -40,8 +41,12 @@ export default function VenueCreationClient() {
     boundary,
     gallery,
     cancellationPolicyId,
+    cancellationType,
+    flexibleRefundPercent,
+    flexibleRefundHours,
     includedItems,
     addonItems,
+    policyItems,
     baseRate,
     occupancyRate,
     extraGuestRate,
@@ -68,8 +73,17 @@ export default function VenueCreationClient() {
     setLng,
     setBoundary,
     setCancellationPolicyId,
+    setCancellationType,
+    setFlexibleRefundPercent,
+    setFlexibleRefundHours,
     removeIncludedItem,
+    updateIncludedItem,
     removeAddonItem,
+    updateAddonItem,
+    addPolicyItem,
+    updatePolicyItem,
+    removePolicyItem,
+    updateCustomResource,
     setBaseRate,
     setOccupancyRate,
     setExtraGuestRate,
@@ -109,6 +123,7 @@ export default function VenueCreationClient() {
         gallery={gallery}
         includedItems={includedItems}
         addonItems={addonItems}
+        policyItems={policyItems}
         baseRate={baseRate}
       />
 
@@ -185,8 +200,10 @@ export default function VenueCreationClient() {
               onAddCustomItem={handleAddCustomItem}
               onAddCatalogItem={handleAddCatalogItem}
               onRemoveResource={handleRemoveCustomResource}
+              onUpdateResource={updateCustomResource}
               onDragStart={handleDragStart}
               onAddTo={addResourceTo}
+              onAddPolicy={(item) => addPolicyItem(item)}
             />
           </div>
 
@@ -214,6 +231,12 @@ export default function VenueCreationClient() {
                 gallery={gallery}
                 showGuide={showGuide}
                 cancellationPolicyId={cancellationPolicyId}
+                cancellationType={cancellationType}
+                onCancellationTypeChange={setCancellationType}
+                flexibleRefundPercent={flexibleRefundPercent}
+                onRefundPercentChange={setFlexibleRefundPercent}
+                flexibleRefundHours={flexibleRefundHours}
+                onRefundHoursChange={setFlexibleRefundHours}
                 onNameChange={setVenueName}
                 onDescriptionChange={setDescription}
                 onTypeChange={setVenueType}
@@ -242,6 +265,7 @@ export default function VenueCreationClient() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onRemoveItem={removeIncludedItem}
+                onUpdateItem={updateIncludedItem}
               />
               <FeatureDropZone
                 type="addon"
@@ -251,6 +275,22 @@ export default function VenueCreationClient() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onRemoveItem={removeAddonItem}
+                onUpdateItem={updateAddonItem}
+              />
+              <VenuePoliciesSection
+                policies={policyItems}
+                onAddPolicy={(name) =>
+                  addPolicyItem({
+                    id: `policy-${Date.now()}`,
+                    name,
+                    value: 0,
+                    icon: "gavel",
+                    desc: "Venue policy",
+                    category: "rules",
+                  })
+                }
+                onUpdatePolicy={updatePolicyItem}
+                onRemovePolicy={removePolicyItem}
               />
             </div>
           </main>

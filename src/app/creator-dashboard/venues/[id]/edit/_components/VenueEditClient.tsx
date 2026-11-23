@@ -9,6 +9,7 @@ import {
   VenueDetailsForm,
   FeatureDropZone,
   RevenueProjector,
+  VenuePoliciesSection,
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
 import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
@@ -39,8 +40,12 @@ function VenueEditContent({ id }: Props) {
     boundary,
     gallery,
     cancellationPolicyId,
+    cancellationType,
+    flexibleRefundPercent,
+    flexibleRefundHours,
     includedItems,
     addonItems,
+    policyItems,
     baseRate,
     occupancyRate,
     extraGuestRate,
@@ -67,8 +72,17 @@ function VenueEditContent({ id }: Props) {
     setLng,
     setBoundary,
     setCancellationPolicyId,
+    setCancellationType,
+    setFlexibleRefundPercent,
+    setFlexibleRefundHours,
     removeIncludedItem,
+    updateIncludedItem,
     removeAddonItem,
+    updateAddonItem,
+    addPolicyItem,
+    updatePolicyItem,
+    removePolicyItem,
+    updateCustomResource,
     setBaseRate,
     setOccupancyRate,
     setExtraGuestRate,
@@ -147,7 +161,9 @@ function VenueEditContent({ id }: Props) {
               onNewItemChange={setNewItem}
               onAddCustomItem={handleAddCustomItem}
               onRemoveResource={handleRemoveCustomResource}
+              onUpdateResource={updateCustomResource}
               onDragStart={handleDragStart}
+              onAddPolicy={(item) => addPolicyItem(item)}
             />
             <main className="flex-1 overflow-y-auto p-8 bg-canvas flex gap-8">
               <div className="flex-1 min-w-0 space-y-8">
@@ -169,6 +185,12 @@ function VenueEditContent({ id }: Props) {
                   gallery={gallery}
                   showGuide={showGuide}
                   cancellationPolicyId={cancellationPolicyId}
+                  cancellationType={cancellationType}
+                  onCancellationTypeChange={setCancellationType}
+                  flexibleRefundPercent={flexibleRefundPercent}
+                  onRefundPercentChange={setFlexibleRefundPercent}
+                  flexibleRefundHours={flexibleRefundHours}
+                  onRefundHoursChange={setFlexibleRefundHours}
                   onNameChange={setVenueName}
                   onDescriptionChange={setDescription}
                   onTypeChange={setVenueType}
@@ -197,6 +219,7 @@ function VenueEditContent({ id }: Props) {
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onRemoveItem={removeIncludedItem}
+                  onUpdateItem={updateIncludedItem}
                 />
                 <FeatureDropZone
                   type="addon"
@@ -206,6 +229,22 @@ function VenueEditContent({ id }: Props) {
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onRemoveItem={removeAddonItem}
+                  onUpdateItem={updateAddonItem}
+                />
+                <VenuePoliciesSection
+                  policies={policyItems}
+                  onAddPolicy={(name) =>
+                    addPolicyItem({
+                      id: `policy-${Date.now()}`,
+                      name,
+                      value: 0,
+                      icon: "gavel",
+                      desc: "Venue policy",
+                      category: "rules",
+                    })
+                  }
+                  onUpdatePolicy={updatePolicyItem}
+                  onRemovePolicy={removePolicyItem}
                 />
                 <VenueAvailabilitySection venueId={id} />
                 <VenueAffiliatesSection venueId={id} />

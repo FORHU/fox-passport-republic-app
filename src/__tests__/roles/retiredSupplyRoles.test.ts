@@ -7,7 +7,10 @@ vi.mock(
 // The page checks the visitor is signed in first.
 vi.mock("@/shared/lib/server/auth", () => ({ requireAuth: vi.fn() }));
 
-import { ROLES as CATALOG } from "@/shared/data/roleCatalog";
+import {
+  ROLES as CATALOG,
+  PROVIDER_SUBSECTIONS,
+} from "@/shared/data/roleCatalog";
 import { ROLES as LANDING, roleName } from "@/features/landing/journey/data";
 import { ROLE_TYPES, FOXER_ROLES, ROLE_BADGE } from "@/shared/constants/roles";
 import FoxerApplicationPage from "@/app/foxer/apply/page";
@@ -25,20 +28,27 @@ describe("retired supply roles", () => {
       expect(FOXER_ROLES as readonly string[]).not.toContain(r);
       expect(Object.keys(ROLE_BADGE)).not.toContain(r);
     }
-    expect(ROLE_BADGE.providerFoxer.label).toBe("Provider");
+    expect(ROLE_BADGE.providerFoxer.label).toBe("Provider Foxer");
+    expect(ROLE_BADGE.eventFoxer.label).toBe("Event Foxer");
+    expect(ROLE_BADGE.venueFoxer.label).toBe("Venue Foxer");
+    expect(ROLE_BADGE.organizer.label).toBe("Event Coordinator");
   });
 
-  it("are not offered in the role catalog", () => {
+  it("are not offered in the role catalog, which lists only the 3 main Foxer roles", () => {
     const offered = CATALOG.map((r) => r.roleType);
-    expect(offered).toContain("providerFoxer");
+    expect(offered).toEqual(["providerFoxer", "venueFoxer", "eventFoxer"]);
     for (const roleType of RETIRED) expect(offered).not.toContain(roleType);
+    expect(PROVIDER_SUBSECTIONS.map((s) => s.title)).toContain(
+      "Event Coordinator",
+    );
   });
 
   it("are not listed on the landing page", () => {
     const offered = LANDING.map((r) => r.roleType);
-    expect(offered).toContain("providerFoxer");
+    expect(offered).toEqual(["eventFoxer", "venueFoxer", "providerFoxer"]);
     for (const roleType of RETIRED) expect(offered).not.toContain(roleType);
-    expect(roleName("providerFoxer")).toBe("Provider");
+    expect(roleName("providerFoxer")).toBe("Provider Foxer");
+    expect(roleName("organizer")).toBe("Event Coordinator");
   });
 
   it.each(["asset", "service", "performer", undefined])(

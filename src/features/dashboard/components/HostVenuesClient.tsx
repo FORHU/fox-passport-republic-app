@@ -114,8 +114,8 @@ export default function HostVenuesClient({
                 ],
               }}
               action={{
-                label: "Draw & Add Venue",
-                icon: "polyline",
+                label: "Add Venue",
+                icon: "domain_add",
                 href: "/venue-foxer/create-venue",
               }}
             />

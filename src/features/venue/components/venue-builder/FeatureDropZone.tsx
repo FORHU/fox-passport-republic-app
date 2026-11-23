@@ -12,6 +12,7 @@ interface FeatureDropZoneProps {
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, zone: "included" | "addon") => void;
   onRemoveItem: (id: string) => void;
+  onUpdateItem?: (id: string, updates: Partial<ResourceItem>) => void;
 }
 
 export function FeatureDropZone({
@@ -22,7 +23,11 @@ export function FeatureDropZone({
   onDragLeave,
   onDrop,
   onRemoveItem,
+  onUpdateItem,
 }: FeatureDropZoneProps) {
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [editName, setEditName] = React.useState("");
+  const [editValue, setEditValue] = React.useState("");
   const isIncluded = type === "included";
   const title = isIncluded ? "Standard Features" : "Monetized Add-ons";
   const subtitle = isIncluded
@@ -77,44 +82,108 @@ export function FeatureDropZone({
           {items.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="bg-surface-raised border border-white/5 rounded-xl p-3 flex items-center justify-between"
+              className="bg-surface-raised border border-white/5 rounded-xl p-3"
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-white/5 ${itemBgColor}`}
-                >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
+              {editingId === item.id ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Name"
+                    className="w-full bg-black/40 border border-white/20 rounded px-2 py-1 text-xs text-white focus:border-accent outline-none"
+                  />
+                  {item.category !== "rules" && (
+                    <input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      placeholder="Price"
+                      className="w-full bg-black/40 border border-white/20 rounded px-2 py-1 text-xs text-white focus:border-accent outline-none font-mono"
                     />
-                  ) : (
-                    <span className="material-symbols-outlined text-[18px]">
-                      {item.icon}
-                    </span>
                   )}
+                  <div className="flex gap-1.5 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[10px] text-white/70"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editName.trim()) {
+                          onUpdateItem?.(item.id, {
+                            name: editName.trim(),
+                            value: Number(editValue) || 0,
+                          });
+                        }
+                        setEditingId(null);
+                      }}
+                      className="px-2 py-0.5 rounded bg-accent text-black font-bold text-[10px]"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-bold text-white text-sm">{item.name}</p>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-white/5 ${itemBgColor}`}
+                    >
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="material-symbols-outlined text-[18px]">
+                          {item.icon}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-white text-sm">
+                        {item.name}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-row items-center gap-1.5">
+                    {item.category !== "rules" && (
+                      <p className="text-[10px] text-text-muted font-mono">
+                        {!isIncluded && "Upsell: "}
+                        <Money amount={item.value} />
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingId(item.id);
+                        setEditName(item.name);
+                        setEditValue(String(item.value));
+                      }}
+                      className="text-white/20 hover:text-accent p-1.5 rounded-full transition-all"
+                      title="Edit item name and price"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        edit
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveItem(item.id)}
+                      className="text-white/20 hover:text-red-400 p-1.5 rounded-full transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        delete
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-row items-center gap-2">
-                {item.category !== "rules" && (
-                  <p className="text-[10px] text-text-muted font-mono">
-                    {!isIncluded && "Upsell: "}
-                    <Money amount={item.value} />
-                  </p>
-                )}
-                <button
-                  onClick={() => onRemoveItem(item.id)}
-                  className="text-white/20 hover:text-red-400 p-1.5 rounded-full transition-all"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    delete
-                  </span>
-                </button>
-              </div>
+              )}
             </div>
           ))}
         </div>

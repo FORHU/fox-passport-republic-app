@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import {
   ResourceItem,
   GalleryItem,
@@ -25,10 +25,14 @@ interface VenueBuilderState {
 
   // Cancellation Policy
   cancellationPolicyId: string | null;
+  cancellationType: "Flexible" | "Non-Refundable" | "";
+  flexibleRefundPercent: number;
+  flexibleRefundHours: number;
 
   // Package Items
   includedItems: ResourceItem[];
   addonItems: ResourceItem[];
+  policyItems: ResourceItem[];
   baseRate: number;
   occupancyRate: number;
   /** Rate per guest beyond `capacity`, per billing unit — same shape as
@@ -73,16 +77,31 @@ interface VenueBuilderState {
 
   // Actions - Resources
   addCustomResource: (category: string, item: ResourceItem) => void;
+  updateCustomResource: (
+    category: string,
+    id: string,
+    updates: Partial<ResourceItem>,
+  ) => void;
   removeCustomResource: (category: string, id: string) => void;
 
   // Actions - Cancellation Policy
   setCancellationPolicyId: (id: string | null) => void;
+  setCancellationType: (type: "Flexible" | "Non-Refundable" | "") => void;
+  setFlexibleRefundPercent: (rate: number) => void;
+  setFlexibleRefundHours: (hours: number) => void;
 
   // Actions - Package Items
   addIncludedItem: (item: ResourceItem) => void;
+  updateIncludedItem: (id: string, updates: Partial<ResourceItem>) => void;
   removeIncludedItem: (id: string) => void;
   addAddonItem: (item: ResourceItem) => void;
+  updateAddonItem: (id: string, updates: Partial<ResourceItem>) => void;
   removeAddonItem: (id: string) => void;
+
+  // Actions - Policy Items
+  addPolicyItem: (item: ResourceItem) => void;
+  updatePolicyItem: (id: string, updates: Partial<ResourceItem>) => void;
+  removePolicyItem: (id: string) => void;
   setBaseRate: (rate: number) => void;
   setOccupancyRate: (rate: number) => void;
   setExtraGuestRate: (rate: number) => void;
@@ -120,9 +139,13 @@ const initialData = {
   boundary: null as [number, number][] | null,
   gallery: [] as GalleryItem[],
   cancellationPolicyId: null as string | null,
+  cancellationType: "" as "Flexible" | "Non-Refundable" | "",
+  flexibleRefundPercent: 100,
+  flexibleRefundHours: 24,
   includedItems: [] as ResourceItem[],
   addonItems: [] as ResourceItem[],
-  baseRate: 15000,
+  policyItems: [] as ResourceItem[],
+  baseRate: 0,
   occupancyRate: 60,
   extraGuestRate: 0,
   activeCategory: "spaces",
@@ -167,6 +190,15 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
         [category]: [item, ...(state.resources[category] || [])],
       },
     })),
+  updateCustomResource: (category, id, updates) =>
+    set((state) => ({
+      resources: {
+        ...state.resources,
+        [category]: (state.resources[category] || []).map((r) =>
+          r.id === id ? { ...r, ...updates } : r,
+        ),
+      },
+    })),
   removeCustomResource: (category, id) =>
     set((state) => ({
       resources: {
@@ -179,25 +211,80 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
 
   // Cancellation Policy Actions
   setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
+  setCancellationType: (type) => set({ cancellationType: type }),
+  setFlexibleRefundPercent: (pct) => set({ flexibleRefundPercent: pct }),
+  setFlexibleRefundHours: (hours) => set({ flexibleRefundHours: hours }),
 
   // Package Items Actions
   addIncludedItem: (item) =>
     set((state) => {
+      if (item.category === "rules") {
+        if (
+          state.policyItems.find(
+            (p) => p.name.toLowerCase() === item.name.toLowerCase(),
+          )
+        )
+          return state;
+        return { policyItems: [...state.policyItems, item] };
+      }
       if (state.includedItems.find((i) => i.id === item.id)) return state;
       return { includedItems: [...state.includedItems, item] };
     }),
+  updateIncludedItem: (id, updates) =>
+    set((state) => ({
+      includedItems: state.includedItems.map((i) =>
+        i.id === id ? { ...i, ...updates } : i,
+      ),
+    })),
   removeIncludedItem: (id) =>
     set((state) => ({
       includedItems: state.includedItems.filter((i) => i.id !== id),
     })),
   addAddonItem: (item) =>
     set((state) => {
+      if (item.category === "rules") {
+        if (
+          state.policyItems.find(
+            (p) => p.name.toLowerCase() === item.name.toLowerCase(),
+          )
+        )
+          return state;
+        return { policyItems: [...state.policyItems, item] };
+      }
       if (state.addonItems.find((i) => i.id === item.id)) return state;
       return { addonItems: [...state.addonItems, item] };
     }),
+  updateAddonItem: (id, updates) =>
+    set((state) => ({
+      addonItems: state.addonItems.map((i) =>
+        i.id === id ? { ...i, ...updates } : i,
+      ),
+    })),
   removeAddonItem: (id) =>
     set((state) => ({
       addonItems: state.addonItems.filter((i) => i.id !== id),
+    })),
+
+  // Policy Items Actions
+  addPolicyItem: (item) =>
+    set((state) => {
+      if (
+        state.policyItems.find(
+          (p) => p.name.toLowerCase() === item.name.toLowerCase(),
+        )
+      )
+        return state;
+      return { policyItems: [...state.policyItems, item] };
+    }),
+  updatePolicyItem: (id, updates) =>
+    set((state) => ({
+      policyItems: state.policyItems.map((p) =>
+        p.id === id ? { ...p, ...updates } : p,
+      ),
+    })),
+  removePolicyItem: (id) =>
+    set((state) => ({
+      policyItems: state.policyItems.filter((p) => p.id !== id),
     })),
   setBaseRate: (rate) => set({ baseRate: rate }),
   setOccupancyRate: (rate) => set({ occupancyRate: rate }),
