@@ -16,8 +16,11 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { AuthDialogTitle } from "@/features/auth/components/AuthDialogTitle";
 import { TextField } from "@/shared/components/ui/TextField";
 import { PASSWORD_HINT } from "@/shared/lib/passwordPolicy";
+import { PasswordVisibilityToggle } from "@/features/auth/components/PasswordVisibilityToggle";
 
 export default function ResetPasswordForm() {
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const resetPasswordMutation = useResetPassword();
   const resendMutation = useForgotPassword(); // re-uses the same endpoint to resend a code
   const setView = useAuthStore((s) => s.setView);
@@ -75,11 +78,17 @@ export default function ResetPasswordForm() {
           label="NEW PASSWORD"
           labelClassName="block text-xs font-bold text-white/70 mb-1.5 ml-1"
           placeholder="••••••••"
-          type="password"
+          type={showPassword ? "text" : "password"}
           autoComplete="new-password"
           required
           hint={PASSWORD_HINT}
           error={errors.newPassword?.message}
+          trailing={
+            <PasswordVisibilityToggle
+              visible={showPassword}
+              onToggle={() => setShowPassword((prev) => !prev)}
+            />
+          }
         />
 
         <TextField
@@ -87,10 +96,16 @@ export default function ResetPasswordForm() {
           label="CONFIRM NEW PASSWORD"
           labelClassName="block text-xs font-bold text-white/70 mb-1.5 ml-1"
           placeholder="••••••••"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           autoComplete="new-password"
           required
           error={errors.confirmPassword?.message}
+          trailing={
+            <PasswordVisibilityToggle
+              visible={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword((prev) => !prev)}
+            />
+          }
         />
 
         <button
