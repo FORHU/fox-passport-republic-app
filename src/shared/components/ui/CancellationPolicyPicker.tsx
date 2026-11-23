@@ -237,10 +237,11 @@ export default function CancellationPolicyPicker({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[9px] uppercase font-bold text-white/40 block mb-1">
+              <label htmlFor="flexible-refund-percent" className="text-[9px] uppercase font-bold text-white/40 block mb-1">
                 Refund Percent (%)
               </label>
               <input
+                id="flexible-refund-percent"
                 type="number"
                 min={0}
                 max={100}
@@ -256,10 +257,11 @@ export default function CancellationPolicyPicker({
               />
             </div>
             <div>
-              <label className="text-[9px] uppercase font-bold text-white/40 block mb-1">
+              <label htmlFor="flexible-refund-hours" className="text-[9px] uppercase font-bold text-white/40 block mb-1">
                 Deadline (Hours Before)
               </label>
               <input
+                id="flexible-refund-hours"
                 type="number"
                 min={0}
                 value={flexibleRefundHours}
