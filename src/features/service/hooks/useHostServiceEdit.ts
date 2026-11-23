@@ -14,9 +14,13 @@ import {
 import type { Id } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
+  PERFORMER_SERVICE_CATEGORIES,
   BILLING_RATE_MAP,
   SERVICE_STATUS_TO_API,
+  type ServiceStudioMode,
 } from "@/features/service/data/serviceBuilderData";
+
+const PERFORMER_IDS = PERFORMER_SERVICE_CATEGORIES.map((c) => c.id);
 
 function belongsToHost(record: any, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -50,7 +54,9 @@ function mapCategoryToService(category: any): {
   slug: string;
   customCategory: string;
 } {
-  const allowed = SERVICE_CATEGORIES.map((c) => c.id);
+  // A gig keeps its performer slug; it would otherwise reopen, and save, as
+  // Other and leave the Performers page.
+  const allowed = [...SERVICE_CATEGORIES.map((c) => c.id), ...PERFORMER_IDS];
   if (!category) return { slug: "other", customCategory: "" };
 
   if (typeof category === "string") {
@@ -93,7 +99,9 @@ export function useHostServiceEdit(serviceId: string) {
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
-  const services = useServicesBuilder();
+  // Set from the loaded category: a gig is edited with the gig categories.
+  const [mode, setMode] = useState<ServiceStudioMode>("service");
+  const services = useServicesBuilder({ mode });
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
@@ -132,6 +140,7 @@ export function useHostServiceEdit(serviceId: string) {
         const { slug, customCategory } = mapCategoryToService(found?.category);
         services.setCategory(slug);
         services.setCustomCategory(customCategory);
+        setMode(PERFORMER_IDS.includes(slug) ? "performer" : "service");
 
         const parsedPrice = Number(found?.price ?? 0);
         services.setPrice(Number.isFinite(parsedPrice) ? parsedPrice : 0);

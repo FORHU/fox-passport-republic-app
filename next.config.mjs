@@ -39,6 +39,7 @@ const nextConfig = {
   // Query's 30s staleTime in QueryProvider, so hopping back to a page you
   // just left is instant on both layers. `router.refresh()` still bypasses it.
   experimental: {
+    agentUpgrade: "security",
     staleTimes: {
       dynamic: 30,
     },
@@ -81,6 +82,9 @@ const nextConfig = {
         destination: "/creator-dashboard/calendar",
         permanent: true,
       },
+      // The citizen Calendar page is gone (api#418): bookings live on
+      // /booking. Not permanent, so browsers don't cache it.
+      { source: "/calendar", destination: "/booking", permanent: false },
       {
         source: "/host/events",
         destination: "/creator-dashboard/events",

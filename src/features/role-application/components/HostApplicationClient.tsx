@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
-import { Globe, ShieldCheck, MapPin } from "lucide-react";
+import { Globe, ShieldCheck, MapPin, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection, FOXER_KYC_DOCUMENTS } from "./KycDocumentSection";
@@ -12,6 +12,12 @@ import {
   CascadingLocationFields,
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
+import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
+import { yearsOfExperienceError } from "../utils/yearsOfExperience";
+import {
+  portfolioUrlsError,
+  splitPortfolioUrls,
+} from "@/shared/lib/portfolioUrls";
 
 const EVENT_CATEGORY_OPTIONS = [
   { value: "corporate", label: "Corporate" },
@@ -46,6 +52,7 @@ export default function HostApplicationClient() {
     birPermitFileId: "",
     selfieFileId: "",
     portfolioFileId: "",
+    portfolioUrls: "",
   });
   const [specializations, setSpecializations] = useState<string[]>([]);
 
@@ -59,10 +66,10 @@ export default function HostApplicationClient() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, "");
-    setFormData((prev) => ({ ...prev, experience: digits }));
-  };
+  // Kept as typed and checked instead: stripping non-digits turned "2.5" into
+  // "25" (app#327).
+  const experienceError = yearsOfExperienceError(formData.experience);
+  const linksError = portfolioUrlsError(formData.portfolioUrls);
 
   const uploaded = FOXER_KYC_DOCUMENTS.filter(
     (d) => formData[d.field as keyof typeof formData],
@@ -126,13 +133,22 @@ export default function HostApplicationClient() {
           label: "Portfolio / resume",
           value: formData.portfolioFileId ? "Uploaded" : "",
         },
+        {
+          label: "Portfolio links",
+          value: splitPortfolioUrls(formData.portfolioUrls).join(", "),
+        },
       ]}
       agreement="By submitting this application, you agree to comply with FoxPassport's Event Foxer policies and quality standards. Your application will be reviewed by our team."
       isPending={isPending}
       onSubmit={() =>
         applyRole({
           roleType: "eventFoxer",
-          data: { ...formData, specializations },
+          data: {
+            ...formData,
+            experience: formData.experience.trim(),
+            portfolioUrls: splitPortfolioUrls(formData.portfolioUrls),
+            specializations,
+          },
         })
       }
     >
@@ -141,9 +157,10 @@ export default function HostApplicationClient() {
         title="About you"
         description="Your background in organizing events, and where you're based."
         validate={() =>
-          place.city
+          experienceError ??
+          (place.city
             ? null
-            : "Choose your base location — country, state and city."
+            : "Choose your base location — country, state and city.")
         }
       >
         <div className="space-y-2">
@@ -180,21 +197,25 @@ export default function HostApplicationClient() {
 
         <div className="space-y-2">
           <label className={LABEL}>Years of Experience</label>
-          <div className="relative">
+          <FieldControl invalid={!!experienceError}>
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
               <ShieldCheck size={18} />
             </div>
             <input
               type="text"
               inputMode="numeric"
-              pattern="[0-9]*"
               name="experience"
               value={formData.experience}
-              onChange={handleExperienceChange}
-              className={`${INPUT} pl-12`}
+              onChange={handleChange}
+              aria-invalid={experienceError ? true : undefined}
+              aria-describedby={
+                experienceError ? "experience-error" : undefined
+              }
+              className={`${INPUT} pl-12 ${experienceError ? "field-invalid pr-10" : ""}`}
               placeholder="e.g. 5"
             />
-          </div>
+          </FieldControl>
+          <FieldError id="experience-error" message={experienceError} />
         </div>
 
         <SpecializationPicker
@@ -212,16 +233,45 @@ export default function HostApplicationClient() {
         validate={() =>
           uploaded < FOXER_KYC_DOCUMENTS.length
             ? "Upload all the required documents before continuing."
-            : null
+            : linksError
         }
       >
         <KycDocumentSection onUpload={handleFileUpload} compact />
 
         <FileUploader
           label="Portfolio / Resume (Optional)"
-          private
+          purpose="portfolio"
           onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
+          onFileCleared={() => handleFileUpload("portfolioFileId", "")}
         />
+
+        <div className="space-y-2">
+          <label htmlFor="portfolio-urls" className={LABEL}>
+            Portfolio Links (Optional)
+          </label>
+          <p className="text-xs text-white/40">
+            Already have your work online? Add up to 5 full web addresses,
+            separated by commas.
+          </p>
+          <FieldControl invalid={!!linksError}>
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
+              <LinkIcon size={18} />
+            </div>
+            <input
+              id="portfolio-urls"
+              type="text"
+              inputMode="url"
+              name="portfolioUrls"
+              value={formData.portfolioUrls}
+              onChange={handleChange}
+              aria-invalid={linksError ? true : undefined}
+              aria-describedby={linksError ? "portfolio-urls-error" : undefined}
+              className={`${INPUT} pl-12 ${linksError ? "field-invalid pr-10" : ""}`}
+              placeholder="https://behance.net/you, https://yourportfolio.com"
+            />
+          </FieldControl>
+          <FieldError id="portfolio-urls-error" message={linksError} />
+        </div>
       </WizardStep>
     </ApplicationWizard>
   );

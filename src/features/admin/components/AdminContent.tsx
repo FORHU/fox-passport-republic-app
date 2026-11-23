@@ -23,6 +23,8 @@ import {
   AdminReviewPanel,
   AdminReportsPanel,
   AdminIdentityPanel,
+  AdminPayoutsPanel,
+  AdminChargebacksPanel,
 } from "@/features/admin/components";
 import { useAdminData } from "@/features/admin/hooks/useAdminData";
 import { useAdminPendingVenues } from "@/features/admin/hooks/useAdminPendingVenues";
@@ -188,6 +190,10 @@ export const AdminContent: React.FC<Props> = ({
       )}
 
       {activeTab === "disputes" && <AdminDisputesPanel />}
+
+      {activeTab === "chargebacks" && <AdminChargebacksPanel />}
+
+      {activeTab === "payouts" && <AdminPayoutsPanel />}
 
       {activeTab === "reports" && <AdminReportsPanel />}
 

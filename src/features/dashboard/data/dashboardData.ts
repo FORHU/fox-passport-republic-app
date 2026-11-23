@@ -166,6 +166,23 @@ export const STATUS_OPTIONS = {
   service: ["active", "paused", "unavailable"],
 };
 
+/** Statuses that admin review sets, so the owner can't pick another. */
+const REVIEW_STATUSES = ["draft", "pending", "pending review", "rejected"];
+
+/**
+ * Whether the owner may change a listing's status from its badge. A draft,
+ * pending or rejected listing goes through review (the edit page treats
+ * these as "needs review"), so its badge is a label. Takes the API's value
+ * ("pending_review") or a display label ("Draft").
+ */
+export function canOwnerSetStatus(status: unknown): boolean {
+  const s = String(status ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ");
+  return !REVIEW_STATUSES.includes(s);
+}
+
 /**
  * What the Gear and Talent lists can be filtered by: the statuses an owner
  * can set, plus the two a listing passes through before approval. Kept apart

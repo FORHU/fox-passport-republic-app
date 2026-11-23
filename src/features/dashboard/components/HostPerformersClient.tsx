@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardHeader,
   PerformersSection,
+  isPerformerService,
 } from "@/features/dashboard/components";
 import {
   FILTER_STATUS_OPTIONS,
   type ServiceItem,
 } from "@/features/dashboard/data/dashboardData";
+import { useSaveListingStatus } from "@/features/dashboard/hooks/useSaveListingStatus";
 import { DashboardListToolbar } from "./DashboardListToolbar";
 
 interface HostPerformersClientProps {
@@ -23,16 +25,6 @@ function normalizeValue(value: unknown): string {
     .replace(/_/g, " ");
 }
 
-function toTitleCaseStatus(status: string): string {
-  const normalized = normalizeValue(status);
-  if (!normalized) return status;
-  return normalized
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
 export default function HostPerformersClient({
   initialServices,
 }: HostPerformersClientProps) {
@@ -43,7 +35,10 @@ export default function HostPerformersClient({
   const [status, setStatus] = useState<"all" | string>(
     () => searchParams.get("status") ?? "all",
   );
-  const [services, setServices] = useState<ServiceItem[]>(initialServices);
+  // The page gets every service; this page lists performer gigs only.
+  const [services, setServices] = useState<ServiceItem[]>(() =>
+    initialServices.filter(isPerformerService),
+  );
 
   const filteredServices = useMemo(() => {
     const q = normalizeValue(searchQuery);
@@ -62,10 +57,18 @@ export default function HostPerformersClient({
     });
   }, [services, searchQuery, status]);
 
-  const handleStatusChange = (id: number | string, nextStatus: string) => {
-    const label = toTitleCaseStatus(nextStatus);
+  const saveStatus = useSaveListingStatus();
+
+  // The badge changes once the API has the new status; on failure it keeps
+  // the old one and a toast says why.
+  const handleStatusChange = async (
+    id: number | string,
+    nextStatus: string,
+  ) => {
+    const saved = await saveStatus("service", id, nextStatus);
+    if (!saved) return;
     setServices((prev) =>
-      prev.map((sv) => (sv.id === id ? { ...sv, status: label } : sv)),
+      prev.map((sv) => (sv.id === id ? { ...sv, status: saved } : sv)),
     );
   };
 
@@ -128,7 +131,7 @@ export default function HostPerformersClient({
             }}
             action={{
               label: "Add Gig / Package",
-              onClick: () => router.push("/foxer/create-listing?type=service"),
+              onClick: () => router.push("/foxer/create-service?type=performer"),
             }}
           />
 

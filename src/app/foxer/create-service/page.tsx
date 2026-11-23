@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
@@ -9,8 +10,13 @@ import {
   ListingPreviewCard,
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
+import { PERFORMER_LABELS } from "@/features/asset/components/listing-builder/listingLabels";
 
 function ServiceBuilderContent() {
+  // Every "add a gig" button opens `?type=performer`: the gig categories,
+  // titled for a gig. Without it, the operational Service Studio.
+  const isPerformer = useSearchParams().get("type") === "performer";
+  const labels = isPerformer ? PERFORMER_LABELS : undefined;
   const {
     title,
     description,
@@ -44,12 +50,13 @@ function ServiceBuilderContent() {
     handlePublish,
     handleImageUpload,
     handleCategorySelect,
-  } = useServicesBuilder();
+  } = useServicesBuilder({ mode: isPerformer ? "performer" : "service" });
 
   return (
     <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
       <ListingHeader
         activeType="service"
+        labels={labels}
         title={title}
         isSubmitting={isSubmitting}
         error={error}
@@ -62,6 +69,7 @@ function ServiceBuilderContent() {
       <div className="flex-1 flex overflow-hidden">
         <ListingSidebar
           activeType="service"
+          labels={labels}
           categories={categories}
           currentStatuses={currentStatuses}
           category={category}
@@ -81,6 +89,7 @@ function ServiceBuilderContent() {
         />
         <ListingPreviewCard
           activeType="service"
+          labels={labels}
           title={title}
           description={description}
           price={price}
@@ -96,6 +105,7 @@ function ServiceBuilderContent() {
         />
         <ListingStatusPanel
           activeType="service"
+          labels={labels}
           categories={categories}
           category={category}
           customCategory={customCategory}
@@ -113,7 +123,15 @@ function ServiceBuilderContent() {
 export default function CreateServicePage() {
   return (
     <RequireAuth>
-      <ServiceBuilderContent />
+      <Suspense
+        fallback={
+          <div className="fixed inset-0 bg-canvas flex items-center justify-center">
+            <span className="text-white">Loading...</span>
+          </div>
+        }
+      >
+        <ServiceBuilderContent />
+      </Suspense>
     </RequireAuth>
   );
 }

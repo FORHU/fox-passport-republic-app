@@ -6,6 +6,12 @@ import {
   stripeElementsAppearance,
 } from "@/shared/lib/theme";
 import { roleTextColor } from "@/shared/constants/roles";
+import {
+  CATEGORY_BADGE_TINT,
+  CATEGORY_COLORS,
+  categoryBadgeStyle,
+  getCategoryColor,
+} from "@/shared/components/ui/VenuesMap";
 
 const SRC = join(__dirname, "..", "..");
 
@@ -92,5 +98,80 @@ describe("light theme contrast", () => {
     expect(roleTextColor("#C4E85A")).toBe(
       "color-mix(in srgb, #C4E85A, #15171C var(--hue-ink-mix, 0%))",
     );
+  });
+});
+
+/** sRGB mix of two #rrggbb colours, `weight` (0–1) of `a`. */
+function mixHex(a: string, b: string, weight: number) {
+  const channel = (hex: string, i: number) => parseInt(hex.slice(i, i + 2), 16);
+  return (
+    "#" +
+    [1, 3, 5]
+      .map((i) =>
+        Math.round(channel(a, i) * weight + channel(b, i) * (1 - weight))
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("")
+  );
+}
+
+/**
+ * Listing cards (app#376): venue-type badges were pale hue on a pale tint of
+ * itself (~1.3:1 on white), and each listing page painted its own faint
+ * surface. Badges now mix ink in through --category-ink-mix and listing cards
+ * share the --color-listing tokens.
+ */
+describe("listing card contrast", () => {
+  const css = readFileSync(join(SRC, "app", "globals.css"), "utf8");
+  const lightInkMix = Number(
+    /\.light\s*\{[^}]*--category-ink-mix:\s*(\d+)%/.exec(css)?.[1],
+  );
+  const darkListing = /:root\s*\{[^}]*--listing:\s*(#[0-9a-fA-F]{6})/.exec(
+    css,
+  )?.[1];
+
+  it("defines the badge ink mix and listing surface for both themes", () => {
+    expect(lightInkMix).toBeGreaterThan(0);
+    expect(css).toMatch(/:root\s*\{[^}]*--category-ink-mix:\s*0%/);
+    expect(darkListing).toBeDefined();
+  });
+
+  it.each(Object.entries(CATEGORY_COLORS))(
+    "keeps the %s badge at WCAG AA in light and dark",
+    (_, color) => {
+      const tint = CATEGORY_BADGE_TINT / 100;
+      const lightInk = mixHex(color, "#15171C", 1 - lightInkMix / 100);
+      const lightTint = mixHex(color, "#ffffff", tint);
+      expect(contrastRatio(lightInk, lightTint)).toBeGreaterThanOrEqual(4.5);
+      const darkTint = mixHex(color, darkListing!, tint);
+      expect(contrastRatio(color, darkTint)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("builds badge text from the theme variable, not a literal per theme", () => {
+    const style = categoryBadgeStyle("indoor");
+    expect(style.color).toBe(
+      "color-mix(in srgb, #C4E85A, #15171C var(--category-ink-mix, 0%))",
+    );
+    expect(categoryBadgeStyle("unknown").color).toContain(
+      getCategoryColor("unknown"),
+    );
+  });
+
+  it("paints listing cards with the shared listing tokens", () => {
+    const files = [
+      "features/venue/components/VenuesMapPageClient.tsx",
+      "features/landing/journey/PackageResults.tsx",
+      "app/wishlists/WishlistsClient.tsx",
+      "features/search/components/ProviderList.tsx",
+      "features/search/components/EventFoxersSection.tsx",
+    ];
+    for (const file of files) {
+      const source = readFileSync(join(SRC, file), "utf8");
+      expect(source, file).toContain("bg-listing");
+      expect(source, file).toContain("border-listing-edge");
+      expect(source, file).not.toMatch(/bg-white\/3\b/);
+    }
   });
 });

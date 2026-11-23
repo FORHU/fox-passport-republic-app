@@ -13,9 +13,9 @@ import {
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /**
- * The month at a glance: every day as one strip on wide screens and a small
- * month grid below that, each booked day marked with its bookings' status
- * colours. Choosing a booked day jumps the agenda to it.
+ * The month at a glance: a seven-column month grid on every screen size (beside
+ * the heading on wide screens, below it on narrow ones), each booked day marked
+ * with its bookings' status colours. Choosing a booked day jumps the agenda to it.
  *
  * `note` says where the marks come from when not every booking is loaded.
  */
@@ -83,7 +83,7 @@ export function MonthStrip({
     onPick(list.map((b) => b.id));
   };
 
-  const dayCell = (d: Date, variant: "strip" | "grid") => {
+  const dayCell = (d: Date) => {
     const k = dayKey(d);
     const list = byDay.get(k) ?? [];
     const isToday = k === todayKey;
@@ -112,18 +112,13 @@ export function MonthStrip({
         {d.getDate()}
       </span>
     );
-    const base = `flex w-full flex-col items-center gap-1.5 rounded-lg ${
-      variant === "strip" ? "py-2.5" : "py-2"
-    }`;
+    // One fixed height for every cell, booked or not, so the weeks line up.
+    const base =
+      "flex h-14 w-full flex-col items-center justify-center gap-1 rounded-lg";
 
     if (!booked) {
       return (
         <span className={base}>
-          {variant === "strip" && (
-            <span className="text-xs font-semibold text-white/40">
-              {WEEKDAYS[d.getDay()].charAt(0)}
-            </span>
-          )}
           {number}
           <span className="h-2" aria-hidden />
         </span>
@@ -143,15 +138,10 @@ export function MonthStrip({
           list.length === 1 ? "booking" : "bookings"
         }: ${list.map((b) => eventName(b)).join(", ")}`}
         title={list.map((b) => eventName(b)).join(", ")}
-        className={`${base} bg-white/6 transition-colors hover:bg-white/12 ${
+        className={`${base} bg-white/6 transition-colors hover:bg-white/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent-text) ${
           isSelected ? "ring-2 ring-(--accent-text) ring-inset" : ""
         }`}
       >
-        {variant === "strip" && (
-          <span className="text-xs font-semibold text-white/60">
-            {WEEKDAYS[d.getDay()].charAt(0)}
-          </span>
-        )}
         {number}
         {dots}
       </button>
@@ -161,9 +151,11 @@ export function MonthStrip({
   return (
     <section
       aria-labelledby="month-strip-title"
-      className="mt-10 rounded-2xl border border-white/15 p-4 sm:p-6"
+      // Stacked below lg. From lg: heading and key on the left, the grid on the right.
+      className="mt-10 rounded-2xl border border-white/15 p-4 sm:p-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-10"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 lg:col-start-1 lg:row-start-1 lg:flex-col lg:items-start lg:justify-start">
+        {/* From lg the month controls sit under the heading, not mid-card. */}
         <div>
           <h2
             id="month-strip-title"
@@ -213,15 +205,8 @@ export function MonthStrip({
         </div>
       </div>
 
-      {/* Wide screens: the whole month as one strip. */}
-      <ol className="mt-5 hidden grid-flow-col auto-cols-fr gap-1 lg:grid">
-        {days.map((d) => (
-          <li key={dayKey(d)}>{dayCell(d, "strip")}</li>
-        ))}
-      </ol>
-
-      {/* Phones and tablets: the same days as a month grid, no sideways scrolling. */}
-      <div className="mt-5 lg:hidden">
+      {/* The month as a seven-column grid at every width: no sideways scrolling. */}
+      <div className="mt-5 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
         <div className="grid grid-cols-7 gap-1" aria-hidden>
           {WEEKDAYS.map((w) => (
             <span
@@ -237,13 +222,13 @@ export function MonthStrip({
             <li key={`blank-${i}`} aria-hidden />
           ))}
           {days.map((d) => (
-            <li key={dayKey(d)}>{dayCell(d, "grid")}</li>
+            <li key={dayKey(d)}>{dayCell(d)}</li>
           ))}
         </ol>
       </div>
 
       {(kindsShown.length > 0 || note) && (
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-4 lg:col-start-1 lg:row-start-2 lg:mt-6 lg:border-t-0 lg:pt-0">
           {kindsShown.map((k) => (
             <span
               key={k.kind}
@@ -257,7 +242,9 @@ export function MonthStrip({
             </span>
           ))}
           {note && (
-            <span className="text-sm text-white/55 sm:ml-auto">{note}</span>
+            <span className="text-sm text-white/55 sm:ml-auto lg:ml-0 lg:basis-full">
+              {note}
+            </span>
           )}
         </div>
       )}

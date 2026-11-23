@@ -72,4 +72,30 @@ describe("useFileUpload", () => {
     // …and keeps it, for an uploader to show beside the field.
     expect(result.current.error).toBe(FILE_UNSUPPORTED.image);
   });
+
+  it("sends a portfolio with its purpose, and refuses an image portfolio (app#371)", async () => {
+    const { result } = renderHook(() => useFileUpload());
+
+    expect(
+      await result.current.uploadPrivateFile(
+        file("image/png", 10, "work.png"),
+        "portfolio",
+      ),
+    ).toBeNull();
+    expect(toast.error).toHaveBeenLastCalledWith(FILE_UNSUPPORTED.portfolio);
+    expect(api.post).not.toHaveBeenCalled();
+
+    api.post.mockResolvedValueOnce({ data: { fileId: "f9" } });
+    let out: { fileId: string } | null = null;
+    await act(async () => {
+      out = await result.current.uploadPrivateFile(
+        file("application/pdf", 10, "cv.pdf"),
+        "portfolio",
+      );
+    });
+    expect(out).toEqual({ fileId: "f9" });
+    const [url, form] = api.post.mock.calls[0] as [string, FormData];
+    expect(url).toBe("/files/upload-private");
+    expect(form.get("purpose")).toBe("portfolio");
+  });
 });

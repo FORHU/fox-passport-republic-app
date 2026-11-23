@@ -5,12 +5,14 @@ import {
   CategoryItem,
   ListingType,
 } from "@/features/asset/data/listingBuilderData";
-import { LISTING_LABELS } from "./listingLabels";
+import { LISTING_LABELS, type ListingLabels } from "./listingLabels";
 
 import { Money } from "@/shared/components/ui/Money";
 
 interface ListingStatusPanelProps {
   activeType: ListingType;
+  /** Overrides the Studio wording, e.g. the Gig Studio. */
+  labels?: ListingLabels;
   categories: CategoryItem[];
   category: string;
   customCategory: string;
@@ -24,6 +26,7 @@ interface ListingStatusPanelProps {
 
 export function ListingStatusPanel({
   activeType,
+  labels: labelsProp,
   categories,
   category,
   customCategory,
@@ -34,6 +37,7 @@ export function ListingStatusPanel({
   isReadyToPublish,
   previewHref,
 }: ListingStatusPanelProps) {
+  const labels = labelsProp ?? LISTING_LABELS[activeType];
   const displayCategory =
     category === "other" && customCategory
       ? customCategory
@@ -67,9 +71,7 @@ export function ListingStatusPanel({
         <div className="space-y-4">
           <div className="flex justify-between text-sm">
             <span className="text-text-muted">Type</span>
-            <span className="text-white">
-              {LISTING_LABELS[activeType].noun}
-            </span>
+            <span className="text-white">{labels.noun}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-text-muted">Category</span>

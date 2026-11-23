@@ -10,6 +10,7 @@ import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { Badge } from "@/shared/components/ui/badge";
+import { TourHeaderButton } from "@/shared/components/ui/ProductTour";
 import {
   Sheet,
   SheetClose,
@@ -163,13 +164,15 @@ export default function LandingHeader({
 
               {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
               {/* Not while the store hydrates: it flashed for signed-in users. */}
+              {/* Hover inverts the pill through the theme's white/black, so
+                  the label stays readable in both themes (app#367). No exact
+                  `bg-white` here: light mode pins that to real white. */}
               {!isLoading && !isAuthenticated && (
                 <button
                   onClick={handleSignIn}
-                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black transition-all duration-300 group overflow-hidden relative cursor-pointer"
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
                 >
-                  <span className="relative z-10">Sign In</span>
-                  <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                  Sign In
                 </button>
               )}
               {/* New visitors are who this header is for, so sign-up gets the
@@ -185,6 +188,8 @@ export default function LandingHeader({
               )}
               {isAuthenticated && (
                 <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Same spot on every page that has a tour (app#366). */}
+                  <TourHeaderButton />
                   <NotificationBell />
                   <UserMenuButton onSignIn={handleSignIn} />
                 </div>

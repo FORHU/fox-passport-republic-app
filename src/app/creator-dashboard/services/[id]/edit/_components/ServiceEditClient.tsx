@@ -9,6 +9,7 @@ import {
   ListingPreviewCard,
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
+import { PERFORMER_LABELS } from "@/features/asset/components/listing-builder/listingLabels";
 import { useHostServiceEdit } from "@/features/service/hooks/useHostServiceEdit";
 import { ServiceAvailabilitySection } from "@/features/service/components/ServiceAvailabilitySection";
 
@@ -22,6 +23,7 @@ function ServiceEditContent({ id }: Props) {
     prefillError,
     successMessage,
     activeType,
+    mode,
     title,
     description,
     category,
@@ -55,6 +57,8 @@ function ServiceEditContent({ id }: Props) {
     handleCategorySelect,
     handleImageUpload,
   } = useHostServiceEdit(id);
+  // A gig is edited in the Gig Studio's words.
+  const labels = mode === "performer" ? PERFORMER_LABELS : undefined;
 
   if (!id)
     return (
@@ -104,6 +108,7 @@ function ServiceEditContent({ id }: Props) {
       <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
         <ListingHeader
           activeType={activeType}
+          labels={labels}
           title={title}
           isSubmitting={isSubmitting}
           error={error}
@@ -116,6 +121,7 @@ function ServiceEditContent({ id }: Props) {
         <div className="flex-1 flex overflow-hidden">
           <ListingSidebar
             activeType={activeType}
+            labels={labels}
             categories={categories}
             currentStatuses={currentStatuses}
             category={category}
@@ -135,6 +141,7 @@ function ServiceEditContent({ id }: Props) {
           />
           <ListingPreviewCard
             activeType={activeType}
+            labels={labels}
             title={title}
             description={description}
             price={price}
@@ -152,6 +159,7 @@ function ServiceEditContent({ id }: Props) {
           </ListingPreviewCard>
           <ListingStatusPanel
             activeType={activeType}
+            labels={labels}
             categories={categories}
             category={category}
             customCategory={customCategory}

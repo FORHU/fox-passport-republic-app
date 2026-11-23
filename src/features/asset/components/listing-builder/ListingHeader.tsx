@@ -3,11 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
-import { LISTING_LABELS } from "./listingLabels";
+import { LISTING_LABELS, type ListingLabels } from "./listingLabels";
 import { BackButton } from "@/shared/components/ui/BackButton";
 
 interface ListingHeaderProps {
   activeType: ListingType;
+  /** Overrides the Studio wording, e.g. the Gig Studio. */
+  labels?: ListingLabels;
   title: string;
   isSubmitting: boolean;
   error?: string | null;
@@ -23,6 +25,7 @@ interface ListingHeaderProps {
 
 export function ListingHeader({
   activeType,
+  labels: labelsProp,
   title,
   isSubmitting,
   error,
@@ -33,7 +36,7 @@ export function ListingHeader({
   onPublish,
   myDraftsHref,
 }: ListingHeaderProps) {
-  const labels = LISTING_LABELS[activeType];
+  const labels = labelsProp ?? LISTING_LABELS[activeType];
   const defaultSuccessMessage = `${labels.noun} created successfully! Redirecting...`;
   return (
     <>

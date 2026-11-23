@@ -8,7 +8,7 @@ import {
   ListingType,
   SERVICE_UNITS,
 } from "@/shared/data/listingBuilderData";
-import { LISTING_LABELS } from "./listingLabels";
+import { LISTING_LABELS, type ListingLabels } from "./listingLabels";
 
 import { PRICE_MAX, priceError } from "@/shared/lib/limits";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
@@ -19,6 +19,8 @@ import { currencySymbol } from "@/shared/lib/currency";
 
 interface ListingSidebarProps {
   activeType: ListingType;
+  /** Overrides the Studio wording, e.g. the Gig Studio. */
+  labels?: ListingLabels;
   categories: CategoryItem[];
   currentStatuses: readonly string[];
   category: string;
@@ -46,6 +48,7 @@ interface ListingSidebarProps {
 
 export function ListingSidebar({
   activeType,
+  labels: labelsProp,
   categories,
   currentStatuses,
   category,
@@ -70,6 +73,7 @@ export function ListingSidebar({
   onLatLngChange = () => {},
   onCancellationPolicyChange,
 }: ListingSidebarProps) {
+  const labels = labelsProp ?? LISTING_LABELS[activeType];
   const units = activeType === "inventory" ? INVENTORY_UNITS : SERVICE_UNITS;
   const priceMsg = priceError(price);
 
@@ -80,7 +84,7 @@ export function ListingSidebar({
           Details
         </h3>
         <p className="text-xs text-text-muted">
-          Define your {LISTING_LABELS[activeType].lowerNoun}
+          Define your {labels.lowerNoun}
         </p>
       </div>
 

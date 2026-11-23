@@ -8,7 +8,7 @@ import { billingLabel, categoryLabel } from "@/features/search/helpers/labels";
 function RowBody({ row, icon }: { row: ProviderRow; icon: string }) {
   return (
     <>
-      <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/5">
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10">
         {row.img ? (
           <img
             src={row.img}
@@ -63,19 +63,22 @@ export default function ProviderList({
   skeletons?: number;
 }) {
   const row =
-    "group flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-3";
+    "group flex items-center gap-3 rounded-xl border border-listing-edge bg-listing p-3 shadow-sm";
   return (
     <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
       {loading
         ? Array.from({ length: skeletons }).map((_, i) => (
-            <li key={i} className="h-20 animate-pulse rounded-xl bg-white/5" />
+            <li
+              key={i}
+              className="h-20 animate-pulse rounded-xl border border-listing-edge bg-listing"
+            />
           ))
         : rows.map((r, i) => (
             <li key={`${r.foxerId}-${r.itemName}-${i}`} className="min-w-0">
               {r.foxerId ? (
                 <Link
                   href={`/foxer/${r.foxerId}`}
-                  className={`${row} transition-colors hover:border-accent/40 hover:bg-white/5`}
+                  className={`${row} transition-colors hover:border-listing-edge-hover hover:bg-listing-hover`}
                 >
                   <RowBody row={r} icon={icon} />
                 </Link>

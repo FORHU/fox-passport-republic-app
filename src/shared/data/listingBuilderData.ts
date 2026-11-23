@@ -44,6 +44,20 @@ export const SERVICE_CATEGORIES: ServiceCategoryItem[] = [
   { id: "other", label: "Other", icon: "more_horiz" },
 ];
 
+/** What the Service Studio is building: an operational service or a gig. */
+export type ServiceStudioMode = "service" | "performer";
+
+// The Studio opened for a gig (`?type=performer`). These are the API's
+// PERFORMER_SERVICE_CATEGORIES (saving one needs `performer:manage`) without
+// the legacy `entertainment`; they're what `isPerformerService` counts.
+export const PERFORMER_SERVICE_CATEGORIES: ServiceCategoryItem[] = [
+  { id: "dj", label: "DJ", icon: "music_note" },
+  { id: "live_band", label: "Live Band", icon: "graphic_eq" },
+  { id: "photography", label: "Photography", icon: "camera_alt" },
+  { id: "videography", label: "Videography", icon: "videocam" },
+  { id: "mc", label: "MC", icon: "mic" },
+];
+
 export const SERVICE_STATUSES = ["active", "paused", "unavailable"] as const;
 export const SERVICE_UNITS = [
   "Per Hour",
