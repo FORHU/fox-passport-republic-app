@@ -835,9 +835,32 @@ export function HostBio({ host }: HostBioProps) {
 
 interface HouseRulesProps {
   policies?: string[];
+  cancellationPolicy?: {
+    name?: string;
+    description?: string;
+    rules?: { hoursBeforeEvent: number; refundPercent: number }[];
+  } | null;
 }
 
-export function HouseRules({ policies = [] }: HouseRulesProps) {
+export function HouseRules({
+  policies = [],
+  cancellationPolicy,
+}: HouseRulesProps) {
+  const cancellationName = cancellationPolicy?.name || "Flexible";
+  const rules = cancellationPolicy?.rules || [];
+  const topRule = rules[0];
+  const isNonRef = cancellationName.toLowerCase().includes("non-refundable");
+
+  let cancellationDetails = "Free cancellation up to 24 hours before event.";
+  if (isNonRef) {
+    cancellationDetails =
+      "Non-refundable. No refunds once booking is confirmed.";
+  } else if (topRule) {
+    cancellationDetails = `${topRule.refundPercent}% refund if cancelled at least ${topRule.hoursBeforeEvent} hours before event start.`;
+  } else if (cancellationPolicy?.description) {
+    cancellationDetails = cancellationPolicy.description;
+  }
+
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-6">
@@ -870,10 +893,10 @@ export function HouseRules({ policies = [] }: HouseRulesProps) {
         </div>
         <div>
           <h4 className="font-bold text-white text-sm mb-3">
-            Cancellation Policy
+            Cancellation Policy ({cancellationName})
           </h4>
           <div className="space-y-2 text-sm text-text-muted">
-            <p>Free cancellation for 48 hours.</p>
+            <p>{cancellationDetails}</p>
             <p>Review the full policy for details.</p>
           </div>
         </div>

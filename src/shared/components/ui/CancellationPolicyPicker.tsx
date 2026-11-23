@@ -15,20 +15,38 @@ interface Props {
   value: string | null;
   onChange: (policyId: string | null) => void;
   label?: string;
+  cancellationType?: "Flexible" | "Non-Refundable" | "";
+  onTypeChange?: (type: "Flexible" | "Non-Refundable" | "") => void;
+  flexibleRefundPercent?: number;
+  onRefundPercentChange?: (percent: number) => void;
+  flexibleRefundHours?: number;
+  onRefundHoursChange?: (hours: number) => void;
 }
 
 export default function CancellationPolicyPicker({
   value,
   onChange,
   label = "Cancellation Policy",
+  cancellationType,
+  onTypeChange,
+  flexibleRefundPercent = 100,
+  onRefundPercentChange,
+  flexibleRefundHours = 24,
+  onRefundHoursChange,
 }: Props) {
   // Platform reference data that rarely changes — cached for 10 minutes so
   // every listing form reuses one fetch.
-  const { data: policies = NO_POLICIES, isPending: loading } = useQuery({
+  const { data: rawPolicies = NO_POLICIES, isPending: loading } = useQuery({
     queryKey: ["cancellation-policies"],
     queryFn: fetchCancellationPolicies,
     staleTime: 10 * 60_000,
   });
+
+  // Simplified policy options: ONLY Flexible and Non-Refundable (api#436, app#400)
+  const policies = rawPolicies.filter(
+    (p) =>
+      p.name.toLowerCase() !== "moderate" && p.name.toLowerCase() !== "strict",
+  );
   const [open, setOpen] = useState(false);
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -97,6 +115,11 @@ export default function CancellationPolicyPicker({
                 type="button"
                 onClick={() => {
                   onChange(policy.id);
+                  if (policy.name === "Non-Refundable") {
+                    onTypeChange?.("Non-Refundable");
+                  } else {
+                    onTypeChange?.("Flexible");
+                  }
                   setOpen(false);
                 }}
                 className={`w-full flex items-start gap-3 px-4 py-4 text-left transition-all border-b border-white/5 last:border-0
@@ -200,6 +223,74 @@ export default function CancellationPolicyPicker({
       </button>
 
       {mounted && createPortal(dropdownEl, document.body)}
+
+      {/* Simplified Custom Flexible Conditions (api#436, app#400) */}
+      {(selected?.name === "Flexible" ||
+        cancellationType === "Flexible" ||
+        (!selected && !cancellationType)) && (
+        <div className="mt-3 p-4 bg-white/5 border border-white/5 rounded-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-accent uppercase tracking-wider">
+              Flexible Refund Conditions
+            </span>
+            <span className="text-[10px] text-white/40">Customizable</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="flexible-refund-percent" className="text-[9px] uppercase font-bold text-white/40 block mb-1">
+                Refund Percent (%)
+              </label>
+              <input
+                id="flexible-refund-percent"
+                type="number"
+                min={0}
+                max={100}
+                value={flexibleRefundPercent}
+                onChange={(e) => {
+                  const val = Math.min(
+                    100,
+                    Math.max(0, parseInt(e.target.value) || 0),
+                  );
+                  onRefundPercentChange?.(val);
+                }}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none font-mono"
+              />
+            </div>
+            <div>
+              <label htmlFor="flexible-refund-hours" className="text-[9px] uppercase font-bold text-white/40 block mb-1">
+                Deadline (Hours Before)
+              </label>
+              <input
+                id="flexible-refund-hours"
+                type="number"
+                min={0}
+                value={flexibleRefundHours}
+                onChange={(e) => {
+                  const val = Math.max(0, parseInt(e.target.value) || 0);
+                  onRefundHoursChange?.(val);
+                }}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none font-mono"
+              />
+            </div>
+          </div>
+          <p className="text-[11px] text-text-muted leading-relaxed">
+            Guests receive a{" "}
+            <strong className="text-white">{flexibleRefundPercent}%</strong>{" "}
+            refund if cancelled at least{" "}
+            <strong className="text-white">{flexibleRefundHours} hours</strong>{" "}
+            before event start.
+          </p>
+        </div>
+      )}
+
+      {(selected?.name === "Non-Refundable" ||
+        cancellationType === "Non-Refundable") && (
+        <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+          <p className="text-xs text-red-300 font-medium">
+            Bookings are strictly non-refundable once confirmed (0% refund).
+          </p>
+        </div>
+      )}
     </div>
   );
 }

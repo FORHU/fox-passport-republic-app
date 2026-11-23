@@ -163,7 +163,8 @@ export default function VenueDetailClient({
           style={{
             background: "rgba(18,18,24,0.92)",
             backdropFilter: "blur(20px)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
           }}
         >
@@ -481,7 +482,10 @@ export default function VenueDetailClient({
                 }}
               />
 
-              <HouseRules policies={(venue as any).policies || []} />
+              <HouseRules
+                policies={(venue as any).policies || []}
+                cancellationPolicy={(venue as any).cancellationPolicy}
+              />
             </div>
 
             {/* Right Column: Venue Booking Widget */}
@@ -509,9 +513,7 @@ export default function VenueDetailClient({
             <span className="text-xl font-display font-bold text-white">
               <Money amount={venuePrice} />
             </span>
-            <span className="text-xs text-text-muted">
-              / {rateUnit}
-            </span>
+            <span className="text-xs text-text-muted">/ {rateUnit}</span>
           </div>
           {reviewSummary &&
             (reviewSummary.count > 0 ? (
