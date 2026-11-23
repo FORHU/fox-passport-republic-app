@@ -44,7 +44,9 @@ function StepHeader({
       <div className="relative text-center mb-10">
         <div
           className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
-          style={{ background: `color-mix(in srgb, ${color} 15%, transparent)` }}
+          style={{
+            background: `color-mix(in srgb, ${color} 15%, transparent)`,
+          }}
         >
           <span
             className="material-symbols-outlined text-[32px]"
@@ -76,13 +78,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const { user: clientUser, setUser } = useAuthStore();
   const user = clientUser || serverUser;
 
-  // Organizer and investor aren't Foxers (neither supplies inventory) but
-  // are still roles this page offers, so they count as ones the user
-  // already holds.
-  const existingRoles: string[] = (user?.roleType ?? []).filter(
-    (role: string) =>
-      isFoxerRole(role) || role === "organizer" || role === "investor",
-  );
+  const existingRoles: string[] = (user?.roleType ?? []).filter(isFoxerRole);
   const hasExistingRoles = existingRoles.length > 0;
 
   const [step, setStep] = useState<Step>(hasExistingRoles ? 3 : 1);
@@ -489,26 +485,38 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
               />
 
               <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {ROLES.map((role, idx) => {
-                  // An odd count leaves the last card alone in its row —
-                  // give it the full row instead of a lopsided empty gap.
-                  const isLastOdd =
-                    ROLES.length % 2 === 1 && idx === ROLES.length - 1;
+                {ROLES.map((role) => {
+                  const heldRoleTypes: string[] = user?.roleType ?? [];
+                  const coveredRoles =
+                    role.roleType === "providerFoxer"
+                      ? ["providerFoxer", "organizer"]
+                      : [role.roleType];
                   const isActive = existingRoles.includes(role.roleType);
                   const isPending =
-                    !isActive && pendingRoles.includes(role.roleType);
+                    !isActive &&
+                    coveredRoles.some((r) => pendingRoles.includes(r));
                   const revisionRequest =
                     !isActive && !isPending
-                      ? revisionRequests.find(
-                          (r) => r.roleType === role.roleType,
+                      ? revisionRequests.find((r) =>
+                          coveredRoles.includes(r.roleType),
                         )
                       : undefined;
+                  const orgRevision =
+                    role.roleType === "providerFoxer"
+                      ? revisionRequests.find((r) => r.roleType === "organizer")
+                      : undefined;
+                  const orgPending =
+                    role.roleType === "providerFoxer" &&
+                    pendingRoles.includes("organizer");
+                  const orgActive =
+                    role.roleType === "providerFoxer" &&
+                    heldRoleTypes.includes("organizer");
 
                   if (isActive) {
                     return (
                       <div
                         key={role.type}
-                        className={`relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className="relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col"
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(173,209,63,0.15)",
                         }}
@@ -521,7 +529,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         </span>
                         <div
                           className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
-                          style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
+                          style={{
+                            backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)`,
+                          }}
                         >
                           <span
                             className="material-symbols-outlined text-[24px]"
@@ -536,6 +546,41 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         <p className="text-xs text-white/30 mt-auto">
                           {role.desc}
                         </p>
+                        {role.subsections && (
+                          <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-1.5">
+                            {role.subsections.map((sub) => {
+                              const isCoord = sub.key === "coordinator";
+                              const href =
+                                isCoord && orgRevision
+                                  ? `/foxer/resubmit/${orgRevision.id}`
+                                  : sub.href;
+                              const pillStyle =
+                                isCoord && orgActive
+                                  ? "bg-green-500/10 border-green-500/30 text-green-400"
+                                  : isCoord && orgRevision
+                                    ? "bg-orange-500/10 border-orange-500/30 text-orange-300"
+                                    : isCoord && orgPending
+                                      ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                                      : "bg-white/5 hover:bg-white/10 border-white/10 text-white/60 hover:text-white";
+                              return (
+                                <Link
+                                  key={sub.key}
+                                  href={href}
+                                  className={`px-2 py-0.5 rounded-md border text-[10px] font-semibold transition-colors ${pillStyle}`}
+                                >
+                                  {sub.title}
+                                  {isCoord && orgActive
+                                    ? " ✓"
+                                    : isCoord && orgRevision
+                                      ? " (Fix docs)"
+                                      : isCoord && orgPending
+                                        ? " (In review)"
+                                        : ""}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   }
@@ -544,7 +589,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className={`relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className="relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col"
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(217,154,38,0.12)",
                         }}
@@ -557,7 +602,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         </span>
                         <div
                           className="h-12 w-12 rounded-xl flex items-center justify-center mb-4 opacity-60"
-                          style={{ backgroundColor: `color-mix(in srgb, ${role.color} 8%, transparent)` }}
+                          style={{
+                            backgroundColor: `color-mix(in srgb, ${role.color} 8%, transparent)`,
+                          }}
                         >
                           <span
                             className="material-symbols-outlined text-[24px]"
@@ -581,7 +628,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       <Link
                         key={role.type}
                         href={`/foxer/resubmit/${revisionRequest.id}`}
-                        className={`group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-white/[0.06] transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className="group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-white/[0.06] transition-all duration-300 flex flex-col"
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(217,154,38,0.15)",
                         }}
@@ -594,7 +641,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         </span>
                         <div
                           className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
-                          style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
+                          style={{
+                            backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)`,
+                          }}
                         >
                           <span
                             className="material-symbols-outlined text-[24px]"
@@ -620,15 +669,19 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       key={role.type}
                       onClick={() => setViewingRole(role)}
                       aria-haspopup="dialog"
-                      className={`group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-white/[0.06] transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                      className="group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-white/[0.06] transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer"
                     >
                       <div
                         className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                        style={{ boxShadow: `inset 0 0 0 1px ${role.color}` }}
+                        style={{
+                          boxShadow: `inset 0 0 0 1px ${role.color}`,
+                        }}
                       />
                       <div
                         className="h-12 w-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all"
-                        style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
+                        style={{
+                          backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)`,
+                        }}
                       >
                         <span
                           className="material-symbols-outlined text-[24px]"
@@ -643,6 +696,18 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       <p className="text-xs text-white/40 group-hover:text-white/70 transition-colors">
                         {role.desc}
                       </p>
+                      {role.subsections && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {role.subsections.map((sub) => (
+                            <span
+                              key={sub.key}
+                              className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-semibold text-white/50"
+                            >
+                              {sub.title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <span
                         className="mt-auto pt-3 inline-flex items-center gap-1 text-[11px] font-bold opacity-70 group-hover:opacity-100 transition-opacity"
                         style={{ color: role.color }}

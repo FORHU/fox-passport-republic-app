@@ -116,21 +116,14 @@ export default function MayorApplicationClient() {
             href="/foxer/apply"
             className="text-white/70 underline hover:text-white"
           >
-            Talent, Gear, Performer, or Organizer
-          </Link>
-          ,{" "}
+            Provider Foxer (Talent, Gear, Performer, or Event Coordinator)
+          </Link>{" "}
+          or{" "}
           <Link
             href="/creator-dashboard/apply"
             className="text-white/70 underline hover:text-white"
           >
             Event Foxer
-          </Link>
-          , or{" "}
-          <Link
-            href="/foxer/apply-investor"
-            className="text-white/70 underline hover:text-white"
-          >
-            Investor
           </Link>
           .
         </p>

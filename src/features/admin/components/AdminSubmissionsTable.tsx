@@ -6,11 +6,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Money } from "@/shared/components/ui/Money";
 
-type RoleStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "revision_requested";
+type RoleStatus = "pending" | "approved" | "rejected" | "revision_requested";
 
 interface FileRecord {
   id: string;
@@ -72,9 +68,9 @@ interface RoleApplication {
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  providerFoxer: "Provider",
+  providerFoxer: "Provider Foxer",
   investor: "Investor",
-  organizer: "Organizer",
+  organizer: "Event Coordinator",
 };
 
 const STATUS_STYLES: Record<RoleStatus, string> = {
@@ -150,9 +146,7 @@ function DocPreview({
         {label}
         {flagged && (
           <span className="inline-flex items-center gap-0.5 text-red-400 normal-case tracking-normal font-bold">
-            <span className="material-symbols-outlined text-[12px]">
-              flag
-            </span>
+            <span className="material-symbols-outlined text-[12px]">flag</span>
             Flagged
           </span>
         )}
@@ -470,9 +464,7 @@ function ApplicationDetailDrawer({
                     )}
                     {data.interests && data.interests.length > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-white/40 text-sm">
-                          Interests
-                        </span>
+                        <span className="text-white/40 text-sm">Interests</span>
                         <span className="text-white text-sm font-medium text-right">
                           {data.interests
                             .map((i) =>
@@ -612,8 +604,8 @@ function ApplicationDetailDrawer({
                 </p>
               )}
               <p className="text-orange-300/50 text-xs mt-2">
-                Only the flagged documents need to be replaced — the rest of
-                the application stands.
+                Only the flagged documents need to be replaced — the rest of the
+                application stands.
               </p>
             </div>
           )}
@@ -700,9 +692,7 @@ export const AdminSubmissionsTable: React.FC = () => {
   const [filter, setFilter] = useState<"all" | RoleStatus>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RoleApplication | null>(null);
-  const [rejectModal, setRejectModal] = useState<RoleApplication | null>(
-    null,
-  );
+  const [rejectModal, setRejectModal] = useState<RoleApplication | null>(null);
   const [flaggedDocs, setFlaggedDocs] = useState<Set<string>>(new Set());
   const [reviewNote, setReviewNote] = useState("");
 
@@ -768,7 +758,9 @@ export const AdminSubmissionsTable: React.FC = () => {
       setApplications((prev) =>
         prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
-      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      setSelectedApp((prev) =>
+        prev?.id === id ? { ...prev, ...patch } : prev,
+      );
       closeRejectModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to request revision");
@@ -796,7 +788,9 @@ export const AdminSubmissionsTable: React.FC = () => {
       setApplications((prev) =>
         prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
-      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      setSelectedApp((prev) =>
+        prev?.id === id ? { ...prev, ...patch } : prev,
+      );
       closeRejectModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to reject");
@@ -941,9 +935,9 @@ export const AdminSubmissionsTable: React.FC = () => {
                 Reject or Request Revision
               </h3>
               <p className="text-white/50 text-sm mt-1">
-                Flag the specific documents that are wrong — only those get
-                sent back to the applicant to re-upload. Leave nothing
-                checked to reject the whole application instead.
+                Flag the specific documents that are wrong — only those get sent
+                back to the applicant to re-upload. Leave nothing checked to
+                reject the whole application instead.
               </p>
             </div>
 

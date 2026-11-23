@@ -60,8 +60,12 @@ const ORGANIZER_CATEGORY_OPTIONS = [
 type ProviderType = "provider" | "organizer";
 
 const PROVIDER_TABS: { type: ProviderType; label: string; color: string }[] = [
-  { type: "provider", label: "Provider", color: "var(--periwinkle)" },
-  { type: "organizer", label: "Organizer", color: "var(--periwinkle)" },
+  { type: "provider", label: "Provider Foxer", color: "var(--periwinkle)" },
+  {
+    type: "organizer",
+    label: "Event Coordinator",
+    color: "var(--periwinkle)",
+  },
 ];
 
 const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
@@ -372,30 +376,22 @@ export default function FoxerApplicationClient({
         })}
       </div>
 
-      {/* Event Foxer, Venue Foxer, and Investor have their own applications
-          with their own fields, so they link out rather than sit in the tab
-          bar. */}
+      {/* Event Foxer and Venue Foxer have their own applications with their
+          own fields, so they link out rather than sit in the tab bar. */}
       <p className="text-center text-xs text-white/40">
-        Want to host events, list a venue, or invest instead?{" "}
+        Want to host events or list a venue instead?{" "}
         <Link
           href="/creator-dashboard/apply"
           className="text-white/70 underline hover:text-white"
         >
           Apply as an Event Foxer
-        </Link>
-        ,{" "}
+        </Link>{" "}
+        or{" "}
         <Link
           href="/venue-foxer/apply"
           className="text-white/70 underline hover:text-white"
         >
           Venue Foxer
-        </Link>
-        , or{" "}
-        <Link
-          href="/foxer/apply-investor"
-          className="text-white/70 underline hover:text-white"
-        >
-          Investor
         </Link>
         .
       </p>
@@ -412,17 +408,18 @@ export default function FoxerApplicationClient({
       title={
         providerType === "organizer" ? (
           <>
-            Apply to be an <span style={{ color: accent }}>Organizer</span>
+            Apply to be an{" "}
+            <span style={{ color: accent }}>Event Coordinator</span>
           </>
         ) : (
           <>
-            Apply to be a <span style={{ color: accent }}>Provider</span>
+            Apply to be a <span style={{ color: accent }}>Provider Foxer</span>
           </>
         )
       }
       subtitle={
         providerType === "organizer"
-          ? "Once approved, Mayors and Event Owners can invite you to help run their venues and events."
+          ? "Once approved, Mayors and Event Foxers can invite you to execute event logistics and manage on-site operations."
           : "Provide your details to start supplying equipment, professional talent, or live entertainment in FoxPassport."
       }
       intro={intro}
@@ -633,7 +630,7 @@ export default function FoxerApplicationClient({
           <WizardStep
             label="Documents"
             title="Verify your identity"
-            description="Organizers see guest lists and help run other people's venues and events, so we verify who you are before anyone can invite you."
+            description="Event Coordinators see guest lists and help run other people's venues and events, so we verify who you are before anyone can invite you."
             validate={() =>
               docsMessage(orgDocs, ORGANIZER_KYC_DOCUMENTS.length)
             }

@@ -12,9 +12,9 @@ import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  providerFoxer: "Provider",
+  providerFoxer: "Provider Foxer",
   investor: "Investor",
-  organizer: "Organizer",
+  organizer: "Event Coordinator",
 };
 
 // Must match DOCUMENT_FIELD_TO_DB_COLUMN in the API's role-request.service.ts
@@ -48,9 +48,7 @@ export default function ResubmitDocumentsClient({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<RoleRequestSummary | null>(null);
-  const [replacements, setReplacements] = useState<Record<string, string>>(
-    {},
-  );
+  const [replacements, setReplacements] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {

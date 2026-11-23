@@ -701,7 +701,7 @@ export const ROLES: RoleInfo[] = [
     key: "event",
     roleType: "eventFoxer",
     name: "Event Foxer",
-    line: "Builds events from venues, gear and talent.",
+    line: "Builds events from venues, gear and talent end-to-end.",
     ink: "blue",
     applyHref: "/creator-dashboard/apply",
   },
@@ -716,28 +716,14 @@ export const ROLES: RoleInfo[] = [
   {
     key: "provider",
     roleType: "providerFoxer",
-    name: "Provider",
-    line: "Gear, talent and live entertainment: sound, catering, DJs and more.",
+    name: "Provider Foxer",
+    line: "Gear, talent, live entertainment and on-site event coordination.",
     ink: "blue",
     applyHref: "/foxer/apply?type=provider",
-  },
-  {
-    key: "organizer",
-    roleType: "organizer",
-    name: "Organizer",
-    line: "Runs the door and the day for someone else's event.",
-    ink: "red",
-    applyHref: "/foxer/apply?type=organizer",
-  },
-  {
-    key: "partner",
-    roleType: "investor",
-    name: "Partner",
-    line: "Backs venues and events with equipment or capital.",
-    ink: "blue",
-    applyHref: "/foxer/apply-investor",
   },
 ];
 
 export const roleName = (roleType: string) =>
-  ROLES.find((r) => r.roleType === roleType)?.name ?? roleType;
+  roleType === "organizer"
+    ? "Event Coordinator"
+    : (ROLES.find((r) => r.roleType === roleType)?.name ?? roleType);

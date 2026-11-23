@@ -32,7 +32,9 @@ export function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
 
             <div
               className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
-              style={{ backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)` }}
+              style={{
+                backgroundColor: `color-mix(in srgb, ${role.color} 13%, transparent)`,
+              }}
             >
               <span
                 className="material-symbols-outlined text-[24px]"
@@ -47,6 +49,35 @@ export function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
             <Dialog.Description className="text-sm text-white/50 mb-6">
               {role.desc}
             </Dialog.Description>
+
+            {role.subsections && role.subsections.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-2">
+                  Provider Subsections
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {role.subsections.map((sub) => (
+                    <Link
+                      key={sub.key}
+                      href={sub.href}
+                      className="group rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] p-3 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-xs font-bold text-white group-hover:text-accent transition-colors">
+                          {sub.title}
+                        </span>
+                        <span className="material-symbols-outlined text-[14px] text-white/40 group-hover:text-white transition-colors">
+                          arrow_forward
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-white/50 leading-relaxed">
+                        {sub.desc}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <h3 className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-2">
               What you&apos;ll do
