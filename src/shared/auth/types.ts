@@ -33,6 +33,13 @@ export interface User {
   // Display-only — see src/shared/lib/currency.ts. Never affects what a
   // booking actually charges, only how amounts are shown to this user.
   preferredCurrency?: string;
+  /** Whether email and password sign-in works for this account (/profile). */
+  hasPassword?: boolean;
+  /**
+   * A Google account still without a username or a password (api#419): it
+   * goes to /account-setup before anything else. Sent by /profile.
+   */
+  needsCredentialSetup?: boolean;
 }
 
 export interface LoginResponse {
