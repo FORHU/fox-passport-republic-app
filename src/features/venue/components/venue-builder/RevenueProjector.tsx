@@ -58,8 +58,8 @@ export function RevenueProjector({
               min={0}
               value={baseRate || ""}
               onChange={(e) => onBaseRateChange(Number(e.target.value) || 0)}
-              placeholder="e.g. 5000"
-              className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-right focus:border-accent outline-none text-sm"
+              placeholder="e.g. 15000"
+              className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-left placeholder:text-left focus:border-accent outline-none text-sm"
             />
             <p className="text-[10px] text-white/30 mt-1.5">
               What you charge per night before any add-ons.
@@ -83,7 +83,8 @@ export function RevenueProjector({
               </span>
             </div>
             <p className="text-[10px] text-white/30 mt-1.5">
-              The percentage of available nights you expect to be booked each month.
+              The percentage of available nights you expect to be booked each
+              month.
             </p>
           </div>
         </div>
@@ -103,9 +104,11 @@ export function RevenueProjector({
             type="number"
             min={0}
             value={extraGuestRate || ""}
-            onChange={(e) => onExtraGuestRateChange(Number(e.target.value) || 0)}
+            onChange={(e) =>
+              onExtraGuestRateChange(Number(e.target.value) || 0)
+            }
             placeholder="Leave blank to disallow"
-            className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-right focus:border-accent outline-none text-sm"
+            className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-left placeholder:text-left focus:border-accent outline-none text-sm"
           />
           <p className="text-[10px] text-white/30 mt-1.5">
             {extraGuestRate > 0

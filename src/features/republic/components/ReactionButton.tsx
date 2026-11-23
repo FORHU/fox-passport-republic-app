@@ -11,13 +11,56 @@ const REACTIONS: Array<{
   emoji: string;
   label: string;
   color: string;
+  activeClass: string;
 }> = [
-  { type: "like", emoji: "👍", label: "Like", color: "text-blue-400" },
-  { type: "love", emoji: "❤️", label: "Love", color: "text-rose-400" },
-  { type: "haha", emoji: "😂", label: "Haha", color: "text-amber-400" },
-  { type: "wow", emoji: "😮", label: "Wow", color: "text-amber-400" },
-  { type: "sad", emoji: "😢", label: "Sad", color: "text-amber-400" },
-  { type: "angry", emoji: "😠", label: "Angry", color: "text-orange-500" },
+  {
+    type: "like",
+    emoji: "👍",
+    label: "Like",
+    color: "text-accent",
+    activeClass:
+      "bg-accent/15 text-accent border-accent/45 ring-1 ring-accent/25 shadow-[0_0_12px_rgba(173,209,63,0.12)]",
+  },
+  {
+    type: "love",
+    emoji: "❤️",
+    label: "Love",
+    color: "text-rose-400",
+    activeClass:
+      "bg-rose-500/15 text-rose-300 border-rose-400/45 ring-1 ring-rose-400/25",
+  },
+  {
+    type: "haha",
+    emoji: "😂",
+    label: "Haha",
+    color: "text-amber-400",
+    activeClass:
+      "bg-amber-500/15 text-amber-300 border-amber-400/45 ring-1 ring-amber-400/25",
+  },
+  {
+    type: "wow",
+    emoji: "😮",
+    label: "Wow",
+    color: "text-amber-400",
+    activeClass:
+      "bg-amber-500/15 text-amber-300 border-amber-400/45 ring-1 ring-amber-400/25",
+  },
+  {
+    type: "sad",
+    emoji: "😢",
+    label: "Sad",
+    color: "text-sky-400",
+    activeClass:
+      "bg-sky-500/15 text-sky-300 border-sky-400/45 ring-1 ring-sky-400/25",
+  },
+  {
+    type: "angry",
+    emoji: "😠",
+    label: "Angry",
+    color: "text-orange-400",
+    activeClass:
+      "bg-orange-500/15 text-orange-300 border-orange-400/45 ring-1 ring-orange-400/25",
+  },
 ];
 
 interface ReactionButtonProps {
@@ -125,19 +168,27 @@ export function ReactionButton({
       )}
       <button
         type="button"
+        aria-pressed={!!current}
+        data-reacted={current ? "true" : "false"}
         onClick={handleButtonClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={clearLongPressTimer}
         onTouchMove={clearLongPressTimer}
         onTouchCancel={clearLongPressTimer}
         onContextMenu={(e) => e.preventDefault()}
-        className={`flex w-full min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg transition-colors select-none touch-manipulation ${
+        className={`group flex w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg border transition-all select-none touch-manipulation ${
           current
-            ? `${current.color} bg-white/5 font-bold`
-            : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+            ? `${current.activeClass} font-bold`
+            : "border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60"
         }`}
       >
-        <span className="text-[15px] leading-none">
+        <span
+          className={`text-[15px] leading-none transition-transform ${
+            current
+              ? "scale-110"
+              : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-90"
+          }`}
+        >
           {current?.emoji ?? "👍"}
         </span>
         <ActionCount n={likesCount} />
