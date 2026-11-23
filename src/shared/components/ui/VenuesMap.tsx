@@ -100,6 +100,12 @@ export interface MapVenue {
   subtitle?: string;
 }
 
+export type ViewportChangeReason = "user" | "selection" | "resize";
+
+// Mapbox event data attached to the camera moves VenuesMap makes on its own
+// for `selectedVenueId`; it comes back on the resulting `moveend` event.
+const SELECTION_MOVE = { fpReason: "selection" } as const;
+
 export interface VenuesMapProps {
   venues: MapVenue[];
   /** Fit the camera to every venue's extent. Off by default for a general
@@ -115,12 +121,19 @@ export interface VenuesMapProps {
   onVenueClick?: (id: string) => void;
   /** Callback when a building cluster with multiple venues/events is clicked */
   onBuildingClick?: (venues: MapVenue[]) => void;
-  onViewportChange?: (bounds: {
-    north: number;
-    south: number;
-    east: number;
-    west: number;
-  }) => void;
+  /** Fires after every camera move. `reason` says why the camera moved:
+   * `"user"` (pan/zoom/cluster click), `"selection"` (flying to or back from
+   * `selectedVenueId`), or `"resize"` (the container changed size). A paired
+   * list can ignore the latter two so they don't reset what it shows. */
+  onViewportChange?: (
+    bounds: {
+      north: number;
+      south: number;
+      east: number;
+      west: number;
+    },
+    meta: { reason: ViewportChangeReason },
+  ) => void;
   className?: string;
   /** Show Mapbox's built-in "find my location" control (top-right). */
   showGeolocate?: boolean;
@@ -806,13 +819,17 @@ export function VenuesMap({
               [maxLng, maxLat],
             ],
             { padding: 80, duration: 800, maxZoom: 16 },
+            SELECTION_MOVE,
           );
         } else if (venue.lat != null && venue.lng != null) {
-          map.flyTo({
-            center: [venue.lng, venue.lat],
-            zoom: 15,
-            duration: 800,
-          });
+          map.flyTo(
+            {
+              center: [venue.lng, venue.lat],
+              zoom: 15,
+              duration: 800,
+            },
+            SELECTION_MOVE,
+          );
         }
       };
 
@@ -897,19 +914,43 @@ export function VenuesMap({
       const initialCenter = center ?? DEFAULT_CENTER;
       const initialZoom = zoom;
       const flyToInitial = () => {
-        map.flyTo({ center: initialCenter, zoom: initialZoom, duration: 800 });
+        map.flyTo(
+          { center: initialCenter, zoom: initialZoom, duration: 800 },
+          SELECTION_MOVE,
+        );
       };
 
-      const emitBounds = () => {
+      // `map.resize()` (window resize, or the container becoming visible)
+      // fires `resize` and then `moveend` synchronously, so this flag marks
+      // that one `moveend` as a resize rather than a real camera move. It is
+      // cleared on the next microtask because mapbox skips that `moveend`
+      // when the resize lands mid-move, and the flag mustn't leak onto the
+      // user's own move ending later.
+      let resizePending = false;
+      map.on("resize", () => {
+        resizePending = true;
+        queueMicrotask(() => {
+          resizePending = false;
+        });
+      });
+
+      const emitBounds = (e?: { fpReason?: string }) => {
+        let reason: ViewportChangeReason = "user";
+        if (e?.fpReason === "selection") reason = "selection";
+        else if (resizePending) reason = "resize";
+        resizePending = false;
         try {
           const b = map.getBounds();
           if (b && onViewportChangeRef.current) {
-            onViewportChangeRef.current({
-              north: b.getNorth(),
-              south: b.getSouth(),
-              east: b.getEast(),
-              west: b.getWest(),
-            });
+            onViewportChangeRef.current(
+              {
+                north: b.getNorth(),
+                south: b.getSouth(),
+                east: b.getEast(),
+                west: b.getWest(),
+              },
+              { reason },
+            );
           }
         } catch {
           // ignore if map canvas not ready

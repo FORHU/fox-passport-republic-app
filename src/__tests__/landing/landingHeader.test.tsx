@@ -106,3 +106,23 @@ describe("LandingHeader mobile menu", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+/**
+ * app#367: light mode pins an exact `bg-white` to real white (for white
+ * cards), so a white wipe behind the Sign In label left white text on white
+ * on hover. The button inverts through the theme's white/black instead.
+ */
+describe("LandingHeader Sign In button", () => {
+  beforeEach(() => {
+    mockAuthState.isAuthenticated = false;
+    mockAuthState.isLoading = false;
+  });
+
+  it("has no fill that light mode pins to white behind the label", () => {
+    render(<LandingHeader />);
+    const signIn = screen.getByRole("button", { name: "Sign In" });
+    expect(signIn).toHaveClass("hover:bg-white", "hover:text-black");
+    expect(signIn).not.toHaveClass("bg-white");
+    expect(signIn.querySelector('[class~="bg-white"]')).toBeNull();
+  });
+});

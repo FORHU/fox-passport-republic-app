@@ -9,6 +9,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { takeReturnTo } from "@/shared/auth/returnTo";
 import { getLandingPath } from "@/shared/lib/dashboard-path";
+import { ACCOUNT_SETUP_PATH } from "@/features/auth/api/accountSetup";
 import {
   ACCOUNT_NOT_LINKED,
   ACCOUNT_NOT_LINKED_MESSAGE,
@@ -50,7 +51,14 @@ export default function GoogleAuthCallbackPage() {
       login({ user });
       toast.success(`Welcome${isNewUser ? "" : " back"}!`);
 
-      if (isNewUser) {
+      // Without a username or password yet, setup comes first; a first
+      // sign-in goes on to onboarding from there (api#419).
+      if (user.needsCredentialSetup) {
+        if (isNewUser) localStorage.setItem("fp_new_user", "1");
+        router.replace(
+          `${ACCOUNT_SETUP_PATH}${isNewUser ? "?then=onboarding" : ""}`,
+        );
+      } else if (isNewUser) {
         localStorage.setItem("fp_new_user", "1");
         router.replace("/onboarding");
       } else {

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Bell,
-  CalendarDays,
   Heart,
   IdCard,
   Luggage,
@@ -62,9 +61,8 @@ export function UserMenuNavLinks({
       comingSoon: true,
     },
     // No "My Bookings": Bookings is in the top bar, the bottom nav, and the
-    // "Go to" section on dashboard headers.
-    // Every role's calendar — bookings, hosted events, venue dates, jobs.
-    { label: "Calendar", icon: CalendarDays, href: "/calendar" },
+    // "Go to" section on dashboard headers. No "Calendar" either: it disagreed
+    // with /booking, which already lists every booking (api#418).
     {
       label: "QR Check-In Scanner",
       icon: QrCode,

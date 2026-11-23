@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import Link from "next/link";
 import {
@@ -25,6 +26,7 @@ import type { LightsSpecification } from "mapbox-gl";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { MapBoxView } from "@/shared/components/ui/MapBoxView";
 import { applyMapTheme } from "@/shared/lib/mapbox";
+import { DEFAULT_THEME, type Theme } from "@/shared/lib/theme";
 import { useMapThemeStore } from "@/shared/store/useMapThemeStore";
 import { useThemeStore } from "@/shared/store/useThemeStore";
 import {
@@ -48,6 +50,20 @@ import { InstallAppButton } from "./InstallAppButton";
 
 const ACCENT = "#ccff00";
 const STOPS = DESTINATIONS.length;
+
+const readTheme = () => useThemeStore.getState().theme;
+const serverTheme = () => DEFAULT_THEME;
+
+/**
+ * The app's theme for markup. The server can't see a saved Light choice, so
+ * it renders the default; reading the store during hydration made the
+ * plane's colour and the NASA credit differ from the server's HTML. This
+ * gives the server's theme while hydrating, then the real one. Maps keep
+ * reading the store: they're drawn in effects, not in the HTML.
+ */
+export function useHydratedTheme(): Theme {
+  return useSyncExternalStore(useThemeStore.subscribe, readTheme, serverTheme);
+}
 // How much scrolling (in screen heights ×100) each place gets. This is the
 // tour's speed: more is a slower, calmer flight. Every 0–1 fraction below
 // scales with it, so nothing else needs retuning.
@@ -723,6 +739,8 @@ function JourneyMap({
   const theme = useThemeStore((st) => st.theme);
   // The route has to read on both basemaps: lime on dark, deep green on light.
   const ink = theme === "light" ? "#3f6b00" : ACCENT;
+  // The plane is in the HTML, so it takes its colour from the hydration-safe theme.
+  const planeInk = useHydratedTheme() === "light" ? "#3f6b00" : ACCENT;
 
   // The map follows the app's theme.
   useEffect(() => {
@@ -1338,7 +1356,7 @@ function JourneyMap({
         className="pointer-events-none absolute left-0 top-0 z-1"
         style={{ opacity: 0, willChange: "transform" }}
       >
-        <PlaneGlyph color={ink} />
+        <PlaneGlyph color={planeInk} />
       </div>
     </>
   );
@@ -1373,8 +1391,9 @@ function cardAmount(v: number, i: number) {
  */
 const HEADER_H = 104;
 function pinPad(h: number, w: number) {
-  const photo = Math.min(232, Math.max(112, h * 0.22));
-  const card = photo + 235 + (w < 640 ? 60 : 0);
+  // The step row (36) sits above the photo; the photo keeps room for a two-line title.
+  const photo = Math.min(196, Math.max(144, h * 0.22 - 36));
+  const card = 36 + photo + 235 + (w < 640 ? 60 : 0);
   const needed = HEADER_H + card + 44;
   return Math.min(0.72, Math.max(0.3, (2 * needed) / h - 1));
 }
@@ -1566,8 +1585,23 @@ export function StopCard({
             </>
           )}
           <div className="relative z-[1] overflow-hidden rounded-2xl border border-accent/40 bg-surface text-white shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)]">
+            {/* The step sits on the card, not the photo, so it doesn't read as a carousel control. */}
+            <div className="flex items-center justify-between gap-3 border-b border-accent/20 px-5 py-2.5">
+              <p className="font-landing-mono text-[10px] font-bold uppercase tracking-[0.16em] text-accent">
+                Step {index + 1} of {STOPS}
+              </p>
+              <div aria-hidden className="flex gap-1">
+                {Array.from({ length: STOPS }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1 w-4 rounded-full ${i <= index ? "bg-accent" : "bg-white/20"}`}
+                  />
+                ))}
+              </div>
+            </div>
             <div
-              className="relative h-[22svh] max-h-[14.5rem] min-h-28 select-none overflow-hidden"
+              // Less the step row's 2.25rem; keep in step with pinPad.
+              className="relative h-[calc(22svh-2.25rem)] max-h-49 min-h-36 select-none overflow-hidden"
               onPointerEnter={(e) => setHeld(e.pointerType === "mouse")}
               onPointerLeave={() => setHeld(false)}
             >
@@ -1615,9 +1649,6 @@ export function StopCard({
                 }}
                 className="absolute inset-0 z-10 cursor-zoom-in"
               />
-              <p className="font-landing-mono pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-[#000]/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#fff] backdrop-blur">
-                Step {index + 1} of {STOPS}
-              </p>
               <div className="pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-full bg-[#000]/60 py-0.5 pl-1 pr-2 backdrop-blur">
                 {!reduce && (
                   <button
@@ -2128,6 +2159,44 @@ function StaticHero() {
   );
 }
 
+/** The card at the end of the tour: one next step, no map link (app#378). */
+export function TourOutro({ foxers }: { foxers: number }) {
+  const user = useAuthStore((s) => s.user);
+  const openSignup = useAuthStore((s) => s.openSignup);
+  return (
+    <>
+      <h2 className="font-landing-display text-4xl leading-[0.95] text-white sm:text-5xl">
+        Your night
+        <br />
+        is next.
+      </h2>
+      <div className="mt-6 flex items-center justify-center gap-3">
+        {user ? (
+          <Link
+            href="/packages"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
+          >
+            Find an event
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={openSignup}
+            className="cursor-pointer rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
+          >
+            Create a free account
+          </button>
+        )}
+      </div>
+      {foxers > 0 && (
+        <p className="font-landing-mono mt-5 text-[11px] uppercase tracking-[0.22em] text-white/50">
+          <CountUp to={foxers} className="text-white" /> verified Foxers
+        </p>
+      )}
+    </>
+  );
+}
+
 function TourHero() {
   const stage = useRef<HTMLDivElement>(null);
   const inView = useRef(true);
@@ -2143,8 +2212,8 @@ function TourHero() {
   const mapViewportRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
-  const openSignup = useAuthStore((s) => s.openSignup);
-  const theme = useThemeStore((st) => st.theme);
+  // Only the NASA credit reads it, and that's in the HTML.
+  const theme = useHydratedTheme();
   const venues = useVenues(80);
   const venueCount = useVenueCount();
   const events = useEvents(300);
@@ -2412,40 +2481,7 @@ function TourHero() {
           }}
           className="absolute inset-x-4 top-1/2 z-30 mx-auto max-w-lg -translate-y-1/2 rounded-2xl border border-white/10 bg-canvas/90 p-8 text-center shadow-2xl backdrop-blur-md sm:p-10"
         >
-          <h2 className="font-landing-display text-4xl leading-[0.95] text-white sm:text-5xl">
-            Your night
-            <br />
-            is next.
-          </h2>
-          <div className="mt-6 flex items-center justify-center gap-3">
-            {user ? (
-              <Link
-                href="/packages"
-                className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
-              >
-                Find an event
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={openSignup}
-                className="cursor-pointer rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
-              >
-                Create a free account
-              </button>
-            )}
-            <Link
-              href="/venues/map"
-              className="px-2 py-3 text-sm font-bold text-white/70 underline-offset-4 hover:text-white hover:underline"
-            >
-              Open the full map
-            </Link>
-          </div>
-          {foxers > 0 && (
-            <p className="font-landing-mono mt-5 text-[11px] uppercase tracking-[0.22em] text-white/50">
-              <CountUp to={foxers} className="text-white" /> verified Foxers
-            </p>
-          )}
+          <TourOutro foxers={foxers} />
         </motion.div>
 
         <Rail stops={stops} progress={progress} opacity={tools} />

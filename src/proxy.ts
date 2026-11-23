@@ -55,6 +55,7 @@ const PROTECTED_ROUTES = [
   "/match",
   "/venue-foxer",
   "/messages",
+  "/account-setup",
 ];
 
 // Non-production answers `noindex`: a build with the flag set, or a known

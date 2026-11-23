@@ -82,6 +82,9 @@ const nextConfig = {
         destination: "/creator-dashboard/calendar",
         permanent: true,
       },
+      // The citizen Calendar page is gone (api#418): bookings live on
+      // /booking. Not permanent, so browsers don't cache it.
+      { source: "/calendar", destination: "/booking", permanent: false },
       {
         source: "/host/events",
         destination: "/creator-dashboard/events",

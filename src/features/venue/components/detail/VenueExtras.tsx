@@ -806,7 +806,7 @@ export function HostBio({ host }: HostBioProps) {
           </span>
         </div>
       </div>
-      <div>
+      <div className="[&>*:last-child]:mb-0">
         <h3 className="text-xl font-bold text-white mb-1">
           Listed by {host.name}
         </h3>
@@ -828,11 +828,6 @@ export function HostBio({ host }: HostBioProps) {
             {host.description.trim()}
           </p>
         )}
-        <div className="flex items-center gap-4">
-          <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-            Contact Owner
-          </button>
-        </div>
       </div>
     </div>
   );

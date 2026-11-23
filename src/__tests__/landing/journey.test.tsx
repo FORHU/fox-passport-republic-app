@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -38,9 +38,87 @@ import {
   isEventCalloutInsideMap,
   projectEventLocation,
   StopCard,
+  TourOutro,
+  useHydratedTheme,
 } from "@/features/landing/journey/JourneyHero";
 import { Lightbox } from "@/features/landing/journey/Lightbox";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import type { User } from "@/shared/auth/types";
+import { useThemeStore } from "@/shared/store/useThemeStore";
 import { motionValue } from "motion/react";
+import { act } from "react";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+
+// A saved Light theme made the hero's first browser render differ from the
+// server's (dark) HTML: React threw a hydration mismatch on the landing page.
+describe("hero theme during hydration", () => {
+  afterEach(() => {
+    document.documentElement.classList.remove("light");
+    useThemeStore.setState({ theme: "dark" });
+  });
+
+  it("matches the server's HTML, then shows the saved theme", async () => {
+    // The server: no saved theme to see, so the default.
+    const ServerProbe = () => <span>{useHydratedTheme()}</span>;
+    const html = renderToString(<ServerProbe />);
+    expect(html).toContain(">dark<");
+
+    // The browser: the pre-paint script marks <html> light before the bundle
+    // loads, so the store starts out light.
+    document.documentElement.classList.add("light");
+    vi.resetModules();
+    const hero = await import("@/features/landing/journey/JourneyHero");
+    const { useThemeStore: browserStore } =
+      await import("@/shared/store/useThemeStore");
+    expect(browserStore.getState().theme).toBe("light");
+    const BrowserProbe = () => <span>{hero.useHydratedTheme()}</span>;
+
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    document.body.appendChild(container);
+    const onRecoverableError = vi.fn();
+    const root = await act(async () =>
+      hydrateRoot(container, <BrowserProbe />, { onRecoverableError }),
+    );
+
+    expect(onRecoverableError).not.toHaveBeenCalled();
+    expect(container.textContent).toBe("light");
+
+    await act(async () => browserStore.setState({ theme: "dark" }));
+    expect(container.textContent).toBe("dark");
+    act(() => root.unmount());
+    container.remove();
+  });
+});
+
+// The full-map link was dropped from the end card (app#378); the Maps page
+// keeps its own entry points (nav, footer, the "Venue map" tour tile).
+describe("tour outro card", () => {
+  afterEach(() => {
+    useAuthStore.setState({ user: null });
+  });
+
+  it("offers sign-up to a visitor and no map link", () => {
+    useAuthStore.setState({ user: null });
+    render(<TourOutro foxers={0} />);
+    expect(
+      screen.getByRole("button", { name: "Create a free account" }),
+    ).toBeTruthy();
+    expect(screen.queryByText(/open the full map/i)).toBeNull();
+    expect(screen.queryByRole("link")).toBeNull();
+  });
+
+  it("offers events to a signed-in user and no map link", () => {
+    useAuthStore.setState({
+      user: { id: "u1", name: "Ana Cruz", systemRole: "user" } as User,
+    });
+    render(<TourOutro foxers={0} />);
+    const links = screen.getAllByRole("link");
+    expect(links.map((a) => a.getAttribute("href"))).toEqual(["/packages"]);
+    expect(screen.queryByText(/open the full map/i)).toBeNull();
+  });
+});
 
 describe("tour stop card", () => {
   // The card used to lead with the city, so features read as tied to it.

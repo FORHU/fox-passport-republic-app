@@ -136,4 +136,42 @@ describe("GoogleAuthCallbackPage", () => {
     expect(localStorage.getItem("fp_new_user")).toBe("1");
     expect(mocks.toastSuccess).toHaveBeenCalledWith("Welcome!");
   });
+
+  // api#419: a Google account without a username or password sets them first.
+  it("sends a new Google user to account setup, then onboarding", async () => {
+    mocks.params = { new: "1" };
+    mocks.refreshSession.mockResolvedValue({
+      id: "user-5",
+      name: "New Citizen",
+      needsCredentialSetup: true,
+    });
+
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith(
+        "/account-setup?then=onboarding",
+      ),
+    );
+    expect(localStorage.getItem("fp_new_user")).toBe("1");
+  });
+
+  it("sends a returning Google user without a password to account setup", async () => {
+    sessionStorage.setItem("fox_return_to", "/booking/config?templateId=t1");
+    mocks.refreshSession.mockResolvedValue({
+      id: "user-6",
+      name: "Citizen",
+      needsCredentialSetup: true,
+    });
+
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith("/account-setup"),
+    );
+    // The remembered path waits for after setup.
+    expect(sessionStorage.getItem("fox_return_to")).toBe(
+      "/booking/config?templateId=t1",
+    );
+  });
 });

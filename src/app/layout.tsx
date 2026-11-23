@@ -11,6 +11,7 @@ import NotificationSocketBridge from "@/features/notifications/components/Notifi
 import MessageSocketBridge from "@/features/messages/components/MessageSocketBridge";
 import ChatWindowsWrapper from "@/app/ChatWindowsWrapper";
 import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
+import CredentialSetupGate from "@/features/auth/components/CredentialSetupGate";
 import RouteProgressBar from "@/shared/components/ui/RouteProgressBar";
 import { GoldFoilDefs } from "@/shared/components/ui/GoldFoilDefs";
 
@@ -136,6 +137,9 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <SessionExpiredToast />
           </Suspense>
+          {/* A Google account without a username or password sets them up
+              first (api#419). */}
+          <CredentialSetupGate />
           {/* Socket -> notifications/messages. Composed here because the app
               layer may import features; SocketProvider, in shared/, may not. */}
           <NotificationSocketBridge />
