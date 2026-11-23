@@ -38,6 +38,8 @@ import { Money } from "@/shared/components/ui/Money";
 import { maxPriceParam } from "@/shared/lib/limits";
 import { useProviderSpecialties } from "@/shared/api/providerSpecialties";
 import { SEARCH_QUERY_MAX } from "@/shared/lib/limits";
+import { ProductTour } from "@/shared/components/ui/ProductTour";
+import { FOXERS_TOUR, FOXERS_TOUR_KEY } from "./foxersTour";
 
 type TypeKey = "event_foxer" | "provider" | "gear" | "service";
 /** "" is the All tab. */
@@ -469,7 +471,11 @@ export default function SearchClient() {
             night, and Providers rent out equipment and cover catering,
             design, staffing and performances.
           </p>
-          <div role="search" className="relative mt-6">
+          <div
+            role="search"
+            data-tour="foxers-search"
+            className="relative mt-6"
+          >
             <label htmlFor="foxer-search" className="sr-only">
               Search Foxers
             </label>
@@ -504,7 +510,10 @@ export default function SearchClient() {
           </div>
         </header>
 
-        <div className="mt-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-white/10">
+        <div
+          data-tour="foxers-kinds"
+          className="mt-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-white/10"
+        >
           <div className="-mb-px min-w-0 max-w-full overflow-x-auto hide-scrollbar mask-[linear-gradient(to_right,black_85%,transparent)] sm:mask-none">
             <div role="tablist" aria-label="Kind of Foxer" className="flex gap-1 pr-6 sm:pr-0">
               {VIEWS.map((v, i) => {
@@ -561,7 +570,10 @@ export default function SearchClient() {
 
         <div className="mt-6 flex flex-col gap-8 lg:flex-row">
           {/* Sidebar — desktop only (>= 1024px) */}
-          <aside className="sticky top-32 hidden w-72 shrink-0 self-start lg:block xl:w-80">
+          <aside
+            data-tour="foxers-filters"
+            className="sticky top-32 hidden w-72 shrink-0 self-start lg:block xl:w-80"
+          >
             <SearchFilters />
           </aside>
 
@@ -571,6 +583,7 @@ export default function SearchClient() {
                 <SheetTrigger asChild>
                   <button
                     type="button"
+                    data-tour="foxers-filters"
                     className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-bold text-white lg:hidden"
                   >
                     <span aria-hidden className="material-symbols-outlined text-[18px]">
@@ -654,6 +667,7 @@ export default function SearchClient() {
             <div
               ref={resultsRef}
               id="foxer-results"
+              data-tour="foxers-results"
               role="tabpanel"
               aria-labelledby={tabId(view)}
               className="scroll-mt-32 space-y-14"
@@ -677,6 +691,7 @@ export default function SearchClient() {
           </div>
         </div>
       </div>
+      <ProductTour tourKey={FOXERS_TOUR_KEY} steps={FOXERS_TOUR} />
     </div>
   );
 }

@@ -11,11 +11,7 @@ import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibe
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
-import {
-  ProductTour,
-  TourReplayButton,
-  type TourStep,
-} from "@/shared/components/ui/ProductTour";
+import { ProductTour, type TourStep } from "@/shared/components/ui/ProductTour";
 
 const CITIZEN_TOUR_KEY = "citizen-dashboard";
 
@@ -46,7 +42,7 @@ const CITIZEN_TOUR: TourStep[] = [
   },
   {
     title: "That's it",
-    body: "You can replay this tour any time with Take the tour, next to My passport at the top of the page.",
+    body: "Replay this tour any time with the flag button in the top bar.",
   },
 ];
 
@@ -92,7 +88,6 @@ function UserDashboardContent({
             <UserWelcome
               userName={displayUserName}
               upcomingEventsCount={displayDashboardData.upcomingEvents}
-              extra={<TourReplayButton tourKey={CITIZEN_TOUR_KEY} />}
             />
           </div>
 
