@@ -63,9 +63,9 @@ export function DashboardHeader({
     access.canManageServices ||
     access.canManagePerformers
   )
-    roleLabels.push("Provider");
+    roleLabels.push("Provider Foxer");
   if (roleType.includes("investor")) roleLabels.push("Partner Foxer");
-  if (roleType.includes("organizer")) roleLabels.push("Organizer");
+  if (roleType.includes("organizer")) roleLabels.push("Event Coordinator");
 
   // Compact role label display when user holds multiple roles
   const primaryRoleLabel =
@@ -139,7 +139,8 @@ export function DashboardHeader({
             <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 bg-black/40 p-1 rounded-full border border-white/5">
               {tabLinks.map((link, i) => {
                 const isActive = isCreatorLinkActive(pathname, link.href);
-                const folded = i >= DESKTOP_TAB_SLOTS ? " hidden xl:inline" : "";
+                const folded =
+                  i >= DESKTOP_TAB_SLOTS ? " hidden xl:inline" : "";
                 return (
                   <Link
                     key={link.label}
@@ -243,7 +244,8 @@ export function DashboardHeader({
             background: "rgba(20,22,27,0.92)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             borderRadius: 999,
             boxShadow: "0 10px 40px rgba(0,0,0,0.65)",
           }}
@@ -386,41 +388,41 @@ export function WelcomeBanner({
         {/* Organizers, Investors and admins create no listings: no empty
             "You have access to" and no menu of locked items. */}
         {access.hasListings && (
-        <p className="text-sm text-white/50">
-          You have access to{" "}
-          {[
-            access.canManageVenues && (
-              <span key="v" className="text-white font-bold">
-                Venues
-              </span>
-            ),
-            access.canManageEvents && (
-              <span key="e" className="text-white font-bold">
-                Events
-              </span>
-            ),
-            access.canManageInventory && (
-              <span key="i" className="text-white font-bold">
-                Inventory
-              </span>
-            ),
-            access.canManageServices && (
-              <span key="s" className="text-white font-bold">
-                Services
-              </span>
-            ),
-            access.canManagePerformers && (
-              <span key="p" className="text-white font-bold">
-                Performers
-              </span>
-            ),
-          ]
-            .filter(Boolean)
-            .reduce<React.ReactNode[]>(
-              (acc, el, i) => (i === 0 ? [el] : [...acc, ", ", el]),
-              [],
-            )}
-        </p>
+          <p className="text-sm text-white/50">
+            You have access to{" "}
+            {[
+              access.canManageVenues && (
+                <span key="v" className="text-white font-bold">
+                  Venues
+                </span>
+              ),
+              access.canManageEvents && (
+                <span key="e" className="text-white font-bold">
+                  Events
+                </span>
+              ),
+              access.canManageInventory && (
+                <span key="i" className="text-white font-bold">
+                  Inventory
+                </span>
+              ),
+              access.canManageServices && (
+                <span key="s" className="text-white font-bold">
+                  Services
+                </span>
+              ),
+              access.canManagePerformers && (
+                <span key="p" className="text-white font-bold">
+                  Performers
+                </span>
+              ),
+            ]
+              .filter(Boolean)
+              .reduce<React.ReactNode[]>(
+                (acc, el, i) => (i === 0 ? [el] : [...acc, ", ", el]),
+                [],
+              )}
+          </p>
         )}
       </div>
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto shrink-0">
@@ -434,56 +436,58 @@ export function WelcomeBanner({
           Calendar
         </Link>
         {access.hasListings && (
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={onToggleCreateMenu}
-            className="w-full sm:w-auto px-6 py-3 rounded-full bg-accent text-black font-bold flex items-center justify-center gap-2 text-sm hover:scale-105 transition-all"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              add_circle
-            </span>
-            Create New
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={onToggleCreateMenu}
+              className="w-full sm:w-auto px-6 py-3 rounded-full bg-accent text-black font-bold flex items-center justify-center gap-2 text-sm hover:scale-105 transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                add_circle
+              </span>
+              Create New
+            </button>
 
-          {isCreateMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
-              {createItems.map((item, i) => (
-                <React.Fragment key={item.label}>
-                  {i === 2 && <div className="h-px bg-white/5" />}
-                  {item.allowed ? (
-                    <button
-                      onClick={item.onClick}
-                      className="w-full text-left px-4 py-3.5 hover:bg-white/10 text-sm flex items-center gap-3 transition-colors"
-                    >
-                      <span
-                        className={`material-symbols-outlined ${item.iconColor} text-[18px]`}
+            {isCreateMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                {createItems.map((item, i) => (
+                  <React.Fragment key={item.label}>
+                    {i === 2 && <div className="h-px bg-white/5" />}
+                    {item.allowed ? (
+                      <button
+                        onClick={item.onClick}
+                        className="w-full text-left px-4 py-3.5 hover:bg-white/10 text-sm flex items-center gap-3 transition-colors"
                       >
-                        {item.icon}
-                      </span>
-                      <span className="font-semibold">{item.label}</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => router.push(item.applyHref)}
-                      className="w-full text-left px-4 py-3.5 hover:bg-white/5 text-sm flex items-center gap-3 opacity-40 hover:opacity-60 transition-opacity group"
-                      title={`Apply as ${item.requiredRole} to unlock`}
-                    >
-                      <span
-                        className={`material-symbols-outlined ${item.iconColor} text-[18px]`}
+                        <span
+                          className={`material-symbols-outlined ${item.iconColor} text-[18px]`}
+                        >
+                          {item.icon}
+                        </span>
+                        <span className="font-semibold">{item.label}</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => router.push(item.applyHref)}
+                        className="w-full text-left px-4 py-3.5 hover:bg-white/5 text-sm flex items-center gap-3 opacity-40 hover:opacity-60 transition-opacity group"
+                        title={`Apply as ${item.requiredRole} to unlock`}
                       >
-                        {item.icon}
-                      </span>
-                      <span className="flex-1 text-white/60">{item.label}</span>
-                      <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-accent/60 transition-colors">
-                        lock
-                      </span>
-                    </button>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
-        </div>
+                        <span
+                          className={`material-symbols-outlined ${item.iconColor} text-[18px]`}
+                        >
+                          {item.icon}
+                        </span>
+                        <span className="flex-1 text-white/60">
+                          {item.label}
+                        </span>
+                        <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-accent/60 transition-colors">
+                          lock
+                        </span>
+                      </button>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

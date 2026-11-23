@@ -30,9 +30,9 @@ const SYSTEM_ROLE_HINT: Record<SystemRole, string> = {
 const ROLE_TYPE_LABEL: Record<RoleType, string> = {
   venueFoxer: "Venue Foxer",
   eventFoxer: "Event Foxer",
-  providerFoxer: "Provider",
+  providerFoxer: "Provider Foxer",
   investor: "Investor",
-  organizer: "Organizer",
+  organizer: "Event Coordinator",
 };
 
 /**
