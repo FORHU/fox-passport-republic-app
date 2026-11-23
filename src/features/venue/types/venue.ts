@@ -137,6 +137,10 @@ export interface VenueUpdatePayload {
   staffing: string[];
   policies: string[];
   cancellationPolicyId?: string;
+  cancellationType?: string;
+  flexibleRefundPercent?: number;
+  flexibleRefundHours?: number;
+  operatingHours?: any;
   /** Every photo, in order; replaces the venue's whole set. */
   imgIds?: string[];
   // Omitted when updating an already-approved venue's details — a generic

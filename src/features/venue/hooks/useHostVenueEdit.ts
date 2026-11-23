@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { venueQueryKey } from "@/features/venue/hooks/useVenue";
@@ -184,10 +179,6 @@ export function useHostVenueEdit(venueId: string) {
       toast.error("Please fill in the required fields (Name and Type)");
       return;
     }
-    if (builder.venueType === "Other" && !builder.venueTypeOther.trim()) {
-      toast.error("Please specify the venue type");
-      return;
-    }
 
     const limitMsg = firstLimitError({
       name: builder.venueName,
@@ -229,11 +220,21 @@ export function useHostVenueEdit(venueId: string) {
       const payload: VenueUpdatePayload = {
         name: builder.venueName,
         description: builder.description || "Venue updated via Studio.",
-        category: (
-          builder.venueType === "Other" && builder.venueTypeOther.trim()
-            ? builder.venueTypeOther.trim()
-            : builder.venueType
-        ).toLowerCase(),
+        category: (() => {
+          const mapped = (builder.venueType || "")
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+          const valid = [
+            "indoor",
+            "outdoor",
+            "mix",
+            "hotel",
+            "beach_resort",
+            "garden",
+            "other",
+          ];
+          return valid.includes(mapped) ? (mapped as any) : "other";
+        })(),
         capacity: capacityNum,
         address: builder.location,
         city: builder.city,
@@ -255,10 +256,17 @@ export function useHostVenueEdit(venueId: string) {
         staffing: allItems
           .filter((i) => i.category === "staff")
           .map((i) => i.name),
-        policies: allItems
-          .filter((i) => i.category === "rules")
-          .map((i) => i.name),
+        policies: builder.policyItems.map((i) => i.name),
+        operatingHours: {
+          studioResources: {
+            includedItems: builder.includedItems,
+            addonItems: builder.addonItems,
+          },
+        },
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
+        cancellationType: builder.cancellationType || undefined,
+        flexibleRefundPercent: builder.flexibleRefundPercent,
+        flexibleRefundHours: builder.flexibleRefundHours,
         ...(isAlreadyLive ? {} : { status: normalizedTarget }),
       };
 
@@ -281,7 +289,9 @@ export function useHostVenueEdit(venueId: string) {
         return;
       }
       if (hasNewPhotos && !knowsEveryId) {
-        toast.error("Couldn't match this venue's photos. Reload and try again.");
+        toast.error(
+          "Couldn't match this venue's photos. Reload and try again.",
+        );
         return;
       }
       if (knowsEveryId && gallery.length > 0) {
@@ -391,21 +401,15 @@ export function useHostVenueEdit(venueId: string) {
         // The backend stores this as `category` (a free-text field); `type`/
         // `venueType` are checked first only as legacy fallbacks in case an
         // older normalized shape is ever passed in here.
-        const rawType = found?.type ?? found?.venueType ?? found?.category ?? "";
+        const rawType =
+          found?.type ?? found?.venueType ?? found?.category ?? "";
         const normalizedType = toTitleCase(String(rawType).toLowerCase());
         if (normalizedType && VENUE_TYPES.includes(normalizedType)) {
           builder.setVenueType(normalizedType);
-          builder.setVenueTypeOther("");
-        } else if (normalizedType) {
-          // A category that isn't one of the known types — e.g. a custom
-          // value entered via "Other" — round-trips back into "Other" with
-          // the original text restored.
-          builder.setVenueType("Other");
-          builder.setVenueTypeOther(normalizedType);
         } else {
           builder.setVenueType(VENUE_TYPES[0] as string);
-          builder.setVenueTypeOther("");
         }
+        builder.setVenueTypeOther("");
 
         builder.setCapacity(String(found?.capacity ?? found?.cap ?? ""));
 
@@ -441,65 +445,97 @@ export function useHostVenueEdit(venueId: string) {
           });
         }
 
-        // Included/addon items
-        const spaceTypes = extractArrayOfNames(
-          found?.spaceType ?? found?.spaceTypes,
-        );
-        spaceTypes.forEach((name, idx) => {
-          const item: VenueItem = {
-            id: `space-${name}-${idx}`,
-            name,
-            value: 0,
-            icon: categoryToIcon("spaces"),
-            desc: "",
-            category: "spaces",
-          };
-          builder.addIncludedItem(item);
-        });
-
-        extractArrayOfNames(found?.amenities).forEach((name, idx) => {
-          builder.addAddonItem({
-            id: `amenity-${name}-${idx}`,
-            name,
-            value: 0,
-            icon: categoryToIcon("amenities"),
-            desc: "",
-            category: "amenities",
+        // Included/addon items: restore from structured studioResources if present,
+        // preserving custom names, prices, and zones (api#437).
+        const studioResources = (found as any)?.operatingHours?.studioResources;
+        if (
+          studioResources &&
+          (Array.isArray(studioResources.includedItems) ||
+            Array.isArray(studioResources.addonItems))
+        ) {
+          (studioResources.includedItems || []).forEach((item: any) => {
+            builder.addIncludedItem(item);
           });
-        });
-
-        extractArrayOfNames(found?.techAv).forEach((name, idx) => {
-          builder.addAddonItem({
-            id: `tech-${name}-${idx}`,
-            name,
-            value: 0,
-            icon: categoryToIcon("tech"),
-            desc: "",
-            category: "tech",
+          (studioResources.addonItems || []).forEach((item: any) => {
+            builder.addAddonItem(item);
           });
-        });
-
-        extractArrayOfNames(found?.staffing).forEach((name, idx) => {
-          builder.addAddonItem({
-            id: `staff-${name}-${idx}`,
-            name,
-            value: 0,
-            icon: categoryToIcon("staff"),
-            desc: "",
-            category: "staff",
+        } else {
+          const spaceTypes = extractArrayOfNames(
+            found?.spaceType ?? found?.spaceTypes,
+          );
+          spaceTypes.forEach((name, idx) => {
+            const item: VenueItem = {
+              id: `space-${name}-${idx}`,
+              name,
+              value: 0,
+              icon: categoryToIcon("spaces"),
+              desc: "",
+              category: "spaces",
+            };
+            builder.addIncludedItem(item);
           });
-        });
 
+          extractArrayOfNames(found?.amenities).forEach((name, idx) => {
+            builder.addAddonItem({
+              id: `amenity-${name}-${idx}`,
+              name,
+              value: 0,
+              icon: categoryToIcon("amenities"),
+              desc: "",
+              category: "amenities",
+            });
+          });
+
+          extractArrayOfNames(found?.techAv).forEach((name, idx) => {
+            builder.addAddonItem({
+              id: `tech-${name}-${idx}`,
+              name,
+              value: 0,
+              icon: categoryToIcon("tech"),
+              desc: "",
+              category: "tech",
+            });
+          });
+
+          extractArrayOfNames(found?.staffing).forEach((name, idx) => {
+            builder.addAddonItem({
+              id: `staff-${name}-${idx}`,
+              name,
+              value: 0,
+              icon: categoryToIcon("staff"),
+              desc: "",
+              category: "staff",
+            });
+          });
+        }
+
+        // Dedicated Venue Policies: load strictly into builder.addPolicyItem (api#434, app#399)
         extractArrayOfNames(found?.policies).forEach((name, idx) => {
-          builder.addAddonItem({
+          builder.addPolicyItem({
             id: `policy-${name}-${idx}`,
             name,
             value: 0,
-            icon: categoryToIcon("rules"),
+            icon: "gavel",
             desc: "",
             category: "rules",
           });
         });
+
+        // Restore cancellation policy
+        if (found?.cancellationPolicyId || (found as any)?.cancellationPolicy) {
+          const policyObj = (found as any).cancellationPolicy;
+          builder.setCancellationPolicyId(
+            found.cancellationPolicyId ?? policyObj?.id ?? null,
+          );
+          const isNonRef = policyObj?.name
+            ?.toLowerCase()
+            .includes("non-refundable");
+          builder.setCancellationType(isNonRef ? "Non-Refundable" : "Flexible");
+          if (policyObj?.rules?.[0]) {
+            builder.setFlexibleRefundPercent(policyObj.rules[0].refundPercent);
+            builder.setFlexibleRefundHours(policyObj.rules[0].hoursBeforeEvent);
+          }
+        }
 
         builder.setBaseRate(
           Number(found?.price ?? found?.baseRate ?? builder.baseRate),

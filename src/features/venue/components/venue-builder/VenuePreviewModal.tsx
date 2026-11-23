@@ -26,6 +26,7 @@ interface VenuePreviewModalProps {
   gallery: GalleryItem[];
   includedItems: ResourceItem[];
   addonItems: ResourceItem[];
+  policyItems?: ResourceItem[];
   baseRate: number;
 }
 
@@ -43,6 +44,7 @@ export function VenuePreviewModal({
   gallery,
   includedItems,
   addonItems,
+  policyItems = [],
   baseRate,
 }: VenuePreviewModalProps) {
   const [activeImage, setActiveImage] = useState(0);
@@ -104,7 +106,8 @@ export function VenuePreviewModal({
             alt={displayName}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = assetUrl("herobackground.jpg");
+              (e.target as HTMLImageElement).src =
+                assetUrl("herobackground.jpg");
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
@@ -184,7 +187,8 @@ export function VenuePreviewModal({
                   alt=""
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = assetUrl("herobackground.jpg");
+                    (e.target as HTMLImageElement).src =
+                      assetUrl("herobackground.jpg");
                   }}
                 />
               </div>
@@ -266,6 +270,37 @@ export function VenuePreviewModal({
                             </div>
                           )}
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Dedicated Venue Policies (api#434, app#399) */}
+              {policyItems.length > 0 && (
+                <div>
+                  <div className="h-px bg-white/10 mb-8" />
+                  <h2 className="text-xl font-display font-bold mb-2 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent text-[20px]">
+                      gavel
+                    </span>
+                    Venue Policies
+                  </h2>
+                  <p className="text-xs text-white/40 mb-5">
+                    House rules and guidelines guests must adhere to
+                  </p>
+                  <div className="space-y-2">
+                    {policyItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-xl p-3"
+                      >
+                        <span className="material-symbols-outlined text-white/40 text-[18px]">
+                          check_circle
+                        </span>
+                        <span className="text-xs text-white/80">
+                          {item.name}
+                        </span>
                       </div>
                     ))}
                   </div>

@@ -34,9 +34,15 @@ interface VenueResourcePaletteProps {
   onAddCustomItem: () => void;
   onAddCatalogItem?: (name: string) => void;
   onRemoveResource: (category: string, id: string) => void;
+  onUpdateResource?: (
+    category: string,
+    id: string,
+    updates: Partial<ResourceItem>,
+  ) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
   /** Tap-to-add into a zone — the only way in on touch screens. */
   onAddTo?: (item: ResourceItem, zone: "included" | "addon") => void;
+  onAddPolicy?: (item: ResourceItem) => void;
 }
 
 export function VenueResourcePalette({
@@ -52,10 +58,15 @@ export function VenueResourcePalette({
   onAddCustomItem,
   onAddCatalogItem,
   onRemoveResource,
+  onUpdateResource,
   onDragStart,
   onAddTo,
+  onAddPolicy,
 }: VenueResourcePaletteProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [editName, setEditName] = React.useState("");
+  const [editValue, setEditValue] = React.useState("");
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -244,50 +255,134 @@ export function VenueResourcePalette({
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-white text-sm truncate pr-2">
-                      {item.name}
-                    </h4>
-                    <div className="flex flex-row items-center gap-2">
+                  {editingId === item.id ? (
+                    <div
+                      className="space-y-2 mb-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="Item name"
+                        className="w-full bg-black/40 border border-white/20 rounded px-2 py-1 text-xs text-white focus:border-accent outline-none"
+                      />
                       {item.category !== "rules" && (
-                        <span className="text-xs text-accent font-bold font-mono">
-                          <Money amount={item.value} />
-                        </span>
+                        <input
+                          type="number"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          placeholder="Price"
+                          className="w-full bg-black/40 border border-white/20 rounded px-2 py-1 text-xs text-white focus:border-accent outline-none font-mono"
+                        />
                       )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRemoveResource(activeCategory, item.id);
-                        }}
-                        className="text-white/20 hover:text-red-400 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          delete
-                        </span>
-                      </button>
+                      <div className="flex gap-1.5 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                          className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[10px] text-white/70"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editName.trim()) {
+                              onUpdateResource?.(activeCategory, item.id, {
+                                name: editName.trim(),
+                                value: Number(editValue) || 0,
+                              });
+                            }
+                            setEditingId(null);
+                          }}
+                          className="px-2 py-0.5 rounded bg-accent text-black font-bold text-[10px]"
+                        >
+                          Save
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">
-                    {item.desc}
-                  </p>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-bold text-white text-sm truncate pr-2">
+                          {item.name}
+                        </h4>
+                        <div className="flex flex-row items-center gap-1.5">
+                          {item.category !== "rules" && (
+                            <span className="text-xs text-accent font-bold font-mono">
+                              <Money amount={item.value} />
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingId(item.id);
+                              setEditName(item.name);
+                              setEditValue(String(item.value));
+                            }}
+                            className="text-white/20 hover:text-accent p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                            title="Edit preset name and price"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              edit
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemoveResource(activeCategory, item.id);
+                            }}
+                            className="text-white/20 hover:text-red-400 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              delete
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">
+                        {item.desc}
+                      </p>
+                    </>
+                  )}
                   {onAddTo && (
                     <div className="mt-3 flex justify-end gap-1.5">
-                      {(["included", "addon"] as const).map((zone) => (
+                      {item.category === "rules" ||
+                      activeCategory === "rules" ? (
                         <button
-                          key={zone}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onAddTo(item, zone);
+                            if (onAddPolicy) onAddPolicy(item);
+                            else onAddTo(item, "included");
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent hover:text-black text-[11px] font-bold text-accent transition-all flex items-center gap-1 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[14px]">
                             add
                           </span>
-                          {zone === "included" ? "Included" : "Add-on"}
+                          Add Policy
                         </button>
-                      ))}
+                      ) : (
+                        (["included", "addon"] as const).map((zone) => (
+                          <button
+                            key={zone}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAddTo(item, zone);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">
+                              add
+                            </span>
+                            {zone === "included" ? "Included" : "Add-on"}
+                          </button>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
