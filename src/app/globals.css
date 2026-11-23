@@ -1079,6 +1079,12 @@ body {
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  /* Listing cards (venue, package, wishlist and search results): one surface
+   * that stands clear of the canvas in both themes, with a visible edge. */
+  --color-listing: var(--listing);
+  --color-listing-hover: var(--listing-hover);
+  --color-listing-edge: var(--listing-edge);
+  --color-listing-edge-hover: var(--listing-edge-hover);
   /* The pressed/hover shade of the lime accent (formerly bg-[#ADD13F]). */
   --color-accent-hover: var(--accent-hover);
   /* XP, levels and progress, kept apart from partner gold. */
@@ -1095,6 +1101,12 @@ body {
   --canvas: #0B0C0F;
   --surface: #14161B;
   --surface-raised: #1C1F26;
+  --listing: #1C1F26;
+  --listing-hover: #22252D;
+  --listing-edge: rgb(255 255 255 / 0.14);
+  --listing-edge-hover: rgb(255 255 255 / 0.26);
+  /* Ink mixed into category badge text (categoryBadgeStyle) — none on dark. */
+  --category-ink-mix: 0%;
   --accent-hover: #ADD13F;
   /* Lime used as a text colour in inline styles. */
   --accent-text: #C4E85A;
@@ -1123,6 +1135,13 @@ body {
   --canvas: #FAFAF9;
   --surface: #ffffff;
   --surface-raised: #F2F3F1;
+  --listing: #ffffff;
+  --listing-hover: #ffffff;
+  --listing-edge: rgb(21 23 28 / 0.16);
+  --listing-edge-hover: rgb(21 23 28 / 0.3);
+  /* Category hues are pale on white; badge text is 10px, so it takes more
+   * ink than roleTextColor's --hue-ink-mix to reach 4.5:1. */
+  --category-ink-mix: 62%;
   --accent-hover: #ADD13F;
   --accent-text: #4A6B10;
   --periwinkle: #3F45B0;

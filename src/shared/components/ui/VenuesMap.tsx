@@ -60,6 +60,31 @@ export function getCategoryColor(category?: string | null): string {
   return CATEGORY_COLORS[category] ?? DEFAULT_CATEGORY_COLOR;
 }
 
+/** Share of the category hue in a badge's tint and edge. */
+export const CATEGORY_BADGE_TINT = 18;
+export const CATEGORY_BADGE_EDGE = 45;
+
+/**
+ * Inline style for a venue-type badge ("INDOOR", "HOTEL" …). The raw hues
+ * are pale — fine as text on dark, about 1.3:1 on white — so the text mixes
+ * in ink by --category-ink-mix (0% dark, 62% light, set in globals.css).
+ * CATEGORY_COLORS itself stays literal hex for the Mapbox pin paint.
+ * `onPhoto` tints the card surface instead of transparent, so the badge stays
+ * readable over any image.
+ */
+export function categoryBadgeStyle(
+  category?: string | null,
+  { onPhoto = false }: { onPhoto?: boolean } = {},
+): React.CSSProperties {
+  const color = getCategoryColor(category);
+  const base = onPhoto ? "var(--surface)" : "transparent";
+  return {
+    color: `color-mix(in srgb, ${color}, #15171C var(--category-ink-mix, 0%))`,
+    backgroundColor: `color-mix(in srgb, ${color} ${CATEGORY_BADGE_TINT}%, ${base})`,
+    border: `1px solid color-mix(in srgb, ${color} ${CATEGORY_BADGE_EDGE}%, transparent)`,
+  };
+}
+
 export interface MapVenue {
   id: string;
   name: string;
