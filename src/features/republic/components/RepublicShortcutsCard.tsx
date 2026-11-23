@@ -5,7 +5,7 @@ import {
   ArrowRight,
   Bookmark,
   Compass,
-  PenTool,
+  Building2,
   PlusCircle,
 } from "lucide-react";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
@@ -70,8 +70,8 @@ export function RepublicShortcutsCard() {
           className="flex items-center justify-between text-zinc-400 hover:text-pink-400 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <PenTool className="h-4 w-4 text-pink-400" strokeWidth={2} />
-            Draw &amp; Add Venue
+            <Building2 className="h-4 w-4 text-pink-400" strokeWidth={2} />
+            Add Venue
           </span>
           <ArrowRight
             className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"

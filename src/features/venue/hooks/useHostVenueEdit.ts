@@ -205,15 +205,6 @@ export function useHostVenueEdit(venueId: string) {
     // it, even though nothing about its approval actually changed.
     const isAlreadyLive = existingStatus === "available";
     const normalizedTarget = normalizeVenueStatusToBackend(targetStatus);
-    if (
-      !isAlreadyLive &&
-      normalizedTarget !== "draft" &&
-      (!builder.boundary || builder.boundary.length < 3)
-    ) {
-      toast.error("Draw a service-area shape on the map before publishing");
-      return;
-    }
-
     builder.setIsSubmitting(true);
     try {
       const allItems: any[] = [...builder.includedItems, ...builder.addonItems];
