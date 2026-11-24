@@ -12,6 +12,8 @@ import {
 } from "@/features/gamification/api/passport";
 import { useRespondToMatch } from "@/features/gamification/hooks/usePassport";
 import { Money } from "@/shared/components/ui/Money";
+import { DeclineMatchDialog } from "@/features/gamification/components/passport/DeclineMatchDialog";
+import { matchDeclineReasonLabel } from "@/features/gamification/lib/matchDeclineReasons";
 
 export interface MessageButtonRenderProps {
   otherUserId: string;
@@ -70,6 +72,8 @@ export function PassportMatchesTab({
     "outgoing" | "incoming" | "client-inbox"
   >("client-inbox");
   const respondMutation = useRespondToMatch();
+  // The invite being declined; the dialog asks why (api#447).
+  const [declining, setDeclining] = useState<IncomingMatchRequest | null>(null);
 
   return (
     <motion.div
@@ -367,6 +371,13 @@ export function PassportMatchesTab({
                           <p className="text-[9px] text-white/30 uppercase tracking-widest">
                             {req.item?.name} · {req.type}
                           </p>
+                          {req.matchRequestStatus === "declined" &&
+                            req.declineReason && (
+                              <p className="mt-1 text-xs text-red-300/80">
+                                {matchDeclineReasonLabel(req.declineReason)}
+                                {req.declineNote ? `: ${req.declineNote}` : ""}
+                              </p>
+                            )}
                         </div>
                         {req.provider?.id && (
                           <div onClick={(e) => e.stopPropagation()}>
@@ -515,13 +526,7 @@ export function PassportMatchesTab({
                           Accept
                         </button>
                         <button
-                          onClick={() =>
-                            respondMutation.mutate({
-                              matchId: req.id,
-                              type: req.type,
-                              status: "declined",
-                            })
-                          }
+                          onClick={() => setDeclining(req)}
                           disabled={respondMutation.isPending}
                           className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/40 text-[10px] font-black hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 cursor-pointer"
                         >
@@ -547,6 +552,27 @@ export function PassportMatchesTab({
           )}
         </div>
       )}
+
+      <DeclineMatchDialog
+        open={declining !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeclining(null);
+        }}
+        subtitle={
+          declining
+            ? `${declining.template.name} · ${declining.item?.name ?? declining.type}`
+            : undefined
+        }
+        onDecline={async (reason, note) => {
+          if (!declining) return;
+          await respondMutation.mutateAsync({
+            matchId: declining.id,
+            type: declining.type,
+            status: "declined",
+            decline: { reason, note },
+          });
+        }}
+      />
     </motion.div>
   );
 }

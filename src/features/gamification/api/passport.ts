@@ -1,4 +1,5 @@
 import api from "@/shared/lib/axios";
+import type { MatchDeclineReason } from "../lib/matchDeclineReasons";
 import {
   Badge,
   PassportStamp,
@@ -112,14 +113,23 @@ export async function getIncomingMatchRequests(): Promise<
   return res.data.data;
 }
 
+/**
+ * Answers a package invite. A decline names a `reason` (api#447); `other`
+ * needs a `note`.
+ */
 export async function respondToMatch(
   matchId: string,
   type: string,
   status: "accepted" | "declined",
+  decline?: { reason: MatchDeclineReason; note?: string },
 ): Promise<void> {
+  const note = decline?.note?.trim();
   await api.patch(`/event-templates/matches/${matchId}/respond`, {
     type,
     status,
+    ...(status === "declined" && decline
+      ? { reason: decline.reason, ...(note ? { note } : {}) }
+      : {}),
   });
 }
 
@@ -128,6 +138,9 @@ export interface MatchRequestItem {
   matchRequestStatus: "pending" | "accepted" | "declined" | "secured";
   matchedAt: string | null;
   description: string | null;
+  /** Why the Provider declined, and their note (api#447). */
+  declineReason?: MatchDeclineReason | null;
+  declineNote?: string | null;
   date: string | null;
   type: "asset" | "service" | "venue";
   provider: { id: string; name: string; imgId: string | null } | null;
