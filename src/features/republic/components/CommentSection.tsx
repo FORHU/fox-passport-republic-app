@@ -16,14 +16,35 @@ import {
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { UNAVAILABLE_COMMENT_MESSAGE } from "@/shared/lib/notificationLink";
 
 interface CommentSectionProps {
   postId: string;
   commentsCount: number;
+  /** A comment or reply to scroll to and highlight (from a notification). */
+  focusCommentId?: string | null;
   onCommentAdded?: () => void;
   /** How many comments a delete removed: 1 for a reply, or 1 plus its
    * replies for a top-level comment (the API removes those too). */
   onCommentDeleted?: (removed: number) => void;
+}
+
+/** The DOM id a comment row is rendered with, for scrolling to it. */
+export function commentElementId(commentId: string) {
+  return `comment-${commentId}`;
+}
+
+// The API's top-level page size; a shorter page means there are no more.
+const COMMENTS_PAGE = 50;
+// How far a notification may page through a very long thread to find its
+// comment before giving up (10 x 50 top-level comments).
+const MAX_FOCUS_PAGES = 10;
+const HIGHLIGHT_MS = 3000;
+
+function containsComment(list: PostComment[], id: string) {
+  return list.some(
+    (c) => c.id === id || (c.replies ?? []).some((r) => r.id === id),
+  );
 }
 
 function isMine(user: any, authorId: string) {
@@ -37,10 +58,12 @@ function CommentRow({
   onDeleted,
   onReply,
   onEdited,
+  highlighted = false,
 }: {
   comment: PostComment;
   postId: string;
   isReply: boolean;
+  highlighted?: boolean;
   onDeleted: (id: string) => void;
   onReply?: (comment: PostComment) => void;
   onEdited: (id: string, content: string, updatedAt: string) => void;
@@ -109,8 +132,18 @@ function CommentRow({
   };
 
   return (
-    <div className={isReply ? "ml-8" : ""}>
-      <div className="flex items-start justify-between gap-2.5 bg-zinc-900/60 p-2.5 rounded-xl border border-zinc-800/40 text-xs">
+    <div
+      id={commentElementId(comment.id)}
+      data-highlighted={highlighted || undefined}
+      className={isReply ? "ml-8" : ""}
+    >
+      <div
+        className={`flex items-start justify-between gap-2.5 bg-zinc-900/60 p-2.5 rounded-xl border text-xs transition-shadow duration-500 ${
+          highlighted
+            ? "border-lime-400/70 ring-2 ring-lime-400/40"
+            : "border-zinc-800/40"
+        }`}
+      >
         <div className="flex items-start gap-2.5">
           <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-lime-400 text-[11px] shrink-0">
             {initial}
@@ -216,6 +249,7 @@ function CommentRow({
 
 export function CommentSection({
   postId,
+  focusCommentId,
   onCommentAdded,
   onCommentDeleted,
 }: CommentSectionProps) {
@@ -232,6 +266,7 @@ export function CommentSection({
   >([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const cursorPosRef = useRef(0);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   useEffect(() => {
     if (mentionQuery === null) {
@@ -256,20 +291,59 @@ export function CommentSection({
 
   useEffect(() => {
     let mounted = true;
-    getPostComments(postId)
-      .then((data) => {
-        if (mounted) setComments(data);
-      })
-      .catch((err) => {
+    (async () => {
+      try {
+        if (!focusCommentId) {
+          const data = await getPostComments(postId);
+          if (mounted) setComments(data);
+          return;
+        }
+        // Opened from a notification: keep loading pages until the comment
+        // (or the reply, which arrives nested under its parent) is in the list.
+        let all = await getPostComments(postId, { limit: COMMENTS_PAGE });
+        let page = all;
+        let pages = 1;
+        while (
+          !containsComment(all, focusCommentId) &&
+          page.length === COMMENTS_PAGE &&
+          pages < MAX_FOCUS_PAGES
+        ) {
+          page = await getPostComments(postId, {
+            limit: COMMENTS_PAGE,
+            cursor: all[all.length - 1].id,
+          });
+          all = [...all, ...page];
+          pages += 1;
+        }
+        if (!mounted) return;
+        setComments(all);
+        if (containsComment(all, focusCommentId)) {
+          setHighlightId(focusCommentId);
+        } else {
+          // Deleted since the notification was sent; the post stays open.
+          toast.info(UNAVAILABLE_COMMENT_MESSAGE);
+        }
+      } catch (err) {
         console.error("Failed to load comments:", err);
-      })
-      .finally(() => {
+      } finally {
         if (mounted) setLoading(false);
-      });
+      }
+    })();
     return () => {
       mounted = false;
     };
-  }, [postId]);
+  }, [postId, focusCommentId]);
+
+  // Once the highlighted row is on screen, bring it into view, then let the
+  // highlight fade so it doesn't stay marked for the rest of the visit.
+  useEffect(() => {
+    if (!highlightId || loading) return;
+    document
+      .getElementById(commentElementId(highlightId))
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => setHighlightId(null), HIGHLIGHT_MS);
+    return () => clearTimeout(t);
+  }, [highlightId, loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -392,6 +466,7 @@ export function CommentSection({
                 comment={c}
                 postId={postId}
                 isReply={false}
+                highlighted={highlightId === c.id}
                 onDeleted={(id) => handleDeleted(id)}
                 onReply={setReplyTarget}
                 onEdited={(id, content, updatedAt) =>
@@ -404,6 +479,7 @@ export function CommentSection({
                   comment={r}
                   postId={postId}
                   isReply
+                  highlighted={highlightId === r.id}
                   onDeleted={(id) => handleDeleted(id, c.id)}
                   onEdited={(id, content, updatedAt) =>
                     handleEdited(id, content, updatedAt, c.id)
