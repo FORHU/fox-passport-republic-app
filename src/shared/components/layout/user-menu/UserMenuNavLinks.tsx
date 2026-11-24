@@ -160,7 +160,7 @@ export function UserMenuNavLinks({
             className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-accent/5 transition-colors group cursor-pointer"
           >
             <UserPlus className="w-4 h-4 text-accent/60 group-hover:text-accent transition-colors shrink-0" />
-            <span className="text-sm text-accent/60 group-hover:text-accent transition-colors font-medium">
+            <span className="text-sm text-accent group-hover:text-accent transition-colors font-medium">
               Apply for a Role
             </span>
           </button>
