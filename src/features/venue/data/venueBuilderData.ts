@@ -43,9 +43,9 @@ export const INITIAL_RESOURCES: Record<string, ResourceItem[]> = {
   rules: [],
 };
 
-export const VENUE_TYPES = Object.values(VenueType).map((t) =>
-  t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-);
+export const VENUE_TYPES = Object.values(VenueType)
+  .filter((t) => t.toLowerCase() !== "other")
+  .map((t) => t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
 // export const SAMPLE_GALLERY_URLS = [
 //   "https://images.unsplash.com/photo-1582037928769-181f2422677e?q=80&w=1000",

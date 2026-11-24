@@ -46,9 +46,19 @@ function firstDayOfMonth(year: number, month: number) {
   return new Date(year, month, 1).getDay();
 }
 
+/** Local calendar date (YYYY-MM-DD) — never `toISOString()`, which is UTC and
+ *  lands on the previous day east of Greenwich before midnight UTC. */
+function localDateStr(d: Date) {
+  return toDateStr(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+type DateField = "start" | "end";
+
 function CompactDatePicker({
   startValue,
   endValue,
+  activeField,
+  onActiveFieldChange,
   onStartChange,
   onEndChange,
   onDone,
@@ -57,6 +67,11 @@ function CompactDatePicker({
 }: {
   startValue: string;
   endValue: string;
+  /** Which input this calendar is picking for — a click only ever sets
+   *  that field (the other is cleared, never overwritten, if it stops
+   *  fitting). */
+  activeField: DateField;
+  onActiveFieldChange: (f: DateField) => void;
   onStartChange: (d: string) => void;
   onEndChange: (d: string) => void;
   onDone: () => void;
@@ -67,9 +82,16 @@ function CompactDatePicker({
   loading?: boolean;
 }) {
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const todayStr = localDateStr(today);
+  // Open on the month of the date being edited, so changing an end date
+  // in December doesn't start the user back in this month.
+  const initialView = (() => {
+    const anchor =
+      (activeField === "end" ? endValue || startValue : startValue) || "";
+    return anchor ? new Date(anchor + "T00:00:00") : today;
+  })();
+  const [viewYear, setViewYear] = useState(initialView.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialView.getMonth());
 
   const dim = daysInMonth(viewYear, viewMonth);
   const offset = firstDayOfMonth(viewYear, viewMonth);
@@ -113,19 +135,26 @@ function CompactDatePicker({
   const handleClick = (ds: string) => {
     if (loading || ds < todayStr) return;
     if (disabledDates?.has(ds)) return;
-    if (!startValue || (startValue && endValue)) {
+
+    // Picking a day never closes the calendar — the user closes it with
+    // Done, Escape or a click outside, so the range stays visible.
+    if (activeField === "start") {
       onStartChange(ds);
-      onEndChange("");
+      const endStillFits =
+        !!endValue && endValue >= ds && !rangeHasDisabledDay(ds, endValue);
+      if (endStillFits) return;
+      // The old end is now before the start or spans an unavailable day:
+      // clear it (never move it) and go straight on to picking the end.
+      if (endValue) onEndChange("");
+      onActiveFieldChange("end");
       return;
     }
-    if (ds < startValue) {
-      if (rangeHasDisabledDay(ds, startValue)) return;
-      onStartChange(ds);
-      return;
-    }
-    if (rangeHasDisabledDay(startValue, ds)) return;
+
+    // End field: never touches the start date.
+    if (startValue && ds < startValue) return;
+    if (startValue && rangeHasDisabledDay(startValue, ds)) return;
     onEndChange(ds);
-    onDone();
+    if (!startValue) onActiveFieldChange("start");
   };
 
   const isSelected = (ds: string) => ds === startValue || ds === endValue;
@@ -167,6 +196,12 @@ function CompactDatePicker({
         ))}
       </div>
 
+      <p
+        aria-live="polite"
+        className="text-center text-[10px] text-white/50 mb-1 select-none"
+      >
+        {activeField === "start" ? "Choose a start date" : "Choose an end date"}
+      </p>
       {loading && (
         <p role="status" className="text-center text-[10px] text-white/50 mb-1">
           Checking availability…
@@ -180,8 +215,10 @@ function CompactDatePicker({
           if (day === null) return <div key={`e-${i}`} className="h-8" />;
           const ds = toDateStr(viewYear, viewMonth, day);
           const past = ds < todayStr;
-          const unavailable = !past && !!disabledDates?.has(ds);
-          const disabledCell = past || unavailable;
+          const beforeStart =
+            !past && activeField === "end" && !!startValue && ds < startValue;
+          const unavailable = !past && !beforeStart && !!disabledDates?.has(ds);
+          const disabledCell = past || beforeStart || unavailable;
           const sel = isSelected(ds);
           const inRange = isInRange(ds);
 
@@ -191,7 +228,13 @@ function CompactDatePicker({
               onClick={() => handleClick(ds)}
               disabled={loading || disabledCell}
               aria-current={ds === todayStr ? "date" : undefined}
-              title={unavailable ? "Not available on this date" : undefined}
+              title={
+                unavailable
+                  ? "Not available on this date"
+                  : beforeStart
+                    ? "End date can't be before the start date"
+                    : undefined
+              }
               className={[
                 "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center relative",
                 inRange
@@ -203,7 +246,7 @@ function CompactDatePicker({
                 !sel && !disabledCell
                   ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95"
                   : "",
-                past ? "text-white/20 cursor-not-allowed" : "",
+                past || beforeStart ? "text-white/20 cursor-not-allowed" : "",
                 unavailable
                   ? "text-red-400/50 cursor-not-allowed line-through decoration-red-400/40"
                   : "",
@@ -218,6 +261,16 @@ function CompactDatePicker({
             </button>
           );
         })}
+      </div>
+
+      <div className="flex justify-end mt-3">
+        <button
+          type="button"
+          onClick={onDone}
+          className="px-3 py-1.5 rounded-lg text-xs font-bold text-accent hover:bg-white/10 active:scale-95 transition-all duration-200"
+        >
+          Done
+        </button>
       </div>
     </div>
   );
@@ -254,6 +307,7 @@ export default function DateRangePicker({
   const fieldId = useId();
   const errorId = `${fieldId}-error`;
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [activeField, setActiveField] = useState<DateField>("start");
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
 
@@ -278,10 +332,18 @@ export default function DateRangePicker({
     setLocalEnd(toDisplay(endDate));
   }, [endDate]);
 
+  useEffect(() => {
+    if (!calendarOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCalendarOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [calendarOpen]);
+
   const handleCalendarStart = (d: string) => {
     onStartChange(d);
     setLocalStart(toDisplay(d));
-    setLocalEnd("");
   };
 
   const handleCalendarEnd = (d: string) => {
@@ -289,15 +351,47 @@ export default function DateRangePicker({
     setLocalEnd(toDisplay(d));
   };
 
-  const parseDisplay = (val: string, setter: (d: string) => void) => {
-    const cleaned = val.replace(/\//g, "-");
-    const d = new Date(cleaned);
-    if (!isNaN(d.getTime())) {
-      setter(d.toISOString().split("T")[0]);
+  /** Typed text → YYYY-MM-DD in the user's own timezone, or null. */
+  const parseTyped = (val: string): string | null => {
+    const trimmed = val.trim();
+    // A bare ISO date would parse as UTC midnight; read it as local, and
+    // reject days that don't exist (2026-02-31 would roll into March).
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      const local = new Date(trimmed + "T00:00:00");
+      return !isNaN(local.getTime()) && localDateStr(local) === trimmed
+        ? trimmed
+        : null;
     }
+    const d = new Date(trimmed.replace(/\//g, "-"));
+    return trimmed && !isNaN(d.getTime()) ? localDateStr(d) : null;
   };
 
-  const openCalendar = (e: React.MouseEvent) => {
+  const commitTypedStart = (val: string) => {
+    const ds = parseTyped(val);
+    if (!ds) {
+      setLocalStart(toDisplay(startDate));
+      return;
+    }
+    setLocalStart(toDisplay(ds));
+    if (ds === startDate) return;
+    onStartChange(ds);
+    // Same rule as the calendar: an end that no longer fits is cleared,
+    // never moved.
+    if (endDate && endDate < ds) onEndChange("");
+  };
+
+  const commitTypedEnd = (val: string) => {
+    const ds = parseTyped(val);
+    if (!ds || (startDate && ds < startDate)) {
+      // Unparseable, or before the start: keep the end that was there.
+      setLocalEnd(toDisplay(endDate));
+      return;
+    }
+    setLocalEnd(toDisplay(ds));
+    if (ds !== endDate) onEndChange(ds);
+  };
+
+  const openCalendar = (field: DateField) => (e: React.MouseEvent) => {
     const rect = (
       e.currentTarget as HTMLElement
     ).parentElement!.getBoundingClientRect();
@@ -313,6 +407,7 @@ export default function DateRangePicker({
       left = window.innerWidth - CALENDAR_W - 8;
     }
     setPopupPos({ top, left });
+    setActiveField(field);
     setCalendarOpen(true);
   };
 
@@ -341,12 +436,12 @@ export default function DateRangePicker({
               value={localStart}
               placeholder="Select date"
               onChange={(e) => setLocalStart(e.target.value)}
-              onBlur={(e) => parseDisplay(e.target.value, onStartChange)}
+              onBlur={(e) => commitTypedStart(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
             <button
               type="button"
-              onClick={openCalendar}
+              onClick={openCalendar("start")}
               aria-label="Open calendar"
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer"
             >
@@ -375,12 +470,12 @@ export default function DateRangePicker({
               value={localEnd}
               placeholder="Select date"
               onChange={(e) => setLocalEnd(e.target.value)}
-              onBlur={(e) => parseDisplay(e.target.value, onEndChange)}
+              onBlur={(e) => commitTypedEnd(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
             <button
               type="button"
-              onClick={openCalendar}
+              onClick={openCalendar("end")}
               aria-label="Open calendar"
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer"
             >
@@ -432,6 +527,8 @@ export default function DateRangePicker({
               <CompactDatePicker
                 startValue={startDate}
                 endValue={endDate}
+                activeField={activeField}
+                onActiveFieldChange={setActiveField}
                 onStartChange={handleCalendarStart}
                 onEndChange={handleCalendarEnd}
                 onDone={() => setCalendarOpen(false)}

@@ -12,20 +12,23 @@ import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  providerFoxer: "Provider",
+  providerFoxer: "Provider Foxer",
   investor: "Investor",
-  organizer: "Organizer",
+  organizer: "Event Coordinator",
 };
 
 // Must match DOCUMENT_FIELD_TO_DB_COLUMN in the API's role-request.service.ts
 // and DOCUMENT_FIELDS in the admin review panel.
-const DOCUMENT_FIELDS: Record<string, { label: string; accept?: string }> = {
+const DOCUMENT_FIELDS: Record<
+  string,
+  { label: string; accept?: string; purpose?: "portfolio" }
+> = {
   validId1: { label: "Primary Valid ID" },
   nbiFile: { label: "NBI Clearance", accept: "application/pdf" },
   tinIdFile: { label: "TIN ID / Certificate" },
   birPermitFile: { label: "BIR 2303 / Permit" },
   selfieFile: { label: "Verification Selfie" },
-  portfolioFile: { label: "Portfolio / Resume" },
+  portfolioFile: { label: "Portfolio / Resume", purpose: "portfolio" },
   backgroundClearanceFile: { label: "Police / Background Clearance" },
 };
 
@@ -45,9 +48,7 @@ export default function ResubmitDocumentsClient({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<RoleRequestSummary | null>(null);
-  const [replacements, setReplacements] = useState<Record<string, string>>(
-    {},
-  );
+  const [replacements, setReplacements] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -151,6 +152,7 @@ export default function ResubmitDocumentsClient({
                       key={key}
                       label={`${field.label} *`}
                       accept={field.accept}
+                      purpose={field.purpose}
                       private
                       onUploadComplete={(fileId) =>
                         setReplacements((prev) => ({

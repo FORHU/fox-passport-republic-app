@@ -6,11 +6,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Money } from "@/shared/components/ui/Money";
 
-type RoleStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "revision_requested";
+type RoleStatus = "pending" | "approved" | "rejected" | "revision_requested";
 
 interface FileRecord {
   id: string;
@@ -29,6 +25,8 @@ interface ApplicationData {
   birPermitFile?: FileRecord | null;
   selfieFile?: FileRecord | null;
   portfolioFile?: FileRecord | null;
+  // Links to work hosted elsewhere: Event Foxer and Provider (app#371).
+  portfolioUrls?: string[];
   backgroundClearanceFile?: FileRecord | null; // organizer only
   // investor fields — match InvestorApplication in the Prisma schema, not
   // the identity-verification shape every other role uses. An investor is
@@ -70,9 +68,9 @@ interface RoleApplication {
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  providerFoxer: "Provider",
+  providerFoxer: "Provider Foxer",
   investor: "Investor",
-  organizer: "Organizer",
+  organizer: "Event Coordinator",
 };
 
 const STATUS_STYLES: Record<RoleStatus, string> = {
@@ -107,6 +105,11 @@ function getAppData(app: RoleApplication): ApplicationData | null {
   );
 }
 
+const WORD_TYPES = [
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
 function DocPreview({
   label,
   file,
@@ -131,6 +134,8 @@ function DocPreview({
     );
 
   const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+  const isWord =
+    WORD_TYPES.includes(file.type) || /\.docx?$/i.test(file.name ?? "");
   const ringClass = flagged
     ? "border-red-500/60 ring-1 ring-red-500/40"
     : "border-white/10 group-hover:border-accent/40";
@@ -141,14 +146,29 @@ function DocPreview({
         {label}
         {flagged && (
           <span className="inline-flex items-center gap-0.5 text-red-400 normal-case tracking-normal font-bold">
-            <span className="material-symbols-outlined text-[12px]">
-              flag
-            </span>
+            <span className="material-symbols-outlined text-[12px]">flag</span>
             Flagged
           </span>
         )}
       </p>
-      {isPdf ? (
+      {isWord ? (
+        // A browser can't show a Word file: download it instead (app#371).
+        <a
+          href={file.url}
+          download={file.name}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`w-full h-24 rounded-xl bg-white/5 border ${ringClass} flex flex-col items-center justify-center gap-2 hover:bg-white/10 transition group`}
+        >
+          <span className="material-symbols-outlined text-[32px] text-sky-400 group-hover:scale-110 transition-transform">
+            description
+          </span>
+          <span className="text-[10px] text-white/40 group-hover:text-white/70 truncate max-w-[120px]">
+            {file.name}
+          </span>
+          <span className="text-[10px] text-white/30">Download</span>
+        </a>
+      ) : isPdf ? (
         <button
           type="button"
           onClick={() => onPreview(file, label)}
@@ -179,6 +199,37 @@ function DocPreview({
           </div>
         </button>
       )}
+    </div>
+  );
+}
+
+/** An applicant's links to work hosted elsewhere, opened in a new tab. */
+function PortfolioLinks({ urls }: { urls: string[] }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-[10px] text-white/30 uppercase tracking-wider">
+        Portfolio Links
+      </p>
+      <ul className="space-y-1">
+        {urls.map((url) => (
+          <li key={url}>
+            {/* Links saved before app#371 were never checked: only a web
+                address becomes clickable, never a javascript: one. */}
+            {/^https?:\/\//i.test(url) ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="text-xs text-accent hover:underline break-all"
+              >
+                {url}
+              </a>
+            ) : (
+              <span className="text-xs text-white/50 break-all">{url}</span>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -413,9 +464,7 @@ function ApplicationDetailDrawer({
                     )}
                     {data.interests && data.interests.length > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-white/40 text-sm">
-                          Interests
-                        </span>
+                        <span className="text-white/40 text-sm">Interests</span>
                         <span className="text-white text-sm font-medium text-right">
                           {data.interests
                             .map((i) =>
@@ -526,6 +575,9 @@ function ApplicationDetailDrawer({
                       />
                     )}
                   </div>
+                  {!!data.portfolioUrls?.length && (
+                    <PortfolioLinks urls={data.portfolioUrls} />
+                  )}
                 </>
               )}
 
@@ -552,8 +604,8 @@ function ApplicationDetailDrawer({
                 </p>
               )}
               <p className="text-orange-300/50 text-xs mt-2">
-                Only the flagged documents need to be replaced — the rest of
-                the application stands.
+                Only the flagged documents need to be replaced — the rest of the
+                application stands.
               </p>
             </div>
           )}
@@ -640,9 +692,7 @@ export const AdminSubmissionsTable: React.FC = () => {
   const [filter, setFilter] = useState<"all" | RoleStatus>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RoleApplication | null>(null);
-  const [rejectModal, setRejectModal] = useState<RoleApplication | null>(
-    null,
-  );
+  const [rejectModal, setRejectModal] = useState<RoleApplication | null>(null);
   const [flaggedDocs, setFlaggedDocs] = useState<Set<string>>(new Set());
   const [reviewNote, setReviewNote] = useState("");
 
@@ -708,7 +758,9 @@ export const AdminSubmissionsTable: React.FC = () => {
       setApplications((prev) =>
         prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
-      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      setSelectedApp((prev) =>
+        prev?.id === id ? { ...prev, ...patch } : prev,
+      );
       closeRejectModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to request revision");
@@ -736,7 +788,9 @@ export const AdminSubmissionsTable: React.FC = () => {
       setApplications((prev) =>
         prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
-      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      setSelectedApp((prev) =>
+        prev?.id === id ? { ...prev, ...patch } : prev,
+      );
       closeRejectModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to reject");
@@ -881,9 +935,9 @@ export const AdminSubmissionsTable: React.FC = () => {
                 Reject or Request Revision
               </h3>
               <p className="text-white/50 text-sm mt-1">
-                Flag the specific documents that are wrong — only those get
-                sent back to the applicant to re-upload. Leave nothing
-                checked to reject the whole application instead.
+                Flag the specific documents that are wrong — only those get sent
+                back to the applicant to re-upload. Leave nothing checked to
+                reject the whole application instead.
               </p>
             </div>
 

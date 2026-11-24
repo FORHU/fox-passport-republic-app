@@ -35,7 +35,10 @@ export function RepublicMobileControlBar({
       {/* Sticky tabs + compose button — phones and tablets (below lg, where
           the left sidebar is hidden); docks 8px under the header, which is
           taller from sm up. */}
-      <div className="lg:hidden sticky top-16 sm:top-28 z-40 py-2.5 bg-canvas/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 sm:-mx-6 sm:px-6 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
+      <div
+        data-tour="republic-mobile-bar"
+        className="lg:hidden sticky top-16 sm:top-28 z-40 py-2.5 bg-canvas/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 sm:-mx-6 sm:px-6 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu"
+      >
         {/* Stream Tabs (horizontal swipeable pills) */}
         <div className="flex-1 min-w-0">
           <RepublicTabs
@@ -57,7 +60,10 @@ export function RepublicMobileControlBar({
 
       {/* Quick Depots Map Link — sits inside the feed column below lg,
           where the left sidebar is hidden. */}
-      <div className="lg:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
+      <div
+        data-tour="republic-depots"
+        className="lg:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md"
+      >
         <div className="flex items-center gap-2 min-w-0">
           <Package
             className="h-[18px] w-[18px] text-amber-400 shrink-0"

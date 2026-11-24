@@ -25,15 +25,19 @@ const CATALOG_TABS = new Set(["tech", "amenities", "staff"]);
 // is discounted relative to the (already-occupancy-weighted) base rate.
 const ADDON_ATTACH_RATE = 0.2;
 
-// The backend stores `category` as a free-text string, so picking "Other"
-// and typing a custom type sends that text directly as the category instead
-// of the literal word "other".
-function resolveVenueCategory(venueType: string, venueTypeOther: string) {
-  const effective =
-    venueType === "Other" && venueTypeOther.trim()
-      ? venueTypeOther.trim()
-      : venueType;
-  return effective ? effective.toLowerCase().replace(/\s+/g, "_") : undefined;
+// Validates and resolves selected type against allowed VenueCategory enums (api#439)
+function resolveVenueCategory(venueType: string) {
+  const mapped = venueType.toLowerCase().replace(/\s+/g, "_");
+  const valid = [
+    "indoor",
+    "outdoor",
+    "mix",
+    "hotel",
+    "beach_resort",
+    "garden",
+    "other",
+  ];
+  return valid.includes(mapped) ? mapped : undefined;
 }
 
 export function useVenueBuilder() {
@@ -236,7 +240,7 @@ export function useVenueBuilder() {
       const payload = {
         name: store.venueName,
         description: store.description || undefined,
-        category: resolveVenueCategory(store.venueType, store.venueTypeOther),
+        category: resolveVenueCategory(store.venueType),
         capacity: parseInt(store.capacity) || undefined,
         address: store.location || undefined,
         city: store.city || undefined,
@@ -258,10 +262,17 @@ export function useVenueBuilder() {
         staffing: allItems
           .filter((i) => i.category === "staff")
           .map((i) => i.name),
-        policies: allItems
-          .filter((i) => i.category === "rules")
-          .map((i) => i.name),
+        policies: store.policyItems.map((i) => i.name),
+        operatingHours: {
+          studioResources: {
+            includedItems: store.includedItems,
+            addonItems: store.addonItems,
+          },
+        },
         cancellationPolicyId: store.cancellationPolicyId || undefined,
+        cancellationType: store.cancellationType || undefined,
+        flexibleRefundPercent: store.flexibleRefundPercent,
+        flexibleRefundHours: store.flexibleRefundHours,
         status: "draft",
       };
 
@@ -285,9 +296,6 @@ export function useVenueBuilder() {
     const missing: string[] = [];
     if (!store.venueName) missing.push("Venue Name");
     if (!store.venueType) missing.push("Category");
-    if (store.venueType === "Other" && !store.venueTypeOther.trim()) {
-      missing.push("Venue Type (please specify)");
-    }
     if (!store.description) missing.push("Description");
     if (!store.location) missing.push("Address");
     if (!store.city) missing.push("City");
@@ -295,9 +303,6 @@ export function useVenueBuilder() {
     if (/^philippines$/i.test(store.country.trim())) {
       if (!store.state) missing.push("Province");
       if (!store.district) missing.push("Barangay");
-    }
-    if (!store.boundary || store.boundary.length < 3) {
-      missing.push("Service Area (draw a shape on the map)");
     }
 
     if (missing.length > 0) {
@@ -347,7 +352,7 @@ export function useVenueBuilder() {
       const payload = {
         name: store.venueName,
         description: store.description,
-        category: resolveVenueCategory(store.venueType, store.venueTypeOther),
+        category: resolveVenueCategory(store.venueType),
         capacity: parseInt(store.capacity) || 1,
         address: store.location,
         city: store.city,
@@ -369,10 +374,17 @@ export function useVenueBuilder() {
         staffing: allItems
           .filter((i) => i.category === "staff")
           .map((i) => i.name),
-        policies: allItems
-          .filter((i) => i.category === "rules")
-          .map((i) => i.name),
+        policies: store.policyItems.map((i) => i.name),
+        operatingHours: {
+          studioResources: {
+            includedItems: store.includedItems,
+            addonItems: store.addonItems,
+          },
+        },
         cancellationPolicyId: store.cancellationPolicyId || undefined,
+        cancellationType: store.cancellationType || undefined,
+        flexibleRefundPercent: store.flexibleRefundPercent,
+        flexibleRefundHours: store.flexibleRefundHours,
         imgIds,
         status: "pending",
       };

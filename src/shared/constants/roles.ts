@@ -65,9 +65,9 @@ export function isFoxer(
 export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
   venueFoxer: { label: "Venue Foxer", color: "#A9AFBB" },
   eventFoxer: { label: "Event Foxer", color: "#A9AFBB" },
-  providerFoxer: { label: "Provider", color: "#A9AFBB" },
+  providerFoxer: { label: "Provider Foxer", color: "#A9AFBB" },
   investor: { label: "Partner Foxer", color: "#A9AFBB" },
-  organizer: { label: "Organizer", color: "#A9AFBB" },
+  organizer: { label: "Event Coordinator", color: "#A9AFBB" },
 };
 
 /**

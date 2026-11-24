@@ -174,7 +174,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
     : FALLBACK_AVATAR;
 
   return (
-    <article className="group glass-card relative flex min-w-0 flex-col rounded-[2rem] border border-white/10 p-6 transition-colors hover:border-accent/50">
+    <article className="group relative flex min-w-0 flex-col rounded-[2rem] border border-listing-edge bg-listing p-6 shadow-sm transition-colors hover:border-listing-edge-hover hover:bg-listing-hover">
       <Link
         href={`/foxer/${foxer.id}`}
         className="absolute inset-0 z-0 rounded-[2rem]"
@@ -239,13 +239,13 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
           tags.map((tag, idx) => (
             <span
               key={idx}
-              className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-xs font-bold text-white/70"
+              className="rounded-lg border border-white/15 bg-black/30 px-2.5 py-1 text-xs font-bold text-white/70"
             >
               {categoryLabel(tag)}
             </span>
           ))
         ) : (
-          <span className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-xs font-bold text-white/70">
+          <span className="rounded-lg border border-white/15 bg-black/30 px-2.5 py-1 text-xs font-bold text-white/70">
             Creative Services
           </span>
         )}
@@ -327,7 +327,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
 function SkeletonCard() {
   return (
-    <div className="glass-card h-80 animate-pulse space-y-4 rounded-[2rem] p-6">
+    <div className="h-80 animate-pulse space-y-4 rounded-[2rem] border border-listing-edge bg-listing p-6">
       <div className="flex gap-4">
         <div className="h-16 w-16 rounded-full bg-white/10" />
         <div className="flex-1 space-y-2 pt-2">

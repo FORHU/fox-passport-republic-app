@@ -50,7 +50,7 @@ const ROLE_TYPE_STYLE: Record<
     icon: "storefront",
   },
   providerFoxer: {
-    label: "Provider",
+    label: "Provider Foxer",
     color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     icon: "inventory_2",
   },
@@ -58,6 +58,11 @@ const ROLE_TYPE_STYLE: Record<
     label: "Venue Foxer",
     color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
     icon: "star",
+  },
+  organizer: {
+    label: "Event Coordinator",
+    color: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+    icon: "assignment_ind",
   },
   investor: {
     label: "Partner Foxer",

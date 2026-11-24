@@ -15,7 +15,7 @@ import {
   type GeoMatch,
 } from "@/shared/lib/geocoding";
 import { fetchBarangays } from "@/shared/api/geo";
-import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
+import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { UPLOAD_ACCEPT } from "@/shared/lib/uploadRules";
 import {
   LONG_DESCRIPTION_MAX,
@@ -42,6 +42,12 @@ interface VenueDetailsFormProps {
   gallery: GalleryItem[];
   showGuide: boolean;
   cancellationPolicyId: string | null;
+  cancellationType?: "Flexible" | "Non-Refundable" | "";
+  onCancellationTypeChange?: (type: "Flexible" | "Non-Refundable" | "") => void;
+  flexibleRefundPercent?: number;
+  onRefundPercentChange?: (val: number) => void;
+  flexibleRefundHours?: number;
+  onRefundHoursChange?: (val: number) => void;
   onNameChange: (name: string) => void;
   onDescriptionChange: (desc: string) => void;
   onTypeChange: (type: string) => void;
@@ -64,7 +70,7 @@ export function VenueDetailsForm({
   venueName,
   description,
   venueType,
-  venueTypeOther,
+  venueTypeOther: _venueTypeOther,
   capacity,
   location,
   city,
@@ -74,14 +80,20 @@ export function VenueDetailsForm({
   lat = null,
   lng = null,
   boundary = null,
-  excludeVenueId,
+  excludeVenueId: _excludeVenueId,
   gallery,
   showGuide,
   cancellationPolicyId,
+  cancellationType,
+  onCancellationTypeChange,
+  flexibleRefundPercent,
+  onRefundPercentChange,
+  flexibleRefundHours,
+  onRefundHoursChange,
   onNameChange,
   onDescriptionChange,
   onTypeChange,
-  onTypeOtherChange,
+  onTypeOtherChange: _onTypeOtherChange,
   onCapacityChange,
   onLocationChange,
   onCityChange,
@@ -89,7 +101,7 @@ export function VenueDetailsForm({
   onDistrictChange,
   onCountryChange,
   onLatLngChange = () => {},
-  onBoundaryChange = () => {},
+  onBoundaryChange: _onBoundaryChange = () => {},
   onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
@@ -128,8 +140,7 @@ export function VenueDetailsForm({
           code,
           "place,locality,district",
           province?.bbox,
-        )) ??
-        province;
+        )) ?? province;
       if (!brgy) return show(townHit);
       show(
         (await geocodePlace(
@@ -224,15 +235,6 @@ export function VenueDetailsForm({
                   options={VENUE_TYPES}
                   placeholder="Select..."
                 />
-                {venueType === "Other" && (
-                  <input
-                    type="text"
-                    value={venueTypeOther}
-                    onChange={(e) => onTypeOtherChange(e.target.value)}
-                    placeholder="Please specify the venue type..."
-                    className="w-full mt-2 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
-                  />
-                )}
               </div>
               <div className="flex-1">
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
@@ -294,11 +296,7 @@ export function VenueDetailsForm({
                   (next.state || next.city) &&
                   (next.state !== state || next.city !== city)
                 ) {
-                  locate(
-                    code,
-                    next.state || undefined,
-                    next.city || undefined,
-                  );
+                  locate(code, next.state || undefined, next.city || undefined);
                 }
                 // A barangay belongs to one city; a new city clears it.
                 if (next.city !== city || next.state !== state) {
@@ -347,25 +345,32 @@ export function VenueDetailsForm({
               )}
             </div>
 
-            {/* Service Area */}
-            <div>
-              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                Service Area
-              </label>
-              <VenuePolygonMapPicker
-                boundary={boundary}
-                focusLat={lat}
-                focusLng={lng}
-                excludeVenueId={excludeVenueId}
-                onChange={onBoundaryChange}
-              />
-            </div>
+            {/* Location Preview */}
+            {lat != null && lng != null && (
+              <div>
+                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+                  Location Preview
+                </label>
+                <LocationMap
+                  lat={lat}
+                  lng={lng}
+                  boundary={boundary}
+                  className="h-64 w-full rounded-2xl overflow-hidden border border-white/10"
+                />
+              </div>
+            )}
 
             {/* Cancellation Policy */}
-            <div className="max-w-xs">
+            <div className="max-w-md">
               <CancellationPolicyPicker
                 value={cancellationPolicyId}
                 onChange={onCancellationPolicyChange}
+                cancellationType={cancellationType}
+                onTypeChange={onCancellationTypeChange}
+                flexibleRefundPercent={flexibleRefundPercent}
+                onRefundPercentChange={onRefundPercentChange}
+                flexibleRefundHours={flexibleRefundHours}
+                onRefundHoursChange={onRefundHoursChange}
               />
             </div>
 

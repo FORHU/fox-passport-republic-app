@@ -44,10 +44,10 @@ function PackageCard({ pkg, date }: { pkg: LandingEvent; date?: string }) {
   };
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface transition-colors hover:border-accent/50">
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-listing-edge bg-listing shadow-sm transition-colors hover:border-listing-edge-hover">
       {/* The photo is absolutely positioned so its own proportions can't
           stretch the box: every card's photo is 4:3, cropped to fill. */}
-      <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-white/5">
+      <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-white/10">
         {photo && (
           <img
             src={photo}
@@ -163,14 +163,14 @@ export default function PackageResults() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="aspect-[4/5] animate-pulse rounded-2xl border border-white/10 bg-surface"
+              className="aspect-[4/5] animate-pulse rounded-2xl border border-listing-edge bg-listing"
             />
           ))}
         </div>
       )}
 
       {!isPending && packages.length === 0 && (
-        <div className="mt-8 rounded-2xl border border-white/10 bg-surface p-8 text-center">
+        <div className="mt-8 rounded-2xl border border-listing-edge bg-listing p-8 text-center">
           <p className="text-white/80">
             {isError
               ? "We couldn't load packages. Check your connection and try again."

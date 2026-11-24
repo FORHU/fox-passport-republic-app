@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
-import { Globe, ShieldCheck, MapPin } from "lucide-react";
+import { Globe, ShieldCheck, MapPin, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection, FOXER_KYC_DOCUMENTS } from "./KycDocumentSection";
@@ -14,6 +14,10 @@ import {
 } from "@/shared/components/ui/CascadingLocationFields";
 import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
 import { yearsOfExperienceError } from "../utils/yearsOfExperience";
+import {
+  portfolioUrlsError,
+  splitPortfolioUrls,
+} from "@/shared/lib/portfolioUrls";
 
 const EVENT_CATEGORY_OPTIONS = [
   { value: "corporate", label: "Corporate" },
@@ -48,6 +52,7 @@ export default function HostApplicationClient() {
     birPermitFileId: "",
     selfieFileId: "",
     portfolioFileId: "",
+    portfolioUrls: "",
   });
   const [specializations, setSpecializations] = useState<string[]>([]);
 
@@ -64,6 +69,7 @@ export default function HostApplicationClient() {
   // Kept as typed and checked instead: stripping non-digits turned "2.5" into
   // "25" (app#327).
   const experienceError = yearsOfExperienceError(formData.experience);
+  const linksError = portfolioUrlsError(formData.portfolioUrls);
 
   const uploaded = FOXER_KYC_DOCUMENTS.filter(
     (d) => formData[d.field as keyof typeof formData],
@@ -92,21 +98,14 @@ export default function HostApplicationClient() {
             href="/foxer/apply"
             className="text-white/70 underline hover:text-white"
           >
-            Talent, Gear, Performer, or Organizer
-          </Link>
-          ,{" "}
+            Provider Foxer (Talent, Gear, Performer, or Event Coordinator)
+          </Link>{" "}
+          or{" "}
           <Link
             href="/venue-foxer/apply"
             className="text-white/70 underline hover:text-white"
           >
             Venue Foxer
-          </Link>
-          , or{" "}
-          <Link
-            href="/foxer/apply-investor"
-            className="text-white/70 underline hover:text-white"
-          >
-            Investor
           </Link>
           .
         </p>
@@ -127,6 +126,10 @@ export default function HostApplicationClient() {
           label: "Portfolio / resume",
           value: formData.portfolioFileId ? "Uploaded" : "",
         },
+        {
+          label: "Portfolio links",
+          value: splitPortfolioUrls(formData.portfolioUrls).join(", "),
+        },
       ]}
       agreement="By submitting this application, you agree to comply with FoxPassport's Event Foxer policies and quality standards. Your application will be reviewed by our team."
       isPending={isPending}
@@ -136,6 +139,7 @@ export default function HostApplicationClient() {
           data: {
             ...formData,
             experience: formData.experience.trim(),
+            portfolioUrls: splitPortfolioUrls(formData.portfolioUrls),
             specializations,
           },
         })
@@ -222,16 +226,45 @@ export default function HostApplicationClient() {
         validate={() =>
           uploaded < FOXER_KYC_DOCUMENTS.length
             ? "Upload all the required documents before continuing."
-            : null
+            : linksError
         }
       >
         <KycDocumentSection onUpload={handleFileUpload} compact />
 
         <FileUploader
           label="Portfolio / Resume (Optional)"
-          private
+          purpose="portfolio"
           onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
+          onFileCleared={() => handleFileUpload("portfolioFileId", "")}
         />
+
+        <div className="space-y-2">
+          <label htmlFor="portfolio-urls" className={LABEL}>
+            Portfolio Links (Optional)
+          </label>
+          <p className="text-xs text-white/40">
+            Already have your work online? Add up to 5 full web addresses,
+            separated by commas.
+          </p>
+          <FieldControl invalid={!!linksError}>
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
+              <LinkIcon size={18} />
+            </div>
+            <input
+              id="portfolio-urls"
+              type="text"
+              inputMode="url"
+              name="portfolioUrls"
+              value={formData.portfolioUrls}
+              onChange={handleChange}
+              aria-invalid={linksError ? true : undefined}
+              aria-describedby={linksError ? "portfolio-urls-error" : undefined}
+              className={`${INPUT} pl-12 ${linksError ? "field-invalid pr-10" : ""}`}
+              placeholder="https://behance.net/you, https://yourportfolio.com"
+            />
+          </FieldControl>
+          <FieldError id="portfolio-urls-error" message={linksError} />
+        </div>
       </WizardStep>
     </ApplicationWizard>
   );

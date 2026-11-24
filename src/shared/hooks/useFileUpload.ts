@@ -95,16 +95,22 @@ export const useFileUpload = () => {
    * API into the private bucket. There is no URL to get back — admins open
    * it through a short-lived link the API makes when they review it.
    */
+  /**
+   * An identity document, or with purpose `portfolio` a portfolio / resume
+   * (PDF or Word only, app#371), into the private bucket.
+   */
   const uploadPrivateFile = async (
     file: File,
+    purpose: "document" | "portfolio" = "document",
   ): Promise<{ fileId: string } | null> => {
-    const problem = checkUploadFile(file, "document");
+    const problem = checkUploadFile(file, purpose);
     if (problem) return fail(problem);
     setError(null);
     setIsUploading(true);
     try {
       const form = new FormData();
       form.append("file", file);
+      if (purpose !== "document") form.append("purpose", purpose);
       const { data } = await api.post("/files/upload-private", form);
       return { fileId: data.fileId };
     } catch (error: any) {

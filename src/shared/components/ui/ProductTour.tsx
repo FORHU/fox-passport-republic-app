@@ -7,6 +7,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
@@ -64,6 +65,54 @@ function findTarget(target?: string): HTMLElement | null {
 /** Ask a mounted `ProductTour` with this key to start again. */
 export function startTour(tourKey: string) {
   window.dispatchEvent(new CustomEvent(START_EVENT, { detail: tourKey }));
+}
+
+// The tour on the current page, so the shared top bar can offer it without
+// knowing which page it is on.
+let mountedKey: string | null = null;
+const listeners = new Set<() => void>();
+
+function setMountedKey(key: string | null) {
+  mountedKey = key;
+  listeners.forEach((l) => l());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/** The key of the `ProductTour` mounted on this page, or null if none. */
+export function useMountedTourKey() {
+  return useSyncExternalStore(
+    subscribe,
+    () => mountedKey,
+    () => null,
+  );
+}
+
+/**
+ * The top bar's "Take the tour" button: the same spot on every page that has
+ * a tour, and nothing on pages that don't.
+ */
+export function TourHeaderButton() {
+  const tourKey = useMountedTourKey();
+  if (!tourKey) return null;
+  return (
+    <button
+      type="button"
+      aria-label="Take the tour"
+      title="Take the tour"
+      onClick={() => startTour(tourKey)}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all cursor-pointer"
+    >
+      <span aria-hidden className="material-symbols-outlined text-[20px]">
+        tour
+      </span>
+    </button>
+  );
 }
 
 /** A small "Take the tour" button that replays a tour on demand. */
@@ -125,6 +174,14 @@ export function ProductTour({
   const nextRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
 
+  useEffect(() => {
+    setMountedKey(tourKey);
+    return () => {
+      // Only if a newer page's tour hasn't already taken over.
+      if (mountedKey === tourKey) setMountedKey(null);
+    };
+  }, [tourKey]);
+
   const begin = useCallback(() => {
     const usable = stepsRef.current.filter(
       (s) => !s.target || findTarget(s.target),
@@ -171,7 +228,12 @@ export function ProductTour({
 
   useLayoutEffect(() => {
     if (!step) return;
-    findTarget(step.target)?.scrollIntoView({ block: "center" });
+    const el = findTarget(step.target);
+    // A section taller than the screen (a feed, a results list) shows its
+    // start; centring it would land somewhere in the middle of it.
+    const tall =
+      el && el.getBoundingClientRect().height > window.innerHeight - BAR;
+    el?.scrollIntoView({ block: tall ? "start" : "center" });
     measure();
   }, [step, measure]);
 
@@ -205,11 +267,15 @@ export function ProductTour({
   const cardWidth = Math.min(340, vw - 32);
 
   // Beside the highlighted element: below it if there is room, otherwise above.
-  // Phones get a sheet pinned just above the control bar instead.
+  // Phones get a sheet pinned just above the control bar instead, or to the
+  // top when the element sits low (a fixed bottom control) so it isn't covered.
   let cardStyle: React.CSSProperties;
   if (!rect || narrow) {
+    const low = rect && rect.top > window.innerHeight / 2;
     cardStyle = narrow
-      ? { left: 16, right: 16, bottom: BAR + GAP }
+      ? low
+        ? { left: 16, right: 16, top: "max(16px, env(safe-area-inset-top))" }
+        : { left: 16, right: 16, bottom: BAR + GAP }
       : {
           left: "50%",
           top: "50%",
