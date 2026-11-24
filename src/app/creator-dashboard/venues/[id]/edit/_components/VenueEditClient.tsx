@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { Loader2, AlertTriangle } from "lucide-react";
 import {
@@ -10,6 +10,7 @@ import {
   FeatureDropZone,
   RevenueProjector,
   VenuePoliciesSection,
+  VenuePreviewModal,
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
 import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
@@ -21,6 +22,7 @@ interface Props {
 }
 
 function VenueEditContent({ id }: Props) {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const {
     isPrefilling,
     prefillError,
@@ -140,7 +142,25 @@ function VenueEditContent({ id }: Props) {
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
+        <>
+          <VenuePreviewModal
+            isOpen={isPreviewOpen}
+            onClose={() => setIsPreviewOpen(false)}
+            venueName={venueName}
+            description={description}
+            venueType={venueType}
+            capacity={capacity}
+            location={location}
+            city={city}
+            state={state}
+            country={country}
+            gallery={gallery}
+            includedItems={includedItems}
+            addonItems={addonItems}
+            policyItems={policyItems}
+            baseRate={baseRate}
+          />
+          <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
           <VenueHeader
             venueName={venueName}
             status={existingStatus}
@@ -262,10 +282,11 @@ function VenueEditContent({ id }: Props) {
               onBaseRateChange={setBaseRate}
               onOccupancyRateChange={setOccupancyRate}
               onExtraGuestRateChange={setExtraGuestRate}
-              onPreview={() => window.open(`/venues/${id}`, "_blank")}
+              onPreview={() => setIsPreviewOpen(true)}
             />
           </div>
         </div>
+        </>
       )}
     </RequireAuth>
   );

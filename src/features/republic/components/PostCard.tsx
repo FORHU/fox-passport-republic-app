@@ -142,6 +142,8 @@ interface PostCardProps {
     onClose: () => void,
     onSent: (n: number) => void,
   ) => React.ReactNode;
+  /** A comment or reply to scroll to and highlight once comments load. */
+  focusCommentId?: string | null;
 }
 
 export function PostCard({
@@ -152,6 +154,7 @@ export function PostCard({
   variant = "feed",
   onMessageFoxerClick,
   renderShareModal,
+  focusCommentId,
 }: PostCardProps) {
   const { user } = useAuthStore();
   // Signed out, sign in and come back to wherever this card is shown
@@ -968,6 +971,7 @@ export function PostCard({
         <CommentSection
           postId={post.id}
           commentsCount={commentsCount}
+          focusCommentId={focusCommentId}
           onCommentAdded={() => adjustComments(post.id, 1)}
           onCommentDeleted={(removed) => adjustComments(post.id, -removed)}
         />

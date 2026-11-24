@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Money } from "@/shared/components/ui/Money";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 
 interface MobileVenueDetailProps {
   venue?: any;
@@ -17,6 +18,9 @@ const AMENITIES = [
 ];
 
 export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
+  // This heart used to have no click handler at all.
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const saved = venue?.id ? isFavorited(venue.id, "venue") : false;
 
   const name: string = venue?.name ?? "Skyline Rooftop Loft";
   const rating: string = venue?.rating ? String(venue.rating) : "4.9";
@@ -120,6 +124,11 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           Venue
         </p>
         <button
+          type="button"
+          onClick={() => venue?.id && toggleFavorite(venue.id)}
+          disabled={!venue?.id}
+          aria-label={saved ? "Remove from favorites" : "Save to favorites"}
+          aria-pressed={saved}
           style={{
             width: 36,
             height: 36,
@@ -133,8 +142,15 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             flexShrink: 0,
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-            favorite_border
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 16,
+              color: saved ? "var(--color-accent)" : undefined,
+              fontVariationSettings: saved ? "'FILL' 1" : undefined,
+            }}
+          >
+            {saved ? "favorite" : "favorite_border"}
           </span>
         </button>
       </div>

@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useApproximateMapCenter } from "../_hooks/useApproximateMapCenter";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 import {
   useRouter as useNavigationRouter,
   useSearchParams,
@@ -27,6 +28,7 @@ import {
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { signInThen } from "@/shared/auth/returnTo";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { smartBack } from "@/shared/lib/navigation";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -74,6 +76,10 @@ export function EventDetailView({
 }: EventDetailViewProps) {
   const router = useNavigationRouter();
   const { user } = useAuthStore();
+  // "Save" used to do nothing. A builder preview or draft has nothing to save.
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const canSave = !isPreview && !isDraft && !!eventId;
+  const saved = canSave && isFavorited(eventId, "event");
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
@@ -166,7 +172,12 @@ export function EventDetailView({
             </span>
             Draft Preview — this is how your listing will look when published
             <button
-              onClick={() => router.back()}
+              onClick={() =>
+                smartBack(
+                  router,
+                  `/creator-dashboard/events/${eventId}/edit`,
+                )
+              }
               className="ml-4 underline opacity-70 hover:opacity-100 cursor-pointer"
             >
               ← Back to builder
@@ -184,7 +195,14 @@ export function EventDetailView({
             <BackButton
               variant="label"
               hideLabelOnMobile
-              onClick={() => router.back()}
+              onClick={() =>
+                smartBack(
+                  router,
+                  isPreview
+                    ? `/creator-dashboard/events/${eventId}/edit`
+                    : "/",
+                )
+              }
             />
             <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
@@ -222,11 +240,20 @@ export function EventDetailView({
                 </span>{" "}
                 Share
               </button>
-              <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer">
-                <span className="material-symbols-outlined text-[18px]">
-                  favorite_border
+              <button
+                type="button"
+                onClick={() => toggleFavorite(eventId, { type: "event" })}
+                disabled={!canSave}
+                aria-pressed={saved}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span
+                  className={`material-symbols-outlined text-[18px] ${saved ? "text-accent" : ""}`}
+                  style={saved ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {saved ? "favorite" : "favorite_border"}
                 </span>{" "}
-                Save
+                {saved ? "Saved" : "Save"}
               </button>
             </div>
           </div>

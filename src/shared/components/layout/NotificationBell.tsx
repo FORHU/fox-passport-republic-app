@@ -6,6 +6,11 @@ import Link from "next/link";
 import { Bell, ChevronDown } from "lucide-react";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 import type { Notification } from "@/shared/types/notification";
+import { toast } from "sonner";
+import {
+  getNotificationLink,
+  UNAVAILABLE_POST_MESSAGE,
+} from "@/shared/lib/notificationLink";
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,10 +36,14 @@ export default function NotificationBell() {
   const handleItemClick = (n: Notification) => {
     if (!n.isRead) markAsRead(n.id);
 
-    const link = n.metadata?.link as string | undefined;
-    if (link) {
+    const { href, unavailable } = getNotificationLink(n);
+    if (unavailable) {
+      toast.info(UNAVAILABLE_POST_MESSAGE);
+      return;
+    }
+    if (href) {
       setIsOpen(false);
-      router.push(link);
+      router.push(href);
       return;
     }
 
