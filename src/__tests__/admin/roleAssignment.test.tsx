@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 import { RoleAssignmentControls } from "@/features/admin/components/RoleAssignmentControls";
@@ -17,6 +17,17 @@ vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: (selector: (s: { user: unknown }) => unknown) =>
     selector({ user: viewer.current }),
 }));
+
+const rolesApi = vi.hoisted(() => ({
+  changeRoleTypes: vi.fn(async (id: string, roleType: string[]) => ({
+    id,
+    email: "someone@example.com",
+    systemRole: "user",
+    roleType,
+  })),
+  changeSystemRole: vi.fn(),
+}));
+vi.mock("@/features/admin/api/roles", () => rolesApi);
 
 const citizen = {
   id: "citizen-1",
@@ -68,5 +79,37 @@ describe("RoleAssignmentControls", () => {
     expect(
       screen.getByText(/nobody changes their own access/i),
     ).toBeInTheDocument();
+  });
+});
+
+// api#463: Event Coordinator comes from an approved application, not here.
+describe("RoleAssignmentControls — Event Coordinator", () => {
+  const admin = {
+    id: "admin-1",
+    permissions: ["admin:access", "roles:assign"],
+  };
+
+  it("doesn't offer Event Coordinator, only the other platform roles", () => {
+    renderFor(admin);
+    expect(
+      screen.queryByRole("button", { name: /event coordinator/i }),
+    ).not.toBeInTheDocument();
+    for (const name of [/venue foxer/i, /event foxer/i, /provider foxer/i]) {
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    }
+  });
+
+  it("keeps an existing Event Coordinator's role when other roles change", async () => {
+    renderFor(admin, { ...citizen, roleType: ["organizer"] as never[] });
+
+    fireEvent.click(screen.getByRole("button", { name: /venue foxer/i }));
+    fireEvent.click(screen.getByRole("button", { name: /apply roles/i }));
+
+    await waitFor(() =>
+      expect(rolesApi.changeRoleTypes).toHaveBeenCalledWith("citizen-1", [
+        "organizer",
+        "venueFoxer",
+      ]),
+    );
   });
 });
