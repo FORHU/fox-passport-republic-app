@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import AvailabilityCalendar from "@/shared/components/ui/AvailabilityCalendar";
-import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibes";
 import PassportBookletCard from "@/features/gamification/components/PassportBookletCard";
 
 const calendarState = vi.hoisted(() => ({
@@ -75,21 +74,6 @@ describe("AvailabilityCalendar", () => {
       .getAllByRole("button")
       .filter((b) => /^\d+$/.test(b.textContent ?? ""));
     expect(days.some((d) => !(d as HTMLButtonElement).disabled)).toBe(true);
-  });
-});
-
-describe("UserSavedVibes", () => {
-  it("draws rows, not 'Nothing saved yet', while loading", () => {
-    render(<UserSavedVibes savedVibes={[]} loading />);
-    expect(
-      screen.getByRole("status", { name: "Loading saved items" }),
-    ).toBeInTheDocument();
-    expect(screen.queryByText("Nothing saved yet")).toBeNull();
-  });
-
-  it("shows the empty state once loaded with nothing saved", () => {
-    render(<UserSavedVibes savedVibes={[]} />);
-    expect(screen.getByText("Nothing saved yet")).toBeInTheDocument();
   });
 });
 

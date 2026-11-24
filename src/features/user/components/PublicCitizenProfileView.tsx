@@ -322,11 +322,11 @@ export default function PublicCitizenProfileView({
                   {renderBlockMenuButton?.(profile.id)}
                 </>
               )}
-              {/* Named and iconed like the "Passport" tab, which also opens /user. */}
+              {/* Opens the passport page, like every other "My passport" link. */}
               {isMe && (
                 <>
                   <Link
-                    href="/user"
+                    href="/user/passport"
                     className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
                   >
                     <span

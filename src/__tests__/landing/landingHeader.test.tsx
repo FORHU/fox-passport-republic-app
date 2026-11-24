@@ -15,6 +15,7 @@ vi.mock("next/navigation", () => ({
 
 const openLogin = vi.fn();
 const mockAuthState = {
+  user: { id: "u1" },
   isAuthenticated: false,
   isLoading: false,
   openLogin,
@@ -38,7 +39,7 @@ vi.mock("@/shared/components/layout/MobileBottomNav", () => ({
 }));
 
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { APP_NAV } from "@/shared/lib/app-nav";
+import { appNavForUser } from "@/shared/lib/app-nav";
 
 /**
  * Signed-out visitors on small screens used to get no navigation at all: the
@@ -92,10 +93,15 @@ describe("LandingHeader mobile menu", () => {
   it("gives signed-in users the app nav, the same places as the mobile bar", () => {
     mockAuthState.isAuthenticated = true;
     render(<LandingHeader />);
-    const hrefs = within(screen.getByRole("navigation"))
-      .getAllByRole("link")
-      .map((a) => a.getAttribute("href"));
-    expect(hrefs).toEqual(APP_NAV.map((i) => i.href));
+    const nav = within(screen.getByRole("navigation"));
+    const hrefs = nav.getAllByRole("link").map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(appNavForUser("u1").map((i) => i.href));
+    // Passport opens the user's own public passport, not the /user dashboard.
+    expect(nav.getByRole("link", { name: "Passport" })).toHaveAttribute(
+      "href",
+      "/user/u1",
+    );
+    expect(hrefs).not.toContain("/user");
   });
 
   it("has no menu button until auth has loaded", () => {

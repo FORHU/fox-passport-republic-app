@@ -294,19 +294,6 @@ export async function getDashboardStats() {
     };
   }
 }
-export async function getUserDashboard(_userId: string) {
-  await requireAuth();
-  try {
-    const body = await serverFetch("/bookings/upcoming").catch(() => ({
-      data: [],
-    }));
-    const upcomingEvents = (body?.data || []).length;
-    return { userName: "User", upcomingEvents, recommendations: 0 };
-  } catch (error) {
-    console.error("Failed to fetch user dashboard:", error);
-    return { userName: "User", upcomingEvents: 0, recommendations: 0 };
-  }
-}
 
 export async function getVenues() {
   try {
