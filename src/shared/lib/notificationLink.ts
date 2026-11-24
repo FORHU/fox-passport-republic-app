@@ -13,6 +13,28 @@ function str(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+/**
+ * Links older API versions stored with a notification that name no page here
+ * (app#383), so following them opened the 404 page. The API writes the right
+ * paths now; these rows are already in the database, so they are repaired when
+ * read. Returns the link to follow, or null when nothing can be inferred.
+ */
+function repairLegacyLink(link: string): string | null {
+  // `/bookings/:id` and `/host/bookings/:id` -> `/booking/:id` (query and hash kept).
+  const booking = /^\/(?:host\/)?bookings\/([^/?#]+)(.*)$/.exec(link);
+  if (booking) return `/booking/${booking[1]}${booking[2]}`;
+
+  // No page per proposal; the dashboard lists them.
+  if (/^\/partnerships\/[^/?#]+/.test(link)) {
+    return "/creator-dashboard/partnerships";
+  }
+
+  // There is no invoice page and the id does not say what was paid for.
+  if (/^\/invoices\/[^/?#]+/.test(link)) return null;
+
+  return link;
+}
+
 /** `/republic?postId=…[&commentId=…]`, the post's detail modal on the feed. */
 export function republicPostHref(postId: string, commentId?: string | null) {
   const params = new URLSearchParams({ postId });
@@ -31,8 +53,12 @@ export function republicPostHref(postId: string, commentId?: string | null) {
  * is kept: the Republic page explains if the post or the comment is missing.
  */
 export function getNotificationLink(n: Notification): NotificationLink {
-  const link = str(n.metadata?.link);
+  const stored = str(n.metadata?.link);
+  const link = stored ? repairLegacyLink(stored) : null;
   if (link) return { href: link, unavailable: false };
+  // A stored link with no destination (an old invoice link) leads nowhere,
+  // not to the Republic fallbacks below: they only suit feed notifications.
+  if (stored) return nowhere;
 
   if (n.target) {
     const { postId, commentId, available } = n.target;
