@@ -5,6 +5,8 @@ import { FeedPost } from "../types";
 import { PostCard } from "./PostCard";
 interface PostDetailModalProps {
   post: FeedPost;
+  /** A comment or reply to scroll to and highlight (from a notification). */
+  focusCommentId?: string | null;
   onClose: () => void;
   onPostDeleted?: (id: string) => void;
   renderShareModal?: (
@@ -21,6 +23,7 @@ interface PostDetailModalProps {
 // copy of itself.
 export function PostDetailModal({
   post,
+  focusCommentId,
   onClose,
   onPostDeleted,
   renderShareModal,
@@ -60,6 +63,7 @@ export function PostDetailModal({
           <PostCard
             post={post}
             variant="modal"
+            focusCommentId={focusCommentId}
             onPostDeleted={onPostDeleted}
             renderShareModal={renderShareModal}
           />

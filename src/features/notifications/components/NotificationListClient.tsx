@@ -7,6 +7,11 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
 import LandingHeader from "@/shared/components/layout/LandingHeader";
+import { toast } from "sonner";
+import {
+  getNotificationLink,
+  UNAVAILABLE_POST_MESSAGE,
+} from "@/shared/lib/notificationLink";
 
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   BOOKING_CONFIRMED: {
@@ -89,10 +94,12 @@ export default function NotificationListClient() {
 
   const handleItemClick = (n: Notification) => {
     if (!n.isRead) markAsRead(n.id);
-    const link = n.metadata?.link as string | undefined;
-    if (link) {
-      router.push(link);
+    const { href, unavailable } = getNotificationLink(n);
+    if (unavailable) {
+      toast.info(UNAVAILABLE_POST_MESSAGE);
+      return;
     }
+    if (href) router.push(href);
   };
 
   if (isInitial || isLoading) {
@@ -163,7 +170,7 @@ export default function NotificationListClient() {
             <ul className="grid gap-3">
               {notifications.map((n) => {
                 const meta = getMeta(n.type);
-                const link = n.metadata?.link as string | undefined;
+                const link = getNotificationLink(n).href;
                 return (
                   <li
                     key={n.id}
