@@ -8,6 +8,7 @@ import { LOGO_SRC } from "@/shared/lib/assets";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signUpThen } from "@/shared/auth/returnTo";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 
 interface MobileEventDetailProps {
   event?: any;
@@ -32,6 +33,11 @@ export default function MobileEventDetail({
 }: MobileEventDetailProps) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  // This heart used to have no click handler at all. A builder preview has
+  // nothing to save yet.
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const canSave = !isPreview && !!event?.id;
+  const saved = canSave ? isFavorited(event.id, "event") : false;
 
   // No invented details: anything the template lacks is simply left out.
   const name = event?.name || "Untitled event";
@@ -149,6 +155,11 @@ export default function MobileEventDetail({
           </span>
         </button>
         <button
+          type="button"
+          onClick={() => canSave && toggleFavorite(event.id, { type: "event" })}
+          disabled={!canSave}
+          aria-label={saved ? "Remove from favorites" : "Save to favorites"}
+          aria-pressed={saved}
           style={{
             width: 36,
             height: 36,
@@ -166,8 +177,15 @@ export default function MobileEventDetail({
             color: "var(--color-white)",
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-            favorite_border
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 16,
+              color: saved ? "var(--color-accent)" : undefined,
+              fontVariationSettings: saved ? "'FILL' 1" : undefined,
+            }}
+          >
+            {saved ? "favorite" : "favorite_border"}
           </span>
         </button>
       </div>

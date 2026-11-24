@@ -40,20 +40,27 @@ export const getUserFavorites = async (userId: string): Promise<Favorite[]> => {
   return res.data.data || [];
 };
 
+/** Whether the viewer has saved this item. The API answers `{ isFavorite }`. */
 export const checkFavorite = async (
   targetId: string,
   type: FavoriteType,
-): Promise<{ isFavorited: boolean; favoriteId?: string }> => {
+): Promise<boolean> => {
   const res = await api.get("/favorites/check", { params: { targetId, type } });
-  return res.data.data || { isFavorited: false };
+  return res.data.data?.isFavorite === true;
 };
+
+export interface AddFavoriteResult {
+  added: boolean;
+  /** The saved favourite with its card data (absent from an older API). */
+  favorite?: Favorite;
+}
 
 export const addFavorite = async (
   targetId: string,
   type: FavoriteType,
-): Promise<Favorite> => {
+): Promise<AddFavoriteResult> => {
   const res = await api.post("/favorites/add", { targetId, type });
-  return res.data.data;
+  return res.data.data ?? { added: true };
 };
 
 export const removeFavoriteByListing = async (

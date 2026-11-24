@@ -82,8 +82,11 @@ export const useUserDashboard = () => {
   });
 
   // 2. Fetch Saved Vibes (Favorites) — GET /favorites/user/:userId
+  // Its own key: this stores display rows, not favourites, and sharing
+  // `["favorites", userId]` with useFavorites let either overwrite the other,
+  // which emptied every heart (api#455). Saving still refreshes it (prefix).
   const { data: savedVibes = [], isLoading: isLoadingSaved } = useQuery({
-    queryKey: ["favorites", userId],
+    queryKey: ["favorites", userId, "saved-vibes"],
     queryFn: async () => {
       if (!userId) return [];
       const res = await api.get(`/favorites/user/${userId}`);

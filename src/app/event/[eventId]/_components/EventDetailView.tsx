@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useApproximateMapCenter } from "../_hooks/useApproximateMapCenter";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 import {
   useRouter as useNavigationRouter,
   useSearchParams,
@@ -75,6 +76,10 @@ export function EventDetailView({
 }: EventDetailViewProps) {
   const router = useNavigationRouter();
   const { user } = useAuthStore();
+  // "Save" used to do nothing. A builder preview or draft has nothing to save.
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const canSave = !isPreview && !isDraft && !!eventId;
+  const saved = canSave && isFavorited(eventId, "event");
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
@@ -235,11 +240,20 @@ export function EventDetailView({
                 </span>{" "}
                 Share
               </button>
-              <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer">
-                <span className="material-symbols-outlined text-[18px]">
-                  favorite_border
+              <button
+                type="button"
+                onClick={() => toggleFavorite(eventId, { type: "event" })}
+                disabled={!canSave}
+                aria-pressed={saved}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span
+                  className={`material-symbols-outlined text-[18px] ${saved ? "text-accent" : ""}`}
+                  style={saved ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {saved ? "favorite" : "favorite_border"}
                 </span>{" "}
-                Save
+                {saved ? "Saved" : "Save"}
               </button>
             </div>
           </div>
