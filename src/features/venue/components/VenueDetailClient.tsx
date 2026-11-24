@@ -25,6 +25,7 @@ import { ReportModal } from "@/shared/components/ReportModal";
 import { Money } from "@/shared/components/ui/Money";
 import { venueRateUnit } from "../helpers/rateUnit";
 import { useVenueReviewSummary } from "../hooks/useVenueReviewSummary";
+import { smartBack } from "@/shared/lib/navigation";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -56,8 +57,6 @@ export default function VenueDetailClient({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  const handleBack = useCallback(() => router.back(), [router]);
 
   // `venue` here is the server-normalized shape from `getVenueById`
   // (`normalizeVenue` in shared/lib/server/data.ts), not the raw API shape
@@ -94,6 +93,13 @@ export default function VenueDetailClient({
   const isOwner =
     !!user?.id &&
     ownerIdCandidates.some((id) => id && String(id) === String(user.id));
+
+  const handleBack = useCallback(() => {
+    const fallback = isOwner
+      ? `/creator-dashboard/venues/${venue.id}/edit`
+      : "/venues/map";
+    smartBack(router, fallback);
+  }, [router, isOwner, venue.id]);
 
   // Messages go to the venue's Shared Inbox, answered by its Mayor and
   // Organizers together (CONTEXT.md) rather than to the Mayor in person.

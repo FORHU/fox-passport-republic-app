@@ -27,6 +27,7 @@ import {
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { signInThen } from "@/shared/auth/returnTo";
 import { BackButton } from "@/shared/components/ui/BackButton";
+import { smartBack } from "@/shared/lib/navigation";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -166,7 +167,12 @@ export function EventDetailView({
             </span>
             Draft Preview — this is how your listing will look when published
             <button
-              onClick={() => router.back()}
+              onClick={() =>
+                smartBack(
+                  router,
+                  `/creator-dashboard/events/${eventId}/edit`,
+                )
+              }
               className="ml-4 underline opacity-70 hover:opacity-100 cursor-pointer"
             >
               ← Back to builder
@@ -184,7 +190,14 @@ export function EventDetailView({
             <BackButton
               variant="label"
               hideLabelOnMobile
-              onClick={() => router.back()}
+              onClick={() =>
+                smartBack(
+                  router,
+                  isPreview
+                    ? `/creator-dashboard/events/${eventId}/edit`
+                    : "/",
+                )
+              }
             />
             <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
