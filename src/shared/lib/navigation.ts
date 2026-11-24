@@ -15,7 +15,8 @@ export function smartBack(router: Router, fallback: string) {
       window.close();
       // If the browser blocked window.close(), fall back to router navigation:
       setTimeout(() => {
-        if (!window.closed) {
+        // The page may be gone by now (closed, or a torn-down test window).
+        if (typeof window !== "undefined" && !window.closed) {
           router.push(fallback);
         }
       }, 100);

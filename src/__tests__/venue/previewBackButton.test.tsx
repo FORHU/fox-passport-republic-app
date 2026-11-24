@@ -33,6 +33,9 @@ describe("smartBack Navigation Utility (app#408)", () => {
   });
 
   it("closes the window if opened via window.opener in a new tab/popup", () => {
+    // Fake timers: the "close was blocked" fallback is a 100 ms timer, and a
+    // real one fired after this file's environment was torn down (CI, app#417).
+    vi.useFakeTimers();
     const closeSpy = vi.fn();
     Object.defineProperty(window, "opener", { value: {}, writable: true, configurable: true });
     Object.defineProperty(window, "close", { value: closeSpy, writable: true, configurable: true });
@@ -41,6 +44,11 @@ describe("smartBack Navigation Utility (app#408)", () => {
     smartBack(mockRouter as any, "/creator-dashboard");
 
     expect(closeSpy).toHaveBeenCalledTimes(1);
+    // The mocked close() leaves the window open, as a browser that blocks it
+    // would, so the fallback route is used.
+    vi.advanceTimersByTime(100);
+    expect(mockRouter.push).toHaveBeenCalledWith("/creator-dashboard");
+    vi.useRealTimers();
   });
 
   it("calls router.back() when history length > 1 and referrer is on the same site", () => {
