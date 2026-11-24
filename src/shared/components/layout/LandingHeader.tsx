@@ -20,7 +20,7 @@ import {
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
 import { LOGO_SRC } from "@/shared/lib/assets";
-import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
+import { appNavForUser, isNavActive } from "@/shared/lib/app-nav";
 import { requestRepublicRefresh } from "@/shared/lib/republic-refresh";
 
 interface LandingHeaderProps {
@@ -38,8 +38,8 @@ interface LandingHeaderProps {
 }
 
 // Signed-out visitors get the landing page's own nav; signed-in users get the
-// app's (APP_NAV, the same places as the mobile bottom nav). On small screens
-// the landing links open from the menu button.
+// app's (appNavForUser, the same places as the mobile bottom nav). On small
+// screens the landing links open from the menu button.
 const LANDING_TABS = [
   { label: "Find events", href: "/#events" },
   { label: "How it works", href: "/#how-it-works" },
@@ -50,11 +50,16 @@ export default function LandingHeader({
   onSignIn,
   search,
 }: LandingHeaderProps) {
-  const { isAuthenticated, isLoading, openLogin, openSignup } = useAuthStore();
+  const { user, isAuthenticated, isLoading, openLogin, openSignup } =
+    useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
   const [menuOpen, setMenuOpen] = useState(false);
   // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
-  const navTabs = isLoading ? [] : isAuthenticated ? APP_NAV : LANDING_TABS;
+  const navTabs = isLoading
+    ? []
+    : isAuthenticated
+      ? appNavForUser(user?.id)
+      : LANDING_TABS;
   const pathname = usePathname();
   const isTabActive = (href: string) => isNavActive(pathname, href);
 
@@ -109,10 +114,11 @@ export default function LandingHeader({
                       }
                       className={
                         // px-4 below xl: five app tabs plus the search box
-                        // don't fit a 1024px header at px-6.
+                        // don't fit a 1024px header at px-6. No wrapping
+                        // when the search box squeezes the header.
                         active
-                          ? "px-4 xl:px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
-                          : "px-4 xl:px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+                          ? "px-4 xl:px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap text-black bg-accent hover:bg-accent-hover transition-all transform hover:-translate-y-0.5"
+                          : "px-4 xl:px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
                       }
                     >
                       {tab.label}
