@@ -40,6 +40,7 @@ vi.mock("@/shared/components/layout/MobileBottomNav", () => ({
 
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { appNavForUser } from "@/shared/lib/app-nav";
+import { useLandingPrefsStore } from "@/shared/store/useLandingPrefsStore";
 
 /**
  * Signed-out visitors on small screens used to get no navigation at all: the
@@ -110,6 +111,64 @@ describe("LandingHeader mobile menu", () => {
     expect(
       screen.queryByRole("button", { name: "Open menu" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+/** app#380: the landing page's Events on/off switch. */
+describe("LandingHeader events switch", () => {
+  beforeEach(() => {
+    mockAuthState.isAuthenticated = false;
+    mockAuthState.isLoading = false;
+    useLandingPrefsStore.setState({ showEvents: true });
+  });
+
+  it("starts on and flips the shared preference when clicked", async () => {
+    const user = userEvent.setup();
+    render(<LandingHeader eventsToggle />);
+    const toggle = screen.getByRole("switch", { name: "Show events" });
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+    expect(toggle).toHaveClass("bg-accent");
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    expect(toggle).toHaveClass("bg-white/15");
+    expect(useLandingPrefsStore.getState().showEvents).toBe(false);
+
+    await user.keyboard(" ");
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+    expect(useLandingPrefsStore.getState().showEvents).toBe(true);
+  });
+
+  it("is only on the landing page, for signed-out visitors", () => {
+    const { rerender } = render(<LandingHeader />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+
+    mockAuthState.isLoading = true;
+    rerender(<LandingHeader eventsToggle />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+
+    mockAuthState.isLoading = false;
+    mockAuthState.isAuthenticated = true;
+    rerender(<LandingHeader eventsToggle />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+  });
+
+  it("is in the mobile menu too, and leaves the menu open", async () => {
+    const user = userEvent.setup();
+    render(<LandingHeader eventsToggle />);
+
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const menu = screen.getByRole("dialog", { name: "Menu" });
+    const hrefs = within(menu)
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(["/#events", "/#how-it-works", "/#earn"]);
+
+    const toggle = within(menu).getByRole("switch", { name: "Show events" });
+    await user.click(toggle);
+    expect(useLandingPrefsStore.getState().showEvents).toBe(false);
+    expect(screen.getByRole("dialog", { name: "Menu" })).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
   });
 });
 

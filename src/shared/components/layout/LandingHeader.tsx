@@ -19,6 +19,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { Switch } from "@/shared/components/ui/Switch";
+import { useLandingPrefsStore } from "@/shared/store/useLandingPrefsStore";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { appNavForUser, isNavActive } from "@/shared/lib/app-nav";
 import { requestRepublicRefresh } from "@/shared/lib/republic-refresh";
@@ -35,6 +37,9 @@ interface LandingHeaderProps {
     onChange: (value: string) => void;
     placeholder?: string;
   };
+  /** Shows the Events on/off switch (app#380). Only the landing page itself
+   * passes this: it's the one page with an event grid to show or hide. */
+  eventsToggle?: boolean;
 }
 
 // Signed-out visitors get the landing page's own nav; signed-in users get the
@@ -49,11 +54,15 @@ const LANDING_TABS = [
 export default function LandingHeader({
   onSignIn,
   search,
+  eventsToggle = false,
 }: LandingHeaderProps) {
   const { user, isAuthenticated, isLoading, openLogin, openSignup } =
     useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
   const [menuOpen, setMenuOpen] = useState(false);
+  const showEvents = useLandingPrefsStore((s) => s.showEvents);
+  const setShowEvents = useLandingPrefsStore((s) => s.setShowEvents);
+  const showEventsToggle = eventsToggle && !isLoading && !isAuthenticated;
   // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
   const navTabs = isLoading
     ? []
@@ -168,6 +177,25 @@ export default function LandingHeader({
                 </div>
               )}
 
+              {/* Events on/off (app#380). From lg up; on smaller screens it
+                  is a row in the menu. The word shows from xl, where the
+                  header has room for it next to the tabs. */}
+              {showEventsToggle && (
+                <div className="hidden lg:flex items-center gap-2 shrink-0">
+                  <span
+                    aria-hidden
+                    className="hidden xl:inline text-sm font-medium text-white/70"
+                  >
+                    Events
+                  </span>
+                  <Switch
+                    checked={showEvents}
+                    onCheckedChange={setShowEvents}
+                    aria-label="Show events"
+                  />
+                </div>
+              )}
+
               {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
               {/* Not while the store hydrates: it flashed for signed-in users. */}
               {/* Hover inverts the pill through the theme's white/black, so
@@ -239,6 +267,22 @@ export default function LandingHeader({
                         </SheetClose>
                       ))}
                     </nav>
+                    {/* Not a SheetClose: flipping it leaves the menu open. */}
+                    {showEventsToggle && (
+                      <div className="mx-3 mt-2 flex items-center justify-between border-t border-white/10 px-3 pt-4">
+                        <span
+                          id="landing-menu-events-label"
+                          className="text-base font-semibold text-white/80"
+                        >
+                          Show events
+                        </span>
+                        <Switch
+                          checked={showEvents}
+                          onCheckedChange={setShowEvents}
+                          aria-labelledby="landing-menu-events-label"
+                        />
+                      </div>
+                    )}
                     <SheetFooter className="p-6 gap-2">
                       <SheetClose asChild>
                         <button
