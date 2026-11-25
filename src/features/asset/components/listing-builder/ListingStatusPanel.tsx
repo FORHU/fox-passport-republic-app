@@ -22,6 +22,8 @@ interface ListingStatusPanelProps {
   completionPercentage: number;
   isReadyToPublish: boolean;
   previewHref?: string;
+  /** Opens an in-page preview of the unsaved form; wins over `previewHref`. */
+  onPreview?: () => void;
 }
 
 export function ListingStatusPanel({
@@ -36,8 +38,12 @@ export function ListingStatusPanel({
   completionPercentage,
   isReadyToPublish,
   previewHref,
+  onPreview,
 }: ListingStatusPanelProps) {
   const labels = labelsProp ?? LISTING_LABELS[activeType];
+  const handlePreview =
+    onPreview ??
+    (previewHref ? () => window.open(previewHref, "_blank") : undefined);
   const displayCategory =
     category === "other" && customCategory
       ? customCategory
@@ -100,17 +106,18 @@ export function ListingStatusPanel({
 
       <div className="p-6 border-t border-white/5 bg-surface">
         <button
-          onClick={
-            previewHref ? () => window.open(previewHref, "_blank") : undefined
-          }
-          disabled={!previewHref}
+          type="button"
+          onClick={handlePreview}
+          disabled={!handlePreview}
           title={
-            previewHref
-              ? "Open public listing page"
-              : "Publish or save a draft first"
+            onPreview
+              ? `Preview your ${labels.lowerNoun} as customers will see it`
+              : previewHref
+                ? "Open public listing page"
+                : "Publish or save a draft first"
           }
           className={`w-full py-3 rounded-xl border text-sm font-bold transition-all ${
-            previewHref
+            handlePreview
               ? "border-white/10 hover:bg-white hover:text-black text-white cursor-pointer"
               : "border-white/5 text-white/20 cursor-not-allowed"
           }`}
