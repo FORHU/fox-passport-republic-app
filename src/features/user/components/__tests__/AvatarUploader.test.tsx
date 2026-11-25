@@ -29,4 +29,21 @@ describe("AvatarUploader", () => {
     expect(await screen.findByText(SERVER_REASON)).toBeInTheDocument();
     expect(screen.queryByText(/Upload failed/)).toBeNull();
   });
+
+  // app#382: the seal was always on, even for users who never sent an ID.
+  it("shows no verified seal without an approved ID", () => {
+    render(<AvatarUploader initials="JP" onUploaded={vi.fn()} />);
+    expect(screen.queryByLabelText("ID verified")).toBeNull();
+  });
+
+  it("shows the verified seal once the ID is approved", () => {
+    render(
+      <AvatarUploader
+        initials="JP"
+        onUploaded={vi.fn()}
+        verifiedAt="2026-11-20T00:00:00Z"
+      />,
+    );
+    expect(screen.getByLabelText("ID verified")).toBeInTheDocument();
+  });
 });

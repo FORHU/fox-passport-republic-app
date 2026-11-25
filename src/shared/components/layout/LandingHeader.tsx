@@ -19,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { ThemeToggle } from "@/shared/components/layout/ThemeToggle";
 import { LOGO_SRC } from "@/shared/lib/assets";
 import { appNavForUser, isNavActive } from "@/shared/lib/app-nav";
 import { requestRepublicRefresh } from "@/shared/lib/republic-refresh";
@@ -168,6 +169,15 @@ export default function LandingHeader({
                 </div>
               )}
 
+              {/* Light / dark (app#380), for visitors who aren't signed in:
+                  signed-in users have it in their user menu. From lg up; on
+                  smaller screens it is a row in the menu. */}
+              {!isLoading && !isAuthenticated && (
+                <div className="hidden lg:flex shrink-0">
+                  <ThemeToggle />
+                </div>
+              )}
+
               {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
               {/* Not while the store hydrates: it flashed for signed-in users. */}
               {/* Hover inverts the pill through the theme's white/black, so
@@ -239,6 +249,16 @@ export default function LandingHeader({
                         </SheetClose>
                       ))}
                     </nav>
+                    {/* Not a SheetClose: flipping it leaves the menu open. */}
+                    <div className="mx-3 mt-2 flex items-center justify-between border-t border-white/10 px-3 pt-4">
+                      <span
+                        id="landing-menu-theme-label"
+                        className="text-base font-semibold text-white/80"
+                      >
+                        Dark mode
+                      </span>
+                      <ThemeToggle aria-labelledby="landing-menu-theme-label" />
+                    </div>
                     <SheetFooter className="p-6 gap-2">
                       <SheetClose asChild>
                         <button

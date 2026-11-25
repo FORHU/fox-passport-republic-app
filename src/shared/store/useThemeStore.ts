@@ -1,5 +1,7 @@
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import {
+  DEFAULT_THEME,
   THEME_STORAGE_KEY,
   applyTheme,
   currentTheme,
@@ -36,3 +38,17 @@ export const useThemeStore = create<ThemeState>()((set, get) => ({
   },
   toggleTheme: () => get().setTheme(get().theme === "dark" ? "light" : "dark"),
 }));
+
+const readTheme = () => useThemeStore.getState().theme;
+const serverTheme = () => DEFAULT_THEME;
+
+/**
+ * The app's theme for markup. The server can't see a saved Light choice, so
+ * it renders the default; reading the store during hydration made the
+ * plane's colour and the NASA credit differ from the server's HTML. This
+ * gives the server's theme while hydrating, then the real one. Maps keep
+ * reading the store: they're drawn in effects, not in the HTML.
+ */
+export function useHydratedTheme(): Theme {
+  return useSyncExternalStore(useThemeStore.subscribe, readTheme, serverTheme);
+}

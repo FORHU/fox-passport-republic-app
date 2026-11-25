@@ -212,6 +212,8 @@ export interface PostComment {
   parentId?: string | null;
   likesCount: number;
   isLikedByMe?: boolean;
+  /** Which of the six reactions the viewer gave; absent from older APIs. */
+  myReaction?: ReactionType | null;
   createdAt: string;
   updatedAt?: string;
   author: {

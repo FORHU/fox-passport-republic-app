@@ -36,9 +36,16 @@ export const SOCKET_EVENTS = {
   // The conversation's pinned message changed — carries the conversation
   // and the now-pinned message's id (or null if unpinned).
   MESSAGE_PINNED: "message:pinned",
-  // A public Republic post was just created — carries only its `{ tab }`.
-  // Open feeds show a "New posts" pill rather than refetching (app#308).
+  // A public Republic post was just created — carries `{ tab, authorId }`.
+  // Open feeds show a "New posts" pill rather than refetching (app#308); an
+  // open profile of that author refetches (api#427).
   FEED_NEW: "feed:new",
+  // A public post's counts changed — `{ postId, commentsCount }` and
+  // `{ postId, likesCount }`; a comment's — `{ postId, commentId,
+  // likesCount }`. Numbers only, never who acted (api#427).
+  POST_COMMENTS_COUNT: "post:comments_count",
+  POST_REACTIONS_COUNT: "post:reactions_count",
+  COMMENT_REACTIONS_COUNT: "comment:reactions_count",
 } as const;
 
 /**

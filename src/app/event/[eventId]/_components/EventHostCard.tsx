@@ -8,6 +8,8 @@ export interface EventHostCardProps {
     id?: string;
     name?: string;
     imgId?: string;
+    /** User.identityVerifiedAt — the seal and "Identity Verified" need an approved ID (app#382). */
+    identityVerifiedAt?: string | null;
   } | null;
   variant?: "compact" | "full";
   eventId?: string;
@@ -22,6 +24,7 @@ export function EventHostCard({
 }: EventHostCardProps) {
   const ownerName = owner?.name ?? "Event Foxer";
   const ownerInitial = ownerName.charAt(0).toUpperCase();
+  const idVerified = Boolean(owner?.identityVerifiedAt);
 
   if (variant === "compact") {
     return (
@@ -41,11 +44,17 @@ export function EventHostCard({
                 </span>
               </div>
             )}
-            <div className="absolute -bottom-1 -right-1 bg-[#5C62D6] text-white rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[14px]">
-                verified
-              </span>
-            </div>
+            {idVerified && (
+              <div
+                title="ID verified by Fox Passport"
+                aria-label="ID verified"
+                className="absolute -bottom-1 -right-1 bg-[#5C62D6] text-white rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  verified
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <h3 className="font-display font-bold text-white text-lg">
@@ -76,25 +85,33 @@ export function EventHostCard({
             </span>
           </div>
         )}
-        <div className="absolute -bottom-1 -right-1 bg-[#5C62D6] text-white rounded-full p-1 border-4 border-surface shadow-sm flex items-center justify-center">
-          <span className="material-symbols-outlined text-[14px]">
-            verified
-          </span>
-        </div>
+        {idVerified && (
+          <div
+            title="ID verified by Fox Passport"
+            aria-label="ID verified"
+            className="absolute -bottom-1 -right-1 bg-[#5C62D6] text-white rounded-full p-1 border-4 border-surface shadow-sm flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-[14px]">
+              verified
+            </span>
+          </div>
+        )}
       </div>
       <div>
         <h3 className="text-xl font-bold text-white mb-1">
           Created by {ownerName}
         </h3>
         <p className="text-text-muted text-sm mb-4">FoxPassport Event Foxer</p>
-        <div className="flex gap-4 text-sm text-white mb-4">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">
-              verified
-            </span>{" "}
-            Identity Verified
-          </span>
-        </div>
+        {idVerified && (
+          <div className="flex gap-4 text-sm text-white mb-4">
+            <span className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px] text-accent">
+                verified
+              </span>{" "}
+              Identity Verified
+            </span>
+          </div>
+        )}
         {owner?.id ? (
           <MessageButton
             otherUserId={owner.id}

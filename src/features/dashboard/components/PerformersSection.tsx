@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
+import { ListingImage } from "./ListingImage";
 import { Money } from "@/shared/components/ui/Money";
 
 const PERFORMER_CATEGORIES = new Set([
@@ -130,20 +131,28 @@ export function PerformersSection({
               >
                 {/* Media banner */}
                 <div className="relative h-40 w-full overflow-hidden bg-white/5 flex items-center justify-center">
-                  {sv.img ? (
-                    <Image
-                      src={sv.img}
-                      alt={sv.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-amber-400/40 text-5xl">
-                        {catMeta.icon}
-                      </span>
-                    </div>
-                  )}
+                  {/* next/image re-raises an error that happened before
+                      hydration once onError is set, so it needs no ref. */}
+                  <ListingImage
+                    src={sv.img}
+                    fallback={
+                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-amber-400/40 text-5xl">
+                          {catMeta.icon}
+                        </span>
+                      </div>
+                    }
+                  >
+                    {(image) => (
+                      <Image
+                        src={image.src}
+                        onError={image.onError}
+                        alt={sv.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
+                  </ListingImage>
                   <div className="absolute inset-0 bg-linear-to-t from-surface via-transparent to-black/40 pointer-events-none" />
 
                   {/* Category Pill */}

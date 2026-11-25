@@ -11,6 +11,7 @@ import {
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
+import { ListingImage } from "./ListingImage";
 import { Money } from "@/shared/components/ui/Money";
 
 interface InventorySectionProps {
@@ -189,19 +190,28 @@ export function ServicesSection({
               }}
             >
               <div className="flex items-center gap-4">
-                {sv.img ? (
-                  <img
-                    src={sv.img}
-                    alt={sv.name}
-                    className="h-12 w-12 rounded-xl object-cover shrink-0"
-                  />
-                ) : (
-                  <div
-                    className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${sv.color}`}
-                  >
-                    <span className="material-symbols-outlined">{sv.icon}</span>
-                  </div>
-                )}
+                <ListingImage
+                  src={sv.img}
+                  fallback={
+                    <div
+                      className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${sv.color}`}
+                    >
+                      <span className="material-symbols-outlined">
+                        {sv.icon}
+                      </span>
+                    </div>
+                  }
+                >
+                  {(image) => (
+                    <img
+                      ref={image.ref}
+                      src={image.src}
+                      onError={image.onError}
+                      alt={sv.name}
+                      className="h-12 w-12 rounded-xl object-cover shrink-0"
+                    />
+                  )}
+                </ListingImage>
                 <div>
                   <h4
                     className={`font-bold ${sv.status === "Active" ? "text-white" : "text-white/50"}`}

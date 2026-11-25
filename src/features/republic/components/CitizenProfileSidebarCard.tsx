@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { Badge } from "@/shared/components/ui/badge";
+import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 import { ROLE_BADGE, roleTextColor } from "@/shared/constants/roles";
 
 export function CitizenProfileSidebarCard() {
@@ -72,12 +73,15 @@ export function CitizenProfileSidebarCard() {
         </Link>
 
         <div className="min-w-0 flex-1">
-          <Link
-            href={`/user/${user.id}`}
-            className="text-sm font-black text-white hover:text-lime-400 transition-colors truncate block"
-          >
-            {user.name}
-          </Link>
+          <div className="flex items-center gap-1 min-w-0">
+            <Link
+              href={`/user/${user.id}`}
+              className="text-sm font-black text-white hover:text-lime-400 transition-colors truncate block"
+            >
+              {user.name}
+            </Link>
+            <VerifiedBadge verifiedAt={user.identityVerifiedAt} size="xs" />
+          </div>
           <p className="text-[11px] text-zinc-400 truncate">
             @{user.username || user.email.split("@")[0]}
           </p>
@@ -116,9 +120,9 @@ export function CitizenProfileSidebarCard() {
               </span>
             );
           })}
-        {roleTypes.length === 0 && (
-          <Badge variant="verified">Verified Citizen</Badge>
-        )}
+        {/* Plain "Citizen": "Verified" is only for an approved ID (app#382),
+            shown by the VerifiedBadge next to the name. */}
+        {roleTypes.length === 0 && <Badge variant="neutral">Citizen</Badge>}
       </div>
 
       {/* Link to public passport */}

@@ -10,56 +10,36 @@ const REACTIONS: Array<{
   type: ReactionType;
   emoji: string;
   label: string;
-  color: string;
-  activeClass: string;
 }> = [
   {
     type: "like",
     emoji: "👍",
     label: "Like",
-    color: "text-accent",
-    activeClass:
-      "bg-accent/15 text-accent border-accent/45 ring-1 ring-accent/25 shadow-[0_0_12px_rgba(173,209,63,0.12)]",
   },
   {
     type: "love",
     emoji: "❤️",
     label: "Love",
-    color: "text-rose-400",
-    activeClass:
-      "bg-rose-500/15 text-rose-300 border-rose-400/45 ring-1 ring-rose-400/25",
   },
   {
     type: "haha",
     emoji: "😂",
     label: "Haha",
-    color: "text-amber-400",
-    activeClass:
-      "bg-amber-500/15 text-amber-300 border-amber-400/45 ring-1 ring-amber-400/25",
   },
   {
     type: "wow",
     emoji: "😮",
     label: "Wow",
-    color: "text-amber-400",
-    activeClass:
-      "bg-amber-500/15 text-amber-300 border-amber-400/45 ring-1 ring-amber-400/25",
   },
   {
     type: "sad",
     emoji: "😢",
     label: "Sad",
-    color: "text-sky-400",
-    activeClass:
-      "bg-sky-500/15 text-sky-300 border-sky-400/45 ring-1 ring-sky-400/25",
   },
   {
     type: "angry",
     emoji: "😠",
     label: "Angry",
-    color: "text-orange-400",
-    activeClass:
-      "bg-orange-500/15 text-orange-300 border-orange-400/45 ring-1 ring-orange-400/25",
   },
 ];
 
@@ -67,6 +47,8 @@ interface ReactionButtonProps {
   myReaction: ReactionType | null;
   likesCount: number;
   onReact: (type: ReactionType | null) => void;
+  /** "sm" is the inline comment/reply size (api#427). */
+  size?: "md" | "sm";
 }
 
 // Facebook's Like button: a plain click toggles the default "like" reaction
@@ -76,7 +58,9 @@ export function ReactionButton({
   myReaction,
   likesCount,
   onReact,
+  size = "md",
 }: ReactionButtonProps) {
+  const small = size === "sm";
   const [pickerOpen, setPickerOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -176,14 +160,17 @@ export function ReactionButton({
         onTouchMove={clearLongPressTimer}
         onTouchCancel={clearLongPressTimer}
         onContextMenu={(e) => e.preventDefault()}
-        className={`group flex w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg border transition-all select-none touch-manipulation ${
-          current
-            ? `${current.activeClass} font-bold`
-            : "border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+        // Reacting changes only the emoji (greyed 👍 → the chosen one in
+        // colour); the button itself keeps one look, with no tinted fill.
+        className={`group flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-transparent text-zinc-400 hover:text-white transition-colors select-none touch-manipulation cursor-pointer ${
+          small
+            ? "px-1 py-0.5 text-[10px] font-bold"
+            : "w-full min-w-0 justify-center px-2.5 py-1.5 hover:bg-zinc-800/60"
         }`}
       >
         <span
-          className={`text-[15px] leading-none transition-transform ${
+          aria-hidden
+          className={`${small ? "text-[13px]" : "text-[15px]"} leading-none transition-transform ${
             current
               ? "scale-110"
               : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-90"
@@ -191,7 +178,14 @@ export function ReactionButton({
         >
           {current?.emoji ?? "👍"}
         </span>
-        <ActionCount n={likesCount} />
+        {small && likesCount <= 0 ? (
+          <span>{current?.label ?? "Like"}</span>
+        ) : (
+          <>
+            <span className="sr-only">{current?.label ?? "Like"}</span>
+            <ActionCount n={likesCount} />
+          </>
+        )}
       </button>
     </div>
   );

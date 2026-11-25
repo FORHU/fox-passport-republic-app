@@ -38,6 +38,7 @@ import { OrganizingSection } from "@/features/appointment/components/OrganizingS
 import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
 import { PartnershipsOverview } from "@/features/partnership/components/PartnershipsOverview";
 import { RoleGettingStarted } from "./RoleGettingStarted";
+import { NeedsAttentionSection } from "@/features/event/components/booked/NeedsAttentionSection";
 import {
   ProductTour,
   TourReplayButton,
@@ -260,6 +261,10 @@ export default function HostDashboardClient({
                     isInvestor={access.canProposePartnerships}
                   />
                 </div>
+              )}
+
+              {access.canManageEvents && (
+                <NeedsAttentionSection enabled={access.canManageEvents} />
               )}
 
               {access.canManageEvents && (

@@ -1,9 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  within,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 import type { PublicCitizenProfile } from "@/shared/api/citizen";
 import PublicCitizenProfileView from "../PublicCitizenProfileView";
+import { SOCKET_EVENTS, publishRealtime } from "@/shared/lib/realtime";
 
 /**
  * A public passport profile opens on Republic Activity (the person's posts),
@@ -387,5 +394,174 @@ describe("PublicCitizenProfileView own-profile actions", () => {
     expect(
       screen.queryByRole("link", { name: "My Passport" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * api#427: with the republic actions composed in (from the app layer), a
+ * post's static counts give way to them, in the text card and in the viewer.
+ */
+describe("PublicCitizenProfileView post actions", () => {
+  const renderPostActions = vi.fn(
+    (post: { id: string }, trailing?: React.ReactNode) =>
+      createElement(
+        "div",
+        { "data-testid": `actions-${post.id}` },
+        "actions",
+        trailing,
+      ),
+  );
+  const renderPostCount = vi.fn(() => "live");
+
+  function renderComposed(posts: unknown[]) {
+    profile.current = makeProfile({
+      posts: posts as PublicCitizenProfile["posts"],
+    });
+    return render(
+      createElement(
+        QueryClientProvider,
+        {
+          client: new QueryClient({
+            defaultOptions: { queries: { retry: false } },
+          }),
+        },
+        createElement(PublicCitizenProfileView, {
+          renderPostActions,
+          renderPostCount,
+        }),
+      ),
+    );
+  }
+
+  const textPost = {
+    id: "t1",
+    type: "experience",
+    content: "Words only",
+    createdAt: "2026-11-01T00:00:00.000Z",
+    mediaUrls: [],
+    likesCount: 2,
+    commentsCount: 1,
+  };
+  const mediaPost = {
+    ...textPost,
+    id: "m1",
+    content: "With a photo",
+    mediaUrls: ["https://cdn.test/one.jpg"],
+  };
+
+  beforeEach(() => vi.clearAllMocks());
+
+  it("puts the actions on a text post, with View in Feed beside them", async () => {
+    renderComposed([textPost]);
+    const actions = await screen.findByTestId("actions-t1");
+    expect(
+      within(actions).getByRole("link", { name: /view in feed/i }),
+    ).toHaveAttribute("href", "/republic?postId=t1");
+    // The third argument is when the profile request started, for syncing
+    // fresher counts into the shared store.
+    expect(renderPostActions).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "t1" }),
+      expect.anything(),
+      expect.any(Number),
+    );
+  });
+
+  it("uses live counts on the media tiles and actions in the viewer", async () => {
+    renderComposed([mediaPost]);
+    const tile = await screen.findByRole("button", { name: /open post/i });
+    expect(within(tile).getAllByText("live")).toHaveLength(2);
+
+    fireEvent.click(tile);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByTestId("actions-m1")).toBeInTheDocument();
+    expect(within(dialog).queryByTestId("viewer-likes")).toBeNull();
+  });
+});
+
+/**
+ * A post made in the Republic shows on the passport when you come back to
+ * it, without a manual refresh: the profile is refetched on every visit,
+ * even within the old two-minute cache window.
+ */
+describe("PublicCitizenProfileView freshness", () => {
+  it("shows a post created since the last visit", async () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const view = () =>
+      createElement(
+        QueryClientProvider,
+        { client },
+        createElement(PublicCitizenProfileView),
+      );
+
+    profile.current = makeProfile();
+    const first = render(view());
+    expect(await screen.findByText("Loved the jazz night")).toBeInTheDocument();
+    first.unmount();
+
+    profile.current = makeProfile({
+      posts: [
+        {
+          id: "post2",
+          type: "experience",
+          content: "Just posted this",
+          createdAt: "2026-11-25T00:00:00.000Z",
+          mediaUrls: [],
+          likesCount: 0,
+          commentsCount: 0,
+        },
+      ] as unknown as PublicCitizenProfile["posts"],
+    });
+    render(view());
+
+    expect(await screen.findByText("Just posted this")).toBeInTheDocument();
+  });
+});
+
+/** api#427: a new public post by the profile's owner shows live. */
+describe("PublicCitizenProfileView live new posts", () => {
+  const withNewPost = () =>
+    makeProfile({
+      posts: [
+        {
+          id: "post2",
+          type: "experience",
+          content: "Live from the Republic",
+          createdAt: "2026-11-25T00:00:00.000Z",
+          mediaUrls: [],
+          likesCount: 0,
+          commentsCount: 0,
+        },
+      ] as unknown as PublicCitizenProfile["posts"],
+    });
+
+  it("refetches when the owner posts", async () => {
+    profile.current = makeProfile();
+    renderProfile();
+    await screen.findByText("Loved the jazz night");
+
+    profile.current = withNewPost();
+    act(() =>
+      publishRealtime(SOCKET_EVENTS.FEED_NEW, { tab: "all", authorId: "u1" }),
+    );
+
+    expect(
+      await screen.findByText("Live from the Republic"),
+    ).toBeInTheDocument();
+  });
+
+  it("ignores someone else's post", async () => {
+    profile.current = makeProfile();
+    renderProfile();
+    await screen.findByText("Loved the jazz night");
+
+    profile.current = withNewPost();
+    act(() =>
+      publishRealtime(SOCKET_EVENTS.FEED_NEW, { tab: "all", authorId: "bo" }),
+    );
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText("Live from the Republic")).toBeNull();
   });
 });

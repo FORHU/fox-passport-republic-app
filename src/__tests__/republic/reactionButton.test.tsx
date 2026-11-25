@@ -15,15 +15,29 @@ describe("ReactionButton visual distinction (app#392)", () => {
     expect(button.className).toContain("text-zinc-400");
   });
 
-  it("renders reacted state with active tinted background, border, ring, and aria-pressed=true", () => {
-    render(
-      <ReactionButton myReaction="like" likesCount={4} onReact={vi.fn()} />,
+  it("shows only the chosen emoji when reacted, with no tinted container (api#427)", () => {
+    const { rerender } = render(
+      <ReactionButton myReaction={null} likesCount={4} onReact={vi.fn()} />,
+    );
+    const before = screen.getByRole("button").className;
+
+    rerender(
+      <ReactionButton myReaction="haha" likesCount={4} onReact={vi.fn()} />,
     );
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute("aria-pressed", "true");
     expect(button).toHaveAttribute("data-reacted", "true");
-    expect(button.className).toContain("bg-accent/15");
-    expect(button.className).toContain("border-accent/45");
-    expect(button.className).toContain("font-bold");
+    // The button keeps the same look; only the emoji swaps.
+    expect(button.className).toBe(before);
+    expect(button.className).not.toMatch(/bg-\w+-500\/15|bg-accent\/15|ring-1/);
+    expect(button).toHaveTextContent("😂");
+    expect(button).not.toHaveTextContent("👍");
+  });
+
+  it("shows the greyed default emoji until a reaction is picked", () => {
+    render(
+      <ReactionButton myReaction={null} likesCount={0} onReact={vi.fn()} />,
+    );
+    expect(screen.getByText("👍")).toHaveClass("grayscale");
   });
 });

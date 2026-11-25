@@ -4,15 +4,23 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
+  canDeclineBooked,
   fetchProviderMarketplaceItems,
+  isPaidBooked,
   reviewLineItem,
+  type DeclineCause,
   type ProviderDashboard,
   type ProviderLineItem,
 } from "@/features/event/api/marketplaceItems";
 import { LineItemStatusBadge } from "@/features/event/components/LineItemStatusBadge";
 import { Money } from "@/shared/components/ui/Money";
+import { ConfirmDialog } from "@/shared/components/ui/ConfirmDialog";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 
 type Kind = "asset" | "service" | "venue";
+
+const itemName = (item: ProviderLineItem) =>
+  item.asset?.name ?? item.service?.name ?? item.venue?.name ?? "Item";
 
 /**
  * Provider-facing confirm/reject for ad-hoc marketplace picks. Deliberately
@@ -28,6 +36,11 @@ export default function ProviderMarketplaceRequestsClient() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // The booked line a Provider or Mayor is about to decline (ADR 0010).
+  const [declining, setDeclining] = useState<{
+    item: ProviderLineItem;
+    kind: Kind;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoadError(false);
@@ -65,6 +78,24 @@ export default function ProviderMarketplaceRequestsClient() {
     }
   };
 
+  const handleDecline = async (cause: DeclineCause) => {
+    if (!declining) return;
+    const { item, kind } = declining;
+    setBusyId(item.id);
+    try {
+      await reviewLineItem(item.id, kind, "decline", cause);
+      toast.success("You declined. The host and the citizen were told.");
+    } catch (error: unknown) {
+      // Paid meanwhile, or already answered: the API says which.
+      toast.error(
+        getApiErrorMessage(error, "We couldn't update that request. Try again."),
+      );
+    } finally {
+      setBusyId(null);
+      await load();
+    }
+  };
+
   const rows: { item: ProviderLineItem; kind: Kind }[] = data
     ? [
         ...data.assets.map((item) => ({ item, kind: "asset" as const })),
@@ -94,9 +125,11 @@ export default function ProviderMarketplaceRequestsClient() {
           Marketplace Requests
         </h1>
         <p className="text-sm text-white/50 mb-8">
-          Ad-hoc bookings citizens have added directly — confirm what you can
-          fulfil, decline what you can&apos;t. Requests you don&apos;t
-          respond to expire automatically and release back to availability.
+          Requests and bookings for your listings. Confirm what you can
+          fulfil and decline what you can&apos;t; requests you don&apos;t
+          answer expire and release back to availability. You can still
+          decline a booked event until the citizen pays, and its host is then
+          asked to replace you.
         </p>
 
         {loading ? (
@@ -119,6 +152,8 @@ export default function ProviderMarketplaceRequestsClient() {
             {rows.map(({ item, kind }) => {
               const isBusy = busyId === item.id;
               const isPending = item.status === "pending_provider_confirmation";
+              const declinable = canDeclineBooked(item);
+              const paid = isPaidBooked(item);
               return (
                 <div
                   key={item.id}
@@ -129,7 +164,7 @@ export default function ProviderMarketplaceRequestsClient() {
                       {kind}
                     </p>
                     <p className="text-sm font-bold text-white truncate">
-                      {item.asset?.name ?? item.service?.name ?? "Item"}
+                      {itemName(item)}
                     </p>
                     <p className="text-xs text-white/40 truncate">
                       {item.event.name}
@@ -164,6 +199,23 @@ export default function ProviderMarketplaceRequestsClient() {
                         </button>
                       </div>
                     )}
+                    {declinable && (
+                      <button
+                        onClick={() => setDeclining({ item, kind })}
+                        disabled={isBusy}
+                        className="h-8 px-3 rounded-full border border-red-500/40 text-red-400 text-xs font-bold hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isBusy ? "…" : "Decline"}
+                      </button>
+                    )}
+                    {paid && (
+                      <span
+                        className="text-[11px] text-white/40"
+                        title="The citizen has paid, so only the cancellation policy applies."
+                      >
+                        Paid
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -171,6 +223,26 @@ export default function ProviderMarketplaceRequestsClient() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={declining !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeclining(null);
+        }}
+        tone="danger"
+        title="Decline this booking?"
+        description={
+          declining
+            ? `${itemName(declining.item)} for ${declining.item.event.name}. The event host and the citizen are told, and the host is asked to replace you. You cannot undo this.`
+            : undefined
+        }
+        confirmLabel="Decline this booking"
+        onConfirm={() => handleDecline("other")}
+        secondaryAction={{
+          label: "I'm busy then",
+          onConfirm: () => handleDecline("busy"),
+        }}
+      />
     </div>
   );
 }
