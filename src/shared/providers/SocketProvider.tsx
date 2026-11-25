@@ -99,6 +99,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     socket.on(SOCKET_EVENTS.FEED_NEW, (payload) => {
       publishRealtime(SOCKET_EVENTS.FEED_NEW, payload);
     });
+    for (const event of [
+      SOCKET_EVENTS.POST_COMMENTS_COUNT,
+      SOCKET_EVENTS.POST_REACTIONS_COUNT,
+      SOCKET_EVENTS.COMMENT_REACTIONS_COUNT,
+    ]) {
+      socket.on(event, (payload) => publishRealtime(event, payload));
+    }
 
     return () => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION);
@@ -113,6 +120,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.off(SOCKET_EVENTS.READ_RECEIPT);
       socket.off(SOCKET_EVENTS.MESSAGE_PINNED);
       socket.off(SOCKET_EVENTS.FEED_NEW);
+      socket.off(SOCKET_EVENTS.POST_COMMENTS_COUNT);
+      socket.off(SOCKET_EVENTS.POST_REACTIONS_COUNT);
+      socket.off(SOCKET_EVENTS.COMMENT_REACTIONS_COUNT);
       disconnectSocket();
     };
   }, [isAuthenticated, userId, queryClient, fetchTicket]);

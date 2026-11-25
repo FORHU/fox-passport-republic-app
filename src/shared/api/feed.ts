@@ -197,11 +197,17 @@ export const deletePostComment = async (
   return res.data;
 };
 
-export const toggleCommentLike = async (
+/** Sets, swaps or (with null) removes the viewer's reaction on a comment —
+ * the same six reactions as a post (api#427). */
+export const setCommentReaction = async (
   postId: string,
   commentId: string,
-): Promise<{ liked: boolean; likesCount: number }> => {
-  const res = await api.post(`/feed/${postId}/comments/${commentId}/like`);
+  type: ReactionType | null,
+): Promise<{ reaction: ReactionType | null; likesCount: number }> => {
+  const res = await api.post(
+    `/feed/${postId}/comments/${commentId}/reaction`,
+    { type },
+  );
   return res.data.data;
 };
 

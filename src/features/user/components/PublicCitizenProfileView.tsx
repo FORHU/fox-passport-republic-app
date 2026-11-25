@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
+import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 import { toast } from "sonner";
 import {
   fetchPublicCitizenProfile,
@@ -50,6 +51,22 @@ export interface PublicCitizenProfileViewProps {
     targetId: string,
     targetName: string,
   ) => React.ReactNode;
+  /** Reaction and inline comments for a Republic Activity post (api#427),
+   * composed from the app layer because they live in `republic`.
+   * `trailing` goes at the end of the action row. Without it the post
+   * shows plain counts. */
+  renderPostActions?: (
+    post: CitizenPost,
+    trailing?: React.ReactNode,
+    /** When the request that returned `post` started (ms), so fresher
+     * counts can replace older ones without undoing a newer reaction. */
+    requestedAt?: number,
+  ) => React.ReactNode;
+  /** A post's live like or comment count, for the media tiles. */
+  renderPostCount?: (
+    post: CitizenPost,
+    kind: "likes" | "comments",
+  ) => React.ReactNode;
 }
 
 const FALLBACK_AVATAR =
@@ -87,6 +104,17 @@ const RARITY_COLORS: Record<
   },
 };
 
+function viewInFeed(postId: string) {
+  return (
+    <Link
+      href={`/republic?postId=${postId}`}
+      className="text-lime-400 hover:underline font-bold text-xs"
+    >
+      View in Feed →
+    </Link>
+  );
+}
+
 type ProfileTab = "activity" | "stamps" | "badges" | "offerings";
 
 export default function PublicCitizenProfileView({
@@ -97,6 +125,8 @@ export default function PublicCitizenProfileView({
   renderFollowButton,
   renderBlockMenuButton,
   renderMessageButton,
+  renderPostActions,
+  renderPostCount,
 }: PublicCitizenProfileViewProps) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -111,11 +141,34 @@ export default function PublicCitizenProfileView({
     data: profile,
     isLoading,
     isError,
-  } = useQuery<PublicCitizenProfile>({
+    refetch: refetchProfile,
+  } = useQuery<PublicCitizenProfile & { requestedAt: number }>({
     queryKey: ["publicCitizenProfile", id],
-    queryFn: () => fetchPublicCitizenProfile(id),
-    staleTime: 1000 * 60 * 2,
+    queryFn: async () => {
+      const requestedAt = Date.now();
+      return { ...(await fetchPublicCitizenProfile(id)), requestedAt };
+    },
+    // Live, not cached for minutes: a post made, edited or deleted in the
+    // Republic (or on another device or browser tab) must show on the
+    // passport when you come to it, and the posts carry your own reactions.
+    // The cached copy still paints at once while this refetches.
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
+
+  // Live: when this person publishes a public post anywhere, show it here
+  // without a reload (api#427). The event names the author, nothing more.
+  const profileId = profile?.id;
+  React.useEffect(() => {
+    if (!profileId) return;
+    return subscribeRealtime<{ authorId?: string }>(
+      SOCKET_EVENTS.FEED_NEW,
+      (payload) => {
+        if (payload?.authorId === profileId) void refetchProfile();
+      },
+    );
+  }, [profileId, refetchProfile]);
 
   if (isLoading) {
     return (
@@ -714,13 +767,17 @@ export default function PublicCitizenProfileView({
                               <span className="material-symbols-outlined text-[18px]">
                                 favorite
                               </span>
-                              {post.likesCount}
+                              {renderPostCount
+                                ? renderPostCount(post, "likes")
+                                : post.likesCount}
                             </span>
                             <span className="flex items-center gap-1">
                               <span className="material-symbols-outlined text-[18px]">
                                 chat_bubble
                               </span>
-                              {post.commentsCount}
+                              {renderPostCount
+                                ? renderPostCount(post, "comments")
+                                : post.commentsCount}
                             </span>
                           </div>
                         </button>
@@ -733,6 +790,11 @@ export default function PublicCitizenProfileView({
                       posts={mediaPosts}
                       startIndex={viewerIndex}
                       onClose={() => setViewerIndex(null)}
+                      renderPostActions={
+                        renderPostActions &&
+                        ((p) =>
+                          renderPostActions(p, undefined, profile.requestedAt))
+                      }
                     />
                   )}
 
@@ -768,29 +830,36 @@ export default function PublicCitizenProfileView({
                           {post.content}
                         </p>
 
-                        {/* Engagement strip */}
-                        <div className="flex items-center justify-between pt-2.5 border-t border-zinc-900 text-xs text-zinc-400">
-                          <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[16px]">
-                                favorite
-                              </span>
-                              {post.likesCount}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[16px]">
-                                chat_bubble
-                              </span>
-                              {post.commentsCount}
-                            </span>
+                        {/* Engagement strip: react and comment here
+                            (api#427), or plain counts without the
+                            republic feature composed in. */}
+                        {renderPostActions ? (
+                          <div className="pt-2.5 border-t border-zinc-900">
+                            {renderPostActions(
+                              post,
+                              viewInFeed(post.id),
+                              profile.requestedAt,
+                            )}
                           </div>
-                          <Link
-                            href={`/republic?postId=${post.id}`}
-                            className="text-lime-400 hover:underline font-bold text-xs"
-                          >
-                            View in Feed →
-                          </Link>
-                        </div>
+                        ) : (
+                          <div className="flex items-center justify-between pt-2.5 border-t border-zinc-900 text-xs text-zinc-400">
+                            <div className="flex items-center gap-4">
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[16px]">
+                                  favorite
+                                </span>
+                                {post.likesCount}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[16px]">
+                                  chat_bubble
+                                </span>
+                                {post.commentsCount}
+                              </span>
+                            </div>
+                            {viewInFeed(post.id)}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

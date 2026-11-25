@@ -130,6 +130,26 @@ describe("SocketProvider", () => {
     stop.forEach((s) => s());
   });
 
+  it("hands Republic live counts to the feed (api#427)", () => {
+    const got = vi.fn();
+    const events = [
+      SOCKET_EVENTS.POST_COMMENTS_COUNT,
+      SOCKET_EVENTS.POST_REACTIONS_COUNT,
+      SOCKET_EVENTS.COMMENT_REACTIONS_COUNT,
+    ];
+    const stop = events.map((e) =>
+      subscribeRealtime(e, (p: unknown) => got(e, p)),
+    );
+    renderProvider();
+
+    act(() => {
+      for (const e of events) fake.serverSends(e, { postId: "p1" });
+    });
+
+    for (const e of events) expect(got).toHaveBeenCalledWith(e, { postId: "p1" });
+    stop.forEach((s) => s());
+  });
+
   it("does not connect for a signed-out visitor", () => {
     renderProvider(false);
 

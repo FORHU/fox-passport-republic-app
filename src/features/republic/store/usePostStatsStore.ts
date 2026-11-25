@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { FeedPost, ReactionType } from "../types";
 import { onAccountChange } from "@/shared/auth/useAuthStore";
+import { useEffect } from "react";
+import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 
 export interface PostStats {
   likesCount: number;
@@ -65,6 +67,14 @@ interface PostStatsState {
   setShares: (postId: string, sharesCount: number) => void;
   beginReaction: (postId: string) => void;
   endReaction: (postId: string) => void;
+  /** A count another viewer's action changed, pushed over the socket
+   * (api#427). Only posts already shown here; never the viewer's
+   * own reaction. */
+  setLiveCount: (
+    postId: string,
+    key: "likesCount" | "commentsCount",
+    n: number,
+  ) => void;
   adjustComments: (postId: string, delta: number) => void;
   /** Changes one counter by `delta` (never below 0). Unseeded posts are
    * left alone: their card isn't showing, and its next fetch has the count. */
@@ -180,6 +190,15 @@ export const usePostStatsStore = create<PostStatsState>((set, get) => ({
       };
     }),
 
+  setLiveCount: (postId, key, n) =>
+    set((s) => {
+      const current = s.stats[postId];
+      if (!current || current[key] === n) return s;
+      // The viewer's own reaction in flight settles with its own answer.
+      if (key === "likesCount" && s.pending[postId]) return s;
+      return { stats: patch(s.stats, postId, { [key]: Math.max(0, n) }) };
+    }),
+
   adjustComments: (postId, delta) =>
     get().adjustCount(postId, "commentsCount", delta),
 
@@ -200,8 +219,42 @@ export const usePostStatsStore = create<PostStatsState>((set, get) => ({
 
 /** The post's shared counts, or the post's own values until it is seeded. */
 export function usePostStats(post: PostCounts): PostStats {
+  useLivePostCounts();
   const entry = usePostStatsStore((s) => s.stats[post.id]);
   return entry ?? statsFromPost(post);
+}
+
+// One socket subscription however many cards are on screen: the first
+// consumer subscribes, the last one to unmount unsubscribes.
+let liveUsers = 0;
+let liveStop: (() => void) | null = null;
+
+function startLiveCounts() {
+  const { setLiveCount } = usePostStatsStore.getState();
+  const stops = [
+    subscribeRealtime<{ postId: string; commentsCount: number }>(
+      SOCKET_EVENTS.POST_COMMENTS_COUNT,
+      (p) => setLiveCount(p.postId, "commentsCount", p.commentsCount),
+    ),
+    subscribeRealtime<{ postId: string; likesCount: number }>(
+      SOCKET_EVENTS.POST_REACTIONS_COUNT,
+      (p) => setLiveCount(p.postId, "likesCount", p.likesCount),
+    ),
+  ];
+  return () => stops.forEach((stop) => stop());
+}
+
+/** Keeps every shown post's like and comment counts live (api#427). */
+export function useLivePostCounts() {
+  useEffect(() => {
+    if (liveUsers++ === 0) liveStop = startLiveCounts();
+    return () => {
+      if (--liveUsers === 0) {
+        liveStop?.();
+        liveStop = null;
+      }
+    };
+  }, []);
 }
 
 // `myReaction` belongs to one viewer: drop everything when the account changes.

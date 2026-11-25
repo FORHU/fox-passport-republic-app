@@ -2,21 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Heart, Pencil, Send, Trash2 } from "lucide-react";
+import { Pencil, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { MentionCandidate, PostComment } from "../types";
+import { MentionCandidate, PostComment, ReactionType } from "../types";
 import {
   getPostComments,
   addPostComment,
   editPostComment,
   deletePostComment,
   searchMentionCandidates,
-  toggleCommentLike,
+  setCommentReaction,
 } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
+import { ReactionButton } from "./ReactionButton";
 import { UNAVAILABLE_COMMENT_MESSAGE } from "@/shared/lib/notificationLink";
+import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 
 interface CommentSectionProps {
   postId: string;
@@ -69,8 +72,16 @@ function CommentRow({
   onEdited: (id: string, content: string, updatedAt: string) => void;
 }) {
   const { user } = useAuthStore();
-  const [liked, setLiked] = useState(comment.isLikedByMe ?? false);
+  // Older APIs only send isLikedByMe, which reads as a plain like.
+  const [myReaction, setMyReaction] = useState<ReactionType | null>(
+    comment.myReaction ?? (comment.isLikedByMe ? "like" : null),
+  );
   const [likesCount, setLikesCount] = useState(comment.likesCount ?? 0);
+  // Someone else's reaction arrives as a new `comment.likesCount` (pushed
+  // over the socket, or a refetch); the viewer's own stays as it is.
+  useEffect(() => {
+    setLikesCount(comment.likesCount ?? 0);
+  }, [comment.likesCount]);
   const [deleting, setDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -88,18 +99,26 @@ function CommentRow({
     minute: "2-digit",
   });
 
-  const handleLike = async () => {
-    const nextLiked = !liked;
-    setLiked(nextLiked);
-    setLikesCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
+  // Same six reactions as a post (api#427): shown at once, then the
+  // server's answer wins; a failure puts the old state back.
+  const handleReact = async (type: ReactionType | null) => {
+    if (!user) {
+      signInThen(window.location.pathname + window.location.search);
+      return;
+    }
+    const prev = { myReaction, likesCount };
+    setMyReaction(type);
+    setLikesCount((n) =>
+      Math.max(0, n + (type ? 1 : 0) - (prev.myReaction ? 1 : 0)),
+    );
     try {
-      const res = await toggleCommentLike(postId, comment.id);
-      setLiked(res.liked);
+      const res = await setCommentReaction(postId, comment.id, type);
+      setMyReaction(res.reaction);
       setLikesCount(res.likesCount);
     } catch {
-      setLiked(!nextLiked);
-      setLikesCount((prev) => (nextLiked ? Math.max(0, prev - 1) : prev + 1));
-      toast.error("Could not like this comment.");
+      setMyReaction(prev.myReaction);
+      setLikesCount(prev.likesCount);
+      toast.error("Could not react to this comment.");
     }
   };
 
@@ -195,20 +214,12 @@ function CommentRow({
             )}
             {!isEditing && (
               <div className="flex items-center gap-3 mt-1">
-                <button
-                  type="button"
-                  onClick={handleLike}
-                  className={`flex items-center gap-1 text-[10px] font-bold transition-colors cursor-pointer ${
-                    liked ? "text-rose-400" : "text-zinc-500 hover:text-white"
-                  }`}
-                >
-                  <Heart
-                    className="h-3 w-3"
-                    strokeWidth={2}
-                    fill={liked ? "currentColor" : "none"}
-                  />
-                  {likesCount > 0 ? likesCount : "Like"}
-                </button>
+                <ReactionButton
+                  size="sm"
+                  myReaction={myReaction}
+                  likesCount={likesCount}
+                  onReact={handleReact}
+                />
                 {!isReply && onReply && (
                   <button
                     type="button"
@@ -244,6 +255,35 @@ function CommentRow({
         )}
       </div>
     </div>
+  );
+}
+
+/** Top-level comments shown at least, when a live change refetches. */
+const LIVE_REFETCH_MIN = 50;
+/** Several changes in a burst become one refetch. */
+const LIVE_REFETCH_DELAY_MS = 300;
+
+/** Comments plus replies, the way the post's commentsCount counts them. */
+function countComments(list: PostComment[]): number {
+  return list.reduce((n, c) => n + 1 + (c.replies?.length ?? 0), 0);
+}
+
+function withLikesCount(
+  list: PostComment[],
+  commentId: string,
+  likesCount: number,
+): PostComment[] {
+  return list.map((c) =>
+    c.id === commentId
+      ? { ...c, likesCount }
+      : c.replies?.some((r) => r.id === commentId)
+        ? {
+            ...c,
+            replies: c.replies.map((r) =>
+              r.id === commentId ? { ...r, likesCount } : r,
+            ),
+          }
+        : c,
   );
 }
 
@@ -333,6 +373,47 @@ export function CommentSection({
       mounted = false;
     };
   }, [postId, focusCommentId]);
+
+  // Live for everyone else's activity on this post (api#427): a comment's
+  // reaction count is patched in place; a comment count that no longer
+  // matches what is shown (someone commented, replied or deleted) refetches
+  // the list quietly. Public posts only — the server sends nothing else.
+  const commentsRef = useRef<PostComment[]>([]);
+  commentsRef.current = comments;
+  useEffect(() => {
+    let refetch: ReturnType<typeof setTimeout> | null = null;
+    const stopReactions = subscribeRealtime<{
+      postId: string;
+      commentId: string;
+      likesCount: number;
+    }>(SOCKET_EVENTS.COMMENT_REACTIONS_COUNT, (p) => {
+      if (p.postId !== postId) return;
+      setComments((prev) => withLikesCount(prev, p.commentId, p.likesCount));
+    });
+    const stopCount = subscribeRealtime<{
+      postId: string;
+      commentsCount: number;
+    }>(SOCKET_EVENTS.POST_COMMENTS_COUNT, (p) => {
+      if (p.postId !== postId) return;
+      if (countComments(commentsRef.current) === p.commentsCount) return;
+      if (refetch) clearTimeout(refetch);
+      refetch = setTimeout(() => {
+        const shown = commentsRef.current.length;
+        getPostComments(postId, {
+          limit: Math.max(LIVE_REFETCH_MIN, shown),
+        })
+          .then(setComments)
+          .catch(() => {
+            // Best-effort: the next event or a reopen catches up.
+          });
+      }, LIVE_REFETCH_DELAY_MS);
+    });
+    return () => {
+      stopReactions();
+      stopCount();
+      if (refetch) clearTimeout(refetch);
+    };
+  }, [postId]);
 
   // Once the highlighted row is on screen, bring it into view, then let the
   // highlight fade so it doesn't stay marked for the rest of the visit.
