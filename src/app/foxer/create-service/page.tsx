@@ -66,7 +66,7 @@ function ServiceBuilderContent() {
         onPublish={handlePublish}
         myDraftsHref={myDraftsHref}
       />
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         <ListingSidebar
           activeType="service"
           labels={labels}
