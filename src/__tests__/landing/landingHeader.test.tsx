@@ -40,6 +40,8 @@ vi.mock("@/shared/components/layout/MobileBottomNav", () => ({
 
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { appNavForUser } from "@/shared/lib/app-nav";
+import { THEME_STORAGE_KEY } from "@/shared/lib/theme";
+import { useThemeStore } from "@/shared/store/useThemeStore";
 
 /**
  * Signed-out visitors on small screens used to get no navigation at all: the
@@ -110,6 +112,67 @@ describe("LandingHeader mobile menu", () => {
     expect(
       screen.queryByRole("button", { name: "Open menu" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * app#380: signed-out visitors had no way to pick light or dark (the picker
+ * is in the signed-in user menu). The header has a light/dark switch.
+ */
+describe("LandingHeader theme switch", () => {
+  beforeEach(() => {
+    mockAuthState.isAuthenticated = false;
+    mockAuthState.isLoading = false;
+    useThemeStore.getState().setTheme("dark");
+  });
+
+  it("is on in dark, and switches the whole app to light and back", async () => {
+    const user = userEvent.setup();
+    render(<LandingHeader />);
+    const toggle = screen.getByRole("switch", { name: "Dark mode" });
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+    expect(toggle).toHaveClass("bg-accent");
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    expect(useThemeStore.getState().theme).toBe("light");
+    expect(document.documentElement).toHaveClass("light");
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
+
+    await user.keyboard(" ");
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+    expect(document.documentElement).toHaveClass("dark");
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+  });
+
+  it("is not there until auth has loaded, or for signed-in users", () => {
+    mockAuthState.isLoading = true;
+    const { rerender } = render(<LandingHeader />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+
+    mockAuthState.isLoading = false;
+    mockAuthState.isAuthenticated = true;
+    rerender(<LandingHeader />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+  });
+
+  it("is in the mobile menu too, and leaves the menu open", async () => {
+    const user = userEvent.setup();
+    render(<LandingHeader />);
+
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const menu = screen.getByRole("dialog", { name: "Menu" });
+    const hrefs = within(menu)
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(["/#events", "/#how-it-works", "/#earn"]);
+
+    const toggle = within(menu).getByRole("switch", { name: "Dark mode" });
+    await user.click(toggle);
+    expect(useThemeStore.getState().theme).toBe("light");
+    expect(screen.getByRole("dialog", { name: "Menu" })).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
   });
 });
 
