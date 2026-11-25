@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import Link from "next/link";
 import {
@@ -26,9 +25,8 @@ import type { LightsSpecification } from "mapbox-gl";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { MapBoxView } from "@/shared/components/ui/MapBoxView";
 import { applyMapTheme } from "@/shared/lib/mapbox";
-import { DEFAULT_THEME, type Theme } from "@/shared/lib/theme";
 import { useMapThemeStore } from "@/shared/store/useMapThemeStore";
-import { useThemeStore } from "@/shared/store/useThemeStore";
+import { useHydratedTheme, useThemeStore } from "@/shared/store/useThemeStore";
 import {
   DESTINATIONS,
   buildStops,
@@ -51,19 +49,10 @@ import { InstallAppButton } from "./InstallAppButton";
 const ACCENT = "#ccff00";
 const STOPS = DESTINATIONS.length;
 
-const readTheme = () => useThemeStore.getState().theme;
-const serverTheme = () => DEFAULT_THEME;
+// Moved to the theme store so the header's theme switch can use it too;
+// re-exported here for existing imports.
+export { useHydratedTheme };
 
-/**
- * The app's theme for markup. The server can't see a saved Light choice, so
- * it renders the default; reading the store during hydration made the
- * plane's colour and the NASA credit differ from the server's HTML. This
- * gives the server's theme while hydrating, then the real one. Maps keep
- * reading the store: they're drawn in effects, not in the HTML.
- */
-export function useHydratedTheme(): Theme {
-  return useSyncExternalStore(useThemeStore.subscribe, readTheme, serverTheme);
-}
 // How much scrolling (in screen heights ×100) each place gets. This is the
 // tour's speed: more is a slower, calmer flight. Every 0–1 fraction below
 // scales with it, so nothing else needs retuning.
