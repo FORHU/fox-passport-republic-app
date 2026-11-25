@@ -162,39 +162,6 @@ export default function VenueDetailClient({
         }
       />
 
-      {/* Mobile sticky bottom bar — design: "From ₱X/day  [Book Now]" */}
-      {venuePrice > 0 && (
-        <div
-          className="lg:hidden fixed bottom-5 left-4 right-4 z-40 flex items-center justify-between px-5 py-3 rounded-2xl"
-          style={{
-            background: "rgba(18,18,24,0.92)",
-            backdropFilter: "blur(20px)",
-            border:
-              "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
-            boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
-          }}
-        >
-          <div>
-            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
-              From
-            </p>
-            <p className="text-xl font-display font-bold text-accent">
-              <Money amount={venuePrice} />
-              <span className="text-xs text-white/40 font-normal">
-                /{rateUnit}
-              </span>
-            </p>
-          </div>
-          <button
-            onClick={() => router.push(`/booking/venue/${venue.id}`)}
-            className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm"
-            style={{ boxShadow: "0 4px 16px rgba(196,232,90,0.35)" }}
-          >
-            Book Now
-          </button>
-        </div>
-      )}
-
       <main className="grow pt-20 sm:pt-28 pb-28 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <VenueHero
