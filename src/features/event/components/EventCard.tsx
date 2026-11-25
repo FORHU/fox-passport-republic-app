@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin } from "lucide-react";
 import type { EventTemplate } from "@/shared/api/event-templates";
-import { addFavorite, removeFavoriteByListing } from "@/shared/api/favorites";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 import { Money } from "@/shared/components/ui/Money";
 
 const FALLBACK_IMAGE =
@@ -25,27 +25,17 @@ function templateLocation(event: EventTemplate): string {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [favLoading, setFavLoading] = useState(false);
+  // The shared favourites list, so the heart survives a reload and the
+  // wishlist sees the save at once (api#455, app#415). It used to keep its own
+  // state, which always started empty.
+  const { isFavorited: isSaved, toggleFavorite, isToggling } = useFavorites();
+  const isFavorited = isSaved(event.id, "event");
+  const favLoading = isToggling;
 
-  const handleFavorite = async (e: React.MouseEvent) => {
+  const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (favLoading) return;
-    setFavLoading(true);
-    const next = !isFavorited;
-    setIsFavorited(next);
-    try {
-      if (next) {
-        await addFavorite(event.id, "event");
-      } else {
-        await removeFavoriteByListing(event.id, "event");
-      }
-    } catch {
-      setIsFavorited(!next);
-    } finally {
-      setFavLoading(false);
-    }
+    toggleFavorite(event.id, { type: "event" });
   };
 
   const imageUrl = event.images?.find((img) => img.url)?.url || FALLBACK_IMAGE;

@@ -8,11 +8,12 @@ export interface AppNavItem {
 }
 
 /**
- * The app's main navigation, shared by every desktop header and the mobile
- * bottom nav so they always offer the same places. Each header keeps its own
- * styling; only the links live here.
+ * The app's main navigation. The desktop header and the mobile bottom nav
+ * show it through `appNavForUser`, so they always offer the same places. Each
+ * header keeps its own styling; only the links live here.
  *
- * "Passport" is the Citizen Dashboard ("your personal passport hub"); the
+ * "Passport" is the user's own public passport. `/user` (the old Citizen
+ * Dashboard) now redirects there; `appNavForUser` links it directly. The
  * avatar menu already covers profile and account, so it isn't "Profile".
  */
 export const APP_NAV: AppNavItem[] = [
@@ -27,6 +28,20 @@ export const APP_NAV: AppNavItem[] = [
   },
   { label: "Passport", href: "/user", icon: "person", requiresAuth: true },
 ];
+
+/**
+ * The app nav for a signed-in user: the Passport tab opens their own public
+ * passport (/user/<id>) instead of the dashboard (/user). Left out until the
+ * user's id is known, so the link never points at a wrong or empty id.
+ */
+export const appNavForUser = (userId?: string | null): AppNavItem[] =>
+  APP_NAV.flatMap((item) =>
+    item.href !== "/user"
+      ? [item]
+      : userId
+        ? [{ ...item, href: `/user/${userId}` }]
+        : [],
+  );
 
 /** The tabs a visitor can use: everything when signed in, public ones otherwise. */
 export const appNavFor = (isAuthenticated: boolean): AppNavItem[] =>

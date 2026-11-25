@@ -140,6 +140,12 @@ const nextConfig = {
         destination: "/booking/:id",
         permanent: true,
       },
+      // Notifications once linked here (app#383); the booking page is `/booking/:id`.
+      {
+        source: "/bookings/:id",
+        destination: "/booking/:id",
+        permanent: true,
+      },
       {
         source: "/mayor",
         destination: "/creator-dashboard/venues",

@@ -161,6 +161,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Client state only. Cookies are the server action's job — call
     // `endSession` rather than this directly, so the two cannot drift.
     localStorage.removeItem("fox_user");
+    // The remembered favourites list (see useFavorites), so the next person
+    // on this browser doesn't carry it.
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("fox_favorites:"))
+        .forEach((k) => localStorage.removeItem(k));
+    } catch {
+      // Storage unavailable: nothing was remembered.
+    }
     dropLegacyUserCookie();
     set((state) => ({
       isAuthenticated: false,

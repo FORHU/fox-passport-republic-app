@@ -14,6 +14,7 @@ import {
   respondToMatch,
 } from "../api/passport";
 import { acceptMatch, declineMatch } from "@/shared/api/matches";
+import type { MatchDeclineReason } from "@/features/gamification/lib/matchDeclineReasons";
 
 export function useMyPassport() {
   const passportQuery = useQuery({
@@ -76,11 +77,14 @@ export function useRespondToMatch() {
       matchId,
       type,
       status,
+      decline,
     }: {
       matchId: string;
       type: string;
       status: "accepted" | "declined";
-    }) => respondToMatch(matchId, type, status),
+      /** Required to decline (api#447). */
+      decline?: { reason: MatchDeclineReason; note?: string };
+    }) => respondToMatch(matchId, type, status, decline),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
     },

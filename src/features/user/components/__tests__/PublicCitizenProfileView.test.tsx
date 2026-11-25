@@ -358,7 +358,7 @@ describe("PublicCitizenProfileView post viewer", () => {
 });
 
 /**
- * Your own profile links to your Passport (/user) and to Account settings
+ * Your own profile links to your Passport (/user/passport) and to Account settings
  * (/user/settings). Other people's profiles show neither (app#312).
  */
 describe("PublicCitizenProfileView own-profile actions", () => {
@@ -371,7 +371,7 @@ describe("PublicCitizenProfileView own-profile actions", () => {
     ).toHaveAttribute("href", "/user/settings");
     expect(screen.getByRole("link", { name: "My Passport" })).toHaveAttribute(
       "href",
-      "/user",
+      "/user/passport",
     );
     expect(screen.queryByText(/my dashboard/i)).not.toBeInTheDocument();
   });

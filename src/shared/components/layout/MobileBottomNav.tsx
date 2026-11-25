@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { APP_NAV, isNavActive } from "@/shared/lib/app-nav";
+import { appNavForUser, isNavActive } from "@/shared/lib/app-nav";
 import { requestRepublicRefresh } from "@/shared/lib/republic-refresh";
 
 /** The app's mobile nav — signed-in only, like the desktop app tabs. */
@@ -32,14 +32,16 @@ export default function MobileBottomNav() {
     user?.email?.charAt(0).toUpperCase() ??
     "?";
 
-  // Same places as the desktop header (APP_NAV); Republic is the raised
+  // Same places as the desktop header (appNavForUser); Republic is the raised
   // centre button, with two tabs either side.
-  const republic = APP_NAV.find((item) => item.href === "/republic")!;
-  const sideTabs = APP_NAV.filter((item) => item !== republic);
+  const nav = appNavForUser(user.id);
+  const republic = nav.find((item) => item.href === "/republic")!;
+  const sideTabs = nav.filter((item) => item !== republic);
   const tabs = sideTabs.slice(0, 2);
   const rightTabs = sideTabs.slice(2);
-  // The last tab is the user's own space, shown as their avatar.
-  const avatarHref = APP_NAV[APP_NAV.length - 1].href;
+  // The last tab is the user's own space (their public passport), shown as
+  // their avatar.
+  const avatarHref = nav[nav.length - 1].href;
 
   const NavIcon = ({
     icon,

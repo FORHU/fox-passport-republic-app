@@ -35,6 +35,12 @@ const ROLE_TYPE_LABEL: Record<RoleType, string> = {
   organizer: "Event Coordinator",
 };
 
+// Event Coordinator (`organizer`) is a Provider who runs an event when its
+// Event Foxer is absent, granted only by approving that application; the API
+// refuses it here (api#463). Not offered, but someone who already holds it
+// keeps it: `roleTypes` below still carries it through every save.
+const ASSIGNABLE_ROLE_TYPES = ROLE_TYPES.filter((r) => r !== "organizer");
+
 /**
  * Changing what a person is.
  *
@@ -161,7 +167,7 @@ export function RoleAssignmentControls({
               Platform roles
             </p>
             <div className="flex flex-wrap gap-2">
-              {ROLE_TYPES.map((r) => {
+              {ASSIGNABLE_ROLE_TYPES.map((r) => {
                 const on = roleTypes.includes(r);
                 return (
                   <button

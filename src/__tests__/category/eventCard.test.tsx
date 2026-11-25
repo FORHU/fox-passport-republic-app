@@ -14,9 +14,14 @@ vi.mock("@/shared/components/ui/Money", () => ({
   Money: ({ amount }: { amount: number }) => <span>{amount}</span>,
 }));
 
-vi.mock("@/shared/api/favorites", () => ({
-  addFavorite: vi.fn(),
-  removeFavoriteByListing: vi.fn(),
+// The heart uses the shared favourites list (api#455); its saving isn't under
+// test here.
+vi.mock("@/shared/hooks/useFavorites", () => ({
+  useFavorites: () => ({
+    isFavorited: () => false,
+    toggleFavorite: vi.fn(),
+    isToggling: false,
+  }),
 }));
 
 /** The shape /event-templates/browse returns (a dev seed row). */

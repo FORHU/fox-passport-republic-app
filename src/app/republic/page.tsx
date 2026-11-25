@@ -43,6 +43,8 @@ import { REPUBLIC_TOUR, REPUBLIC_TOUR_KEY } from "./republicTour";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { SharePostModal } from "@/features/messages/components/SharePostModal";
+import { toast } from "sonner";
+import { UNAVAILABLE_POST_MESSAGE } from "@/shared/lib/notificationLink";
 
 const VALID_TABS: FeedTab[] = ["all", "community", "marketplace", "partners"];
 
@@ -83,6 +85,7 @@ function RepublicFeedContent() {
     if (searchParams.get("postId")) {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("postId");
+      params.delete("commentId");
       const query = params.toString();
       router.replace(query ? `/republic?${query}` : "/republic", {
         scroll: false,
@@ -93,23 +96,37 @@ function RepublicFeedContent() {
   // Deep link support: PostCard's Share button already copies a
   // `?postId=` URL — this is the read side, opening that post's detail
   // modal directly on load rather than leaving the link a dead end.
+  // Notifications link here too (`&commentId=` scrolls to a comment), and a
+  // notification clicked while already on /republic only changes the query,
+  // so this follows the params rather than running once on mount.
+  const deepLinkPostId = searchParams.get("postId");
+  const deepLinkCommentId = searchParams.get("commentId");
+  const [focusCommentId, setFocusCommentId] = useState<string | null>(null);
   useEffect(() => {
-    const postId = searchParams.get("postId");
-    if (!postId) return;
+    if (!deepLinkPostId) return;
     let cancelled = false;
     const requestedAt = Date.now();
-    getPostById(postId)
+    getPostById(deepLinkPostId)
       .then((post) => {
         usePostStatsStore.getState().syncFromServer([post], requestedAt);
-        if (!cancelled) setActivePost(post);
+        if (cancelled) return;
+        setFocusCommentId(deepLinkCommentId);
+        setActivePost(post);
       })
       .catch((err) => {
         console.error("Failed to load shared post:", err);
+        if (cancelled) return;
+        // Deleted, or no longer visible to this viewer: say so instead of
+        // leaving the click with no visible result.
+        toast.info(UNAVAILABLE_POST_MESSAGE);
+        handleCloseDetail();
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+    // handleCloseDetail changes with every query change; only a new target
+    // should trigger a new load.
+  }, [deepLinkPostId, deepLinkCommentId]);
 
   // Sync activeTab when URL query changes (e.g. navigation from menu)
   useEffect(() => {
@@ -663,7 +680,13 @@ function RepublicFeedContent() {
 
       {activePost && (
         <PostDetailModal
+          // A new target remounts the modal, so the comment list reloads
+          // and scrolls to the new comment.
+          key={`${activePost.id}:${focusCommentId ?? ""}`}
           post={activePost}
+          focusCommentId={
+            activePost.id === deepLinkPostId ? focusCommentId : null
+          }
           onClose={handleCloseDetail}
           onPostDeleted={(id) => {
             removePost(id);

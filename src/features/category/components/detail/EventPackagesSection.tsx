@@ -1,16 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MapPin, Heart } from "lucide-react";
-import {
-  checkFavorite,
-  addFavorite,
-  removeFavoriteByListing,
-} from "@/shared/api/favorites";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { toast } from "sonner";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 import { Money } from "@/shared/components/ui/Money";
 
 const FALLBACK_IMAGES = [
@@ -21,39 +15,16 @@ const FALLBACK_IMAGES = [
 ];
 
 function FavoriteHeart({ templateId }: { templateId: string }) {
-  const { user } = useAuthStore();
-  const [liked, setLiked] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // The shared favourites list. This used to ask the API per card and read a
+  // field it never sends (`isFavorited`), so it always showed empty.
+  // Signed out, toggleFavorite opens sign-in and finishes the save after.
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const liked = isFavorited(templateId, "event");
 
-  useEffect(() => {
-    if (!user) return;
-    checkFavorite(templateId, "event")
-      .then((r) => setLiked(r.isFavorited))
-      .catch(() => {});
-  }, [templateId, user]);
-
-  const toggle = async (e: React.MouseEvent) => {
+  const toggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) {
-      toast.error("Sign in to save favorites.");
-      return;
-    }
-    if (loading) return;
-    setLoading(true);
-    try {
-      if (liked) {
-        await removeFavoriteByListing(templateId, "event");
-        setLiked(false);
-      } else {
-        await addFavorite(templateId, "event");
-        setLiked(true);
-      }
-    } catch {
-      toast.error("Could not update favorites.");
-    } finally {
-      setLoading(false);
-    }
+    toggleFavorite(templateId, { type: "event" });
   };
 
   return (
