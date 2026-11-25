@@ -20,6 +20,7 @@ import {
 } from "@/shared/lib/schema";
 import { TextField } from "@/shared/components/ui/TextField";
 import PageLoader from "@/shared/components/ui/PageLoader";
+import { PasswordVisibilityToggle } from "@/features/auth/components/PasswordVisibilityToggle";
 import {
   isUsernameAvailable,
   submitAccountSetup,
@@ -75,6 +76,8 @@ function SetupFields({ needs, onDone }: { needs: Needs; onDone: () => void }) {
   const setUser = useAuthStore((s) => s.setUser);
   const [availability, setAvailability] = useState<Availability>("idle");
   const [signingOut, setSigningOut] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -201,21 +204,33 @@ function SetupFields({ needs, onDone }: { needs: Needs; onDone: () => void }) {
                 label="PASSWORD"
                 labelClassName={labelClassName}
                 placeholder="••••••••"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 hint={PASSWORD_HINT}
                 error={errors.password?.message}
+                trailing={
+                  <PasswordVisibilityToggle
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((prev) => !prev)}
+                  />
+                }
               />
               <TextField
                 {...register("confirmPassword")}
                 label="CONFIRM PASSWORD"
                 labelClassName={labelClassName}
                 placeholder="••••••••"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 error={errors.confirmPassword?.message}
+                trailing={
+                  <PasswordVisibilityToggle
+                    visible={showConfirmPassword}
+                    onToggle={() => setShowConfirmPassword((prev) => !prev)}
+                  />
+                }
               />
             </>
           )}
