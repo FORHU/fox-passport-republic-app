@@ -21,10 +21,13 @@ function normalizeValue(value: unknown): string {
 
 interface HostEventsClientProps {
   initialEvents: any[];
+  /** Shown above the list, e.g. booked events that need a replacement. */
+  banner?: React.ReactNode;
 }
 
 export default function HostEventsClient({
   initialEvents,
+  banner,
 }: HostEventsClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,6 +96,7 @@ export default function HostEventsClient({
 
         <main className="pt-32 pb-28 sm:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {banner && <div className="mb-5 empty:hidden">{banner}</div>}
             <div className="mb-5">
               <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-accent">

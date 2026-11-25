@@ -26,6 +26,18 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   return message && !TECHNICAL.test(message) ? message : fallback;
 }
 
+/**
+ * The API's machine-readable `code` (e.g. `PROPOSAL_PRICE_CHANGED`) on a failed
+ * request, or null. For choosing what to do next; the sentence to show comes
+ * from `getApiErrorMessage`.
+ */
+export function apiErrorCode(error: unknown): string | null {
+  const data = (error as { response?: ErrorResponse } | null)?.response?.data;
+  if (!data || typeof data === "string") return null;
+  const code = (data as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
 const UPLOAD_TOO_LARGE = "That file is too large. Choose a smaller one and try again.";
 const UPLOAD_NO_CONNECTION = "Couldn't reach the server. Check your connection and try again.";
 const UPLOAD_GENERIC = "Couldn't upload that file. Try a different file.";

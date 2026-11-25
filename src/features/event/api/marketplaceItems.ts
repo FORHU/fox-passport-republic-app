@@ -146,20 +146,27 @@ export async function addAdHocItem(
   };
 }
 
+/** Why a Supplier declines a booked event: they have another booking then, or not. */
+export type DeclineCause = "busy" | "other";
+
 /**
  * The single endpoint every non-add marketplace-item transition goes
- * through — confirm/reject (provider-only) and cancel (booking-owner-only)
- * all route through TransactionStatusSvc server-side, which authorizes each
- * action against who's actually calling, not which UI button was clicked.
+ * through — confirm/reject (provider-only), decline a booked event
+ * (provider-only, until it is paid; ADR 0010) and cancel
+ * (booking-owner-only) all route through TransactionStatusSvc server-side,
+ * which authorizes each action against who's actually calling, not which UI
+ * button was clicked.
  */
 export async function reviewLineItem(
   transactionId: string,
   type: "asset" | "service" | "venue",
-  action: "confirm" | "reject" | "cancel",
+  action: "confirm" | "reject" | "cancel" | "decline",
+  cause?: DeclineCause,
 ): Promise<EventLineItem> {
   const resp = await api.patch(`/event-transactions/${transactionId}/review`, {
     type,
     action,
+    ...(action === "decline" && cause ? { cause } : {}),
   });
   return resp.data?.updated;
 }
@@ -215,10 +222,31 @@ export interface ProviderLineItem {
   status: LineItemStatus;
   agreedPrice: number;
   confirmationDeadline?: string | null;
+  /** `supplier_declined` / `supplier_declined_busy` once the Supplier declined. */
+  rejectionReason?: string | null;
+  /** The citizen's booking; `pending` until it is paid. */
+  booking?: { status: string } | null;
   event: { name: string; startAt: string; client?: { name: string } };
   asset?: { name: string; images?: { url: string }[] };
   service?: { name: string; images?: { url: string }[] };
+  /** A Mayor's venue row. */
+  venue?: { name: string; images?: { url: string }[] };
 }
+
+/**
+ * Whether a Supplier can still decline a booked line: it is booked
+ * (`pending` or `approved`) and the citizen hasn't paid. After payment only
+ * the cancellation policy applies (ADR 0010 decision 1).
+ */
+export const canDeclineBooked = (item: ProviderLineItem): boolean =>
+  (item.status === "pending" || item.status === "approved") &&
+  item.booking?.status === "pending";
+
+/** Booked, but paid: declining is no longer offered. */
+export const isPaidBooked = (item: ProviderLineItem): boolean =>
+  (item.status === "pending" || item.status === "approved") &&
+  !!item.booking &&
+  item.booking.status !== "pending";
 
 export interface ProviderDashboard {
   assets: ProviderLineItem[];

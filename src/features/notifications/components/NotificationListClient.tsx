@@ -24,6 +24,63 @@ const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
     color: "text-red-300",
     bg: "bg-red-500/10",
   },
+  // Booked-event repairs (api ADR 0010): a Supplier dropped out or clashes,
+  // and the host's proposals to swap one or move the date.
+  EVENT_CONFLICT: {
+    icon: "warning",
+    color: "text-orange-300",
+    bg: "bg-orange-500/10",
+  },
+  SUPPLIER_DECLINED: {
+    icon: "person_off",
+    color: "text-red-300",
+    bg: "bg-red-500/10",
+  },
+  BOOKING_HOST_DECLINED: {
+    icon: "event_busy",
+    color: "text-red-300",
+    bg: "bg-red-500/10",
+  },
+  EVENT_EDIT_PROPOSED: {
+    icon: "swap_horiz",
+    color: "text-accent",
+    bg: "bg-accent/10",
+  },
+  EVENT_RESCHEDULE_PROPOSED: {
+    icon: "edit_calendar",
+    color: "text-accent",
+    bg: "bg-accent/10",
+  },
+  EVENT_EDIT_ACCEPTED: {
+    icon: "check_circle",
+    color: "text-green-300",
+    bg: "bg-green-500/10",
+  },
+  EVENT_EDIT_DECLINED: {
+    icon: "block",
+    color: "text-red-300",
+    bg: "bg-red-500/10",
+  },
+  EVENT_EDIT_REQUEST: {
+    icon: "pending_actions",
+    color: "text-yellow-300",
+    bg: "bg-yellow-500/10",
+  },
+  EVENT_RESCHEDULE_REQUEST: {
+    icon: "pending_actions",
+    color: "text-yellow-300",
+    bg: "bg-yellow-500/10",
+  },
+  EVENT_EDIT_BOOKED: {
+    icon: "event_available",
+    color: "text-green-300",
+    bg: "bg-green-500/10",
+  },
+  EVENT_RESCHEDULED: {
+    icon: "event_available",
+    color: "text-green-300",
+    bg: "bg-green-500/10",
+  },
   role_request_approved: {
     icon: "verified",
     color: "text-green-300",

@@ -82,3 +82,56 @@ describe("useConfirm", () => {
     await waitFor(() => expect(onResult).toHaveBeenCalledWith(false));
   });
 });
+
+describe("ConfirmDialog secondary action", () => {
+  function SecondaryHarness({
+    onConfirm,
+    onSecondary,
+  }: {
+    onConfirm: () => void | Promise<void>;
+    onSecondary: () => void | Promise<void>;
+  }) {
+    const [open, setOpen] = useState(true);
+    return (
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        onConfirm={onConfirm}
+        title="Decline this booking?"
+        confirmLabel="Decline this booking"
+        tone="danger"
+        secondaryAction={{ label: "I'm busy then", onConfirm: onSecondary }}
+      />
+    );
+  }
+
+  it("runs only the secondary answer and closes", async () => {
+    const onConfirm = vi.fn();
+    const onSecondary = vi.fn(async () => {});
+    render(<SecondaryHarness onConfirm={onConfirm} onSecondary={onSecondary} />);
+    await userEvent.click(screen.getByRole("button", { name: "I'm busy then" }));
+    expect(onSecondary).toHaveBeenCalledOnce();
+    expect(onConfirm).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("stays open when the secondary answer rejects", async () => {
+    render(
+      <SecondaryHarness
+        onConfirm={vi.fn()}
+        onSecondary={vi.fn(async () => {
+          throw new Error("no");
+        })}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "I'm busy then" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("is not shown unless asked for", () => {
+    render(<Harness onConfirm={vi.fn()} />);
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+  });
+});

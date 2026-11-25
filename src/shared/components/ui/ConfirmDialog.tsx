@@ -14,6 +14,13 @@ export interface ConfirmOptions {
   tone?: "default" | "danger";
 }
 
+/** A second way to confirm, shown between Cancel and the main button. */
+export interface ConfirmSecondaryAction {
+  label: string;
+  /** Same contract as `onConfirm`: pending disables, a rejection keeps it open. */
+  onConfirm: () => void | Promise<void>;
+}
+
 interface ConfirmDialogProps extends ConfirmOptions {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -23,6 +30,8 @@ interface ConfirmDialogProps extends ConfirmOptions {
    * resolves and stays open if it rejects (the caller shows the error).
    */
   onConfirm: () => void | Promise<void>;
+  /** Optional alternative answer, e.g. "I'm busy then" next to "Decline". */
+  secondaryAction?: ConfirmSecondaryAction;
 }
 
 /** The "Are you sure?" pop-up. For a one-line `await confirm(...)`, see `useConfirm`. */
@@ -35,15 +44,16 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   tone = "default",
+  secondaryAction,
 }: ConfirmDialogProps) {
   const [pending, setPending] = React.useState(false);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const danger = tone === "danger";
 
-  const handleConfirm = async () => {
+  const run = async (action: () => void | Promise<void>) => {
     setPending(true);
     try {
-      await onConfirm();
+      await action();
       onOpenChange(false);
     } catch {
       // Stay open so they can retry or cancel; onConfirm reports the error.
@@ -51,6 +61,7 @@ export function ConfirmDialog({
       setPending(false);
     }
   };
+  const handleConfirm = () => run(onConfirm);
 
   return (
     <DialogPrimitive.Root
@@ -69,7 +80,11 @@ export function ConfirmDialog({
           }}
           // Radix warns when there is no Description unless this is unset.
           {...(description ? {} : { "aria-describedby": undefined })}
-          className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-surface-raised p-6 shadow-[0_10px_35px_rgba(0,0,0,0.25)] focus:outline-none"
+          className={cn(
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-surface-raised p-6 shadow-[0_10px_35px_rgba(0,0,0,0.25)] focus:outline-none",
+            // Three answers need the room to stay on one line each.
+            secondaryAction ? "max-w-md" : "max-w-sm",
+          )}
         >
           <div
             className={cn(
@@ -101,6 +116,21 @@ export function ConfirmDialog({
                 {cancelLabel}
               </button>
             </DialogPrimitive.Close>
+            {secondaryAction && (
+              <button
+                type="button"
+                onClick={() => run(secondaryAction.onConfirm)}
+                disabled={pending}
+                className={cn(
+                  "rounded-xl border px-5 py-2.5 text-sm font-bold transition-colors disabled:opacity-50",
+                  danger
+                    ? "border-red-500/40 text-red-400 hover:bg-red-500/10"
+                    : "border-accent/40 text-accent hover:bg-accent/10",
+                )}
+              >
+                {secondaryAction.label}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleConfirm}
