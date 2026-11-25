@@ -15,6 +15,7 @@ import { pollWhileVisible } from "@/shared/lib/realtime";
 import CancelBookingModal from "./CancelBookingModal";
 import RequestBookingEditModal from "./RequestBookingEditModal";
 import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
+import EventProposalCard from "./EventProposalCard";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { formatCurrency } from "@/shared/lib/currency";
 import { LOGO_SRC } from "@/shared/lib/assets";
@@ -651,6 +652,18 @@ export default function BookingDetailClient({
             </div>
           )}
         </div>
+        {booking.event?.templateId && !isCancelled && (
+          <div className="max-w-4xl mx-auto px-4 mt-6 empty:hidden">
+            {/* A booked package event's repairs (api ADR 0010): a Supplier
+                that can't make it, and the host's swap or new date. */}
+            <EventProposalCard
+              bookingId={bookingId}
+              isCitizen={isOwner}
+              canCancel={canCancel}
+              onCancel={() => setShowCancelModal(true)}
+            />
+          </div>
+        )}
         {editRequest && (
           <div className="max-w-4xl mx-auto px-4 mt-6">
             <BookingEditRequestStatusCard

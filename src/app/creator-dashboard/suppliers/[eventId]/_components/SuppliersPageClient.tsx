@@ -7,12 +7,16 @@ import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader
 import { EventBidsPanel } from "@/features/event/components/EventBidsPanel";
 import { useEventBids } from "@/features/event/hooks/useEventBids";
 import { EventSuppliersPanel } from "@/features/messages/components/EventSuppliersPanel";
+import InboxMessageButton from "@/features/messages/components/InboxMessageButton";
 import { useMyAccess } from "@/features/appointment/hooks/useAppointments";
+import { BookedSuppliersPanel } from "@/features/event/components/booked/BookedSuppliersPanel";
+import { useBookedEvent } from "@/features/event/hooks/useBookedEvent";
 
 /**
  * One Event's Suppliers and the bids for its open slots. Composes `messages`
- * (who to talk to), `event` (the bids) and `appointment` (whether the viewer
- * is the Owner, who alone may accept a bid) at the app layer.
+ * (who to talk to, and the event's chat with its citizen), `event` (the booked
+ * Suppliers and the bids) and `appointment` (whether the viewer is the Owner,
+ * who alone may accept a bid) at the app layer.
  */
 export default function SuppliersPageClient({ eventId }: { eventId: string }) {
   const access = useMyAccess({ type: "event", id: eventId });
@@ -20,7 +24,11 @@ export default function SuppliersPageClient({ eventId }: { eventId: string }) {
   // The event's name rides along on every bid; the panel's query is shared,
   // so this doesn't fetch twice.
   const { bids } = useEventBids(eventId);
-  const eventName = bids.data?.find((b) => b.event)?.event?.name;
+  // The booked event, when the viewer is its host (null for anyone else).
+  const booked = useBookedEvent(eventId);
+  const detail = booked.data ?? null;
+  const eventName =
+    detail?.eventName ?? bids.data?.find((b) => b.event)?.event?.name;
 
   return (
     <div className="bg-canvas text-white min-h-screen font-body antialiased">
@@ -44,6 +52,37 @@ export default function SuppliersPageClient({ eventId }: { eventId: string }) {
               team sees them.
             </p>
           </div>
+
+          {detail && (
+            <section className="space-y-3" aria-labelledby="booked-title">
+              <div>
+                <h2
+                  id="booked-title"
+                  className="text-xs font-bold uppercase tracking-widest text-white/40"
+                >
+                  Booked Suppliers
+                </h2>
+                <p className="mt-1 text-xs text-white/40">
+                  Who is booked for this event and where each stands. A swap
+                  or a new date goes to the citizen, and to the event&apos;s
+                  chat with them; nothing changes until they accept.
+                </p>
+              </div>
+              <BookedSuppliersPanel
+                detail={detail}
+                actions={
+                  detail.clientId ? (
+                    <InboxMessageButton
+                      eventId={eventId}
+                      guestId={detail.clientId}
+                      label="Open event chat"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 px-4 text-xs font-bold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                    />
+                  ) : null
+                }
+              />
+            </section>
+          )}
 
           <section className="space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-white/40">

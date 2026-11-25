@@ -70,6 +70,27 @@ describe("NotificationListClient routing", () => {
     expect(h.push).toHaveBeenCalledWith("/republic?postId=p1&commentId=r1");
   });
 
+  it("opens a booked event that needs a replacement (api ADR 0010)", async () => {
+    h.notifications = [
+      {
+        id: "c1",
+        userId: "u1",
+        type: "EVENT_CONFLICT",
+        title: "Your event needs a replacement",
+        message: "Grand Hall is now blocked on 2026-12-05.",
+        isRead: true,
+        metadata: { eventId: "e1", link: "/creator-dashboard/events?eventId=e1" },
+        createdAt: "2026-11-24T00:00:00.000Z",
+      } as Notification,
+    ];
+    render(<NotificationListClient />);
+
+    fireEvent.click(await screen.findByText("Your event needs a replacement"));
+
+    // The events page redirects this to the event's Suppliers.
+    expect(h.push).toHaveBeenCalledWith("/creator-dashboard/events?eventId=e1");
+  });
+
   it("says a deleted post is gone instead of navigating", async () => {
     h.notifications = [
       feed("New Reaction on your Republic Post", {
