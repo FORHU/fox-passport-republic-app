@@ -9,6 +9,10 @@ import { useFollowCounts } from "@/features/follow/api/useFollow";
 import { BlockMenuButton } from "@/features/block/components/BlockMenuButton";
 import { useBlockStatus } from "@/features/block/api/useBlock";
 import MessageButton from "@/features/messages/components/MessageButton";
+import {
+  LivePostCount,
+  ProfilePostActions,
+} from "@/features/republic/components/ProfilePostActions";
 
 export default function PublicCitizenProfileClient() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +34,14 @@ export default function PublicCitizenProfileClient() {
         renderFollowButton={(targetId) => <FollowButton targetId={targetId} />}
         renderBlockMenuButton={(targetId) => (
           <BlockMenuButton targetId={targetId} />
+        )}
+        renderPostActions={(post, trailing, requestedAt) => (
+          <ProfilePostActions post={post} requestedAt={requestedAt}>
+            {trailing}
+          </ProfilePostActions>
+        )}
+        renderPostCount={(post, kind) => (
+          <LivePostCount post={post} kind={kind} />
         )}
         renderMessageButton={(targetId, targetName) => (
           <MessageButton

@@ -1,4 +1,5 @@
 import api from "@/shared/lib/axios";
+import type { ReactionType } from "@/shared/types/feed";
 
 export interface CitizenStamp {
   id: string;
@@ -104,6 +105,9 @@ export interface PublicCitizenProfile {
     createdAt: string;
     likesCount: number;
     commentsCount: number;
+    /** The viewer's own reaction (api#427); absent when signed out. */
+    isLikedByMe?: boolean;
+    myReaction?: ReactionType | null;
     sharesCount: number;
     sendsCount?: number;
     repostsCount?: number;

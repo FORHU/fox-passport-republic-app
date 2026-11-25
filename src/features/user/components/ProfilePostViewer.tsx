@@ -16,6 +16,9 @@ interface ProfilePostViewerProps {
   posts: CitizenPost[];
   startIndex: number;
   onClose: () => void;
+  /** Reaction and inline comments under the media (api#427); plain counts
+   * without it. */
+  renderPostActions?: (post: CitizenPost) => React.ReactNode;
 }
 
 /**
@@ -28,6 +31,7 @@ export function ProfilePostViewer({
   posts,
   startIndex,
   onClose,
+  renderPostActions,
 }: ProfilePostViewerProps) {
   const [postIndex, setPostIndex] = useState(startIndex);
   const [itemIndex, setItemIndex] = useState(0);
@@ -207,22 +211,30 @@ export function ProfilePostViewer({
               {post.content}
             </p>
           )}
-          <div className="mt-3 flex items-center gap-5 text-sm text-zinc-300">
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[20px]">
-                favorite
+          {renderPostActions ? (
+            // Keyed by post so stepping to the next post starts with its
+            // comments closed.
+            <div key={post.id} className="mt-3">
+              {renderPostActions(post)}
+            </div>
+          ) : (
+            <div className="mt-3 flex items-center gap-5 text-sm text-zinc-300">
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[20px]">
+                  favorite
+                </span>
+                <span data-testid="viewer-likes">{post.likesCount}</span>
+                <span className="sr-only">likes</span>
               </span>
-              <span data-testid="viewer-likes">{post.likesCount}</span>
-              <span className="sr-only">likes</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[20px]">
-                chat_bubble
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[20px]">
+                  chat_bubble
+                </span>
+                <span data-testid="viewer-comments">{post.commentsCount}</span>
+                <span className="sr-only">comments</span>
               </span>
-              <span data-testid="viewer-comments">{post.commentsCount}</span>
-              <span className="sr-only">comments</span>
-            </span>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>,
