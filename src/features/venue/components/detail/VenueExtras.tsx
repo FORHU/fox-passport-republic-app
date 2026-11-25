@@ -833,71 +833,80 @@ export function HostBio({ host }: HostBioProps) {
   );
 }
 
+interface CancellationRule {
+  hoursBeforeEvent: number;
+  refundPercent: number;
+}
+
 interface HouseRulesProps {
   policies?: string[];
   cancellationPolicy?: {
     name?: string;
     description?: string;
-    rules?: { hoursBeforeEvent: number; refundPercent: number }[];
+    rules?: CancellationRule[];
   } | null;
+}
+
+function describeCancellationRule({
+  hoursBeforeEvent,
+  refundPercent,
+}: CancellationRule): string {
+  const refund = refundPercent > 0 ? `${refundPercent}% refund` : "No refund";
+  if (hoursBeforeEvent <= 0)
+    return `${refund} if cancelled before the event starts.`;
+  const unit = hoursBeforeEvent === 1 ? "hour" : "hours";
+  return `${refund} if cancelled at least ${hoursBeforeEvent} ${unit} before the event starts.`;
+}
+
+/**
+ * What the api refunds (`RefundSvc.computeRefund`): the first matching rule,
+ * most hours first, and nothing without a policy or without rules. Never
+ * promise more than that here (api#433).
+ */
+function cancellationLines(
+  policy: HouseRulesProps["cancellationPolicy"],
+): string[] {
+  if (!policy)
+    return [
+      "This venue hasn't set a cancellation policy, so no refund is offered if you cancel.",
+    ];
+  const rules = [...(policy.rules ?? [])].sort(
+    (a, b) => b.hoursBeforeEvent - a.hoursBeforeEvent,
+  );
+  if (!rules.some((rule) => rule.refundPercent > 0))
+    return ["Non-refundable. No refunds once booking is confirmed."];
+  return rules.map(describeCancellationRule);
 }
 
 export function HouseRules({
   policies = [],
   cancellationPolicy,
 }: HouseRulesProps) {
-  const cancellationName = cancellationPolicy?.name || "Flexible";
-  const rules = cancellationPolicy?.rules || [];
-  const topRule = rules[0];
-  const isNonRef = cancellationName.toLowerCase().includes("non-refundable");
-
-  let cancellationDetails = "Free cancellation up to 24 hours before event.";
-  if (isNonRef) {
-    cancellationDetails =
-      "Non-refundable. No refunds once booking is confirmed.";
-  } else if (topRule) {
-    cancellationDetails = `${topRule.refundPercent}% refund if cancelled at least ${topRule.hoursBeforeEvent} hours before event start.`;
-  } else if (cancellationPolicy?.description) {
-    cancellationDetails = cancellationPolicy.description;
-  }
-
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-6">
         Things to know
       </h3>
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid md:grid-cols-2 gap-8">
         <div>
           <h4 className="font-bold text-white text-sm mb-3">Venue Rules</h4>
           <div className="space-y-2 text-sm text-text-muted">
             {policies.length > 0 ? (
               policies.map((p, i) => <p key={i}>{p}</p>)
             ) : (
-              <>
-                <p>No outside catering without approval</p>
-                <p>Venue must be cleared after event</p>
-                <p>Contact owner for specific rules</p>
-              </>
+              <p>This venue hasn&apos;t listed any rules.</p>
             )}
           </div>
         </div>
         <div>
           <h4 className="font-bold text-white text-sm mb-3">
-            Safety &amp; Property
+            Cancellation Policy
+            {cancellationPolicy?.name ? ` (${cancellationPolicy.name})` : ""}
           </h4>
           <div className="space-y-2 text-sm text-text-muted">
-            <p>Carbon monoxide alarm</p>
-            <p>Smoke alarm</p>
-            <p>Security camera on property</p>
-          </div>
-        </div>
-        <div>
-          <h4 className="font-bold text-white text-sm mb-3">
-            Cancellation Policy ({cancellationName})
-          </h4>
-          <div className="space-y-2 text-sm text-text-muted">
-            <p>{cancellationDetails}</p>
-            <p>Review the full policy for details.</p>
+            {cancellationLines(cancellationPolicy).map((line) => (
+              <p key={line}>{line}</p>
+            ))}
           </div>
         </div>
       </div>
