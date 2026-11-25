@@ -12,7 +12,12 @@ export interface EventTemplate {
   createdAt: string;
   images: { id: string; url: string; name: string }[];
   templateVenues?: { venue?: { city?: string; price?: number } }[];
-  owner?: { id: string; name: string };
+  owner?: {
+    id: string;
+    name: string;
+    /** When an admin approved their government ID — the host card badge. */
+    identityVerifiedAt?: string | null;
+  };
   maxAttendees?: number | null;
   currentAttendees?: number;
   estimatedTotal?: number;

@@ -131,10 +131,12 @@ export function VerificationClient() {
                       }
                 }
               >
+                {/* Not "Verified" or the seal icon: those mean an approved
+                    government ID (the Identity card below, app#382). */}
                 <span className="material-symbols-outlined text-[14px]">
-                  {emailVerified ? "verified" : "error"}
+                  {emailVerified ? "mark_email_read" : "error"}
                 </span>
-                {emailVerified ? "Verified" : "Not verified"}
+                {emailVerified ? "Email confirmed" : "Not confirmed"}
               </span>
             </div>
 

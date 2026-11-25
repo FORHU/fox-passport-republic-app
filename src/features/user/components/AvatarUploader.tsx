@@ -8,12 +8,15 @@ interface AvatarUploaderProps {
   currentUrl?: string;
   initials: string;
   onUploaded: (url: string) => void;
+  /** User.identityVerifiedAt — the seal only shows once an admin approved their ID. */
+  verifiedAt?: string | null;
 }
 
 export default function AvatarUploader({
   currentUrl,
   initials,
   onUploaded,
+  verifiedAt,
 }: AvatarUploaderProps) {
   const { uploadFile, isUploading, error: uploadError } = useFileUpload();
   const [preview, setPreview] = useState<string | null>(null);
@@ -126,12 +129,18 @@ export default function AvatarUploader({
           </div>
         )}
 
-        {/* Verified badge */}
-        <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-accent rounded-full border-2 border-surface flex items-center justify-center">
-          <span className="material-symbols-outlined text-black text-[12px] font-bold">
-            verified
-          </span>
-        </div>
+        {/* Verified badge — approved government ID only (app#382) */}
+        {verifiedAt && (
+          <div
+            title="ID verified by Fox Passport"
+            aria-label="ID verified"
+            className="absolute -bottom-1 -right-1 h-6 w-6 bg-accent rounded-full border-2 border-surface flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-black text-[12px] font-bold">
+              verified
+            </span>
+          </div>
+        )}
       </div>
 
       <input

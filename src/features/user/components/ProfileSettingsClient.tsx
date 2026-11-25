@@ -352,6 +352,9 @@ export default function ProfileSettingsClient({
                   currentUrl={profileImage || undefined}
                   initials={initials}
                   onUploaded={(url) => setProfileImage(url)}
+                  verifiedAt={
+                    profile?.identityVerifiedAt ?? storeUser?.identityVerifiedAt
+                  }
                 />
               </div>
               <p className="font-display font-bold text-white truncate">
