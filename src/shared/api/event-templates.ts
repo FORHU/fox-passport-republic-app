@@ -11,7 +11,9 @@ export interface EventTemplate {
   targetCountry?: string;
   createdAt: string;
   images: { id: string; url: string; name: string }[];
-  templateVenues?: { venue?: { city?: string; price?: number } }[];
+  templateVenues?: {
+    venue?: { name?: string; city?: string; price?: number };
+  }[];
   owner?: {
     id: string;
     name: string;
