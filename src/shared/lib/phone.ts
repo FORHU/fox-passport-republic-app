@@ -37,6 +37,32 @@ export function normalizePhone(
 }
 
 /**
+ * Countries where a contact number must be a mobile number (landlines are
+ * refused). Kept in step with the API's MOBILE_ONLY (utils/phone.ts).
+ */
+export const MOBILE_ONLY: ReadonlySet<string> = new Set(["PH"]);
+
+/**
+ * A contact number (a Venue Foxer's) as E.164: normalizePhone, and a mobile
+ * number where its country is in MOBILE_ONLY — `+639171234567` passes, the
+ * Manila landline `+63 2 8123 4567` doesn't. Else null. Kept in step with the
+ * API's normalizeContactPhone.
+ */
+export function normalizeContactPhone(
+  raw: string,
+  defaultCountry: string,
+): string | null {
+  const e164 = normalizePhone(raw, defaultCountry);
+  if (!e164) return null;
+  const parsed = parsePhoneNumberFromString(e164);
+  return parsed?.country &&
+    MOBILE_ONLY.has(parsed.country) &&
+    parsed.getType() !== "MOBILE"
+    ? null
+    : e164;
+}
+
+/**
  * A saved number split for the country picker and the input:
  * `+639171234567` → `{ country: "PH", number: "917 123 4567" }`. Numbers saved
  * before E.164 (`09171234567`) are read as Philippine.

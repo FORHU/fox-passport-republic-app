@@ -142,6 +142,8 @@ describe("Venue Foxer application — one country", () => {
     expect(
       screen.getByText("PAN: ABCDE1234F · Aadhaar: 1234 5678 9012"),
     ).toBeInTheDocument();
-    expect(screen.getByText(/^e\.g\. \+91 /)).toBeInTheDocument();
+    // The +code is the field's fixed prefix (api#492), not part of the hint.
+    expect(screen.getByTestId("phone-prefix")).toHaveTextContent("+91");
+    expect(screen.getByText(/^e\.g\. \d{5} \d{5}$/)).toBeInTheDocument();
   });
 });
