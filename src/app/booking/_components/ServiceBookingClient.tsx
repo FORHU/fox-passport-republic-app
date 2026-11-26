@@ -22,6 +22,7 @@ import { ScheduleConflictWarning } from "@/shared/components/ui/ScheduleConflict
 import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import LandingHeader from "@/shared/components/layout/LandingHeader";
+import { ServiceListingSummaryCard } from "@/features/service/components/ServiceListingSummaryCard";
 
 export default function ServiceBookingClient({
   serviceId,
@@ -666,157 +667,122 @@ export default function ServiceBookingClient({
             {/* Right: Summary */}
             <div className="lg:col-span-4">
               <div className="sticky top-32 space-y-6">
-                <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/10 shadow-glow">
-                  <div className="relative h-48">
-                    {imageUrl ? (
-                      <img
-                        alt={service.name}
-                        className="w-full h-full object-cover"
-                        src={imageUrl}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-surface-highlight/50 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white/20 text-[64px]">
-                          build
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/50 to-transparent" />
-                    <div className="absolute bottom-4 left-6 right-6">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-orange-400 text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                          {service.category ?? "Service"}
-                        </span>
-                      </div>
-                      <h3 className="text-xl font-display font-bold text-white leading-tight">
-                        {service.name}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <div className="p-6 space-y-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Rate</span>
-                      <span className="text-white font-medium">
-                        {rateLabel}
-                      </span>
-                    </div>
-                    {!isPerSession && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-text-muted">Duration</span>
-                        <span className="text-white font-medium">
-                          {durationHours} {durationLabel.toLowerCase()}
-                        </span>
-                      </div>
-                    )}
-                    {sessionCount > 1 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-text-muted">Sessions</span>
-                        <span className="text-orange-400 font-bold">
-                          × {sessionCount}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Guests</span>
-                      <span className="text-white font-medium">
-                        {guestCount}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Service fee</span>
-                      <span className="text-white font-medium">
-                        {platformFee === null ? (
-                          <span className="text-white/40">
-                            Added at checkout
-                          </span>
+                <ServiceListingSummaryCard
+                  name={service.name}
+                  category={service.category ?? "Service"}
+                  imageUrl={imageUrl}
+                  rateLabel={rateLabel}
+                  footer={
+                    <>
+                      <button
+                        disabled={isSubmitting}
+                        onClick={handleProceed}
+                        className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />{" "}
+                            Creating booking…
+                          </>
                         ) : (
-                          format(platformFee)
+                          <>
+                            Proceed to Payment{" "}
+                            <span className="material-symbols-outlined">
+                              arrow_forward
+                            </span>
+                          </>
                         )}
-                      </span>
-                    </div>
-                    {voucherDiscount > 0 && (
-                      <div className="flex justify-between text-sm text-green-400">
-                        <span>
-                          {autoApplied
-                            ? "Discount applied automatically"
-                            : `Voucher (${appliedVoucherCode})`}
+                      </button>
+                      <p className="text-center text-[10px] text-text-muted mt-3">
+                        <span className="material-symbols-outlined text-[12px] align-middle mr-1">
+                          lock
                         </span>
-                        <span>-{format(voucherDiscount)}</span>
-                      </div>
-                    )}
-
-                    {!autoApplied && (
-                      <div className="flex gap-2">
-                        <input
-                          aria-label="Voucher code"
-                          type="text"
-                          placeholder="Voucher code"
-                          value={voucherCodeInput}
-                          onChange={(e) => {
-                            setVoucherCodeInput(e.target.value);
-                            setVoucherError(null);
-                          }}
-                          className="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleApplyVoucher}
-                          disabled={
-                            voucherChecking ||
-                            !voucherCodeInput.trim() ||
-                            bookingDates.length === 0
-                          }
-                          className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50"
-                        >
-                          {voucherChecking ? "…" : "Apply"}
-                        </button>
-                      </div>
-                    )}
-                    {voucherError && (
-                      <p className="text-xs text-red-400">{voucherError}</p>
-                    )}
-
-                    <div className="h-px bg-white/10 my-2" />
-                    <div className="flex justify-between items-end">
-                      <span className="text-sm font-bold text-white">
-                        Total
-                      </span>
-                      <span className="text-2xl font-display font-bold text-accent">
-                        {format(total)}
+                        Secure encrypted checkout · Payment held safely until
+                        confirmed
+                      </p>
+                    </>
+                  }
+                >
+                  {!isPerSession && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">Duration</span>
+                      <span className="text-white font-medium">
+                        {durationHours} {durationLabel.toLowerCase()}
                       </span>
                     </div>
-                  </div>
-
-                  <div className="px-6 pb-6">
-                    <button
-                      disabled={isSubmitting}
-                      onClick={handleProceed}
-                      className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />{" "}
-                          Creating booking…
-                        </>
-                      ) : (
-                        <>
-                          Proceed to Payment{" "}
-                          <span className="material-symbols-outlined">
-                            arrow_forward
-                          </span>
-                        </>
-                      )}
-                    </button>
-                    <p className="text-center text-[10px] text-text-muted mt-3">
-                      <span className="material-symbols-outlined text-[12px] align-middle mr-1">
-                        lock
+                  )}
+                  {sessionCount > 1 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">Sessions</span>
+                      <span className="text-orange-400 font-bold">
+                        × {sessionCount}
                       </span>
-                      Secure encrypted checkout · Payment held safely until
-                      confirmed
-                    </p>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-text-muted">Guests</span>
+                    <span className="text-white font-medium">{guestCount}</span>
                   </div>
-                </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-text-muted">Service fee</span>
+                    <span className="text-white font-medium">
+                      {platformFee === null ? (
+                        <span className="text-white/40">Added at checkout</span>
+                      ) : (
+                        format(platformFee)
+                      )}
+                    </span>
+                  </div>
+                  {voucherDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-400">
+                      <span>
+                        {autoApplied
+                          ? "Discount applied automatically"
+                          : `Voucher (${appliedVoucherCode})`}
+                      </span>
+                      <span>-{format(voucherDiscount)}</span>
+                    </div>
+                  )}
+
+                  {!autoApplied && (
+                    <div className="flex gap-2">
+                      <input
+                        aria-label="Voucher code"
+                        type="text"
+                        placeholder="Voucher code"
+                        value={voucherCodeInput}
+                        onChange={(e) => {
+                          setVoucherCodeInput(e.target.value);
+                          setVoucherError(null);
+                        }}
+                        className="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyVoucher}
+                        disabled={
+                          voucherChecking ||
+                          !voucherCodeInput.trim() ||
+                          bookingDates.length === 0
+                        }
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50"
+                      >
+                        {voucherChecking ? "…" : "Apply"}
+                      </button>
+                    </div>
+                  )}
+                  {voucherError && (
+                    <p className="text-xs text-red-400">{voucherError}</p>
+                  )}
+
+                  <div className="h-px bg-white/10 my-2" />
+                  <div className="flex justify-between items-end">
+                    <span className="text-sm font-bold text-white">Total</span>
+                    <span className="text-2xl font-display font-bold text-accent">
+                      {format(total)}
+                    </span>
+                  </div>
+                </ServiceListingSummaryCard>
 
                 <div className="rounded-3xl border border-orange-400/20 bg-white/3 overflow-hidden">
                   <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-orange-400/10">
