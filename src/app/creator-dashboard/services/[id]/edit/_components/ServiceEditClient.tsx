@@ -124,7 +124,7 @@ function ServiceEditContent({ id }: Props) {
           onSaveDraft={isDraft ? handleSaveDraft : undefined}
           onPublish={handlePublish}
         />
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
           <ListingSidebar
             activeType={activeType}
             labels={labels}

@@ -78,8 +78,8 @@ export function ListingSidebar({
   const priceMsg = priceError(price);
 
   return (
-    <aside className="w-80 shrink-0 border-r border-white/5 bg-surface flex flex-col relative z-10">
-      <div className="p-6 border-b border-white/5">
+    <aside className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-white/5 bg-surface flex flex-col relative z-10">
+      <div className="p-4 sm:p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-lg text-white mb-1">
           Details
         </h3>
@@ -88,7 +88,8 @@ export function ListingSidebar({
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+      {/* Its own scroller only beside the preview (lg+); stacked, the page scrolls. */}
+      <div className="lg:flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
         {/* Category Selection */}
         <div>
           <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-3 block">
@@ -249,7 +250,11 @@ export function ListingSidebar({
             {currentStatuses.map((s) => (
               <label
                 key={s}
-                className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                // `relative` keeps the sr-only (absolute) radio inside the
+                // scrolling list. Without it the radio sits against the aside,
+                // overflows the studio row, and focusing it scrolls that
+                // overflow-hidden row out of reach (#406).
+                className={`relative flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                   status === s
                     ? "bg-white/10 border-white/20"
                     : "bg-white/5 border-white/5 hover:bg-white/10"
