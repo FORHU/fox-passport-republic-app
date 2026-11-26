@@ -11,7 +11,9 @@ import {
   experienceLabel,
 } from "@/shared/lib/experienceBracket";
 
-type RoleStatus = "pending" | "approved" | "rejected" | "revision_requested";
+// `withdrawn`: the applicant took it back before a decision (api#367).
+type RoleStatus =
+  "pending" | "approved" | "rejected" | "revision_requested" | "withdrawn";
 
 interface FileRecord {
   id: string;
@@ -86,6 +88,7 @@ const STATUS_STYLES: Record<RoleStatus, string> = {
   approved: "bg-green-500/10 text-green-400 border-green-500/20",
   rejected: "bg-red-500/10 text-red-400 border-red-500/20",
   revision_requested: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  withdrawn: "bg-white/5 text-white/50 border-white/10",
 };
 
 const STATUS_ICONS: Record<RoleStatus, string> = {
@@ -93,6 +96,7 @@ const STATUS_ICONS: Record<RoleStatus, string> = {
   approved: "check_circle",
   rejected: "cancel",
   revision_requested: "flag",
+  withdrawn: "undo",
 };
 
 const STATUS_LABELS: Record<RoleStatus, string> = {
@@ -100,6 +104,7 @@ const STATUS_LABELS: Record<RoleStatus, string> = {
   approved: "Approved",
   rejected: "Rejected",
   revision_requested: "Needs Revision",
+  withdrawn: "Withdrawn",
 };
 
 /** How an admin settles a claim of more than 30 years (api#423). */
@@ -954,6 +959,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                 "revision_requested",
                 "approved",
                 "rejected",
+                "withdrawn",
               ] as const
             ).map((f) => (
               <button

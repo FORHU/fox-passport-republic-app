@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -9,6 +9,8 @@ import RequireAuth from "@/shared/auth/RequireAuth";
 import PageLoader from "@/shared/components/ui/PageLoader";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 import { isFoxerRole } from "@/shared/constants/roles";
 import { ROLES, type RoleCatalogEntry } from "@/shared/data/roleCatalog";
 import { RoleDetailsModal } from "./RoleDetailsModal";
@@ -82,7 +84,14 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const hasExistingRoles = existingRoles.length > 0;
 
   const [step, setStep] = useState<Step>(hasExistingRoles ? 3 : 1);
-  const [pendingRoles, setPendingRoles] = useState<string[]>([]);
+  // Applications waiting for review, kept with their ids so one can be
+  // withdrawn (api#367).
+  const [pendingRequests, setPendingRequests] = useState<
+    { id: string; roleType: string }[]
+  >([]);
+  const pendingRoles = pendingRequests.map((r) => r.roleType);
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirm();
   const [revisionRequests, setRevisionRequests] = useState<
     { id: string; roleType: string }[]
   >([]);
@@ -113,24 +122,57 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   // stepper), so the form waits for them instead of jumping from step 1.
   const [rolesChecked, setRolesChecked] = useState(false);
 
-  useEffect(() => {
-    api
-      .get("/role-requests/my")
-      .then((res) => {
+  const loadRoleRequests = useCallback(
+    () =>
+      api.get("/role-requests/my").then((res) => {
         const requests: any[] = res.data?.data ?? [];
-        const pending: string[] = requests
+        const pending = requests
           .filter((r) => r.status === "pending")
-          .map((r) => r.roleType);
+          .map((r) => ({ id: r.id, roleType: r.roleType }));
         const revisions = requests
           .filter((r) => r.status === "revision_requested")
           .map((r) => ({ id: r.id, roleType: r.roleType }));
-        setPendingRoles(pending);
+        setPendingRequests(pending);
         setRevisionRequests(revisions);
-        if (pending.length > 0 || revisions.length > 0) setStep(3);
+        return pending.length > 0 || revisions.length > 0;
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    loadRoleRequests()
+      .then((hasOpen) => {
+        if (hasOpen) setStep(3);
       })
       .catch(() => {})
       .finally(() => setRolesChecked(true));
-  }, []);
+  }, [loadRoleRequests]);
+
+  // The applicant takes back an application still under review (api#367);
+  // the role can be applied for again afterwards.
+  const withdrawApplication = async (requestId: string, roleTitle: string) => {
+    const ok = await confirm({
+      title: `Withdraw your ${roleTitle} application?`,
+      description:
+        "It leaves the review queue for good. You can apply for this role again later.",
+      confirmLabel: "Withdraw application",
+      cancelLabel: "Keep it",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setWithdrawingId(requestId);
+    try {
+      await api.patch(`/role-requests/${requestId}/withdraw`);
+      setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
+      toast.success("Application withdrawn");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Couldn't withdraw the application"));
+      // It may have been decided meanwhile: show where it stands now.
+      loadRoleRequests().catch(() => {});
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
 
   const hasCommittedRoles =
     hasExistingRoles || pendingRoles.length > 0 || revisionRequests.length > 0;
@@ -586,6 +628,17 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                   }
 
                   if (isPending) {
+                    // One button per application under review on this card
+                    // (the Provider card also covers Event Coordinator).
+                    const cardRequests = pendingRequests.filter((r) =>
+                      coveredRoles.includes(r.roleType),
+                    );
+                    const requestTitle = (roleType: string) =>
+                      roleType === "organizer"
+                        ? (role.subsections?.find(
+                            (s) => s.key === "coordinator",
+                          )?.title ?? "Event Coordinator")
+                        : role.title;
                     return (
                       <div
                         key={role.type}
@@ -619,6 +672,26 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         <p className="text-xs text-white/25 mt-auto">
                           {role.desc}
                         </p>
+                        <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-x-4 gap-y-1">
+                          {cardRequests.map((r) => {
+                            const title = requestTitle(r.roleType);
+                            return (
+                              <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => withdrawApplication(r.id, title)}
+                                disabled={withdrawingId !== null}
+                                className="text-[11px] font-bold text-red-400/80 hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {withdrawingId === r.id
+                                  ? "Withdrawing…"
+                                  : cardRequests.length > 1
+                                    ? `Withdraw ${title} application`
+                                    : "Withdraw application"}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     );
                   }
@@ -725,6 +798,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 role={viewingRole}
                 onClose={() => setViewingRole(null)}
               />
+              {dialog}
 
               <StepFooter>
                 <BackButton
