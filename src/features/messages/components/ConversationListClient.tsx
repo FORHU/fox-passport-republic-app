@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Users, Pin, BellOff } from "lucide-react";
 import { toast } from "sonner";
+import { messagePreviewText } from "../messagePreview";
 import {
   useConversations,
   useStartConversation,
@@ -202,7 +203,7 @@ export default function ConversationListClient({
                       </p>
                       <p className="text-[11px] text-white/40 truncate">
                         {c.lastMessage
-                          ? c.lastMessage.content
+                          ? messagePreviewText(c.lastMessage)
                           : (c.contextLabel ?? "Sent you a message request")}
                       </p>
                     </div>
@@ -302,7 +303,7 @@ export default function ConversationListClient({
                       {(c.lastMessage || c.contextLabel) && (
                         <p className="text-[11px] text-white/40 truncate">
                           {c.lastMessage
-                            ? `${c.lastMessage.isMine ? "You: " : ""}${c.lastMessage.content}`
+                            ? `${c.lastMessage.isMine ? "You: " : ""}${messagePreviewText(c.lastMessage)}`
                             : c.contextLabel}
                         </p>
                       )}

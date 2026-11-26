@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { usePostStatsStore } from "@/features/republic/store/usePostStatsStore";
 import type { FeedPost } from "@/features/republic/types";
 import { PostCard } from "../PostCard";
+import { __resetFeedVideoAutoplay } from "@/features/republic/hooks/useFeedVideoAutoplay";
 
 /** The feed gallery: one item keeps its own shape, 4+ items collapse to a
  * 2×2 grid with "+N" on the last tile, and the lightbox still reaches every item. */
@@ -128,6 +129,95 @@ describe("PostCard media gallery", () => {
 
     expect(screen.getByLabelText("Close")).toBeTruthy();
     expect(screen.getByLabelText("Go to photo 6")).toBeTruthy();
+    expect(onOpenDetail).not.toHaveBeenCalled();
+  });
+});
+
+describe("PostCard videos in the Republic feed (app#385 follow-up)", () => {
+  class FakeIO {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  const video = (n: number) => `https://cdn.test/clip-${n}.mp4`;
+  const volumeButtons = () => screen.queryAllByRole("button", { name: /mute/i });
+
+  beforeEach(() => {
+    vi.stubGlobal("IntersectionObserver", FakeIO);
+    __resetFeedVideoAutoplay();
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("plays a single video by itself in the feed, with a volume button", async () => {
+    render(
+      <PostCard
+        post={makePost([video(1)])}
+        onOpenDetail={() => {}}
+        autoplayVideos
+      />,
+    );
+    expect(
+      await screen.findByRole("button", { name: "Unmute" }),
+    ).toBeTruthy();
+  });
+
+  it("stays a still frame where autoplay isn't asked for (saved, detail)", () => {
+    render(<PostCard post={makePost([video(1)])} onOpenDetail={() => {}} />);
+    expect(volumeButtons()).toHaveLength(0);
+    expect(screen.getByTestId("video-play-badge")).toBeTruthy();
+  });
+
+  it("never autoplays inside the post detail", () => {
+    render(
+      <PostCard post={makePost([video(1)])} variant="modal" autoplayVideos />,
+    );
+    expect(volumeButtons()).toHaveLength(0);
+  });
+
+  it("plays only the first video tile of a multi-item post", async () => {
+    const { container } = render(
+      <PostCard
+        post={makePost([urls(1)[0], video(1), video(2)])}
+        onOpenDetail={() => {}}
+        autoplayVideos
+      />,
+    );
+    expect(await screen.findAllByRole("button", { name: "Unmute" })).toHaveLength(1);
+    const tile = screen.getByRole("button", { name: "Unmute" }).parentElement!;
+    expect(tile.querySelector("video")!.getAttribute("src")).toBe(video(1));
+    expect(container.querySelectorAll("video")).toHaveLength(2);
+  });
+
+  it("doesn't play a video hidden under +N", () => {
+    render(
+      <PostCard
+        post={makePost([...urls(3), video(1), video(2)])}
+        onOpenDetail={() => {}}
+        autoplayVideos
+      />,
+    );
+    expect(volumeButtons()).toHaveLength(0);
+  });
+
+  it("opens the viewer when the video is tapped, but not from the volume button", async () => {
+    const onOpenDetail = vi.fn();
+    const { container } = render(
+      <PostCard
+        post={makePost([video(1)])}
+        onOpenDetail={onOpenDetail}
+        autoplayVideos
+      />,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Unmute" }));
+    expect(screen.queryByLabelText("Close")).toBeNull();
+
+    fireEvent.click(container.querySelector("video")!);
+    expect(screen.getByLabelText("Close")).toBeTruthy();
     expect(onOpenDetail).not.toHaveBeenCalled();
   });
 });

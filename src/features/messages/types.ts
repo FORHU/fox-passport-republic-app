@@ -46,7 +46,14 @@ export interface Conversation {
   isIncomingRequest: boolean;
   /** Null when the conversation exists but nobody has sent a message yet
    * (e.g. it was created just from the relationship, or on a stale request). */
-  lastMessage: { content: string; isMine: boolean } | null;
+  lastMessage: {
+    content: string;
+    isMine: boolean;
+    /** It carried a post / files: "Sent a post" when content is empty.
+     * Optional: an older API doesn't send them. */
+    hasSharedPost?: boolean;
+    hasAttachments?: boolean;
+  } | null;
   /** Personal, not shared — muting/pinning is per-viewer. */
   isMuted: boolean;
   isPinned: boolean;

@@ -10,6 +10,7 @@ import {
   useDeclineConversationRequest,
 } from "../hooks/useMessages";
 import type { Conversation } from "../types";
+import { messagePreviewText } from "../messagePreview";
 
 interface MessageRequestsModalProps {
   onClose: () => void;
@@ -114,7 +115,7 @@ export function MessageRequestsModal({
                   </p>
                   <p className="text-[10px] text-zinc-500 truncate">
                     {c.lastMessage
-                      ? c.lastMessage.content
+                      ? messagePreviewText(c.lastMessage)
                       : "Sent you a message request"}
                   </p>
                 </div>

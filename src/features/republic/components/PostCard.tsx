@@ -9,8 +9,6 @@ import {
   History,
   MessageCircle,
   Pin,
-  Repeat2,
-  Send,
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -40,7 +38,9 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
 import { Badge } from "@/shared/components/ui/badge";
 import { Money } from "@/shared/components/ui/Money";
-import { MediaTile, VideoPlayBadge } from "@/shared/components/ui/MediaTile";
+import { MediaTile } from "@/shared/components/ui/MediaTile";
+import { FeedVideo } from "./FeedVideo";
+import { useSuspendFeedAutoplay } from "../hooks/useFeedVideoAutoplay";
 import { isVideoUrl } from "@/shared/lib/media";
 
 // Single-choice voting UI — tapping an option you already picked toggles
@@ -144,6 +144,10 @@ interface PostCardProps {
   ) => React.ReactNode;
   /** A comment or reply to scroll to and highlight once comments load. */
   focusCommentId?: string | null;
+  /** The Republic feed: a single video, or the first video tile, plays by
+   * itself (muted, with a volume button) while it's on screen. Feed variant
+   * only. */
+  autoplayVideos?: boolean;
 }
 
 export function PostCard({
@@ -155,6 +159,7 @@ export function PostCard({
   onMessageFoxerClick,
   renderShareModal,
   focusCommentId,
+  autoplayVideos = false,
 }: PostCardProps) {
   const { user } = useAuthStore();
   // Signed out, sign in and come back to wherever this card is shown
@@ -168,8 +173,6 @@ export function PostCard({
     likesCount,
     commentsCount,
     sharesCount,
-    sendsCount,
-    repostsCount,
     viewsCount,
     sharedByMe,
   } = usePostStats(post);
@@ -192,6 +195,8 @@ export function PostCard({
   const [showShareModal, setShowShareModal] = useState(false);
   const [showRepostModal, setShowRepostModal] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  // The full-screen viewer has its own player: feed videos wait.
+  useSuspendFeedAutoplay(lightboxIndex !== null);
   const [textExpanded, setTextExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -282,6 +287,16 @@ export function PostCard({
     setShowShareModal(true);
   };
 
+  // Repost (in the Share menu) publishes a new post of your own quoting this
+  // one, unlike the rest of Share, which doesn't touch your own feed.
+  const handleRepostClick = () => {
+    if (!user) {
+      signInHere();
+      return;
+    }
+    setShowRepostModal(true);
+  };
+
   // Opens the chat panel directly (no page navigation) and attaches
   // whichever specific listing/event the clicked button came from as the
   // conversation's context, instead of just the generic post.
@@ -332,6 +347,21 @@ export function PostCard({
   // The gallery shows at most this many tiles; the last one carries "+N"
   // for the rest, which stay reachable in the lightbox.
   const MAX_VISIBLE_MEDIA = 4;
+  // Which shown media item plays by itself: the only one if it's a video,
+  // else the first video tile not hidden under "+N". -1: none.
+  const autoplayIndex =
+    autoplayVideos && variant === "feed"
+      ? (post.mediaUrls ?? [])
+          .slice(0, MAX_VISIBLE_MEDIA)
+          .findIndex(
+            (url, idx) =>
+              isVideoUrl(url) &&
+              !(
+                idx === MAX_VISIBLE_MEDIA - 1 &&
+                post.mediaUrls.length > MAX_VISIBLE_MEDIA
+              ),
+          )
+      : -1;
   const isLongText = variant === "feed" && content.length > TRUNCATE_LENGTH;
   const displayedContent =
     isLongText && !textExpanded
@@ -551,7 +581,13 @@ export function PostCard({
                       : "aspect-square"
                 }`}
               >
-                {!single ? (
+                {!single && idx === autoplayIndex ? (
+                  <FeedVideo
+                    url={url}
+                    autoplay
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : !single ? (
                   <MediaTile
                     url={url}
                     sizes="(max-width: 1024px) 50vw, 340px"
@@ -559,14 +595,11 @@ export function PostCard({
                     showPlayBadge={hiddenCount <= 0}
                   />
                 ) : isVideoUrl(url) ? (
-                  <>
-                    <video
-                      src={url}
-                      muted
-                      className="block w-full h-auto max-h-[min(80vh,720px)] object-contain transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <VideoPlayBadge />
-                  </>
+                  <FeedVideo
+                    url={url}
+                    autoplay={idx === autoplayIndex}
+                    className="block w-full h-auto max-h-[min(80vh,720px)] object-contain"
+                  />
                 ) : (
                   <>
                     {/* A narrow photo is height-capped and would leave empty
@@ -889,6 +922,9 @@ export function PostCard({
           <PostShareMenu
             postId={post.id}
             onCopyLink={handleShare}
+            onSendInMessage={renderShareModal ? handleSendClick : undefined}
+            // A repost can't itself be reposted.
+            onRepost={post.originalPostId ? undefined : handleRepostClick}
             copied={copied}
             canShareToFacebook={canShareToFacebook}
             sharesCount={sharesCount}
@@ -899,38 +935,6 @@ export function PostCard({
               usePostStatsStore.getState().markShared(post.id);
             }}
           />
-
-          {/* Send in Message — Messenger-style share to a person/conversation,
-              distinct from the copy-link Share above. */}
-          <button
-            onClick={handleSendClick}
-            aria-label={`Send in message${sendsCount > 0 ? `, ${sendsCount}` : ""}`}
-            className="flex min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
-          >
-            <Send className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
-            <span className="hidden sm:inline">Send</span>
-            <ActionCount n={sendsCount} />
-          </button>
-
-          {/* Repost — publishes a new post of your own quoting this one,
-              distinct from Share/Send which don't touch your own feed. */}
-          {!post.originalPostId && (
-            <button
-              onClick={() => {
-                if (!user) {
-                  signInHere();
-                  return;
-                }
-                setShowRepostModal(true);
-              }}
-              aria-label={`Repost${repostsCount > 0 ? `, ${repostsCount}` : ""}`}
-              className="flex min-w-0 items-center justify-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
-            >
-              <Repeat2 className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
-              <span className="hidden sm:inline">Repost</span>
-              <ActionCount n={repostsCount} />
-            </button>
-          )}
         </div>
       </div>
 
