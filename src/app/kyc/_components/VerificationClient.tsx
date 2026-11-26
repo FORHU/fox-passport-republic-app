@@ -15,22 +15,13 @@ import api from "@/shared/lib/axios";
 import { useResendOtp, useVerifyEmail } from "@/features/auth/hooks/useAuth";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { IdentitySection } from "./IdentitySection";
+import { requestStatus, type RoleRequestStatus } from "./requestStatus";
 
 interface MyRoleRequest {
   id: string;
   roleType: RoleType;
-  status: "pending" | "approved" | "rejected" | "revision_requested";
+  status: RoleRequestStatus;
 }
-
-const REQUEST_STATUS: Record<
-  MyRoleRequest["status"],
-  { label: string; color: string }
-> = {
-  pending: { label: "Under review", color: "var(--warning)" },
-  approved: { label: "Approved", color: "var(--accent-text)" },
-  rejected: { label: "Not approved", color: "var(--error)" },
-  revision_requested: { label: "Needs a fix", color: "var(--warning)" },
-};
 
 /**
  * Where a citizen checks what's verified on their account and fixes what
@@ -227,7 +218,7 @@ export function VerificationClient() {
               <ul className="mt-5 divide-y divide-white/5">
                 {(requests.data ?? []).map((r) => {
                   const badge = ROLE_BADGE[r.roleType];
-                  const status = REQUEST_STATUS[r.status];
+                  const status = requestStatus(r.status);
                   return (
                     <li
                       key={r.id}

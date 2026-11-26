@@ -7,6 +7,8 @@ import { ShieldCheck, ArrowRight } from "lucide-react";
 import api from "@/shared/lib/axios";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import FileUploader from "@/shared/components/layout/FileUploader";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -50,6 +52,8 @@ export default function ResubmitDocumentsClient({
   const [request, setRequest] = useState<RoleRequestSummary | null>(null);
   const [replacements, setReplacements] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const { confirm, dialog } = useConfirm();
 
   useEffect(() => {
     api
@@ -86,8 +90,33 @@ export default function ResubmitDocumentsClient({
     }
   };
 
+  // Rather than fixing the documents, the applicant takes the application
+  // back (api#367) and can apply for the role again later.
+  const handleWithdraw = async () => {
+    if (!request) return;
+    const ok = await confirm({
+      title: "Withdraw this application?",
+      description:
+        "It leaves the review queue for good. You can apply for this role again later.",
+      confirmLabel: "Withdraw application",
+      cancelLabel: "Keep it",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setWithdrawing(true);
+    try {
+      await api.patch(`/role-requests/${request.id}/withdraw`);
+      toast.success("Application withdrawn");
+      router.push("/onboarding");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Couldn't withdraw the application"));
+      setWithdrawing(false);
+    }
+  };
+
   return (
     <RequireAuth>
+      {dialog}
       <ApplicationFlowHeader />
       <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
         <div className="w-full max-w-2xl bg-surface-raised rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl">
@@ -186,6 +215,16 @@ export default function ResubmitDocumentsClient({
                 >
                   {submitting ? "Submitting…" : "Resubmit Documents"}
                   {!submitting && <ArrowRight size={18} />}
+                </button>
+              </div>
+              <div className="pt-6 text-center">
+                <button
+                  type="button"
+                  onClick={handleWithdraw}
+                  disabled={withdrawing || submitting}
+                  className="text-sm font-semibold text-red-400/80 hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {withdrawing ? "Withdrawing…" : "Withdraw application"}
                 </button>
               </div>
             </>
