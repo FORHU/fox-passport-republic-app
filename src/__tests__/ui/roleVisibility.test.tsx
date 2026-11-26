@@ -193,3 +193,26 @@ describe("the Republic feed's left sidebar", () => {
     expect(screen.queryByText("Partner Resource Pool")).not.toBeInTheDocument();
   });
 });
+
+/**
+ * app#437: performer gigs are a tab of the Services page, so the nav has one
+ * Services link and no separate Performers link.
+ */
+describe("the Services link", () => {
+  beforeEach(() => useAuthStore.getState().logout?.());
+
+  it("is the only service link a Provider gets", () => {
+    signIn({
+      roleType: ["providerFoxer"],
+      permissions: ["asset:manage", "service:manage", "performer:manage"],
+    });
+    const shown = labels();
+    expect(shown).toContain("Services");
+    expect(shown).not.toContain("Performers");
+  });
+
+  it("still shows for someone who manages performer gigs only", () => {
+    signIn({ roleType: ["providerFoxer"], permissions: ["performer:manage"] });
+    expect(labels()).toContain("Services");
+  });
+});

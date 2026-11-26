@@ -24,6 +24,9 @@ const mockAccess = {
   canManageInventory: true,
   canManageServices: true,
   canManagePerformers: true,
+  // A fifth section, so a tab still folds into More: performer gigs became a
+  // tab of Services and lost their own link (app#437).
+  canProposePartnerships: true,
 };
 
 vi.mock("@/shared/auth/useRoleAccess", () => ({
