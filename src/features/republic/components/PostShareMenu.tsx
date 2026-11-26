@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Link2, Loader2, Share2 } from "lucide-react";
+import { Link2, Loader2, Repeat2, Send, Share2 } from "lucide-react";
 import { FacebookIcon } from "@/shared/components/ui/FacebookIcon";
 import { useShareToFacebook } from "../hooks/useShareToFacebook";
 import { ActionCount } from "./ActionCount";
@@ -20,14 +20,22 @@ interface PostShareMenuProps {
   shared?: boolean;
   /** Called when a press puts the video on Facebook, so it's counted. */
   onFacebookShared?: () => void;
+  /** Opens the "Send in message" picker; PostCard owns it (and the sign-in
+   * prompt). Without it the menu has no Send item. */
+  onSendInMessage?: () => void;
+  /** Opens the repost composer; PostCard owns it (and the sign-in prompt).
+   * Without it (e.g. on a repost, which can't be reposted) there's no
+   * Repost item. */
+  onRepost?: () => void;
 }
 
 const ITEM =
   "w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors disabled:opacity-60 disabled:pointer-events-none";
 
 /**
- * "Share" in a post's action bar. Opens a menu: Copy link for everyone, and on
- * the viewer's own public video post, Share to Facebook Page. A Facebook share
+ * "Share" in a post's action bar. Opens a menu: Send in message (when the page
+ * wires the picker), Repost (when the post can be reposted), Copy link for
+ * everyone, and on the viewer's own public video post, Share to Facebook Page. A Facebook share
  * keeps running after the menu closes, and the button shows it.
  */
 export function PostShareMenu({
@@ -38,6 +46,8 @@ export function PostShareMenu({
   sharesCount = 0,
   shared = false,
   onFacebookShared,
+  onSendInMessage,
+  onRepost,
 }: PostShareMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -105,6 +115,34 @@ export function PostShareMenu({
           aria-label="Share options"
           className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-60 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-20 py-1"
         >
+          {onSendInMessage && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                onSendInMessage();
+              }}
+              className={ITEM}
+            >
+              <Send className="w-4 h-4" />
+              Send in message
+            </button>
+          )}
+          {onRepost && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                onRepost();
+              }}
+              className={ITEM}
+            >
+              <Repeat2 className="w-4 h-4" />
+              Repost
+            </button>
+          )}
           <button
             type="button"
             role="menuitem"

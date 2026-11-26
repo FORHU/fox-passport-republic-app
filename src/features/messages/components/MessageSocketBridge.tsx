@@ -12,6 +12,7 @@ import {
   useChatWindowsStore,
 } from "../store/useChatWindowsStore";
 import type { Conversation, Message, MessageReactionEntry } from "../types";
+import { messagePreviewText } from "../messagePreview";
 
 /**
  * Turns a socket `new_message` push into this feature's state, a toast, and
@@ -66,7 +67,11 @@ export default function MessageSocketBridge() {
           if (conversation?.isMuted) return;
 
           toast.info("New message", {
-            description: message.content,
+            description: messagePreviewText({
+              content: message.content,
+              hasSharedPost: !!message.sharedPost,
+              hasAttachments: (message.attachmentUrls?.length ?? 0) > 0,
+            }),
             action: {
               label: "View",
               onClick: () =>

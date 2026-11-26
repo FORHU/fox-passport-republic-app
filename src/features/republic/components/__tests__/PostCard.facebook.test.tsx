@@ -75,9 +75,10 @@ describe("PostCard Share to Facebook", () => {
     render(<PostCard post={makePost()} onOpenDetail={() => {}} />);
     expect(facebookButton()).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Copy link" })).toBeInTheDocument();
-    // The existing actions are all still there.
-    expect(screen.getByText("Send")).toBeInTheDocument();
-    expect(screen.getByText("Repost")).toBeInTheDocument();
+    // Repost now lives in this menu too (app#385), not beside Share; Send
+    // joins it only where the page wires the message picker.
+    expect(screen.getByRole("menuitem", { name: "Repost" })).toBeInTheDocument();
+    expect(screen.queryByText("Send")).not.toBeInTheDocument();
   });
 
   it("hides it on someone else's post, where Share still copies the link", () => {

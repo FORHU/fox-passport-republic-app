@@ -8,7 +8,7 @@ import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
 import { usePostStatsStore } from "@/features/republic/store/usePostStatsStore";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { SharePostModal } from "@/features/messages/components/SharePostModal";
+import SharePostModalWithFollowing from "@/app/republic/_components/SharePostModalWithFollowing";
 import { BackButton } from "@/shared/components/ui/BackButton";
 
 export default function SavedPostsPage() {
@@ -153,7 +153,7 @@ export default function SavedPostsPage() {
                 onPostDeleted={handleUnsaved}
                 onPostUnsaved={handleUnsaved}
                 renderShareModal={(postToShare, onClose, onSent) => (
-                  <SharePostModal
+                  <SharePostModalWithFollowing
                     post={postToShare}
                     onClose={onClose}
                     onSent={onSent}
@@ -199,7 +199,7 @@ export default function SavedPostsPage() {
             setActivePost(null);
           }}
           renderShareModal={(postToShare, onClose, onSent) => (
-            <SharePostModal
+            <SharePostModalWithFollowing
               post={postToShare}
               onClose={onClose}
               onSent={onSent}

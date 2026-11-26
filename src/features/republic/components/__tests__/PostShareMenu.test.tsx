@@ -248,3 +248,59 @@ describe("PostShareMenu", () => {
     expect(openFacebookItem()).toHaveTextContent("Share to Facebook Page");
   });
 });
+
+describe("Send in message and Repost (app#385)", () => {
+  it("is the menu's first item and opens the picker", () => {
+    const onSendInMessage = vi.fn();
+    render(
+      <PostShareMenu
+        postId="p1"
+        onCopyLink={onCopyLink}
+        copied={false}
+        canShareToFacebook={false}
+        onSendInMessage={onSendInMessage}
+      />,
+    );
+    fireEvent.click(trigger());
+    const items = screen.getAllByRole("menuitem");
+    expect(items[0]).toHaveTextContent("Send in message");
+
+    fireEvent.click(items[0]);
+    expect(onSendInMessage).toHaveBeenCalledTimes(1);
+    expect(onCopyLink).not.toHaveBeenCalled();
+    // The menu closes behind it.
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("offers Repost after Send, and opens the composer", () => {
+    const onRepost = vi.fn();
+    render(
+      <PostShareMenu
+        postId="p1"
+        onCopyLink={onCopyLink}
+        copied={false}
+        canShareToFacebook={false}
+        onSendInMessage={vi.fn()}
+        onRepost={onRepost}
+      />,
+    );
+    fireEvent.click(trigger());
+    const items = screen.getAllByRole("menuitem").map((i) => i.textContent);
+    expect(items).toEqual(["Send in message", "Repost", "Copy link"]);
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Repost" }));
+    expect(onRepost).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("isn't offered where the page has no picker", () => {
+    renderMenu(false);
+    fireEvent.click(trigger());
+    expect(
+      screen.queryByRole("menuitem", { name: /send in message/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: /repost/i }),
+    ).not.toBeInTheDocument();
+  });
+});

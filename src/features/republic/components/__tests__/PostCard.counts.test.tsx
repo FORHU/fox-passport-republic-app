@@ -87,9 +87,12 @@ describe("PostCard action counts", () => {
       />,
     );
     const b = bar(container);
-    for (const n of ["12", "3", "4", "5", "1.2k"]) {
+    for (const n of ["12", "3", "4"]) {
       expect(b.getByText(n)).toBeTruthy();
     }
+    // Send and Repost moved into the Share menu (app#385), counts and all.
+    expect(b.queryByText("5")).toBeNull();
+    expect(b.queryByText("1.2k")).toBeNull();
   });
 
   it("shows the view count above the bar", () => {
@@ -177,26 +180,31 @@ describe("PostCard action counts", () => {
     expect(bar(container).getByText("2")).toBeTruthy();
   });
 
-  it("names Send and Repost with their counts for screen readers", () => {
+  it("has Send and Repost in the Share menu, not beside it (app#385)", () => {
     const { container } = render(
       <PostCard post={makePost({ sendsCount: 2, repostsCount: 9 })} />,
     );
     const scope = within(container);
     expect(
-      scope.getByRole("button", { name: "Send in message, 2" }),
-    ).toBeTruthy();
-    expect(scope.getByRole("button", { name: "Repost, 9" })).toBeTruthy();
+      scope.queryByRole("button", { name: /^send in message/i }),
+    ).toBeNull();
+    expect(scope.queryByRole("button", { name: /^repost/i })).toBeNull();
+    expect(bar(container).queryByText("2")).toBeNull();
+    expect(bar(container).queryByText("9")).toBeNull();
+
+    fireEvent.click(scope.getByRole("button", { name: /share/i }));
+    expect(scope.getByRole("menuitem", { name: "Repost" })).toBeTruthy();
   });
 
-  it("has no Repost button, and so no repost count, on a repost", () => {
+  it("offers no Repost on a repost", () => {
     const { container } = render(
       <PostCard
         post={makePost({ originalPostId: "orig", repostsCount: 7 } as never)}
       />,
     );
-    expect(
-      within(container).queryByRole("button", { name: /^Repost/ }),
-    ).toBeNull();
+    const scope = within(container);
+    fireEvent.click(scope.getByRole("button", { name: /share/i }));
+    expect(scope.queryByRole("menuitem", { name: /repost/i })).toBeNull();
     expect(bar(container).queryByText("7")).toBeNull();
   });
 });
