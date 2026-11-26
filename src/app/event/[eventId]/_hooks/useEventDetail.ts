@@ -112,10 +112,15 @@ export function useEventDetail(
   }, [template?.cancellationPolicyId]);
 
   /* ── Derived data ── */
-  const location =
-    [template?.targetCity, template?.targetState].filter(Boolean).join(", ") ||
-    null;
   const firstVenue = template?.templateVenues?.[0]?.venue;
+  // Every event has a venue (api#477): name it wherever the location shows.
+  const location =
+    [
+      firstVenue?.name,
+      [template?.targetCity, template?.targetState].filter(Boolean).join(", "),
+    ]
+      .filter(Boolean)
+      .join(" · ") || null;
   const mapLat: number | null = firstVenue?.lat ?? template?.lat ?? null;
   const mapLng: number | null = firstVenue?.lng ?? template?.lng ?? null;
 

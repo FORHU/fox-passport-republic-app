@@ -16,12 +16,16 @@ interface EventCardProps {
   event: EventTemplate;
 }
 
-/** The template's own city and state, else the city of a venue it uses. */
+/**
+ * The venue's name (every event has one, api#477), with the template's own
+ * city and state, else the venue's city.
+ */
 function templateLocation(event: EventTemplate): string {
-  const target = [event.targetCity, event.targetState]
-    .filter(Boolean)
-    .join(", ");
-  return target || event.templateVenues?.[0]?.venue?.city || "Location TBD";
+  const venue = event.templateVenues?.[0]?.venue;
+  const place =
+    [event.targetCity, event.targetState].filter(Boolean).join(", ") ||
+    venue?.city;
+  return [venue?.name, place].filter(Boolean).join(" · ") || "Location TBD";
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {

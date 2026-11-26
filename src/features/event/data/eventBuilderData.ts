@@ -63,6 +63,11 @@ export const EVENT_CATEGORIES = [
 
 // Icon categories for cost breakdown calculations
 export const VENUE_ICONS = ["location_city", "warehouse", "forest"];
+
+/** Whether a package line is the venue (older items carry only its icon). */
+export const isVenueItem = (
+  item: Pick<ResourceItem, "resourceType" | "icon">,
+) => item.resourceType === "venue" || VENUE_ICONS.includes(item.icon);
 export const TALENT_ICONS = [
   "music_note",
   "local_bar",

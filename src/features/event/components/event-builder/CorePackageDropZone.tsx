@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
-import { ResourceItem } from "@/features/event/data/eventBuilderData";
+import {
+  isVenueItem,
+  ResourceItem,
+} from "@/features/event/data/eventBuilderData";
 import { Money } from "@/shared/components/ui/Money";
 import { currencySymbol } from "@/shared/lib/currency";
 
@@ -47,7 +50,8 @@ export function CorePackageDropZone({
             Core Package
           </h3>
           <p className="text-xs text-text-muted">
-            Set an agreed price and mark items as optional for clients.
+            Set an agreed price and mark items as optional for clients. The
+            venue is always included.
           </p>
         </div>
         <span className="bg-white/5 text-white/70 px-3 py-1 rounded-full text-xs font-bold border border-white/5">
@@ -119,22 +123,32 @@ export function CorePackageDropZone({
                   />
                 </div>
                 <div className="shrink-0 pt-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onUpdateItem(item.id, { isOptional: !item.isOptional })
-                    }
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all ${
-                      item.isOptional
-                        ? "bg-yellow-400/10 text-yellow-400 border-yellow-400/20"
-                        : "bg-white/5 text-white/40 border-white/10 hover:text-white/70"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[14px]">
-                      {item.isOptional ? "toggle_on" : "toggle_off"}
+                  {/* Every event has a venue (api#477): it is never optional. */}
+                  {isVenueItem(item) ? (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border bg-white/5 text-white/40 border-white/10">
+                      <span className="material-symbols-outlined text-[14px]">
+                        lock
+                      </span>
+                      Required
                     </span>
-                    Optional
-                  </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateItem(item.id, { isOptional: !item.isOptional })
+                      }
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                        item.isOptional
+                          ? "bg-yellow-400/10 text-yellow-400 border-yellow-400/20"
+                          : "bg-white/5 text-white/40 border-white/10 hover:text-white/70"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[14px]">
+                        {item.isOptional ? "toggle_on" : "toggle_off"}
+                      </span>
+                      Optional
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
