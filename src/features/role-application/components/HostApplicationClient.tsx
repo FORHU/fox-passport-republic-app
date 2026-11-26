@@ -13,7 +13,14 @@ import {
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
 import { FieldControl, FieldError } from "@/shared/components/ui/FieldError";
-import { yearsOfExperienceError } from "../utils/yearsOfExperience";
+import {
+  experienceClaimError,
+  typedBracketLabel,
+  yearsMax,
+  yearsOfExperienceError,
+} from "../utils/yearsOfExperience";
+import ExperienceClaim from "./ExperienceClaim";
+import { useYearsOfExperienceInput } from "../hooks/useYearsOfExperienceInput";
 import {
   portfolioUrlsError,
   splitPortfolioUrls,
@@ -60,15 +67,31 @@ export default function HostApplicationClient() {
     setFormData((prev) => ({ ...prev, [field]: fileId }));
   };
 
+  // More than 30 years, proven by a CV (api#423).
+  const [claimingExperience, setClaimingExperience] = useState(false);
+  const experienceMax = yearsMax(claimingExperience);
+  const experienceInput = useYearsOfExperienceInput(experienceMax);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    // Over the limit is refused, so the field keeps its value (api#423).
+    if (name === "experience" && !experienceInput.accept(value)) return;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Kept as typed and checked instead: stripping non-digits turned "2.5" into
   // "25" (app#327).
-  const experienceError = yearsOfExperienceError(formData.experience);
+  const experienceError =
+    yearsOfExperienceError(formData.experience, experienceMax) ??
+    experienceClaimError(
+      formData.experience,
+      claimingExperience,
+      !!formData.portfolioFileId,
+    );
+  // Also says why an edit over the limit was refused.
+  const experienceMessage = experienceInput.error(formData.experience);
   const linksError = portfolioUrlsError(formData.portfolioUrls);
 
   const uploaded = FOXER_KYC_DOCUMENTS.filter(
@@ -115,7 +138,10 @@ export default function HostApplicationClient() {
         { label: "Base location", value: formData.location },
         {
           label: "Years of experience",
-          value: formData.experience,
+          value:
+            claimingExperience && typedBracketLabel(formData.experience)
+              ? `${typedBracketLabel(formData.experience)} (CV attached)`
+              : formData.experience,
         },
         { label: "Specializations", value: specializationLabels },
         {
@@ -190,7 +216,7 @@ export default function HostApplicationClient() {
 
         <div className="space-y-2">
           <label className={LABEL}>Years of Experience</label>
-          <FieldControl invalid={!!experienceError}>
+          <FieldControl invalid={!!experienceMessage}>
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
               <ShieldCheck size={18} />
             </div>
@@ -198,18 +224,32 @@ export default function HostApplicationClient() {
               type="text"
               inputMode="numeric"
               name="experience"
+              // Chrome's remembered entries paint the field light and are no
+              // help here.
+              autoComplete="off"
               value={formData.experience}
               onChange={handleChange}
-              aria-invalid={experienceError ? true : undefined}
+              aria-invalid={experienceMessage ? true : undefined}
               aria-describedby={
-                experienceError ? "experience-error" : undefined
+                experienceMessage ? "experience-error" : undefined
               }
-              className={`${INPUT} pl-12 ${experienceError ? "field-invalid pr-10" : ""}`}
+              className={`${INPUT} pl-12 ${experienceMessage ? "field-invalid pr-10" : ""}`}
               placeholder="e.g. 5"
             />
           </FieldControl>
-          <FieldError id="experience-error" message={experienceError} />
+          <FieldError id="experience-error" message={experienceMessage} />
         </div>
+
+        {/* Offered only once more than 30 has been refused (api#423). */}
+        {(experienceInput.offerClaim || claimingExperience) && (
+          <ExperienceClaim
+            claiming={claimingExperience}
+            years={formData.experience}
+            onClaimingChange={setClaimingExperience}
+            onCvUploaded={(id) => handleFileUpload("portfolioFileId", id)}
+            onCvCleared={() => handleFileUpload("portfolioFileId", "")}
+          />
+        )}
 
         <SpecializationPicker
           options={EVENT_CATEGORY_OPTIONS}
@@ -231,12 +271,19 @@ export default function HostApplicationClient() {
       >
         <KycDocumentSection onUpload={handleFileUpload} compact />
 
-        <FileUploader
-          label="Portfolio / Resume (Optional)"
-          purpose="portfolio"
-          onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
-          onFileCleared={() => handleFileUpload("portfolioFileId", "")}
-        />
+        {claimingExperience ? (
+          // The CV is the application's one Portfolio / Resume file.
+          <p className="text-xs text-white/40">
+            Your CV from the first step is sent as your Portfolio / Resume.
+          </p>
+        ) : (
+          <FileUploader
+            label="Portfolio / Resume (Optional)"
+            purpose="portfolio"
+            onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
+            onFileCleared={() => handleFileUpload("portfolioFileId", "")}
+          />
+        )}
 
         <div className="space-y-2">
           <label htmlFor="portfolio-urls" className={LABEL}>
