@@ -4,6 +4,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { useHostEventEdit } from "../useHostEventEdit";
 import { updateEvent, submitEventTemplate } from "@/features/event/api/events";
+import api from "@/shared/lib/axios";
+import { toast } from "sonner";
+
+vi.mock("@/shared/lib/axios", () => ({
+  default: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -64,6 +70,47 @@ describe("useHostEventEdit — handlePublish", () => {
     vi.clearAllMocks();
     vi.mocked(updateEvent).mockResolvedValue({} as unknown);
     vi.mocked(submitEventTemplate).mockResolvedValue({} as unknown);
+    vi.mocked(api.get).mockResolvedValue({ data: {} });
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+  });
+
+  it("attaches the venue as required before submitting (api#477)", async () => {
+    const { result } = renderHook(() => useHostEventEdit("evt-001"), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handlePublish();
+    });
+
+    expect(vi.mocked(api.post)).toHaveBeenCalledWith(
+      "/event-templates/evt-001/venues",
+      expect.objectContaining({ venueId: "venue-001", isOptional: false }),
+    );
+  });
+
+  it("stops and shows the API's reason when the venue can't be attached", async () => {
+    vi.mocked(api.post).mockRejectedValue({
+      response: {
+        status: 409,
+        data: {
+          message: "This event has no venue, so it can't be approved.",
+          code: "VENUE_REQUIRED",
+        },
+      },
+    });
+    const { result } = renderHook(() => useHostEventEdit("evt-001"), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handlePublish();
+    });
+
+    expect(vi.mocked(submitEventTemplate)).not.toHaveBeenCalled();
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+      "This event has no venue, so it can't be approved.",
+    );
   });
 
   it("calls submitEventTemplate after saving content when publish is clicked", async () => {

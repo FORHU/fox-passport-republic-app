@@ -15,32 +15,29 @@ const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,r
 const FILTER_TABS: {
   label: string;
   href: string;
-  allowed: keyof RoleAccess;
+  /** Shown when the person holds any of these. */
+  allowed: (keyof RoleAccess)[];
 }[] = [
   {
     label: "Venues",
     href: "/creator-dashboard/venues",
-    allowed: "canManageVenues",
+    allowed: ["canManageVenues"],
   },
   {
     label: "Events",
     href: "/creator-dashboard/events",
-    allowed: "canManageEvents",
+    allowed: ["canManageEvents"],
   },
   {
     label: "Assets",
     href: "/creator-dashboard/assets",
-    allowed: "canManageInventory",
+    allowed: ["canManageInventory"],
   },
+  // Performer gigs are a tab of the Services page (app#437).
   {
     label: "Services",
     href: "/creator-dashboard/services",
-    allowed: "canManageServices",
-  },
-  {
-    label: "Performers",
-    href: "/creator-dashboard/performers",
-    allowed: "canManagePerformers",
+    allowed: ["canManageServices", "canManagePerformers"],
   },
 ];
 
@@ -169,7 +166,9 @@ export default function MobileMyListingsView({
             paddingBottom: 2,
           }}
         >
-          {FILTER_TABS.filter((tab) => access[tab.allowed]).map((tab) => {
+          {FILTER_TABS.filter((tab) =>
+            tab.allowed.some((key) => access[key]),
+          ).map((tab) => {
             const active = tab.label === "Venues";
             return (
               <button

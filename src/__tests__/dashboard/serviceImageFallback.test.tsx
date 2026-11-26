@@ -36,7 +36,10 @@ function service(overrides: Partial<ServiceItem> = {}): ServiceItem {
 }
 
 const picture = () => screen.queryByRole("img", { name: "Serbicio y Polio" });
-const placeholder = (icon: string) => screen.queryByText(icon);
+// The banner's large category icon; the category pill shows the same icon
+// small, whether or not there is a picture (app#437 card design).
+const placeholder = (icon: string) =>
+  screen.queryByText(icon, { selector: ".text-5xl" });
 
 describe("service pictures on the dashboard", () => {
   it("shows the picture while it loads", () => {

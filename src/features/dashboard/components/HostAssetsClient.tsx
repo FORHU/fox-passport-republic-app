@@ -29,7 +29,7 @@ function normalizeCategoryValue(item: InventoryItem): string {
 }
 
 interface HostAssetsClientProps {
-  initialInventory: any[];
+  initialInventory: InventoryItem[];
 }
 
 export default function HostAssetsClient({

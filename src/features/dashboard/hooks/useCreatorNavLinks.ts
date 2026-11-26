@@ -47,15 +47,12 @@ export function useCreatorNavLinks() {
       href: "/creator-dashboard/assets",
       icon: "inventory_2",
     },
-    access.canManageServices && {
+    // Performer gigs are a tab of the Services page (app#437), which opens
+    // for either permission, so one link serves both.
+    (access.canManageServices || access.canManagePerformers) && {
       label: "Services",
       href: "/creator-dashboard/services",
       icon: "design_services",
-    },
-    access.canManagePerformers && {
-      label: "Performers",
-      href: "/creator-dashboard/performers",
-      icon: "theater_comedy",
     },
     // An Investor's whole workspace — it had no way in from the nav.
     access.canProposePartnerships && {

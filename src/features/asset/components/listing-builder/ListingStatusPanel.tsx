@@ -22,6 +22,8 @@ interface ListingStatusPanelProps {
   completionPercentage: number;
   isReadyToPublish: boolean;
   previewHref?: string;
+  /** Opens an in-page preview of the unsaved form; wins over `previewHref`. */
+  onPreview?: () => void;
 }
 
 export function ListingStatusPanel({
@@ -36,23 +38,27 @@ export function ListingStatusPanel({
   completionPercentage,
   isReadyToPublish,
   previewHref,
+  onPreview,
 }: ListingStatusPanelProps) {
   const labels = labelsProp ?? LISTING_LABELS[activeType];
+  const handlePreview =
+    onPreview ??
+    (previewHref ? () => window.open(previewHref, "_blank") : undefined);
   const displayCategory =
     category === "other" && customCategory
       ? customCategory
       : categories.find((c) => c.id === category)?.label || "-";
 
   return (
-    <aside className="w-80 shrink-0 border-l border-white/5 bg-surface flex flex-col shadow-2xl z-10">
-      <div className="p-6 border-b border-white/5">
+    <aside className="w-full lg:w-80 shrink-0 border-t lg:border-t-0 lg:border-l border-white/5 bg-surface flex flex-col shadow-2xl z-10">
+      <div className="p-4 sm:p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">
           Listing Status
         </h3>
         <p className="text-xs text-text-muted">Review & Publish</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="lg:flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-6">
         {/* Completion */}
         <div className="bg-surface-highlight/30 rounded-xl p-4 border border-white/5">
           <h4 className="text-xs font-bold text-white mb-2">Completion</h4>
@@ -98,19 +104,20 @@ export function ListingStatusPanel({
         </div>
       </div>
 
-      <div className="p-6 border-t border-white/5 bg-surface">
+      <div className="p-4 sm:p-6 border-t border-white/5 bg-surface">
         <button
-          onClick={
-            previewHref ? () => window.open(previewHref, "_blank") : undefined
-          }
-          disabled={!previewHref}
+          type="button"
+          onClick={handlePreview}
+          disabled={!handlePreview}
           title={
-            previewHref
-              ? "Open public listing page"
-              : "Publish or save a draft first"
+            onPreview
+              ? `Preview your ${labels.lowerNoun} as customers will see it`
+              : previewHref
+                ? "Open public listing page"
+                : "Publish or save a draft first"
           }
           className={`w-full py-3 rounded-xl border text-sm font-bold transition-all ${
-            previewHref
+            handlePreview
               ? "border-white/10 hover:bg-white hover:text-black text-white cursor-pointer"
               : "border-white/5 text-white/20 cursor-not-allowed"
           }`}

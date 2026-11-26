@@ -31,9 +31,8 @@ export default function MobileCreatorBottomNav() {
       ? "/creator-dashboard/events"
       : access.canManageInventory
         ? "/creator-dashboard/assets"
-        : access.canManageServices
-          ? "/creator-dashboard/services"
-          : "/creator-dashboard/performers";
+        : // Performer gigs are a tab of the Services page (app#437).
+          "/creator-dashboard/services";
 
   // An Organizer gets no platform pay (ADR 0005) — the tab used to sit here
   // regardless, pointing at a page that (now correctly) bounces them

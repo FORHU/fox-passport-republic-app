@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import { Loader2, AlertTriangle } from "lucide-react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import {
@@ -9,9 +9,13 @@ import {
   ListingPreviewCard,
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
-import { PERFORMER_LABELS } from "@/features/asset/components/listing-builder/listingLabels";
+import {
+  LISTING_LABELS,
+  PERFORMER_LABELS,
+} from "@/features/asset/components/listing-builder/listingLabels";
 import { useHostServiceEdit } from "@/features/service/hooks/useHostServiceEdit";
 import { ServiceAvailabilitySection } from "@/features/service/components/ServiceAvailabilitySection";
+import { ServicePreviewModal } from "@/features/service/components/ServicePreviewModal";
 
 interface Props {
   id: string;
@@ -59,6 +63,8 @@ function ServiceEditContent({ id }: Props) {
   } = useHostServiceEdit(id);
   // A gig is edited in the Gig Studio's words.
   const labels = mode === "performer" ? PERFORMER_LABELS : undefined;
+  const [isPreviewOpen, setPreviewOpen] = useState(false);
+  const closePreview = useCallback(() => setPreviewOpen(false), []);
 
   if (!id)
     return (
@@ -118,7 +124,7 @@ function ServiceEditContent({ id }: Props) {
           onSaveDraft={isDraft ? handleSaveDraft : undefined}
           onPublish={handlePublish}
         />
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
           <ListingSidebar
             activeType={activeType}
             labels={labels}
@@ -168,9 +174,23 @@ function ServiceEditContent({ id }: Props) {
             unit={unit}
             completionPercentage={completionPercentage}
             isReadyToPublish={isReadyToPublish}
-            previewHref={`/booking/service/${id}`}
+            onPreview={() => setPreviewOpen(true)}
           />
         </div>
+        {/* No location: this page doesn't load or save it. */}
+        <ServicePreviewModal
+          open={isPreviewOpen}
+          onClose={closePreview}
+          lowerNoun={(labels ?? LISTING_LABELS.service).lowerNoun}
+          title={title}
+          description={description}
+          displayCategory={displayCategory}
+          image={image}
+          price={price}
+          unit={unit}
+          status={status}
+          cancellationPolicyId={cancellationPolicyId}
+        />
       </div>
     </RequireAuth>
   );

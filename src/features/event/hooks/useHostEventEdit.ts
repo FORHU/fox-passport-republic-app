@@ -19,6 +19,7 @@ import {
 import api from "@/shared/lib/axios";
 import {
   EVENT_CATEGORIES,
+  isVenueItem,
   VENUE_ICONS,
   TALENT_ICONS,
 } from "@/features/event/data/eventBuilderData";
@@ -266,20 +267,17 @@ export function useHostEventEdit(eventId: string) {
 
       if (targetStatus === "pending") {
         // Attach venue separately if one is in the package
-        const venueItem = builder.baseItems.find((i) =>
-          VENUE_ICONS.includes(i.icon),
-        );
+        const venueItem = builder.baseItems.find(isVenueItem);
         const venueId = venueItem?.id ?? existingVenueIdRef.current ?? null;
+        // Every event has a venue (api#477). Attaching it again is a no-op on
+        // the API, so a failure here is real: stop before submitting, and the
+        // catch below shows the API's reason.
         if (venueId) {
-          try {
-            await api.post(`/event-templates/${eventId}/venues`, {
-              venueId,
-              agreedPrice: venueItem?.agreedPrice ?? venueItem?.cost ?? 0,
-              isOptional: venueItem?.isOptional ?? false,
-            });
-          } catch {
-            // venue attachment is best-effort
-          }
+          await api.post(`/event-templates/${eventId}/venues`, {
+            venueId,
+            agreedPrice: venueItem?.agreedPrice ?? venueItem?.cost ?? 0,
+            isOptional: false,
+          });
         }
         await submitEventTemplate(eventId);
       }

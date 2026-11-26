@@ -191,6 +191,58 @@ describe("AccountSetupForm", () => {
     });
   });
 
+  it("hides both passwords by default and shows or hides each with its own eye button", () => {
+    mocks.state.user = googleUser({ username: "kept.name" });
+    render(<AccountSetupForm />);
+
+    const password = screen.getByLabelText(/^password/i);
+    const confirm = screen.getByLabelText(/^confirm password/i);
+    const [passwordEye, confirmEye] = screen.getAllByRole("button", {
+      name: "Show password",
+    });
+    expect(password).toHaveAttribute("type", "password");
+    expect(confirm).toHaveAttribute("type", "password");
+    expect(passwordEye).toHaveAttribute("aria-pressed", "false");
+
+    type(/^password/i, GOOD_PASSWORD);
+    fireEvent.click(passwordEye);
+    expect(password).toHaveAttribute("type", "text");
+    expect(password).toHaveValue(GOOD_PASSWORD);
+    expect(passwordEye).toHaveAttribute("aria-pressed", "true");
+    expect(confirm).toHaveAttribute("type", "password");
+
+    fireEvent.click(passwordEye);
+    expect(password).toHaveAttribute("type", "password");
+    expect(password).toHaveValue(GOOD_PASSWORD);
+
+    fireEvent.click(confirmEye);
+    expect(confirm).toHaveAttribute("type", "text");
+    expect(password).toHaveAttribute("type", "password");
+  });
+
+  it("submits the same values after the passwords were shown", async () => {
+    mocks.state.user = googleUser({ username: "kept.name" });
+    mocks.submitAccountSetup.mockResolvedValue(
+      googleUser({ username: "kept.name", hasPassword: true, needsCredentialSetup: false }),
+    );
+    render(<AccountSetupForm />);
+
+    type(/^password/i, GOOD_PASSWORD);
+    type(/^confirm password/i, GOOD_PASSWORD);
+    for (const eye of screen.getAllByRole("button", { name: "Show password" })) {
+      fireEvent.click(eye);
+    }
+    expect(mocks.submitAccountSetup).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    await waitFor(() =>
+      expect(mocks.submitAccountSetup).toHaveBeenCalledWith({
+        password: GOOD_PASSWORD,
+        confirmPassword: GOOD_PASSWORD,
+      }),
+    );
+  });
+
   it("shows the API's refusal under the field it names", async () => {
     mocks.submitAccountSetup.mockRejectedValue({
       response: {

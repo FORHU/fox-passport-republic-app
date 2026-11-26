@@ -23,6 +23,7 @@ import {
   type FeedResponse,
 } from "@/shared/api/feed";
 import { useNewPostsCount } from "@/features/republic/hooks/useNewPostsCount";
+import { useSuspendFeedAutoplay } from "@/features/republic/hooks/useFeedVideoAutoplay";
 import {
   onRepublicRefresh,
   takePendingRepublicRefresh,
@@ -42,7 +43,7 @@ import { ProductTour } from "@/shared/components/ui/ProductTour";
 import { REPUBLIC_TOUR, REPUBLIC_TOUR_KEY } from "./republicTour";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { SharePostModal } from "@/features/messages/components/SharePostModal";
+import SharePostModalWithFollowing from "@/app/republic/_components/SharePostModalWithFollowing";
 import { toast } from "sonner";
 import { UNAVAILABLE_POST_MESSAGE } from "@/shared/lib/notificationLink";
 
@@ -68,6 +69,8 @@ function RepublicFeedContent() {
   const queryClient = useQueryClient();
   const [composeOpen, setComposeOpen] = useState(false);
   const [activePost, setActivePost] = useState<FeedPost | null>(null);
+  // The post detail and the composer cover the feed: its videos wait.
+  useSuspendFeedAutoplay(activePost !== null || composeOpen);
   const postsListRef = useRef<HTMLDivElement>(null);
 
   // The app hides scrollbars globally (see .custom-scrollbar in globals.css)
@@ -620,12 +623,13 @@ function RepublicFeedContent() {
                     <PostCard
                       key={post.id}
                       post={post}
+                      autoplayVideos
                       onOpenDetail={handleOpenDetail}
                       onPostDeleted={(id) => {
                         removePost(id);
                       }}
                       renderShareModal={(postToShare, onClose, onSent) => (
-                        <SharePostModal
+                        <SharePostModalWithFollowing
                           post={postToShare}
                           onClose={onClose}
                           onSent={onSent}
@@ -693,7 +697,7 @@ function RepublicFeedContent() {
             handleCloseDetail();
           }}
           renderShareModal={(postToShare, onClose, onSent) => (
-            <SharePostModal
+            <SharePostModalWithFollowing
               post={postToShare}
               onClose={onClose}
               onSent={onSent}

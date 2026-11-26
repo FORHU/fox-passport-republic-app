@@ -1,18 +1,14 @@
 export const dynamic = "force-dynamic";
 
+import { redirect } from "next/navigation";
 import { requirePermission } from "@/shared/lib/server/auth";
-import { getServicesByHostId } from "@/shared/lib/server/data";
-import HostPerformersClient from "@/features/dashboard/components/HostPerformersClient";
 
+/**
+ * Performer gigs are a tab of the Services page (app#437): every Provider holds
+ * both permissions, so a separate page listed the same gigs twice. The address
+ * stays for bookmarks and old links, and opens that tab.
+ */
 export default async function HostPerformersPage() {
-  const user = await requirePermission("performer:manage");
-  const hostId = user.id || (user as any).userId;
-
-  if (!hostId) {
-    throw new Error("Host ID not found");
-  }
-
-  const services = await getServicesByHostId(hostId);
-
-  return <HostPerformersClient initialServices={services} />;
+  await requirePermission("performer:manage");
+  redirect("/creator-dashboard/services?tab=performers");
 }

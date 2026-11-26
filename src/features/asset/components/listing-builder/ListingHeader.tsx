@@ -40,59 +40,66 @@ export function ListingHeader({
   const defaultSuccessMessage = `${labels.noun} created successfully! Redirecting...`;
   return (
     <>
-      <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface z-20">
-        <div className="flex items-center gap-4">
+      <header className="h-16 border-b border-white/5 flex items-center justify-between gap-2 px-4 sm:px-6 bg-surface z-20">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <BackButton onClick={onBack} />
-          <div>
-            <h2 className="font-display font-bold text-lg flex items-center gap-2">
-              {labels.studio}
-              <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary-glow text-[9px] font-bold uppercase">
+          <div className="min-w-0">
+            <h2 className="font-display font-bold text-base sm:text-lg flex items-center gap-2">
+              <span className="truncate">{labels.studio}</span>
+              <span className="hidden sm:inline px-1.5 py-0.5 rounded bg-primary/20 text-primary-glow text-[9px] font-bold uppercase shrink-0">
                 Creator
               </span>
             </h2>
             <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                   activeType === "inventory" ? "bg-primary" : "bg-warning"
                 } animate-pulse`}
               />
-              {title || `New ${labels.noun}`}{" "}
-              (Draft)
+              <span className="truncate">
+                {title || `New ${labels.noun}`} (Draft)
+              </span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {myDraftsHref && (
             <Link
               href={myDraftsHref}
-              className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 flex items-center gap-1.5"
+              aria-label="My Drafts"
+              className="px-2.5 sm:px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 flex items-center gap-1.5 whitespace-nowrap"
             >
-              <span className="material-symbols-outlined text-[16px]">
+              <span
+                aria-hidden="true"
+                className="material-symbols-outlined text-[16px]"
+              >
                 inventory_2
               </span>
-              My Drafts
+              <span className="hidden sm:inline">My Drafts</span>
             </Link>
           )}
           {onSaveDraft && (
             <button
               onClick={onSaveDraft}
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 disabled:opacity-50"
+              className="px-3 sm:px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 disabled:opacity-50 whitespace-nowrap"
             >
-              Save Draft
+              Save<span className="hidden sm:inline"> Draft</span>
             </button>
           )}
           <button
             onClick={onPublish}
             disabled={isSubmitting}
-            className="btn-neon px-5 py-2 rounded-full bg-accent text-black text-xs font-bold flex items-center gap-2"
+            className="btn-neon px-4 sm:px-5 py-2 rounded-full bg-accent text-black text-xs font-bold flex items-center gap-2 whitespace-nowrap"
           >
             {isSubmitting ? (
               <span className="material-symbols-outlined animate-spin text-[16px]">
                 progress_activity
               </span>
             ) : (
-              "Publish Listing"
+              <span>
+                Publish<span className="hidden sm:inline"> Listing</span>
+              </span>
             )}
           </button>
         </div>

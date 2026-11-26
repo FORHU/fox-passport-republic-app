@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
@@ -10,13 +10,19 @@ import {
   ListingPreviewCard,
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
-import { PERFORMER_LABELS } from "@/features/asset/components/listing-builder/listingLabels";
+import {
+  LISTING_LABELS,
+  PERFORMER_LABELS,
+} from "@/features/asset/components/listing-builder/listingLabels";
+import { ServicePreviewModal } from "@/features/service/components/ServicePreviewModal";
 
 function ServiceBuilderContent() {
   // Every "add a gig" button opens `?type=performer`: the gig categories,
   // titled for a gig. Without it, the operational Service Studio.
   const isPerformer = useSearchParams().get("type") === "performer";
   const labels = isPerformer ? PERFORMER_LABELS : undefined;
+  const [isPreviewOpen, setPreviewOpen] = useState(false);
+  const closePreview = useCallback(() => setPreviewOpen(false), []);
   const {
     title,
     description,
@@ -26,6 +32,8 @@ function ServiceBuilderContent() {
     unit,
     status,
     image,
+    city,
+    country,
     cancellationPolicyId,
     showGuide,
     isSubmitting,
@@ -42,6 +50,10 @@ function ServiceBuilderContent() {
     setPrice,
     setUnit,
     setStatus,
+    setCity,
+    setCountry,
+    setLat,
+    setLng,
     setCancellationPolicyId,
     setShowGuide,
     handleBack,
@@ -66,7 +78,7 @@ function ServiceBuilderContent() {
         onPublish={handlePublish}
         myDraftsHref={myDraftsHref}
       />
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         <ListingSidebar
           activeType="service"
           labels={labels}
@@ -78,6 +90,8 @@ function ServiceBuilderContent() {
           price={price}
           unit={unit}
           status={status}
+          city={city}
+          country={country}
           cancellationPolicyId={cancellationPolicyId}
           onCategorySelect={handleCategorySelect}
           onCustomCategoryChange={setCustomCategory}
@@ -85,6 +99,12 @@ function ServiceBuilderContent() {
           onPriceChange={setPrice}
           onUnitChange={setUnit}
           onStatusChange={setStatus}
+          onCityChange={setCity}
+          onCountryChange={setCountry}
+          onLatLngChange={(lat, lng) => {
+            setLat(lat);
+            setLng(lng);
+          }}
           onCancellationPolicyChange={setCancellationPolicyId}
         />
         <ListingPreviewCard
@@ -114,8 +134,24 @@ function ServiceBuilderContent() {
           unit={unit}
           completionPercentage={completionPercentage}
           isReadyToPublish={isReadyToPublish}
+          onPreview={() => setPreviewOpen(true)}
         />
       </div>
+      <ServicePreviewModal
+        open={isPreviewOpen}
+        onClose={closePreview}
+        lowerNoun={(labels ?? LISTING_LABELS.service).lowerNoun}
+        title={title}
+        description={description}
+        displayCategory={displayCategory}
+        image={image}
+        price={price}
+        unit={unit}
+        status={status}
+        cancellationPolicyId={cancellationPolicyId}
+        city={city}
+        country={country}
+      />
     </div>
   );
 }

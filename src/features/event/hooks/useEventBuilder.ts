@@ -641,7 +641,8 @@ export function useEventBuilder() {
                 await api.post(`/event-templates/${templateId}/venues`, {
                   venueId: desiredVenue.id,
                   agreedPrice: desiredVenue.agreedPrice ?? desiredVenue.cost,
-                  isOptional: desiredVenue.isOptional ?? false,
+                  // A venue is never optional (api#477).
+                  isOptional: false,
                 });
               } catch (e: any) {
                 console.error(
@@ -892,15 +893,17 @@ export function useEventBuilder() {
         response.data?.template ?? response.data?.data ?? response.data;
 
       if (created?.id) {
-        // 4. Attach venue, assets, and services via association endpoints
+        // 4. Attach the venue. Every event has one (api#477), so a failure
+        //    stops here with the API's reason instead of a false "published".
+        if (venueItem?.id) {
+          await api.post(`/event-templates/${created.id}/venues`, {
+            venueId: venueItem.id,
+            agreedPrice: venueItem.agreedPrice ?? venueItem.cost,
+            isOptional: false,
+          });
+        }
+        // 5. Attach the other package lines via association endpoints
         try {
-          if (venueItem?.id) {
-            await api.post(`/event-templates/${created.id}/venues`, {
-              venueId: venueItem.id,
-              agreedPrice: venueItem.agreedPrice ?? venueItem.cost,
-              isOptional: venueItem.isOptional ?? false,
-            });
-          }
           for (const item of store.baseItems) {
             if (item.resourceType === "asset" && item.id) {
               await api.post(`/event-templates/${created.id}/assets`, {
@@ -918,7 +921,7 @@ export function useEventBuilder() {
             }
           }
         } catch {
-          // Associations are best-effort — template was created successfully
+          // Other package lines are best-effort — the package and its venue are saved
         }
 
         toast.success("Event template published!");

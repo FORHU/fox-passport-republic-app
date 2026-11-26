@@ -108,9 +108,8 @@ export default function BookingConfigurationClient({
   const optionalServices: any[] = (template?.templateServices ?? []).filter(
     (ts: any) => ts.isOptional,
   );
-  const optionalVenues: any[] = (template?.templateVenues ?? []).filter(
-    (tv: any) => tv.isOptional,
-  );
+  // The venue is never optional (api#477), whatever an older line says, so it
+  // is never offered for removal.
   const allOptionalItems: any[] = [
     ...optionalAssets.map((ta) => ({
       ...ta,
@@ -123,12 +122,6 @@ export default function BookingConfigurationClient({
       _type: "service",
       label: ts.service?.name ?? "Service",
       price: ts.agreedPrice,
-    })),
-    ...optionalVenues.map((tv) => ({
-      ...tv,
-      _type: "venue",
-      label: tv.venue?.name ?? "Venue",
-      price: tv.agreedPrice,
     })),
   ];
 
@@ -797,9 +790,6 @@ export default function BookingConfigurationClient({
                                   excludedServiceIds: optionalServices
                                     .filter((ts) => excludedItemIds.has(ts.id))
                                     .map((ts) => ts.id),
-                                  excludedVenueIds: optionalVenues
-                                    .filter((tv) => excludedItemIds.has(tv.id))
-                                    .map((tv) => tv.id),
                                 });
                                 setDraftIds(result.eventId, result.booking.id);
                                 router.push("/checkout");

@@ -16,8 +16,9 @@ import { useResendOtp, useVerifyEmail } from "@/features/auth/hooks/useAuth";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { IdentitySection } from "./IdentitySection";
 import { requestStatus, type RoleRequestStatus } from "./requestStatus";
+import { experienceLine, type RequestWithExperience } from "./experienceLine";
 
-interface MyRoleRequest {
+interface MyRoleRequest extends RequestWithExperience {
   id: string;
   roleType: RoleType;
   status: RoleRequestStatus;
@@ -219,16 +220,25 @@ export function VerificationClient() {
                 {(requests.data ?? []).map((r) => {
                   const badge = ROLE_BADGE[r.roleType];
                   const status = requestStatus(r.status);
+                  // Years of experience once approved (api#423).
+                  const experience = experienceLine(r);
                   return (
                     <li
                       key={r.id}
                       className="flex flex-wrap items-center justify-between gap-3 py-3"
                     >
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: badge && roleTextColor(badge.color) }}
-                      >
-                        {badge?.label ?? r.roleType}
+                      <span>
+                        <span
+                          className="block text-sm font-semibold"
+                          style={{ color: badge && roleTextColor(badge.color) }}
+                        >
+                          {badge?.label ?? r.roleType}
+                        </span>
+                        {experience && (
+                          <span className="block text-xs text-white/50">
+                            {experience}
+                          </span>
+                        )}
                       </span>
                       <span className="flex items-center gap-3">
                         <span

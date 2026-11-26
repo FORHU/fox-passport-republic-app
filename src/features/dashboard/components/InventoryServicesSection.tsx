@@ -12,7 +12,7 @@ import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
 import { ListingImage } from "./ListingImage";
-import { Money } from "@/shared/components/ui/Money";
+import { ServiceCard } from "./ServiceCard";
 
 interface InventorySectionProps {
   inventory: InventoryItem[];
@@ -76,19 +76,25 @@ export function InventorySection({
               }}
             >
               <div className="aspect-square overflow-hidden rounded-lg bg-white/5 flex items-center justify-center">
-                {it.img ? (
-                  <Image
-                    src={it.img}
-                    alt=""
-                    width={400}
-                    height={400}
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                ) : (
-                  <span className="material-symbols-outlined text-white/20 text-5xl">
-                    inventory_2
-                  </span>
-                )}
+                <ListingImage
+                  src={it.img}
+                  fallback={
+                    <span className="material-symbols-outlined text-white/20 text-5xl">
+                      inventory_2
+                    </span>
+                  }
+                >
+                  {(image) => (
+                    <Image
+                      src={image.src}
+                      onError={image.onError}
+                      alt=""
+                      width={400}
+                      height={400}
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  )}
+                </ListingImage>
               </div>
 
               {/* Raised only while its menu is open, so closed badges stay under page dropdowns and the header */}
@@ -175,71 +181,23 @@ export function ServicesSection({
           </Link>
         )}
       </div>
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {services.length > 0 ? (
           services.map((sv) => (
-            <div
+            <ServiceCard
               key={sv.id}
-              className={`flex items-center justify-between p-4 rounded-2xl bg-surface/60 border border-white/5 hover:bg-white/5 ${onEdit ? "cursor-pointer" : ""}`}
-              onClick={() => onEdit?.(sv.id)}
-              role={onEdit ? "button" : undefined}
-              tabIndex={onEdit ? 0 : undefined}
-              onKeyDown={(e) => {
-                if (!onEdit) return;
-                if (e.key === "Enter" || e.key === " ") onEdit(sv.id);
-              }}
-            >
-              <div className="flex items-center gap-4">
-                <ListingImage
-                  src={sv.img}
-                  fallback={
-                    <div
-                      className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${sv.color}`}
-                    >
-                      <span className="material-symbols-outlined">
-                        {sv.icon}
-                      </span>
-                    </div>
-                  }
-                >
-                  {(image) => (
-                    <img
-                      ref={image.ref}
-                      src={image.src}
-                      onError={image.onError}
-                      alt={sv.name}
-                      className="h-12 w-12 rounded-xl object-cover shrink-0"
-                    />
-                  )}
-                </ListingImage>
-                <div>
-                  <h4
-                    className={`font-bold ${sv.status === "Active" ? "text-white" : "text-white/50"}`}
-                  >
-                    {sv.name}
-                  </h4>
-                  <p className="text-xs text-white/40">
-                    <Money amount={sv.price} />
-                    {sv.priceUnit ? ` ${sv.priceUnit}` : ""}
-                  </p>
-                </div>
-              </div>
-              <StatusBadge
-                currentStatus={sv.status}
-                type="service"
-                onStatusChange={
-                  onStatusChange && canOwnerSetStatus(sv.status)
-                    ? (s) => onStatusChange(sv.id, s)
-                    : undefined
-                }
-              />
-            </div>
+              service={sv}
+              onStatusChange={onStatusChange}
+              onEdit={onEdit}
+            />
           ))
         ) : (
-          <EmptyState
-            type="services"
-            href="/foxer/create-listing?type=service"
-          />
+          <div className="col-span-full">
+            <EmptyState
+              type="services"
+              href="/foxer/create-listing?type=service"
+            />
+          </div>
         )}
       </div>
       {onPageChange && page !== undefined && totalPages !== undefined && (

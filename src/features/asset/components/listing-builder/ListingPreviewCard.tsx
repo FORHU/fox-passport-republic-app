@@ -70,7 +70,7 @@ export function ListingPreviewCard({
   };
 
   return (
-    <main className="flex-1 overflow-y-auto p-8 bg-canvas flex flex-col items-center">
+    <main className="order-first lg:order-none lg:flex-1 lg:overflow-y-auto p-4 sm:p-6 lg:p-8 bg-canvas flex flex-col items-center">
       <input
         ref={fileInputRef}
         type="file"
@@ -105,7 +105,7 @@ export function ListingPreviewCard({
         )}
 
         {/* Title & Description Inputs */}
-        <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8 space-y-8 w-full">
+        <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-5 sm:p-8 space-y-6 sm:space-y-8 w-full">
           <div>
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               {labels.noun} Title
@@ -148,7 +148,7 @@ export function ListingPreviewCard({
         </div>
 
         {/* Preview Card */}
-        <div className="relative group w-[320px] mx-auto perspective-1000">
+        <div className="relative group w-full max-w-[320px] mx-auto perspective-1000">
           {image && (
             <div className="absolute -inset-1 bg-transparent rounded-[2.2rem] blur opacity-25 group-hover:opacity-50 transition duration-500" />
           )}

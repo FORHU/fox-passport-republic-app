@@ -4,9 +4,12 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
-import { Check, Search, Send, Users, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Check, Loader2, Search, Send, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { searchMentionCandidates } from "@/shared/api/feed";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import {
   useConversations,
   useStartConversation,
@@ -39,6 +42,16 @@ interface Recipient {
   isGroup: boolean;
 }
 
+/** Server search kicks in from this many characters, after a short pause. */
+const SEARCH_MIN_CHARS = 2;
+const SEARCH_DEBOUNCE_MS = 300;
+
+/** "Ana", "Ana and Ben", "Ana, Ben and Cy". */
+function listNames(names: string[]) {
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
 // Messenger-style "Send in Message" sheet: search/select one or more people,
 // add an optional caption, and share a post into a (possibly brand-new)
 // conversation with each of them — reusing the same startConversation +
@@ -56,7 +69,9 @@ export function SharePostModal({
   const sendMessage = useSendMessage();
 
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Keyed by recipient key; the value keeps the name (for the failure
+  // message) even after a search that found them is cleared.
+  const [selected, setSelected] = useState<Map<string, Recipient>>(new Map());
   const [caption, setCaption] = useState("");
   const [sending, setSending] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -74,6 +89,31 @@ export function SharePostModal({
       document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
+
+  // Anyone on FoxPassport, not just people you already know: the same user
+  // search @mentions use, once the query has settled. Never cached, like the
+  // rest of messaging.
+  const [searchTerm, setSearchTerm] = useState("");
+  useEffect(() => {
+    const trimmed = query.trim();
+    const timer = setTimeout(
+      () => setSearchTerm(trimmed.length >= SEARCH_MIN_CHARS ? trimmed : ""),
+      SEARCH_DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [query]);
+  const { data: searchResults = [], isFetching } = useQuery({
+    queryKey: ["share-recipient-search", searchTerm],
+    queryFn: () => searchMentionCandidates(searchTerm),
+    enabled: searchTerm.length > 0,
+    staleTime: 0,
+    gcTime: 0,
+  });
+  // Also "searching" while the debounce is still waiting, so the list
+  // doesn't flash "No one found." before the search has even started.
+  const searching =
+    isFetching ||
+    (query.trim().length >= SEARCH_MIN_CHARS && searchTerm !== query.trim());
 
   // Everyone you follow plus everyone/every group you already have a
   // thread with, deduped — recent conversation partners surface even if
@@ -115,61 +155,98 @@ export function SharePostModal({
     }
     byKey.delete(`user:${userId ?? ""}`);
 
-    const list = Array.from(byKey.values());
     const trimmedQuery = query.trim().toLowerCase();
-    return trimmedQuery
-      ? list.filter((r) => r.name?.toLowerCase().includes(trimmedQuery))
-      : list;
-  }, [conversations, followingUsers, userId, query]);
+    const list = trimmedQuery
+      ? Array.from(byKey.values()).filter((r) =>
+          r.name?.toLowerCase().includes(trimmedQuery),
+        )
+      : Array.from(byKey.values());
 
-  const toggle = (key: string) => {
+    // Server matches go after the people you already know, without repeats.
+    // Only while the query they were found for is still the one typed.
+    if (searchTerm && searchTerm.toLowerCase() === trimmedQuery) {
+      const seen = new Set(byKey.keys());
+      for (const u of searchResults) {
+        const key = `user:${u.id}`;
+        if (u.id === userId || seen.has(key)) continue;
+        seen.add(key);
+        list.push({
+          key,
+          id: u.id,
+          name: u.name,
+          imgId: u.imgId ?? null,
+          isGroup: false,
+        });
+      }
+    }
+    return list;
+  }, [conversations, followingUsers, userId, query, searchTerm, searchResults]);
+
+  const toggle = (r: Recipient) => {
     setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      const next = new Map(prev);
+      if (next.has(r.key)) next.delete(r.key);
+      else next.set(r.key, r);
       return next;
     });
   };
 
+  const sendTo = async (r: Recipient) => {
+    const conversationId = r.isGroup
+      ? r.id
+      : (
+          await startConversation.mutateAsync({
+            otherUserId: r.id,
+            contextType: "shared_post",
+            contextId: post.id,
+            contextLabel: `Shared a post by ${post.author.name}`,
+          })
+        ).id;
+    await sendMessage.mutateAsync({
+      conversationId,
+      content: caption.trim(),
+      sharedPostId: post.id,
+    });
+  };
+
+  // Each recipient is sent to on its own, so one failure (a block, a network
+  // blip) doesn't hide the sends that worked: those are counted and
+  // confirmed, and only the ones that failed stay selected to retry.
   const handleSend = async () => {
     if (selected.size === 0 || sending) return;
     setSending(true);
-    try {
-      await Promise.all(
-        Array.from(selected).map(async (key) => {
-          const [kind, id] = key.split(":", 2);
-          const conversationId =
-            kind === "group"
-              ? id
-              : (
-                  await startConversation.mutateAsync({
-                    otherUserId: id,
-                    contextType: "shared_post",
-                    contextId: post.id,
-                    contextLabel: `Shared a post by ${post.author.name}`,
-                  })
-                ).id;
-          await sendMessage.mutateAsync({
-            conversationId,
-            content: caption.trim(),
-            sharedPostId: post.id,
-          });
-        }),
-      );
-      toast.success(
-        selected.size === 1
-          ? "Post sent!"
-          : `Post sent to ${selected.size} people`,
-      );
-      onSent?.(selected.size);
+    const targets = Array.from(selected.values());
+    const results = await Promise.allSettled(targets.map(sendTo));
+    setSending(false);
+
+    const failed = targets.filter((_, i) => results[i].status === "rejected");
+    const sent = targets.length - failed.length;
+
+    if (sent > 0) onSent?.(sent);
+
+    if (failed.length === 0) {
+      toast.success(sent === 1 ? "Post sent!" : `Post sent to ${sent} people`);
       onClose();
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Could not send this post.",
-      );
-    } finally {
-      setSending(false);
+      return;
     }
+
+    setSelected(new Map(failed.map((r) => [r.key, r])));
+    const failedNames = listNames(failed.map((r) => r.name || "Unknown Citizen"));
+    if (sent === 0) {
+      const firstError = results.find(
+        (res): res is PromiseRejectedResult => res.status === "rejected",
+      )?.reason;
+      toast.error(
+        targets.length === 1
+          ? getApiErrorMessage(firstError, "Could not send this post.")
+          : `Couldn't send to ${failedNames}. Please try again.`,
+      );
+      return;
+    }
+    toast.warning(
+      `Sent to ${sent} of ${targets.length}. Couldn't send to ${failedNames}.`,
+      { description: "They're still selected, so you can try again." },
+    );
   };
 
   if (!mounted) return null;
@@ -234,6 +311,7 @@ export function SharePostModal({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people…"
+              aria-label="Search people"
               className="flex-1 bg-transparent text-xs text-white placeholder:text-zinc-500 focus:outline-none"
             />
           </div>
@@ -243,7 +321,11 @@ export function SharePostModal({
         <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-1">
           {recipients.length === 0 ? (
             <p className="text-xs text-zinc-500 text-center py-10">
-              No one to show here yet.
+              {searching
+                ? "Searching…"
+                : query.trim()
+                  ? "No one found."
+                  : "No one to show here yet. Search for someone by name."}
             </p>
           ) : (
             recipients.map((r) => {
@@ -252,10 +334,11 @@ export function SharePostModal({
                 <button
                   key={r.key}
                   type="button"
-                  onClick={() => toggle(r.key)}
+                  onClick={() => toggle(r)}
+                  aria-pressed={isSelected}
                   className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-zinc-900 transition-colors text-left cursor-pointer"
                 >
-                  <div className="relative h-10 w-10 shrink-0">
+                  <div className="relative h-10 w-10 shrink-0" aria-hidden>
                     <div className="h-10 w-10 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-500">
                       {r.imgId ? (
                         <Image
@@ -287,6 +370,15 @@ export function SharePostModal({
               );
             })
           )}
+          {searching && recipients.length > 0 && (
+            <p
+              role="status"
+              className="flex items-center justify-center gap-1.5 py-2 text-[11px] text-zinc-500"
+            >
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Searching…
+            </p>
+          )}
         </div>
 
         {/* Caption + Send */}
@@ -302,8 +394,16 @@ export function SharePostModal({
             disabled={selected.size === 0 || sending}
             className="w-full h-10 rounded-xl bg-lime-400 text-black text-xs font-black flex items-center justify-center gap-1.5 hover:bg-lime-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
-            <Send className="h-3.5 w-3.5" strokeWidth={2.5} />
-            {selected.size > 0 ? `Send (${selected.size})` : "Send"}
+            {sending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2.5} />
+            ) : (
+              <Send className="h-3.5 w-3.5" strokeWidth={2.5} />
+            )}
+            {sending
+              ? "Sending…"
+              : selected.size > 0
+                ? `Send (${selected.size})`
+                : "Send"}
           </button>
         </div>
       </div>
