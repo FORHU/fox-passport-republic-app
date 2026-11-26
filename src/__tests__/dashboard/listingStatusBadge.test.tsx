@@ -70,6 +70,7 @@ const gear = (status: string) => ({
   name: "Sony FX3",
   category: "camera",
   status,
+  img: null,
 });
 
 function service(overrides: Partial<ServiceItem>): ServiceItem {

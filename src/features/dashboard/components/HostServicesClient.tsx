@@ -38,10 +38,18 @@ export default function HostServicesClient({
   const [status, setStatus] = useState<"all" | string>(
     () => searchParams.get("status") ?? "all",
   );
+  // ?tab= opens a tab directly: the Overview's "View All" for gigs and the old
+  // /creator-dashboard/performers address both link to ?tab=performers.
   const [activeTab, setActiveTab] = useState<"all" | "performers" | "services">(
-    access.canManagePerformers && !access.canManageServices
-      ? "performers"
-      : "all",
+    () => {
+      const tab = searchParams.get("tab");
+      if (tab === "performers" || tab === "services" || tab === "all") {
+        return tab;
+      }
+      return access.canManagePerformers && !access.canManageServices
+        ? "performers"
+        : "all";
+    },
   );
   const [services, setServices] = useState<ServiceItem[]>(initialServices);
 
@@ -162,7 +170,13 @@ export default function HostServicesClient({
             }}
             action={{
               label: isPerformerOnlyView ? "Add Performer Gig" : "Add Service",
-              onClick: () => router.push("/foxer/create-service"),
+              // A gig opens the Studio on the performer categories (app#326).
+              onClick: () =>
+                router.push(
+                  isPerformerOnlyView
+                    ? "/foxer/create-service?type=performer"
+                    : "/foxer/create-service",
+                ),
             }}
           />
 
