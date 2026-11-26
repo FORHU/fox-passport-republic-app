@@ -5,6 +5,11 @@ import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Money } from "@/shared/components/ui/Money";
+import {
+  BASE_MAX_YEARS_OF_EXPERIENCE as BASE_MAX_YEARS,
+  bracketLabel,
+  experienceLabel,
+} from "@/shared/lib/experienceBracket";
 
 type RoleStatus = "pending" | "approved" | "rejected" | "revision_requested";
 
@@ -17,7 +22,10 @@ interface FileRecord {
 
 interface ApplicationData {
   bio?: string;
-  experience?: string;
+  experience?: string | number;
+  // More than 30 years as the applicant claimed it, with a CV (api#423). Kept
+  // when an admin lowers `experience` to 30, so it can be restored.
+  claimedExperience?: number | null;
   location?: string;
   validId1?: FileRecord | null;
   nbiFile?: FileRecord | null;
@@ -94,6 +102,9 @@ const STATUS_LABELS: Record<RoleStatus, string> = {
   revision_requested: "Needs Revision",
 };
 
+/** How an admin settles a claim of more than 30 years (api#423). */
+type ExperienceDecision = "base" | "claimed";
+
 function getAppData(app: RoleApplication): ApplicationData | null {
   return (
     app.venueFoxerApplication ??
@@ -109,6 +120,12 @@ const WORD_TYPES = [
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
+
+const isPdfFile = (file: FileRecord) =>
+  file.type === "application/pdf" || !!file.name?.endsWith(".pdf");
+// A browser can't show a Word file, so it's offered as a download (app#371).
+const isWordFile = (file: FileRecord) =>
+  WORD_TYPES.includes(file.type) || /\.docx?$/i.test(file.name ?? "");
 
 function DocPreview({
   label,
@@ -133,9 +150,8 @@ function DocPreview({
       </div>
     );
 
-  const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
-  const isWord =
-    WORD_TYPES.includes(file.type) || /\.docx?$/i.test(file.name ?? "");
+  const isPdf = isPdfFile(file);
+  const isWord = isWordFile(file);
   const ringClass = flagged
     ? "border-red-500/60 ring-1 ring-red-500/40"
     : "border-white/10 group-hover:border-accent/40";
@@ -243,7 +259,8 @@ function FilePreviewModal({
   label: string;
   onClose: () => void;
 }) {
-  const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+  const isPdf = isPdfFile(file);
+  const isWord = isWordFile(file);
 
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -294,7 +311,29 @@ function FilePreviewModal({
           </div>
         </div>
         <div className="flex-1 min-h-0 bg-black/40">
-          {isPdf ? (
+          {isWord ? (
+            // The "Open CV" button reaches here for a Word CV too.
+            <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-6 text-center">
+              <span className="material-symbols-outlined text-[48px] text-sky-400">
+                description
+              </span>
+              <p className="text-white/60 text-sm">
+                Word documents can&apos;t be previewed in the browser.
+              </p>
+              <a
+                href={file.url}
+                download={file.name}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-bold text-black hover:opacity-90 transition"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  download
+                </span>
+                Download {file.name}
+              </a>
+            </div>
+          ) : isPdf ? (
             <iframe src={file.url} title={label} className="w-full h-full" />
           ) : (
             <img
@@ -314,15 +353,18 @@ function ApplicationDetailDrawer({
   onClose,
   onApprove,
   onReject,
+  onCantConfirmClaim,
   processing,
 }: {
   app: RoleApplication;
   onClose: () => void;
-  onApprove: (id: string) => void;
+  onApprove: (id: string, decision?: ExperienceDecision) => void;
   onReject: (app: RoleApplication) => void;
+  onCantConfirmClaim: (app: RoleApplication) => void;
   processing: boolean;
 }) {
   const data = getAppData(app);
+  const claimed = data?.claimedExperience ?? null;
   const [previewFile, setPreviewFile] = useState<{
     file: FileRecord;
     label: string;
@@ -422,14 +464,49 @@ function ApplicationDetailDrawer({
                         </span>
                       </div>
                     )}
-                    {data.experience && (
+                    {data.experience != null && data.experience !== "" && (
                       <div className="flex justify-between items-center">
                         <span className="text-white/40 text-sm">
                           Experience
                         </span>
                         <span className="text-white text-sm font-medium">
-                          {data.experience} years
+                          {experienceLabel(data.experience, claimed)} years
                         </span>
+                      </div>
+                    )}
+                    {claimed != null && (
+                      <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-300">
+                        <p className="font-bold">
+                          Claims {bracketLabel(claimed)} years — check the CV
+                          and its references
+                        </p>
+                        {String(data.experience) !== String(claimed) && (
+                          <p className="mt-1 text-yellow-300/70">
+                            Currently {data.experience} years: the claim
+                            wasn&apos;t confirmed on an earlier review.
+                          </p>
+                        )}
+                        {data.portfolioFile ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewFile({
+                                file: data.portfolioFile as FileRecord,
+                                label: "CV",
+                              })
+                            }
+                            className="mt-2 inline-flex items-center gap-1 rounded-lg bg-yellow-500/20 px-3 py-1.5 font-bold text-yellow-200 hover:bg-yellow-500/30 transition"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">
+                              description
+                            </span>
+                            Open CV
+                          </button>
+                        ) : (
+                          <p className="mt-1 text-yellow-300/70">
+                            No CV attached.
+                          </p>
+                        )}
                       </div>
                     )}
                     {data.bio && (
@@ -564,7 +641,11 @@ function ApplicationDetailDrawer({
                     />
                     {data.portfolioFile !== undefined && (
                       <DocPreview
-                        label="Portfolio / Resume"
+                        label={
+                          claimed != null
+                            ? `CV (claims ${bracketLabel(claimed)} years)`
+                            : "Portfolio / Resume"
+                        }
                         file={data.portfolioFile}
                         flagged={app.flaggedDocuments?.includes(
                           "portfolioFile",
@@ -623,7 +704,7 @@ function ApplicationDetailDrawer({
         </div>
 
         {/* Footer actions */}
-        {app.status === "pending" && (
+        {app.status === "pending" && claimed == null && (
           <div className="p-6 border-t border-white/5 flex gap-3 shrink-0">
             <button
               onClick={() => onApprove(app.id)}
@@ -638,6 +719,47 @@ function ApplicationDetailDrawer({
               className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-bold text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
               Reject / Flag Documents
+            </button>
+          </div>
+        )}
+        {app.status === "pending" && claimed != null && (
+          // A claim of more than 30 years is settled with the approval
+          // (api#423). Kept to two short rows, so the documents above,
+          // the CV included, keep their room.
+          <div className="p-4 border-t border-white/5 grid grid-cols-2 gap-2 shrink-0">
+            <button
+              onClick={() => onApprove(app.id, "claimed")}
+              disabled={processing}
+              className={`py-2.5 rounded-xl bg-green-500/20 text-green-400 font-bold text-sm hover:bg-green-500/30 transition disabled:opacity-50 ${
+                claimed > BASE_MAX_YEARS ? "" : "col-span-2"
+              }`}
+            >
+              Approve at {bracketLabel(claimed)} years
+            </button>
+            {/* A 30+ claim is stored as 30, so approving at 30 is the same. */}
+            {claimed > BASE_MAX_YEARS && (
+              <button
+                onClick={() => onApprove(app.id, "base")}
+                disabled={processing}
+                className="py-2.5 rounded-xl bg-green-500/10 text-green-400/80 font-bold text-sm hover:bg-green-500/20 transition disabled:opacity-50"
+              >
+                Approve at {BASE_MAX_YEARS} years
+              </button>
+            )}
+            <button
+              onClick={() => onCantConfirmClaim(app)}
+              disabled={processing}
+              title={`Set experience to ${BASE_MAX_YEARS} and flag the CV for re-upload`}
+              className="py-2.5 rounded-xl bg-orange-500/20 text-orange-300 font-bold text-sm hover:bg-orange-500/30 transition disabled:opacity-50"
+            >
+              Can&apos;t confirm CV
+            </button>
+            <button
+              onClick={() => onReject(app)}
+              disabled={processing}
+              className="py-2.5 rounded-xl bg-red-500/20 text-red-400 font-bold text-sm hover:bg-red-500/30 transition disabled:opacity-50"
+            >
+              Reject / Flag
             </button>
           </div>
         )}
@@ -695,6 +817,8 @@ export const AdminSubmissionsTable: React.FC = () => {
   const [rejectModal, setRejectModal] = useState<RoleApplication | null>(null);
   const [flaggedDocs, setFlaggedDocs] = useState<Set<string>>(new Set());
   const [reviewNote, setReviewNote] = useState("");
+  // Lower a claim of more than 30 years to 30 with the revision (api#423).
+  const [lowerClaim, setLowerClaim] = useState(false);
 
   useEffect(() => {
     if (!rejectModal) return;
@@ -705,10 +829,13 @@ export const AdminSubmissionsTable: React.FC = () => {
     };
   }, [rejectModal]);
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string, decision?: ExperienceDecision) => {
     setProcessingId(id);
     try {
-      await api.patch(`/role-requests/review/${id}`, { status: "approved" });
+      await api.patch(`/role-requests/review/${id}`, {
+        status: "approved",
+        ...(decision ? { experienceDecision: decision } : {}),
+      });
       toast.success("Application approved — user role updated");
 
       // Invalidate queries to reflect new roles immediately
@@ -734,6 +861,7 @@ export const AdminSubmissionsTable: React.FC = () => {
     setRejectModal(null);
     setFlaggedDocs(new Set());
     setReviewNote("");
+    setLowerClaim(false);
   };
 
   // "Request Revision" flags only the picked documents — everything else on
@@ -748,6 +876,7 @@ export const AdminSubmissionsTable: React.FC = () => {
         status: "revision_requested",
         flaggedDocuments: documentList,
         revisionNote: reviewNote,
+        ...(lowerClaim ? { experienceDecision: "base" } : {}),
       });
       toast.success("Revision requested — applicant notified");
       const patch = {
@@ -917,9 +1046,15 @@ export const AdminSubmissionsTable: React.FC = () => {
         <ApplicationDetailDrawer
           app={selectedApp}
           onClose={() => setSelectedApp(null)}
-          onApprove={(id) => handleApprove(id)}
+          onApprove={(id, decision) => handleApprove(id, decision)}
           onReject={(app) => {
             setSelectedApp(null);
+            setRejectModal(app);
+          }}
+          onCantConfirmClaim={(app) => {
+            setSelectedApp(null);
+            setFlaggedDocs(new Set(["portfolioFile"]));
+            setLowerClaim(true);
             setRejectModal(app);
           }}
           processing={processingId === selectedApp.id}
@@ -974,6 +1109,25 @@ export const AdminSubmissionsTable: React.FC = () => {
               })}
             </div>
 
+            {getAppData(rejectModal)?.claimedExperience != null && (
+              <label className="flex items-start gap-3 rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={lowerClaim}
+                  onChange={(e) => setLowerClaim(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-orange-500"
+                />
+                <span className="text-sm text-orange-200">
+                  Can&apos;t confirm the{" "}
+                  {bracketLabel(
+                    getAppData(rejectModal)?.claimedExperience ?? 0,
+                  )}{" "}
+                  claim: set experience to {BASE_MAX_YEARS}. The claim is kept,
+                  so it can be approved later if a better CV comes back.
+                </span>
+              </label>
+            )}
+
             <textarea
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
@@ -989,7 +1143,12 @@ export const AdminSubmissionsTable: React.FC = () => {
             <div className="flex flex-col gap-2 pt-1">
               <button
                 onClick={handleRequestRevision}
-                disabled={!!processingId || flaggedDocs.size === 0}
+                disabled={
+                  !!processingId ||
+                  flaggedDocs.size === 0 ||
+                  // The applicant needs to know what the CV is missing.
+                  (lowerClaim && reviewNote.trim() === "")
+                }
                 className="w-full py-2.5 rounded-xl bg-orange-500/80 text-white font-bold text-sm hover:bg-orange-500 transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {processingId

@@ -38,10 +38,15 @@ import {
   splitPortfolioUrls,
 } from "@/shared/lib/portfolioUrls";
 import {
-  WHOLE_YEARS_MESSAGE,
+  experienceClaimError,
   toYearsOfExperience,
+  typedBracketLabel,
+  wholeYearsMessage,
+  yearsMax,
   yearsOfExperienceError,
 } from "../utils/yearsOfExperience";
+import { useYearsOfExperienceInput } from "../hooks/useYearsOfExperienceInput";
+import ExperienceClaim from "./ExperienceClaim";
 
 // An Organizer's specializations are the kinds of events and venues they have
 // helped run, so they draw on both the API's EventCategory and VenueCategory.
@@ -140,6 +145,8 @@ export default function FoxerApplicationClient({
     serviceTypes: "",
     portfolioUrls: "",
     experience: "",
+    // The CV behind a claim of more than 30 years (api#423).
+    portfolioFileId: "",
     nbiClearanceIdNumber: "",
     tinNumber: "",
     // ISO code of the country that issued the TIN (CountryField).
@@ -191,6 +198,8 @@ export default function FoxerApplicationClient({
     validId1FileId: "",
     backgroundClearanceFileId: "",
     selfieFileId: "",
+    // The CV behind a claim of more than 30 years (api#423).
+    portfolioFileId: "",
   });
   const [organizerSpecializations, setOrganizerSpecializations] = useState<
     string[]
@@ -208,6 +217,15 @@ export default function FoxerApplicationClient({
     setProviderData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Up to 30 years, or 50 with "more than 30" ticked and a CV (api#423). An
+  // edit over the limit is refused, so the field keeps its value.
+  const [providerClaiming, setProviderClaiming] = useState(false);
+  const [organizerClaiming, setOrganizerClaiming] = useState(false);
+  const providerMax = yearsMax(providerClaiming);
+  const organizerMax = yearsMax(organizerClaiming);
+  const providerExperienceInput = useYearsOfExperienceInput(providerMax);
+  const organizerExperienceInput = useYearsOfExperienceInput(organizerMax);
+
   const DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
     nbiClearanceIdNumber: 18,
   };
@@ -224,11 +242,19 @@ export default function FoxerApplicationClient({
 
   // Kept as typed and checked instead: stripping non-digits turned "2.5" into
   // "25" (app#327).
-  const providerExperienceError = yearsOfExperienceError(
+  const providerExperienceError =
+    yearsOfExperienceError(providerData.experience, providerMax) ??
+    experienceClaimError(
+      providerData.experience,
+      providerClaiming,
+      !!providerData.portfolioFileId,
+    );
+  const providerLinksError = portfolioUrlsError(providerData.portfolioUrls);
+  // What the fields show: also says why an edit over the limit was refused.
+  const providerExperienceMessage = providerExperienceInput.error(
     providerData.experience,
   );
-  const providerLinksError = portfolioUrlsError(providerData.portfolioUrls);
-  const organizerExperienceError = yearsOfExperienceError(
+  const organizerExperienceMessage = organizerExperienceInput.error(
     organizerData.experience,
   );
 
@@ -241,7 +267,10 @@ export default function FoxerApplicationClient({
           assetTypes: splitList(providerData.assetTypes),
           serviceTypes: splitList(providerData.serviceTypes),
           portfolioUrls: splitPortfolioUrls(providerData.portfolioUrls),
-          experience: toYearsOfExperience(providerData.experience),
+          experience: toYearsOfExperience(providerData.experience, providerMax),
+          portfolioFileId: providerClaiming
+            ? providerData.portfolioFileId || undefined
+            : undefined,
           nbiClearanceIdNumber: providerData.nbiClearanceIdNumber || undefined,
           tinNumber: providerData.tinNumber || undefined,
           tinCountry: providerData.tinNumber
@@ -260,7 +289,13 @@ export default function FoxerApplicationClient({
         roleType: "organizer",
         data: {
           ...organizerData,
-          experience: toYearsOfExperience(organizerData.experience),
+          experience: toYearsOfExperience(
+            organizerData.experience,
+            organizerMax,
+          ),
+          portfolioFileId: organizerClaiming
+            ? organizerData.portfolioFileId || undefined
+            : undefined,
           specializations: organizerSpecializations,
         },
       });
@@ -301,7 +336,10 @@ export default function FoxerApplicationClient({
           { label: "About you", value: organizerData.bio },
           {
             label: "Years of experience",
-            value: organizerData.experience,
+            value:
+              organizerClaiming && typedBracketLabel(organizerData.experience)
+                ? `${typedBracketLabel(organizerData.experience)} (CV attached)`
+                : organizerData.experience,
           },
           { label: "Where you work", value: organizerData.location },
           {
@@ -328,7 +366,11 @@ export default function FoxerApplicationClient({
           },
           {
             label: "Years of experience",
-            value: providerData.experience || "Not specified",
+            value: !providerData.experience
+              ? "Not specified"
+              : providerClaiming && typedBracketLabel(providerData.experience)
+                ? `${typedBracketLabel(providerData.experience)} (CV attached)`
+                : providerData.experience,
           },
           {
             label: "Portfolio links",
@@ -481,11 +523,28 @@ export default function FoxerApplicationClient({
               type="text"
               inputMode="numeric"
               name="experience"
+              // Chrome's remembered entries paint the field light and are no
+              // help here.
+              autoComplete="off"
               value={providerData.experience}
-              onChange={handleProviderChange}
-              error={providerExperienceError}
+              onChange={(e) => {
+                if (providerExperienceInput.accept(e.target.value)) {
+                  handleProviderChange(e);
+                }
+              }}
+              error={providerExperienceMessage}
               placeholder="e.g. 3"
             />
+            {/* Offered only once more than 30 has been refused (api#423). */}
+            {(providerExperienceInput.offerClaim || providerClaiming) && (
+              <ExperienceClaim
+                claiming={providerClaiming}
+                years={providerData.experience}
+                onClaimingChange={setProviderClaiming}
+                onCvUploaded={(id) => handleFileUpload("portfolioFileId", id)}
+                onCvCleared={() => handleFileUpload("portfolioFileId", "")}
+              />
+            )}
             <IconField
               label="Portfolio / Website Links (Optional)"
               accent={accent}
@@ -555,9 +614,15 @@ export default function FoxerApplicationClient({
             description="The events and venues you've helped run, and where."
             validate={() =>
               // Required: `required` catches "", this also catches "  ".
-              (toYearsOfExperience(organizerData.experience) === undefined
-                ? WHOLE_YEARS_MESSAGE
+              (toYearsOfExperience(organizerData.experience, organizerMax) ===
+              undefined
+                ? wholeYearsMessage(organizerMax)
                 : null) ??
+              experienceClaimError(
+                organizerData.experience,
+                organizerClaiming,
+                !!organizerData.portfolioFileId,
+              ) ??
               (organizerPlace.city
                 ? null
                 : "Choose where you usually work — country, state and city.")
@@ -589,16 +654,26 @@ export default function FoxerApplicationClient({
               type="text"
               inputMode="numeric"
               name="experience"
+              autoComplete="off"
               value={organizerData.experience}
-              onChange={(e) =>
-                setOrganizerData((prev) => ({
-                  ...prev,
-                  experience: e.target.value,
-                }))
-              }
-              error={organizerExperienceError}
+              onChange={(e) => {
+                const experience = e.target.value;
+                if (!organizerExperienceInput.accept(experience)) return;
+                setOrganizerData((prev) => ({ ...prev, experience }));
+              }}
+              error={organizerExperienceMessage}
               placeholder="e.g. 3"
             />
+            {/* Offered only once more than 30 has been refused (api#423). */}
+            {(organizerExperienceInput.offerClaim || organizerClaiming) && (
+              <ExperienceClaim
+                claiming={organizerClaiming}
+                years={organizerData.experience}
+                onClaimingChange={setOrganizerClaiming}
+                onCvUploaded={(id) => handleFileUpload("portfolioFileId", id)}
+                onCvCleared={() => handleFileUpload("portfolioFileId", "")}
+              />
+            )}
 
             <div className="space-y-2">
               <label className={`${LABEL} flex items-center gap-2`}>
