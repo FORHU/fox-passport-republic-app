@@ -119,8 +119,11 @@ export default function UserMenuButton({
         )}
       </button>
 
+      {/* Below `lg` the floating bottom nav (68px + 1rem, centre button
+          raised) sits over the page, so the menu ends above it (6.5rem plus
+          the safe area) and scrolls, keeping Log out reachable. */}
       {isOpen && user && (
-        <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-96 max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface-raised rounded-2xl border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-96 max-h-[calc(100dvh-11rem-env(safe-area-inset-bottom))] sm:max-h-[calc(100dvh-12.5rem-env(safe-area-inset-bottom))] lg:max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface-raised rounded-2xl border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
           {/* Identity */}
           <UserMenuProfileHeader user={user} />
 
