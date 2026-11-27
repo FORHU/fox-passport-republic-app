@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
+import { smartBack } from "@/shared/lib/navigation";
 import { AnimatePresence } from "motion/react";
 import {
   Sheet,
@@ -43,6 +44,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({
   user,
   initialTab,
 }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<
     "badges" | "stamps" | "matches" | "rewards" | "achievements" | "leaderboard"
   >(initialTab ?? "matches");
@@ -128,12 +130,15 @@ export const PassportClient: React.FC<PassportClientProps> = ({
         }}
       ></div>
 
-      <Link
-        href="/user"
-        className="max-w-[1400px] mx-auto flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors mb-4 px-1"
+      {/* Goes back in history: a link here pushes the profile again and the
+          profile's own back button then loops back to this page. */}
+      <button
+        type="button"
+        onClick={() => smartBack(router, "/user")}
+        className="max-w-[1400px] mx-auto flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors mb-4 px-1 cursor-pointer"
       >
         ← Profile
-      </Link>
+      </button>
 
       <div className="flex max-w-[1400px] mx-auto min-h-[calc(100vh-5rem)] rounded-[3rem] overflow-clip border border-white/5 shadow-2xl relative">
         {/* Sidebar — docked on desktop, drawer on mobile */}

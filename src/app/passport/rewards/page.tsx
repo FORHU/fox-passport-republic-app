@@ -12,7 +12,7 @@ export default function RewardsPage() {
         <LandingHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
           <div className="mb-10 space-y-4">
-            <BackButton variant="label" href="/user/passport" label="Back to Passport" />
+            <BackButton variant="label" fallback="/user/passport" label="Back to Passport" />
             <h1 className="text-4xl md:text-6xl font-display font-bold text-white tracking-tight">
               Rewards <span className="text-accent underline decoration-accent/20">Wallet</span>
             </h1>

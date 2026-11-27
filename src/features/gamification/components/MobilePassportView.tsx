@@ -3,15 +3,18 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PassportBookletCard from "./PassportBookletCard";
 import { useMyPassport } from "../hooks/usePassport";
 import { LOGO_SRC } from "@/shared/lib/assets";
+import { smartBack } from "@/shared/lib/navigation";
 
 interface Props {
   user?: any;
 }
 
 export default function MobilePassportView({ user }: Props) {
+  const router = useRouter();
   // The same passport the desktop PassportClient reads.
   const { stamps, badges, isLoading } = useMyPassport();
   const citizenNo = user?.id
@@ -63,10 +66,20 @@ export default function MobilePassportView({ user }: Props) {
           gap: 10,
         }}
       >
-        <Link
-          href="/user"
+        {/* Goes back in history, like PassportClient's "← Profile". */}
+        <button
+          type="button"
+          onClick={() => smartBack(router, "/user")}
           aria-label="Back to profile"
-          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexShrink: 0,
+            background: "none",
+            border: 0,
+            padding: 0,
+            cursor: "pointer",
+          }}
         >
           <Image
             src={LOGO_SRC}
@@ -75,7 +88,7 @@ export default function MobilePassportView({ user }: Props) {
             height={22}
             style={{ objectFit: "contain" }}
           />
-        </Link>
+        </button>
         <p
           style={{
             flex: 1,

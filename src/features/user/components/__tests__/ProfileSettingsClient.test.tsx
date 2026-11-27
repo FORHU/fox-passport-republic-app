@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
@@ -35,6 +35,8 @@ vi.mock("@/features/user/components/AvatarUploader", () => ({
   default: () => null,
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/shared/api/geo", () => ({
   fetchCountries: async () => [
     { code: "AQ", name: "Antarctica", flag: "🇦🇶", phoneCode: "", currency: "" },
@@ -149,5 +151,51 @@ describe("ProfileSettingsClient phone field", () => {
       ),
     ).not.toHaveLength(0);
     expect(updateProfile).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * "Back to profile" must go back in history. As a link it pushed the profile
+ * again, and the profile's own back button then returned here: a loop.
+ */
+describe("ProfileSettingsClient back button", () => {
+  const setHistoryLength = (value: number) =>
+    Object.defineProperty(window.history, "length", {
+      value,
+      configurable: true,
+    });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    setHistoryLength(1);
+  });
+
+  it("is a button, not a link that pushes the profile again", () => {
+    renderSettings();
+    expect(
+      screen.queryByRole("link", { name: "Back to profile" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Back to profile" }),
+    ).toBeInTheDocument();
+  });
+
+  it("goes back in history when there is a previous page", () => {
+    setHistoryLength(3);
+    renderSettings();
+    fireEvent.click(screen.getByRole("button", { name: "Back to profile" }));
+    expect(router.back).toHaveBeenCalledOnce();
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("opens the profile when settings was opened directly", () => {
+    setHistoryLength(1);
+    renderSettings();
+    fireEvent.click(screen.getByRole("button", { name: "Back to profile" }));
+    expect(router.push).toHaveBeenCalledWith("/user");
+    expect(router.back).not.toHaveBeenCalled();
   });
 });
