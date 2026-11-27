@@ -42,7 +42,7 @@ export function ConnectionsPageClient() {
     <div className="min-h-screen bg-black">
       <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-xl border-b border-zinc-900">
         <div className="mx-auto max-w-2xl px-4 py-4 flex items-center gap-4">
-          <BackButton href={`/user/${id}`} />
+          <BackButton fallback={`/user/${id}`} />
           <h1 className="text-lg font-display font-bold text-white">
             Connections
           </h1>

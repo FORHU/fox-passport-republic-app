@@ -14,7 +14,7 @@ export default function LeaderboardPage() {
           <div className="mb-10 space-y-4">
             <BackButton
               variant="label"
-              href="/user/passport"
+              fallback="/user/passport"
               label="Back to Passport"
             />
             <h1 className="text-4xl md:text-6xl font-display font-bold text-white tracking-tight">

@@ -331,7 +331,7 @@ export default function ProfileSettingsClient({
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
         <div className="mx-auto max-w-6xl px-4 h-20 flex items-center gap-4">
-          <BackButton href="/user" label="Back to profile" />
+          <BackButton fallback="/user" label="Back to profile" />
           <div className="min-w-0">
             <h1 className="text-xl font-display font-bold">Account Settings</h1>
             <p className="text-xs text-white/40 truncate">
