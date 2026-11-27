@@ -188,7 +188,7 @@ describe("PostCard videos in the Republic feed (app#385 follow-up)", () => {
       />,
     );
     expect(await screen.findAllByRole("button", { name: "Unmute" })).toHaveLength(1);
-    const tile = screen.getByRole("button", { name: "Unmute" }).parentElement!;
+    const tile = screen.getByRole("button", { name: "Unmute" }).closest(".relative")!;
     expect(tile.querySelector("video")!.getAttribute("src")).toBe(video(1));
     expect(container.querySelectorAll("video")).toHaveLength(2);
   });
