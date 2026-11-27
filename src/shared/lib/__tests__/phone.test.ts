@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   countryOfPhone,
   formatPhone,
+  normalizeContactPhone,
   phoneExample,
   phoneSchema,
   rehomePhone,
@@ -121,5 +122,21 @@ describe("formatPhone", () => {
   it("shows E.164 in international format", () => {
     expect(formatPhone("+639171234567")).toBe("+63 917 123 4567");
     expect(formatPhone("")).toBe("");
+  });
+});
+
+describe("normalizeContactPhone", () => {
+  it("accepts a Philippine mobile number", () => {
+    expect(normalizeContactPhone("0917 123 4567", "PH")).toBe("+639171234567");
+    expect(normalizeContactPhone("+6309171234567", "PH")).toBe("+639171234567");
+  });
+
+  it("refuses a Philippine landline", () => {
+    expect(normalizeContactPhone("+63 2 8123 4567", "PH")).toBeNull();
+    expect(normalizeContactPhone("(02) 8123 4567", "PH")).toBeNull();
+  });
+
+  it("keeps landlines outside the Philippines", () => {
+    expect(normalizeContactPhone("202 555 0123", "US")).toBe("+12025550123");
   });
 });

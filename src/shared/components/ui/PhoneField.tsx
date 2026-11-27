@@ -6,7 +6,11 @@ import {
   isSupportedCountry,
 } from "libphonenumber-js/max";
 import { PhoneNumberInput } from "@/shared/components/ui/PhoneNumberInput";
-import { normalizePhone, phoneExample } from "@/shared/lib/phone";
+import {
+  MOBILE_ONLY,
+  normalizeContactPhone,
+  phoneExample,
+} from "@/shared/lib/phone";
 
 interface PhoneFieldProps {
   label: string;
@@ -25,11 +29,13 @@ interface PhoneFieldProps {
 }
 
 /**
- * A phone number in the format of the form's country (CountryField): formatted
- * as typed (PhoneNumberInput, on libphonenumber-js — the same library the
- * API's normalizePhone checks with), with the country's example as a hint, and
- * a message as its validity while it isn't a valid number there, so the
- * wizard won't Continue.
+ * A phone number in the format of the form's country (CountryField): the
+ * country's +code as a fixed prefix in the field (not part of what is typed,
+ * so it can't be removed), the rest formatted as typed (PhoneNumberInput, on
+ * libphonenumber-js — the same library the API's normalizeContactPhone checks
+ * with), the country's example as a hint, and a message as its validity while
+ * it isn't a valid number there — a mobile number in MOBILE_ONLY countries —
+ * so the wizard won't Continue.
  */
 export function PhoneField({
   label,
@@ -53,9 +59,12 @@ export function PhoneField({
     setContinued(false);
   }
 
+  const example = country ? phoneExample(country) : "";
   const error =
-    value && country && normalizePhone(value, country) === null
-      ? `Enter a valid phone number for ${countryName}.`
+    value && country && normalizeContactPhone(value, country) === null
+      ? MOBILE_ONLY.has(country)
+        ? `Enter a valid mobile number for ${countryName}${example ? `, like ${example}` : ""}.`
+        : `Enter a valid phone number for ${countryName}.`
       : null;
   useEffect(() => {
     const input = document.getElementById(`${fieldId}-number`);
@@ -71,11 +80,12 @@ export function PhoneField({
           ? `Enter your ${label.toLowerCase()}.`
           : null))
       : null;
-  const example = country ? phoneExample(country) : "";
-  const hint =
-    example && isSupportedCountry(country)
-      ? `e.g. +${getCountryCallingCode(country)} ${example}`
-      : "";
+  const callingCode = isSupportedCountry(country)
+    ? `+${getCountryCallingCode(country)}`
+    : "";
+  // The prefix is in the field, so the hint is the rest of the number.
+  const hint = example ? `e.g. ${example}` : "";
+  const codeId = `${fieldId}-phone-code`;
   const hintId = `${fieldId}-phone-hint`;
   const errorId = `${fieldId}-phone-error`;
 
@@ -87,7 +97,22 @@ export function PhoneField({
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
           {icon}
+          {callingCode && (
+            // Fixed, outside the input: shown, never typed or deleted.
+            <span
+              aria-hidden
+              data-testid="phone-prefix"
+              className="ml-2.5 border-r border-white/15 pr-2.5 font-medium text-white/80 tabular-nums select-none"
+            >
+              {callingCode}
+            </span>
+          )}
         </div>
+        {callingCode && (
+          <span id={codeId} className="sr-only">
+            Country code {callingCode}
+          </span>
+        )}
         {country ? (
           <PhoneNumberInput
             id={`${fieldId}-number`}
@@ -107,9 +132,18 @@ export function PhoneField({
             placeholder={example}
             maxLength={30}
             className={inputClassName}
+            // Clears the icon and the prefix: pl-4 + icon + gap (2.75rem),
+            // the code, its divider and a gap (1.25rem + 1px).
+            style={
+              callingCode
+                ? {
+                    paddingLeft: `calc(4rem + ${callingCode.length}ch + 1px)`,
+                  }
+                : undefined
+            }
             aria-invalid={shownError ? true : undefined}
             aria-describedby={
-              [hint && hintId, shownError && errorId]
+              [callingCode && codeId, hint && hintId, shownError && errorId]
                 .filter(Boolean)
                 .join(" ") || undefined
             }
